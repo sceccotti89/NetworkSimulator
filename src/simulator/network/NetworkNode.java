@@ -10,7 +10,7 @@ public class NetworkNode
     private final int _yPos;
     
     public static final String ID = "id", NAME = "name",
-                               X_POS = "x_pos", Y_POS = "y_pos";
+                               X_POS = "xPos", Y_POS = "yPos";
     
     public NetworkNode( final long id, final String name )
     {
@@ -45,7 +45,9 @@ public class NetworkNode
     @Override
     public String toString()
     {
-        // TODO implement..
-        return "";
+        StringBuilder buffer = new StringBuilder( 512 );
+        buffer.append( "Id: " + _id + ", Name: \"" + _name +
+                       "\", at (" + _xPos + ", " + _yPos + ")\n" );
+        return buffer.toString();
     }
 }

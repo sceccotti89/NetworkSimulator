@@ -57,8 +57,8 @@ public class NetworkTopology
             JSONObject node = nodes.getJSONObject( i );
             long id     = node.getLong( NetworkNode.ID );
             String name = node.getString( NetworkNode.NAME );
-            int xPos    = node.getInt( NetworkNode.X_POS );
-            int yPos    = node.getInt( NetworkNode.Y_POS );
+            int xPos    = (node.has( NetworkNode.X_POS )) ? node.getInt( NetworkNode.X_POS ) : 0;
+            int yPos    = (node.has( NetworkNode.Y_POS )) ? node.getInt( NetworkNode.Y_POS ) : 0;
             
             NetworkNode _node = new NetworkNode( id, name, xPos, yPos );
             addNode( _node );
@@ -89,6 +89,7 @@ public class NetworkTopology
     }
     
     public void addLink( final NetworkLink link ) {
+        // TODO we must check if the source and dest ids are present in the nodes list??
         networkLinks.add( link );
     }
     
@@ -98,5 +99,21 @@ public class NetworkTopology
     
     public void addNode( final NetworkNode node ) {
         networkNodes.add( node );
+    }
+    
+    @Override
+    public String toString()
+    {
+        StringBuilder buffer = new StringBuilder( 512 );
+        
+        buffer.append( "Nodes information:\n" );
+        for(NetworkNode node : networkNodes)
+            buffer.append( node.toString() );
+        
+        buffer.append( "\nLinks information:\n" );
+        for(NetworkLink link : networkLinks)
+            buffer.append( link.toString() );
+        
+        return buffer.toString();
     }
 }

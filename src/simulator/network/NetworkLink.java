@@ -8,7 +8,7 @@ package simulator.network;
 */
 public class NetworkLink
 {
-    private final long _fromId;
+    private final long _sourceId;
     private final long _destId;
     
     private final double _bandwith;
@@ -18,23 +18,23 @@ public class NetworkLink
     
     public static final int UNIDIRECTIONAL = 0, BIDIRECTIONAL = 1;
     
-    public static final String FROM_ID = "from_id", DEST_ID = "dest_id",
+    public static final String FROM_ID = "fromId", DEST_ID = "destId",
                                BANDWITH = "bandwith", DELAY = "delay";
     
-    public NetworkLink( final long fromId, final long destId,
+    public NetworkLink( final long sourceId, final long destId,
                         final double bandwith, final double delay )
     {
-        _fromId = fromId;
+        _sourceId = sourceId;
         _destId = destId;
         
         _bandwith = bandwith;
         _delay = delay;
     }
     
-    public NetworkLink( final long fromId, final long destId,
+    public NetworkLink( final long sourceId, final long destId,
                         final double bandwith, final double delay, final int type )
     {
-        _fromId = fromId;
+        _sourceId = sourceId;
         _destId = destId;
         
         _bandwith = bandwith;
@@ -43,8 +43,8 @@ public class NetworkLink
         _type = type;
     }
     
-    public long getFromId() {
-        return _fromId;
+    public long getSourceId() {
+        return _sourceId;
     }
     
     public long getDestId() {
@@ -66,7 +66,9 @@ public class NetworkLink
     @Override
     public String toString()
     {
-        // TODO implement..
-        return "";
+        StringBuilder buffer = new StringBuilder( 512 );
+        buffer.append( "SourceId: " + _sourceId + ", DestId: " + _destId +
+                       ", Bandwith: " + _bandwith + " Mb/s, Delay: " + _delay + "\n" );
+        return buffer.toString();
     }
 }
