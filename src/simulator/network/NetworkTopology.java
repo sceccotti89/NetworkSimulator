@@ -26,9 +26,14 @@ public class NetworkTopology
         // TODO Implementare..
     }
     
-    public void addLink()
+    public void addLink( final int fromId, final int destId,
+                         final double bandwith, final double delay )
     {
         
+    }
+    
+    public void addLink( final NetworkLink link ) {
+        networkLinks.add( link );
     }
     
     public void addNode()

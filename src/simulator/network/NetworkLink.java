@@ -3,6 +3,8 @@ package simulator.network;
 
 /**
  * Link connecting two remote nodes.
+ * By default it's unidirectional (whose direction is defined by the from and dest ids).
+ * It can be configured to be bidirectional.
 */
 public class NetworkLink
 {
@@ -11,6 +13,10 @@ public class NetworkLink
     
     private final double _bandwith;
     private final double _delay;
+    
+    public static final int UNIDIRECTIONAL = 0, BIDIRECTION = 1;
+    private int typeLink = UNIDIRECTIONAL;
+    
     
     public NetworkLink( final int fromId, final int destId,
                         final double bandwith, final double delay )
