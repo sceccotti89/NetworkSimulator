@@ -1,20 +1,19 @@
 
 package simulator.core;
 
-import java.beans.EventHandler;
-
+import simulator.coordinator.EventHandler;
 import simulator.network.NetworkTopology;
 
 public class Simulator
 {
     private NetworkTopology _network;
     
-    private EventHandler ev_handler;
+    private EventHandler _evHandler;
     
     
     public Simulator()
     {
-        
+        _evHandler = new EventHandler( _network );
     }
     
     public void addNetworkTopology( final NetworkTopology network ) {
@@ -24,6 +23,7 @@ public class Simulator
     public void start()
     {
         // TODO
+        _evHandler.doAllEvents();
     }
     
     public void pause()

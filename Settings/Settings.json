@@ -4,7 +4,7 @@
         {"id":1, "name":"query router", "xPos":10, "yPos":0}
     ],
     "links": [
-        {"fromId":0, "destId":1, "bandwith":300.0, "delay":0.5}
+        {"fromId":0, "destId":1, "bandwith":300.0, "delay":0.5},
         {"fromId":1, "destId":0, "bandwith":300.0, "delay":0.5}
  	]
 }

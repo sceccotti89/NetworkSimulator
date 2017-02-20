@@ -1,13 +1,12 @@
 
 package simulator.core;
 
-public class Event implements Comparable<Event>
+import simulator.coordinator.EventHandler;
+
+public abstract class Event implements Comparable<Event>
 {
-    /**
-     * Event time in microseconds.
-    */
+    /** Event time in microseconds. */
     protected Time time;
-    
     
     
     public Event( final Time time ) {
@@ -18,7 +17,7 @@ public class Event implements Comparable<Event>
         return time.compareTo( o.getTime() );
     }
     
-    //public abstract void execute( EventHandler simulator );
+    public abstract void execute( EventHandler ev_handler );
     
     public Time getTime() {
         return time;
