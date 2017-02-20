@@ -1,13 +1,18 @@
 
 package simulator.network;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import simulator.core.NetworkNode;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class NetworkTopology
 {
+    // TODO se questi devono essere acceduti conviene usare una struttura "piu' intelligente"
     private List<NetworkLink> networkLinks = new ArrayList<>( 32 );
     private List<NetworkNode> networkNodes = new ArrayList<>( 32 );
     
@@ -16,28 +21,82 @@ public class NetworkTopology
         
     }
     
-    public NetworkTopology( final String filename )
+    public NetworkTopology( final String filename ) throws IOException
     {
-        
+        try { build( filename ); }
+        catch( IOException e ) {
+            System.err.println( "File '" + filename + "' not found." );
+            throw e;
+        }
     }
     
-    private void build( final String filename )
+    /**
+     * Builds the network topology
+    */
+    private void build( final String filename ) throws IOException
     {
-        // TODO Implementare..
+        BufferedReader br = new BufferedReader( new FileReader( filename ) );
+        StringBuilder content = new StringBuilder( 512 );
+        
+        /** File structure:
+         * 
+         * nodes => [{[xPos],[yPos],id, name}]
+         * links => [{fromId,destId,bw,delay,type}]
+        */
+        
+        String nextLine = null;
+        while((nextLine = br.readLine()) != null)
+            content.append( nextLine.trim() );
+        
+        JSONObject settings = new JSONObject( content.toString() );
+        
+        // Get the list of nodes.
+        JSONArray nodes = settings.getJSONArray( "nodes" );
+        int length = nodes.length();
+        for(int i = 0; i < length; i++) {
+            JSONObject node = nodes.getJSONObject( i );
+            long id     = node.getLong( NetworkNode.ID );
+            String name = node.getString( NetworkNode.NAME );
+            int xPos    = node.getInt( NetworkNode.X_POS );
+            int yPos    = node.getInt( NetworkNode.Y_POS );
+            
+            NetworkNode _node = new NetworkNode( id, name, xPos, yPos );
+            addNode( _node );
+            _node.toString();
+        }
+        
+        // Get the list of links.
+        JSONArray links = settings.getJSONArray( "links" );
+        length = links.length();
+        for(int i = 0; i < length; i++) {
+            JSONObject link = links.getJSONObject( i );
+            long fromId     = link.getLong( NetworkLink.FROM_ID );
+            long destId     = link.getLong( NetworkLink.DEST_ID );
+            double bandwith = link.getDouble( NetworkLink.BANDWITH );
+            double delay    = link.getDouble( NetworkLink.DELAY );
+            
+            NetworkLink _link = new NetworkLink( fromId, destId, bandwith, delay );
+            addLink( _link );
+            _link.toString();
+        }
+        
+        br.close();
     }
     
-    public void addLink( final int fromId, final int destId,
-                         final double bandwith, final double delay )
-    {
-        
+    public void addLink( final long fromId, final long destId,
+                         final double bandwith, final double delay, final int type ) {
+        addLink( new NetworkLink( fromId, destId, bandwith, delay, type ) );
     }
     
     public void addLink( final NetworkLink link ) {
         networkLinks.add( link );
     }
     
-    public void addNode()
-    {
-        
+    public void addNode( final long id, final String name, final int xPos, final int yPos ) {
+        addNode( new NetworkNode( id, name, xPos, yPos ) );
+    }
+    
+    public void addNode( final NetworkNode node ) {
+        networkNodes.add( node );
     }
 }

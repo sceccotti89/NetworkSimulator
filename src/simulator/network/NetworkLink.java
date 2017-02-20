@@ -8,17 +8,20 @@ package simulator.network;
 */
 public class NetworkLink
 {
-    private final int _fromId;
-    private final int _destId;
+    private final long _fromId;
+    private final long _destId;
     
     private final double _bandwith;
     private final double _delay;
     
-    public static final int UNIDIRECTIONAL = 0, BIDIRECTION = 1;
-    private int typeLink = UNIDIRECTIONAL;
+    private int _type = UNIDIRECTIONAL;
     
+    public static final int UNIDIRECTIONAL = 0, BIDIRECTIONAL = 1;
     
-    public NetworkLink( final int fromId, final int destId,
+    public static final String FROM_ID = "from_id", DEST_ID = "dest_id",
+                               BANDWITH = "bandwith", DELAY = "delay";
+    
+    public NetworkLink( final long fromId, final long destId,
                         final double bandwith, final double delay )
     {
         _fromId = fromId;
@@ -28,11 +31,23 @@ public class NetworkLink
         _delay = delay;
     }
     
-    public int getFromId() {
+    public NetworkLink( final long fromId, final long destId,
+                        final double bandwith, final double delay, final int type )
+    {
+        _fromId = fromId;
+        _destId = destId;
+        
+        _bandwith = bandwith;
+        _delay = delay;
+        
+        _type = type;
+    }
+    
+    public long getFromId() {
         return _fromId;
     }
     
-    public int getDestId() {
+    public long getDestId() {
         return _destId;
     }
     
@@ -42,5 +57,16 @@ public class NetworkLink
     
     public double getDelay() {
         return _delay;
+    }
+    
+    public int getType() {
+        return _type;
+    }
+    
+    @Override
+    public String toString()
+    {
+        // TODO implement..
+        return "";
     }
 }
