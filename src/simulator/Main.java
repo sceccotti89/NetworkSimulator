@@ -3,6 +3,7 @@ package simulator;
 
 import java.io.IOException;
 
+import simulator.core.Simulator;
 import simulator.network.NetworkLink;
 import simulator.network.NetworkNode;
 import simulator.network.NetworkTopology;
@@ -28,6 +29,7 @@ public class Main
     public static void main( String argv[] ) throws IOException
     {
         // TODO testare le varie funzionalita' del simulatore
+        Simulator sim = new Simulator();
         NetworkTopology net = new NetworkTopology( "Settings/Settings.json" );
         net.addNode( new MyNode( 3L, "load_balancer", 10, 10 ) );
         net.addLink( new MyLink( 3L, 4L, 125.0d, 0.1d ) );
