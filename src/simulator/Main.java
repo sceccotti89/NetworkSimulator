@@ -4,7 +4,9 @@ package simulator;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import simulator.Agent.ActiveAgent;
 import simulator.coordinator.Event;
+import simulator.coordinator.Event.RequestEvent;
 import simulator.coordinator.EventGenerator;
 import simulator.coordinator.EventHandler;
 import simulator.core.Simulator;
@@ -41,26 +43,26 @@ public class Main
         @Override
         public void generate( final EventHandler evHandler, final NetworkNode destNode )
         {
-            Event next = nextEvent();
+            Event next = nextEvent( evHandler );
             // TODO essere sicuri che il tempo sia quello giusto.
             evHandler.schedule( next );
         }
-
+        
+        // TODO non sono sicuro debba essere overraidata
+        // TODO ogni generatore fa questa cosa..
         @Override
-        public Event nextEvent()
+        public Event nextEvent( final EventHandler evHandler )
         {
-            if(_time.compareTo( _duration ) > 0)
-                return null;
-            // TODO generare un nuovo evento, settando pero' il tempo come quello attuale.
-            Event next = null;
+            Time time = evHandler.getTime();
+            if(time.compareTo( _duration ) > 0)
+                return null; // Stop the generator.
             
-            // TODO aggiornare il tempo attuale.
-            
+            Event next = new RequestEvent( time );
             return next;
         }
     }
     
-    protected static class MyAgent extends Agent
+    protected static class MyAgent extends ActiveAgent
     {
         public MyAgent( final long id, final EventGenerator evGenerator )
         {

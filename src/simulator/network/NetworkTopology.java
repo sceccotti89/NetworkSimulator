@@ -35,6 +35,8 @@ public class NetworkTopology
     
     /**
      * Builds the network topology
+     * 
+     * @param filename  name of the file where nodes and links are loaded from
     */
     private void build( final String filename ) throws IOException
     {

@@ -62,4 +62,8 @@ public class EventHandler
     public boolean isDone() {
         return false;
     }
+
+    public Time getTime() {
+        return _time;
+    }
 }

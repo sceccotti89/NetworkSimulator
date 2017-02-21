@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import simulator.Agent;
+import simulator.coordinator.Event;
 import simulator.coordinator.EventHandler;
 import simulator.network.NetworkTopology;
 
@@ -40,8 +41,12 @@ public class Simulator
 
     public void start()
     {
-        // TODO gli attori che sono stati aggiunti al simulatore inseriscono il loro primo messaggio nella coda.
-        // TODO stare quindi attenti a quelli che non dovrebbe inivare nulla
+        // Put the first message into the queue.
+        for(Agent agent : _agents) {
+            Event e = agent.firstEvent( _evHandler );
+            if(e != null)
+                _evHandler.schedule( e );
+        }
         
         _evHandler.doAllEvents();
     }
