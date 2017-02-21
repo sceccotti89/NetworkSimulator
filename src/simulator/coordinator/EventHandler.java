@@ -1,10 +1,12 @@
+/**
+ * @author Stefano Ceccotti
+*/
 
 package simulator.coordinator;
 
 import java.util.PriorityQueue;
 import java.util.concurrent.TimeUnit;
 
-import simulator.core.Event;
 import simulator.core.Time;
 import simulator.network.NetworkTopology;
 

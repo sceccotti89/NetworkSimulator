@@ -1,8 +1,12 @@
+/**
+ * @author Stefano Ceccotti
+*/
 
-package simulator.core;
+package simulator.coordinator;
 
 import java.util.concurrent.TimeUnit;
 
+import simulator.core.Time;
 import simulator.network.NetworkNode;
 
 public abstract class EventGenerator
@@ -20,6 +24,6 @@ public abstract class EventGenerator
         _serviceTime = serviceTime;
     }
     
-    public abstract void generate( NetworkNode destNode );
+    public abstract void generate( final EventHandler evHandler, final NetworkNode destNode );
     public abstract Event nextEvent();
 }

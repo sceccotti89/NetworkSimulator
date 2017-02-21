@@ -1,7 +1,10 @@
+/**
+ * @author Stefano Ceccotti
+*/
 
-package simulator.core;
+package simulator.coordinator;
 
-import simulator.coordinator.EventHandler;
+import simulator.core.Time;
 
 public abstract class Event implements Comparable<Event>
 {

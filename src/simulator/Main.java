@@ -4,8 +4,9 @@ package simulator;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import simulator.core.Event;
-import simulator.core.EventGenerator;
+import simulator.coordinator.Event;
+import simulator.coordinator.EventGenerator;
+import simulator.coordinator.EventHandler;
 import simulator.core.Simulator;
 import simulator.core.Time;
 import simulator.network.NetworkLink;
@@ -38,9 +39,11 @@ public class Main
         }
         
         @Override
-        public void generate( final NetworkNode destNode )
+        public void generate( final EventHandler evHandler, final NetworkNode destNode )
         {
             Event next = nextEvent();
+            // TODO essere sicuri che il tempo sia quello giusto.
+            evHandler.schedule( next );
         }
 
         @Override
@@ -57,6 +60,14 @@ public class Main
         }
     }
     
+    protected static class MyAgent extends Agent
+    {
+        public MyAgent( final long id, final EventGenerator evGenerator )
+        {
+            super( id, evGenerator );
+        }
+    }
+    
     public static void main( String argv[] ) throws IOException
     {
         Simulator sim = new Simulator();
@@ -70,8 +81,14 @@ public class Main
         RandomGenerator generator = new RandomGenerator( new Time(480, TimeUnit.MINUTES),
                                                          new Time(10,  TimeUnit.MINUTES),
                                                          new Time(5,   TimeUnit.MINUTES) );
-        //sim.addGenerator( generator );
         
+        MyAgent agent = new MyAgent( 0, generator );
+        sim.addAgent( agent );
+        
+        // TODO aggiungere i vari nodi (o tramite lista)
+        // TODO ognuno deve essere assegnato a un topologyNode => lo usero' per il calcolo del percorso piu' breve alla destinazione
+        
+        // TODO aggiungere l'opzione di poter lanciare la simulazione per tot secondi
         sim.start();
         
         sim.stop();

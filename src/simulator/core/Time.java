@@ -1,3 +1,6 @@
+/**
+ * @author Stefano Ceccotti
+*/
 
 package simulator.core;
 
