@@ -83,9 +83,10 @@ public class Main
         
         sim.setNetworkTopology( net );
         
-        CBRGenerator generator = new CBRGenerator( new Time(480, TimeUnit.MINUTES),
-                                                   new Time(10,  TimeUnit.MINUTES),
-                                                   new Time(5,   TimeUnit.MINUTES) );
+        CBRGenerator generator = new CBRGenerator( new Time(11, TimeUnit.MINUTES),
+                                                   new Time(10, TimeUnit.MINUTES),
+                                                   new Time(5,  TimeUnit.MINUTES) );// TODO non sono sicuro che l'ultimo parametro lo voglia settare in questa
+                                                                                    // TODO maniera. Potrei usare la stessa tecnica di NS2
         Agent client = new ClientAgent( 0, generator );
         sim.addAgent( client );
         
@@ -93,9 +94,6 @@ public class Main
         sim.addAgent( server );
         
         generator.setLink( client, server ).setWaitReponse( false );
-        
-        // TODO aggiungere i vari nodi (o tramite lista)
-        // TODO ognuno deve essere assegnato a un topologyNode => lo usero' per il calcolo del percorso piu' breve alla destinazione
         
         // TODO aggiungere l'opzione di poter lanciare la simulazione per tot secondi
         sim.start();

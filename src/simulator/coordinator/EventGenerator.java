@@ -72,10 +72,10 @@ public abstract class EventGenerator
     {
         //System.out.println( "TIME: " + _time + ", DURATION: " + _duration );
         //Time time = evHandler.getTime();
+        _time.addTime( _departureTime );
         if(_time.compareTo( _duration ) > 0)
             return null; // No more events from this generator.
         
-        _time.addTime( _departureTime );
         //long nextTime = _time.getTimeMicroseconds() + _departureTime.getTimeMicroseconds();
         Event next = new RequestEvent( _time.clone(), _from, _to );
         return next;

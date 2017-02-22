@@ -48,7 +48,7 @@ public abstract class Event implements Comparable<Event>
     
     
     
-    /** ======= SPECIALIZED IMPLEMENTATIONS OF THE EVENT ======= **/
+    /** ======= SPECIALIZED IMPLEMENTATIONS OF AN EVENT ======= **/
     
     public static class RequestEvent extends Event
     {
@@ -60,10 +60,11 @@ public abstract class Event implements Comparable<Event>
         @Override
         public void execute( final long nodeId, final EventHandler ev_handler )
         {
+            // TODO in questa fase dovrebbe aggiungere il tempo speso per trasmettere il pacchetto
             if(nodeId == _to.getId())
                 System.out.println( "RAGGIUNTA DESTINAZIONE!!" );// TODO raggiunta la destinazione controlla se generare la risposta
             else
-                ;// TODO modifica l'evento corrente e lo rimette in coda
+                _currentNodeId = nodeId;// TODO modifica l'evento corrente e lo rimette in coda
             
             if(!_from.getEventGenerator().waitForResponse())
                 ev_handler.schedule( _from.fireEvent() ); // generate a new event, because it doesn't wait for the response.
