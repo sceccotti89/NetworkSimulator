@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import simulator.Agent.ActiveAgent;
 import simulator.Agent.PassiveAgent;
 import simulator.coordinator.EventGenerator;
+import simulator.coordinator.EventGenerator.ConstantEventGenerator;
 import simulator.core.Simulator;
 import simulator.core.Time;
 import simulator.network.NetworkLink;
@@ -31,7 +32,7 @@ public class Main
         }
     }
     
-    protected static class CBRGenerator extends EventGenerator
+    protected static class CBRGenerator extends ConstantEventGenerator
     {
         public CBRGenerator( final Time duration,
                              final Time departureTime,
@@ -75,27 +76,35 @@ public class Main
     
     public static void main( final String argv[] ) throws IOException
     {
-        Simulator sim = new Simulator();
         NetworkTopology net = new NetworkTopology( "Settings/Topology.json" );
-        net.addNode( new MyNode( 3L, "load_balancer", 10, 10 ) );
-        net.addLink( new MyLink( 3L, 0L, 125.0d, 0.1d ) );
+        net.addNode( new MyNode( 2L, "load_balancer", 10, 10 ) );
+        net.addLink( new MyLink( 2L, 0L, 125.0d, 0.1d ) );
         System.out.println( net.toString() );
         
-        sim.setNetworkTopology( net );
+        Simulator sim = new Simulator( net );
         
         CBRGenerator generator = new CBRGenerator( new Time(11, TimeUnit.MINUTES),
                                                    new Time(10, TimeUnit.MINUTES),
                                                    new Time(5,  TimeUnit.MINUTES) );// TODO non sono sicuro che l'ultimo parametro lo voglia settare in questa
-                                                                                    // TODO maniera. Potrei usare la stessa tecnica di NS2
+                                                                                    // TODO maniera. Potrei usare la stessa tecnica di NS2.
         Agent client = new ClientAgent( 0, generator );
         sim.addAgent( client );
         
-        Agent server = new ServerAgent( 1 );
+        CBRGenerator generator2 = new CBRGenerator( new Time(5, TimeUnit.MINUTES),
+                                                    new Time(1, TimeUnit.MINUTES),
+                                                    new Time(1, TimeUnit.MINUTES) );// TODO non sono sicuro che l'ultimo parametro lo voglia settare in questa
+                                                                                    // TODO maniera. Potrei usare la stessa tecnica di NS2.
+        Agent client2 = new ClientAgent( 1, generator2 );
+        sim.addAgent( client2 );
+        
+        Agent server = new ServerAgent( 2 );
         sim.addAgent( server );
         
-        generator.setLink( client, server ).setWaitReponse( false );
+        // TODO questi 2 comandi non servirebbe se l'informazione la prendesse in automatico quando lancia un evento,
+        // TODO basterebbe accedere il networkTopology
+        generator.setLink( client, server );
+        generator2.setLink( client2, server );
         
-        // TODO aggiungere l'opzione di poter lanciare la simulazione per tot secondi
         sim.start();
         
         sim.stop();

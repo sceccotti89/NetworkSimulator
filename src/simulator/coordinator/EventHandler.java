@@ -51,8 +51,7 @@ public class EventHandler
             }
             
             System.out.println( "EVENT N°: " + (++index) );
-            long _id = _network.nextNode( e._currentNodeId );
-            e.execute( _id, this );
+            e.execute( _network.nextNode( e._currentNodeId ), this );
         }
     }
     
@@ -62,8 +61,10 @@ public class EventHandler
             events.add( e );
     }
     
-    public void remove( final Event e ) {
-        events.remove( e );
+    public void remove( final Event e )
+    {
+        if(e != null)
+            events.remove( e );
     }
     
     public boolean hasNextEvents() {

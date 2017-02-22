@@ -18,8 +18,12 @@ public class Simulator
     private List<Agent> _agents;
     
     public Simulator()
+    { this( null ); }
+    
+    public Simulator( final NetworkTopology network )
     {
-        _evHandler = new EventHandler( _network );
+        _network = network;
+        _evHandler = new EventHandler( network );
         _agents = new ArrayList<>();
     }
     
@@ -35,7 +39,9 @@ public class Simulator
     public void addAgents( final List<Agent> agents ) {
         _agents.addAll( agents );
     }
-
+    
+    // TODO aggiungere l'opzione di poter lanciare la simulazione per tot secondi
+    
     public void start()
     {
         _evHandler.setNetworkTopology( _network );

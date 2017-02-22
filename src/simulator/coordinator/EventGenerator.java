@@ -50,6 +50,7 @@ public abstract class EventGenerator
         setLink( from, to );
     }
     
+    // TODO far chiamare questa funzione dal simulatore, invece che dall'utente
     public EventGenerator setLink( final Agent from, final Agent to )
     {
         _from = from;
@@ -73,6 +74,7 @@ public abstract class EventGenerator
         //System.out.println( "TIME: " + _time + ", DURATION: " + _duration );
         //Time time = evHandler.getTime();
         _time.addTime( _departureTime );
+        //System.out.println( "TIME: " + _time.getTimeMicroseconds() / 1000000 + ", DURATION: " + _duration.getTimeMicroseconds() / 1000000 );
         if(_time.compareTo( _duration ) > 0)
             return null; // No more events from this generator.
         
@@ -80,4 +82,29 @@ public abstract class EventGenerator
         Event next = new RequestEvent( _time.clone(), _from, _to );
         return next;
     }
+    
+    public static abstract class ConstantEventGenerator extends EventGenerator
+    {
+
+        public ConstantEventGenerator( final Time duration,
+                                       final Time departureTime,
+                                       final Time serviceTime )
+        {
+            super( duration, departureTime, serviceTime );
+            setWaitReponse( false );
+        }
+        
+        public ConstantEventGenerator( final Time duration,
+                                       final Time departureTime,
+                                       final Time serviceTime,
+                                       final Agent from,
+                                       final Agent to )
+        {
+            super( duration, departureTime, serviceTime, from, to );
+            setWaitReponse( false );
+        }
+    }
+    
+    // TODO inserire quello richiesta-risposta
+    
 }
