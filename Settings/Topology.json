@@ -1,7 +1,7 @@
 {
     "nodes": [
-        {"id":0, "name":"client", "xPos":0, "yPos":0},
-        {"id":1, "name":"query router", "xPos":10, "yPos":0}
+        {"id":0, "name":"client",       "delay":5, "xPos":0,  "yPos":0},
+        {"id":1, "name":"query router", "delay":5, "xPos":10, "yPos":0}
     ],
     "links": [
         {"fromId":0, "destId":1, "bandwith":300.0, "delay":0.5},

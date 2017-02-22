@@ -11,6 +11,7 @@ public abstract class Agent
 {
     protected long _id;
     protected EventGenerator _evGenerator;
+    protected Agent _dest;
     
     public Agent( final long id )
     {
@@ -21,6 +22,13 @@ public abstract class Agent
     {
         _id = id;
         _evGenerator = evGenerator;
+        
+    }
+    
+    public void connect( final Agent destination )
+    {
+        _dest = destination;
+        _evGenerator.connect( this, destination );
     }
     
     //TODO public abstract void body();

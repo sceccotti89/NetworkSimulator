@@ -16,22 +16,6 @@ import simulator.network.NetworkTopology;
 
 public class Main
 {
-    protected static class MyLink extends NetworkLink
-    {
-        public MyLink( final long sourceId, final long destId, final double bandwith, final double delay )
-        {
-            super( sourceId, destId, bandwith, delay );
-        }
-    }
-    
-    protected static class MyNode extends NetworkNode
-    {
-        public MyNode( final long id, final String name, final int xPos, final int yPos )
-        {
-            super( id, name, xPos, yPos );
-        }
-    }
-    
     protected static class CBRGenerator extends ConstantEventGenerator
     {
         public CBRGenerator( final Time duration,
@@ -39,15 +23,6 @@ public class Main
                              final Time serviceTime )
         {
             super( duration, departureTime, serviceTime );
-        }
-        
-        public CBRGenerator( final Time duration,
-                             final Time departureTime,
-                             final Time serviceTime,
-                             final Agent from,
-                             final Agent to )
-        {
-            super( duration, departureTime, serviceTime, from, to );
         }
         
         /*@Override
@@ -77,8 +52,8 @@ public class Main
     public static void main( final String argv[] ) throws IOException
     {
         NetworkTopology net = new NetworkTopology( "Settings/Topology.json" );
-        net.addNode( new MyNode( 2L, "load_balancer", 10, 10 ) );
-        net.addLink( new MyLink( 2L, 0L, 125.0d, 0.1d ) );
+        net.addNode( new NetworkNode( 2L, "load_balancer", 5L, 10, 10 ) );
+        net.addLink( new NetworkLink( 2L, 0L, 125.0d, 0.1d ) );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -100,10 +75,8 @@ public class Main
         Agent server = new ServerAgent( 2 );
         sim.addAgent( server );
         
-        // TODO questi 2 comandi non servirebbe se l'informazione la prendesse in automatico quando lancia un evento,
-        // TODO basterebbe accedere il networkTopology
-        generator.setLink( client, server );
-        generator2.setLink( client2, server );
+        client.connect( server );
+        client2.connect( server );
         
         sim.start();
         

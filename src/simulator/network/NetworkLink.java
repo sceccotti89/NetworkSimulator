@@ -66,6 +66,17 @@ public class NetworkLink
         return _type;
     }
     
+    public long getTtrasm( final long size )
+    {
+        // TODO Ttrasm = size/bandwith
+        //return (long) (size / _bandwith);
+        return 0;
+    }
+    
+    public long getTprop() {
+        return (long) _delay;
+    }
+
     @Override
     public String toString()
     {

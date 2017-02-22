@@ -50,8 +50,8 @@ public class EventHandler
                 throw new TimeException( "You can't go back in time!" );
             }
             
-            System.out.println( "EVENT N°: " + (++index) );
-            e.execute( _network.nextNode( e._currentNodeId ), this );
+            System.out.println( "EVENT No: " + (++index) );
+            e.execute( _network.nextNode( e._currentNodeId ), this, _network );
         }
     }
     

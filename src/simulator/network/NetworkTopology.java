@@ -45,7 +45,7 @@ public class NetworkTopology
         
         /** File structure:
          * 
-         * nodes => [{[xPos],[yPos],id, name}]
+         * nodes => [{[xPos],[yPos],id, name, delay}]
          * links => [{fromId, destId, bw, delay, type}]
         */
         
@@ -60,12 +60,13 @@ public class NetworkTopology
         int length = nodes.length();
         for(int i = 0; i < length; i++) {
             JSONObject node = nodes.getJSONObject( i );
-            long id     = node.getLong( NetworkNode.ID );
-            String name = node.getString( NetworkNode.NAME );
-            int xPos    = (node.has( NetworkNode.X_POS )) ? node.getInt( NetworkNode.X_POS ) : 0;
-            int yPos    = (node.has( NetworkNode.Y_POS )) ? node.getInt( NetworkNode.Y_POS ) : 0;
+            long id         = node.getLong( NetworkNode.ID );
+            String name     = node.getString( NetworkNode.NAME );
+            long delay      = node.getLong( NetworkNode.DELAY );
+            int xPos        = (node.has( NetworkNode.X_POS )) ? node.getInt( NetworkNode.X_POS ) : 0;
+            int yPos        = (node.has( NetworkNode.Y_POS )) ? node.getInt( NetworkNode.Y_POS ) : 0;
             
-            NetworkNode _node = new NetworkNode( id, name, xPos, yPos );
+            NetworkNode _node = new NetworkNode( id, name, delay, xPos, yPos );
             addNode( _node );
             _node.toString();
         }
@@ -98,12 +99,22 @@ public class NetworkTopology
         networkLinks.add( link );
     }
     
-    public void addNode( final long id, final String name, final int xPos, final int yPos ) {
-        addNode( new NetworkNode( id, name, xPos, yPos ) );
+    public NetworkLink getLink( final long nodeId, final long nextNode ) {
+     // TODO per adesso e' cosi' poi lo ricerca in modo corretto.
+        return networkLinks.get( 0 );
+    }
+    
+    public void addNode( final long id, final String name, final long delay, final int xPos, final int yPos ) {
+        addNode( new NetworkNode( id, name, delay, xPos, yPos ) );
     }
     
     public void addNode( final NetworkNode node ) {
         networkNodes.add( node );
+    }
+    
+    public NetworkNode getNode( final long nodeId ) {
+        // TODO per adesso e' cosi' poi lo ricerca in modo corretto.
+        return networkNodes.get( 0 );
     }
     
     public long nextNode( final long fromId ) {

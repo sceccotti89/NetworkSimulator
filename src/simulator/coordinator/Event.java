@@ -4,8 +4,13 @@
 
 package simulator.coordinator;
 
+import java.util.concurrent.TimeUnit;
+
 import simulator.Agent;
 import simulator.core.Time;
+import simulator.network.NetworkLink;
+import simulator.network.NetworkNode;
+import simulator.network.NetworkTopology;
 
 public abstract class Event implements Comparable<Event>
 {
@@ -35,7 +40,7 @@ public abstract class Event implements Comparable<Event>
         return _time.compareTo( o.getTime() );
     }
     
-    public abstract void execute( final long nodeId, final EventHandler ev_handler );
+    public abstract void execute( final long nodeId, final EventHandler ev_handler, final NetworkTopology net );
     
     public Time getTime() {
         return _time;
@@ -56,15 +61,25 @@ public abstract class Event implements Comparable<Event>
         {
             super( time, from, to );
         }
-
+        
         @Override
-        public void execute( final long nodeId, final EventHandler ev_handler )
+        public void execute( final long nodeId, final EventHandler ev_handler, final NetworkTopology net )
         {
-            // TODO in questa fase dovrebbe aggiungere il tempo speso per trasmettere il pacchetto, o lo puo' fare prima di questa fase?
+            // TODO in questa fase dovrebbe aggiungere il tempo speso per trasmettere il pacchetto,
+            // TODO o lo puo' fare prima di questa fase?
             if(nodeId == _to.getId())
                 ev_handler.schedule( _to.fireEvent() );
-            else // Assign the current node id.
+            else { // Assign the current node id.
                 _currentNodeId = nodeId;
+                // TODO aggiungi all'evento la latenza del nodo (Tcal processing del pacchetto) +
+                // TODO tempo di trasferimento (Ttrasm = PktSize / Bwt) +
+                // TODO latenza del collegamento (Tprop)
+                NetworkNode node = net.getNode( nodeId );
+                long delay = node.getTcalc();
+                NetworkLink link = net.getLink( nodeId, net.nextNode( nodeId ) );
+                delay += link.getTtrasm( _size ) + link.getTprop();
+                _time.addTime( new Time( delay, TimeUnit.MICROSECONDS ) );
+            }
             
             if(!_from.getEventGenerator().waitForResponse())
                 ev_handler.schedule( _from.fireEvent() ); // generate a new event, because it doesn't wait for the response.
@@ -83,8 +98,9 @@ public abstract class Event implements Comparable<Event>
         }
 
         @Override
-        public void execute( final long nodeId, final EventHandler ev_handler ) {
-            // TODO Auto-generated method stub
+        public void execute( final long nodeId, final EventHandler ev_handler, final NetworkTopology net )
+        {
+            // TODO questo metodo e' il solito dl RequestEvent?? in tal caso metterlo in Event.
             
         }
         

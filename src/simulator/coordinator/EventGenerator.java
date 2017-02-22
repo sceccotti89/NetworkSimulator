@@ -35,23 +35,7 @@ public abstract class EventGenerator
         _serviceTime = serviceTime;
     }
     
-    public EventGenerator( final Time duration,
-                           final Time departureTime,
-                           final Time serviceTime,
-                           final Agent from,
-                           final Agent to )
-    {
-        _time = new Time( 0, TimeUnit.MICROSECONDS );
-        
-        _duration = duration;
-        _departureTime = departureTime;
-        _serviceTime = serviceTime;
-        
-        setLink( from, to );
-    }
-    
-    // TODO far chiamare questa funzione dal simulatore, invece che dall'utente
-    public EventGenerator setLink( final Agent from, final Agent to )
+    public EventGenerator connect( final Agent from, final Agent to )
     {
         _from = from;
         _to = to;
@@ -66,6 +50,8 @@ public abstract class EventGenerator
     public boolean waitForResponse() {
         return _waitResponse;
     }
+    
+    //public abstract void update();
 
     //public abstract void generate( final EventHandler evHandler, final NetworkNode destNode );
     
@@ -83,6 +69,9 @@ public abstract class EventGenerator
         return next;
     }
     
+    
+    
+    
     public static abstract class ConstantEventGenerator extends EventGenerator
     {
 
@@ -91,16 +80,6 @@ public abstract class EventGenerator
                                        final Time serviceTime )
         {
             super( duration, departureTime, serviceTime );
-            setWaitReponse( false );
-        }
-        
-        public ConstantEventGenerator( final Time duration,
-                                       final Time departureTime,
-                                       final Time serviceTime,
-                                       final Agent from,
-                                       final Agent to )
-        {
-            super( duration, departureTime, serviceTime, from, to );
             setWaitReponse( false );
         }
     }
