@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import simulator.Agent;
-import simulator.coordinator.Event;
 import simulator.coordinator.EventHandler;
 import simulator.network.NetworkTopology;
 
@@ -24,7 +23,7 @@ public class Simulator
         _agents = new ArrayList<>();
     }
     
-    public void addNetworkTopology( final NetworkTopology network ) {
+    public void setNetworkTopology( final NetworkTopology network ) {
         _network = network;
     }
     
@@ -39,12 +38,11 @@ public class Simulator
 
     public void start()
     {
+        _evHandler.setNetworkTopology( _network );
+        
         // Put the first message into the queue.
-        for(Agent agent : _agents) {
-            Event e = agent.firstEvent();
-            if(e != null)
-                _evHandler.schedule( e );
-        }
+        for(Agent agent : _agents)
+            _evHandler.schedule( agent.firstEvent() );
         
         _evHandler.doAllEvents();
     }

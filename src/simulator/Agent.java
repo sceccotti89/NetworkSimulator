@@ -29,6 +29,10 @@ public abstract class Agent
         return _id;
     }
     
+    public EventGenerator getEventGenerator() {
+        return _evGenerator;
+    }
+
     /**
      * Put the first message into the queue.</br>
      * In case of {@link PassiveAgent} no action will be performed,</br>
@@ -39,7 +43,16 @@ public abstract class Agent
     public abstract Event firstEvent();
     
     /***/
-    //public abstract void fireEvent();
+    public Event fireEvent()
+    {
+        if(_evGenerator != null)
+            return _evGenerator.generate();
+        else
+            return null;
+    }
+    
+    
+    
     
     
     /***/
@@ -52,7 +65,7 @@ public abstract class Agent
         
         @Override
         public Event firstEvent()
-        { return _evGenerator.nextEvent(); }
+        { return _evGenerator.generate(); }
     }
     
     /***/
@@ -83,6 +96,6 @@ public abstract class Agent
         
         @Override
         public Event firstEvent()
-        { return _evGenerator.nextEvent(); }
+        { return _evGenerator.generate(); }
     }
 }

@@ -26,6 +26,10 @@ public class EventHandler
         events = new PriorityQueue<Event>();
     }
     
+    public void setNetworkTopology( final NetworkTopology network ) {
+        _network = network;
+    }
+    
     /**
      * Get simulation time in microseconds.
      * @return
@@ -36,6 +40,7 @@ public class EventHandler
     
     public void doAllEvents()
     {
+        int index = 0;
         Event e;
         while((e = events.poll()) != null) {
             System.out.println( e );
@@ -45,17 +50,20 @@ public class EventHandler
                 throw new TimeException( "You can't go back in time!" );
             }
             
-            e.execute( this/*, _network*/ );
+            System.out.println( "EVENT N°: " + (++index) );
+            long _id = _network.nextNode( e._currentNodeId );
+            e.execute( _id, this );
         }
     }
     
-    public void schedule( final Event e ) {
-        events.add( e );
+    public void schedule( final Event e )
+    {
+        if(e != null)
+            events.add( e );
     }
     
     public void remove( final Event e ) {
         events.remove( e );
-        //throw new UnsupportedOperationException();
     }
     
     public boolean hasNextEvents() {

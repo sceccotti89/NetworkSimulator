@@ -6,9 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import simulator.Agent.ActiveAgent;
 import simulator.Agent.PassiveAgent;
-import simulator.coordinator.Event;
 import simulator.coordinator.EventGenerator;
-import simulator.coordinator.EventHandler;
 import simulator.core.Simulator;
 import simulator.core.Time;
 import simulator.network.NetworkLink;
@@ -51,12 +49,12 @@ public class Main
             super( duration, departureTime, serviceTime, from, to );
         }
         
-        @Override
+        /*@Override
         public void generate( final EventHandler evHandler, final NetworkNode destNode )
         {
             Event next = nextEvent();
             evHandler.schedule( next );
-        }
+        }*/
     }
     
     protected static class ClientAgent extends ActiveAgent
@@ -83,7 +81,7 @@ public class Main
         net.addLink( new MyLink( 3L, 0L, 125.0d, 0.1d ) );
         System.out.println( net.toString() );
         
-        sim.addNetworkTopology( net );
+        sim.setNetworkTopology( net );
         
         CBRGenerator generator = new CBRGenerator( new Time(480, TimeUnit.MINUTES),
                                                    new Time(10,  TimeUnit.MINUTES),
@@ -94,7 +92,7 @@ public class Main
         Agent server = new ServerAgent( 1 );
         sim.addAgent( server );
         
-        generator.setLink( client, server );
+        generator.setLink( client, server ).setWaitReponse( false );
         
         // TODO aggiungere i vari nodi (o tramite lista)
         // TODO ognuno deve essere assegnato a un topologyNode => lo usero' per il calcolo del percorso piu' breve alla destinazione

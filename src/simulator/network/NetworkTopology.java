@@ -106,6 +106,11 @@ public class NetworkTopology
         networkNodes.add( node );
     }
     
+    public long nextNode( final long fromId ) {
+        // TODO calcola il prossimo nodo nella rete a cui inivare l'evento
+        return 1;
+    }
+    
     @Override
     public String toString()
     {

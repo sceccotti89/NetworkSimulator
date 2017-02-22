@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 import simulator.Agent;
 import simulator.coordinator.Event.RequestEvent;
 import simulator.core.Time;
-import simulator.network.NetworkNode;
 
 public abstract class EventGenerator
 {
@@ -21,6 +20,9 @@ public abstract class EventGenerator
     
     protected Agent _from;
     protected Agent _to;
+    
+    protected boolean _waitResponse = true;
+    
     
     public EventGenerator( final Time duration,
                            final Time departureTime,
@@ -48,16 +50,27 @@ public abstract class EventGenerator
         setLink( from, to );
     }
     
-    public void setLink( final Agent from, final Agent to )
+    public EventGenerator setLink( final Agent from, final Agent to )
     {
         _from = from;
         _to = to;
+        return this;
     }
     
-    public abstract void generate( final EventHandler evHandler, final NetworkNode destNode );
+    public EventGenerator setWaitReponse( final boolean flag ) {
+        _waitResponse = flag;
+        return this;
+    }
     
-    public Event nextEvent()
+    public boolean waitForResponse() {
+        return _waitResponse;
+    }
+
+    //public abstract void generate( final EventHandler evHandler, final NetworkNode destNode );
+    
+    public Event generate()
     {
+        //System.out.println( "TIME: " + _time + ", DURATION: " + _duration );
         //Time time = evHandler.getTime();
         if(_time.compareTo( _duration ) > 0)
             return null; // No more events from this generator.

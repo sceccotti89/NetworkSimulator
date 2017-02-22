@@ -15,12 +15,19 @@ public abstract class Event implements Comparable<Event>
     protected Agent _from;
     protected Agent _to;
     
+    protected long _currentNodeId = 0;
+    
+    // Dimension of the "message".
+    protected long _size;
+    
     
     public Event( final Time time, final Agent from, final Agent to )
     {
         _time = time;
         _from = from;
         _to = to;
+        
+        _currentNodeId = from.getId();
     }
     
     @Override
@@ -28,11 +35,20 @@ public abstract class Event implements Comparable<Event>
         return _time.compareTo( o.getTime() );
     }
     
-    public abstract void execute( final EventHandler ev_handler );
+    public abstract void execute( final long nodeId, final EventHandler ev_handler );
     
     public Time getTime() {
         return _time;
     }
+    
+    public long getCurrentNodeId() {
+        return _currentNodeId;
+    }
+    
+    
+    
+    
+    /** ======= SPECIALIZED IMPLEMENTATIONS OF THE EVENT ======= **/
     
     public static class RequestEvent extends Event
     {
@@ -42,9 +58,15 @@ public abstract class Event implements Comparable<Event>
         }
 
         @Override
-        public void execute( final EventHandler ev_handler ) {
-            // TODO Auto-generated method stub
+        public void execute( final long nodeId, final EventHandler ev_handler )
+        {
+            if(nodeId == _to.getId())
+                System.out.println( "RAGGIUNTA DESTINAZIONE!!" );// TODO raggiunta la destinazione controlla se generare la risposta
+            else
+                ;// TODO modifica l'evento corrente e lo rimette in coda
             
+            if(!_from.getEventGenerator().waitForResponse())
+                ev_handler.schedule( _from.fireEvent() ); // generate a new event, because it doesn't wait for the response.
         }
         
         @Override
@@ -60,7 +82,7 @@ public abstract class Event implements Comparable<Event>
         }
 
         @Override
-        public void execute( final EventHandler ev_handler ) {
+        public void execute( final long nodeId, final EventHandler ev_handler ) {
             // TODO Auto-generated method stub
             
         }
