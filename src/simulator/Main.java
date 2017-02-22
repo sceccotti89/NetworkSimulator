@@ -6,7 +6,6 @@ import java.util.concurrent.TimeUnit;
 
 import simulator.Agent.ActiveAgent;
 import simulator.coordinator.Event;
-import simulator.coordinator.Event.RequestEvent;
 import simulator.coordinator.EventGenerator;
 import simulator.coordinator.EventHandler;
 import simulator.core.Simulator;
@@ -33,32 +32,29 @@ public class Main
         }
     }
     
-    protected static class RandomGenerator extends EventGenerator
+    protected static class CBRGenerator extends EventGenerator
     {
-        public RandomGenerator( final Time duration, final Time arrivalTime, final Time serviceTime )
+        public CBRGenerator( final Time duration,
+                                final Time departureTime,
+                                final Time serviceTime )
         {
-            super( duration, arrivalTime, serviceTime );
+            super( duration, departureTime, serviceTime );
+        }
+        
+        public CBRGenerator( final Time duration,
+                final Time departureTime,
+                final Time serviceTime,
+                final Agent from,
+                final Agent to )
+        {
+            super( duration, departureTime, serviceTime, from, to );
         }
         
         @Override
         public void generate( final EventHandler evHandler, final NetworkNode destNode )
         {
             Event next = nextEvent( evHandler );
-            // TODO essere sicuri che il tempo sia quello giusto.
             evHandler.schedule( next );
-        }
-        
-        // TODO non sono sicuro debba essere overraidata
-        // TODO ogni generatore fa questa cosa..
-        @Override
-        public Event nextEvent( final EventHandler evHandler )
-        {
-            Time time = evHandler.getTime();
-            if(time.compareTo( _duration ) > 0)
-                return null; // Stop the generator.
-            
-            Event next = new RequestEvent( time );
-            return next;
         }
     }
     
@@ -73,19 +69,24 @@ public class Main
     public static void main( String argv[] ) throws IOException
     {
         Simulator sim = new Simulator();
-        NetworkTopology net = new NetworkTopology( "Settings/Settings.json" );
+        NetworkTopology net = new NetworkTopology( "Settings/Topology.json" );
         net.addNode( new MyNode( 3L, "load_balancer", 10, 10 ) );
         net.addLink( new MyLink( 3L, 0L, 125.0d, 0.1d ) );
         System.out.println( net.toString() );
         
         sim.addNetworkTopology( net );
         
-        RandomGenerator generator = new RandomGenerator( new Time(480, TimeUnit.MINUTES),
-                                                         new Time(10,  TimeUnit.MINUTES),
-                                                         new Time(5,   TimeUnit.MINUTES) );
+        CBRGenerator generator = new CBRGenerator( new Time(480, TimeUnit.MINUTES),
+                                                   new Time(10,  TimeUnit.MINUTES),
+                                                   new Time(5,   TimeUnit.MINUTES) );
+        Agent client = new MyAgent( 0, generator );
+        sim.addAgent( client );
         
-        MyAgent agent = new MyAgent( 0, generator );
-        sim.addAgent( agent );
+        generator = new CBRGenerator( new Time(480, TimeUnit.MINUTES),
+                                      new Time(10,  TimeUnit.MINUTES),
+                                      new Time(5,   TimeUnit.MINUTES) );
+        Agent server = new MyAgent( 1, generator );
+        sim.addAgent( server );
         
         // TODO aggiungere i vari nodi (o tramite lista)
         // TODO ognuno deve essere assegnato a un topologyNode => lo usero' per il calcolo del percorso piu' breve alla destinazione

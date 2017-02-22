@@ -37,11 +37,13 @@ public class EventHandler
     {
         Event e;
         while((e = events.poll()) != null) {
+            System.out.println( e );
             if(_time.compareTo(e.getTime()) <= 0) {
                 _time.setTime( e.getTime() );
             } else {
                 //TODO throw new TimeException( "You can't go back in time!" );
             }
+            
             e.execute( this );
         }
     }

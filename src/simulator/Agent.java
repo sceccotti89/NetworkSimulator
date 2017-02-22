@@ -24,12 +24,6 @@ public abstract class Agent
         _evGenerator = evGenerator;
     }
     
-    /***/
-    public void addGenerator( final EventGenerator evGenerator )
-    {
-        _evGenerator = evGenerator;
-    }
-    
     //TODO public abstract void body();
     
     public long getId() {
@@ -45,13 +39,10 @@ public abstract class Agent
     */
     public abstract Event firstEvent( final EventHandler evHandler );
     
+    
+    /***/
     public static abstract class ActiveAgent extends Agent
     {
-        public ActiveAgent( final long id )
-        {
-            super( id );
-        }
-        
         public ActiveAgent( final long id, final EventGenerator evGenerator )
         {
             super( id, evGenerator );
@@ -62,6 +53,7 @@ public abstract class Agent
         { return _evGenerator.nextEvent( evHandler ); }
     }
     
+    /***/
     public static abstract class PassiveAgent extends Agent
     {
         public PassiveAgent( final long id )
@@ -69,16 +61,12 @@ public abstract class Agent
             super( id );
         }
         
-        public PassiveAgent( final long id, final EventGenerator evGenerator )
-        {
-            super( id, evGenerator );
-        }
-        
         @Override
         public Event firstEvent( final EventHandler evHandler )
         { return null; }
     }
     
+    /***/
     public static abstract class ActiveAndPassiveAgent extends Agent
     {
         public ActiveAndPassiveAgent( final long id )

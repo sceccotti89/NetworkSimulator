@@ -46,7 +46,7 @@ public class NetworkTopology
         /** File structure:
          * 
          * nodes => [{[xPos],[yPos],id, name}]
-         * links => [{fromId,destId,bw,delay,type}]
+         * links => [{fromId, destId, bw, delay, type}]
         */
         
         String nextLine = null;

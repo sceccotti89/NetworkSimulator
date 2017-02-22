@@ -4,34 +4,42 @@
 
 package simulator.coordinator;
 
+import simulator.Agent;
 import simulator.core.Time;
 
 public abstract class Event implements Comparable<Event>
 {
     /** Event time in microseconds. */
-    protected Time time;
+    protected Time _time;
+    
+    protected Agent _from;
+    protected Agent _to;
     
     
-    public Event( final Time time ) {
-        this.time = time;
+    public Event( final Time time, final Agent from, final Agent to )
+    {
+        _time = time;
+        _from = from;
+        _to = to;
     }
     
     @Override
     public int compareTo( final Event o ) {
-        return time.compareTo( o.getTime() );
+        return _time.compareTo( o.getTime() );
     }
     
     public abstract void execute( EventHandler ev_handler );
     
     public Time getTime() {
-        return time;
+        return _time;
     }
     
+    // TODO sia Request che Response hanno bisogno del nodo source e dest
     public static class RequestEvent extends Event
     {
-        public RequestEvent( final Time time )
+        public RequestEvent( final Time time, final Agent from, final Agent to )
         {
-            super( time );
+            super( time, from, to );
         }
 
         @Override
@@ -39,13 +47,17 @@ public abstract class Event implements Comparable<Event>
             // TODO Auto-generated method stub
             
         }
+        
+        @Override
+        public String toString()
+        { return "Request: " + _time; }
     }
     
     public static class ResponseEvent extends Event
     {
-        public ResponseEvent( final Time time )
+        public ResponseEvent( final Time time, final Agent from, final Agent to )
         {
-            super( time );
+            super( time, from, to );
         }
 
         @Override
@@ -53,5 +65,9 @@ public abstract class Event implements Comparable<Event>
             // TODO Auto-generated method stub
             
         }
+        
+        @Override
+        public String toString()
+        { return "Response: " + _time; }
     }
 }

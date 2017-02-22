@@ -32,6 +32,7 @@ public class Simulator
     }
     
     public void addAgent( final Agent agent ) {
+        // TODO devo controllare che ogni id sia presente nella lsta di nodi della topologia??
         _agents.add( agent );
     }
     
