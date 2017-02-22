@@ -6,7 +6,6 @@ package simulator;
 
 import simulator.coordinator.Event;
 import simulator.coordinator.EventGenerator;
-import simulator.coordinator.EventHandler;
 
 public abstract class Agent
 {
@@ -37,7 +36,10 @@ public abstract class Agent
      * 
      * @param evHandler handler used to manage all the events
     */
-    public abstract Event firstEvent( final EventHandler evHandler );
+    public abstract Event firstEvent();
+    
+    /***/
+    //public abstract void fireEvent();
     
     
     /***/
@@ -49,8 +51,8 @@ public abstract class Agent
         }
         
         @Override
-        public Event firstEvent( final EventHandler evHandler )
-        { return _evGenerator.nextEvent( evHandler ); }
+        public Event firstEvent()
+        { return _evGenerator.nextEvent(); }
     }
     
     /***/
@@ -62,7 +64,7 @@ public abstract class Agent
         }
         
         @Override
-        public Event firstEvent( final EventHandler evHandler )
+        public Event firstEvent()
         { return null; }
     }
     
@@ -80,7 +82,7 @@ public abstract class Agent
         }
         
         @Override
-        public Event firstEvent( final EventHandler evHandler )
-        { return _evGenerator.nextEvent( evHandler ); }
+        public Event firstEvent()
+        { return _evGenerator.nextEvent(); }
     }
 }

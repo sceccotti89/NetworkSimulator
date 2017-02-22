@@ -13,6 +13,8 @@ import simulator.network.NetworkNode;
 
 public abstract class EventGenerator
 {
+    protected Time _time;
+    
     protected Time _duration;
     protected Time _departureTime;
     protected Time _serviceTime;
@@ -21,9 +23,11 @@ public abstract class EventGenerator
     protected Agent _to;
     
     public EventGenerator( final Time duration,
-            final Time departureTime,
-            final Time serviceTime )
+                           final Time departureTime,
+                           final Time serviceTime )
     {
+        _time = new Time( 0, TimeUnit.MICROSECONDS );
+        
         _duration = duration;
         _departureTime = departureTime;
         _serviceTime = serviceTime;
@@ -35,6 +39,8 @@ public abstract class EventGenerator
                            final Agent from,
                            final Agent to )
     {
+        _time = new Time( 0, TimeUnit.MICROSECONDS );
+        
         _duration = duration;
         _departureTime = departureTime;
         _serviceTime = serviceTime;
@@ -50,16 +56,15 @@ public abstract class EventGenerator
     
     public abstract void generate( final EventHandler evHandler, final NetworkNode destNode );
     
-    public Event nextEvent( final EventHandler evHandler )
+    public Event nextEvent()
     {
-        Time time = evHandler.getTime();
-        if(time.compareTo( _duration ) > 0)
-            return null; // Stop the generator.
+        //Time time = evHandler.getTime();
+        if(_time.compareTo( _duration ) > 0)
+            return null; // No more events from this generator.
         
-        long nextTime = time.getTimeMicroseconds() + _departureTime.getTimeMicroseconds();
-        Event next = new RequestEvent( new Time( nextTime, TimeUnit.MICROSECONDS ), _from, _to );
+        _time.addTime( _departureTime );
+        //long nextTime = _time.getTimeMicroseconds() + _departureTime.getTimeMicroseconds();
+        Event next = new RequestEvent( _time.clone(), _from, _to );
         return next;
     }
-    
-    // TODO Fornire di seguito alcuni generatori gia' pre-costruiti?? tipo il CBR, TCP, UDP, etc..
 }

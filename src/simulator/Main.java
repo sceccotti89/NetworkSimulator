@@ -54,7 +54,7 @@ public class Main
         @Override
         public void generate( final EventHandler evHandler, final NetworkNode destNode )
         {
-            Event next = nextEvent( evHandler );
+            Event next = nextEvent();
             evHandler.schedule( next );
         }
     }
@@ -75,7 +75,7 @@ public class Main
         }
     }
     
-    public static void main( String argv[] ) throws IOException
+    public static void main( final String argv[] ) throws IOException
     {
         Simulator sim = new Simulator();
         NetworkTopology net = new NetworkTopology( "Settings/Topology.json" );
