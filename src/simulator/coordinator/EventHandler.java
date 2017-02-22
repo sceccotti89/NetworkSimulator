@@ -8,6 +8,7 @@ import java.util.PriorityQueue;
 import java.util.concurrent.TimeUnit;
 
 import simulator.core.Time;
+import simulator.exception.TimeException;
 import simulator.network.NetworkTopology;
 
 public class EventHandler
@@ -41,10 +42,10 @@ public class EventHandler
             if(_time.compareTo(e.getTime()) <= 0) {
                 _time.setTime( e.getTime() );
             } else {
-                //TODO throw new TimeException( "You can't go back in time!" );
+                throw new TimeException( "You can't go back in time!" );
             }
             
-            e.execute( this );
+            e.execute( this/*, _network*/ );
         }
     }
     

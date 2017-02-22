@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import simulator.Agent.ActiveAgent;
+import simulator.Agent.PassiveAgent;
 import simulator.coordinator.Event;
 import simulator.coordinator.EventGenerator;
 import simulator.coordinator.EventHandler;
@@ -35,17 +36,17 @@ public class Main
     protected static class CBRGenerator extends EventGenerator
     {
         public CBRGenerator( final Time duration,
-                                final Time departureTime,
-                                final Time serviceTime )
+                             final Time departureTime,
+                             final Time serviceTime )
         {
             super( duration, departureTime, serviceTime );
         }
         
         public CBRGenerator( final Time duration,
-                final Time departureTime,
-                final Time serviceTime,
-                final Agent from,
-                final Agent to )
+                             final Time departureTime,
+                             final Time serviceTime,
+                             final Agent from,
+                             final Agent to )
         {
             super( duration, departureTime, serviceTime, from, to );
         }
@@ -58,11 +59,19 @@ public class Main
         }
     }
     
-    protected static class MyAgent extends ActiveAgent
+    protected static class ClientAgent extends ActiveAgent
     {
-        public MyAgent( final long id, final EventGenerator evGenerator )
+        public ClientAgent( final long id, final EventGenerator evGenerator )
         {
             super( id, evGenerator );
+        }
+    }
+    
+    protected static class ServerAgent extends PassiveAgent
+    {
+        public ServerAgent( final long id )
+        {
+            super( id );
         }
     }
     
@@ -79,14 +88,13 @@ public class Main
         CBRGenerator generator = new CBRGenerator( new Time(480, TimeUnit.MINUTES),
                                                    new Time(10,  TimeUnit.MINUTES),
                                                    new Time(5,   TimeUnit.MINUTES) );
-        Agent client = new MyAgent( 0, generator );
+        Agent client = new ClientAgent( 0, generator );
         sim.addAgent( client );
         
-        generator = new CBRGenerator( new Time(480, TimeUnit.MINUTES),
-                                      new Time(10,  TimeUnit.MINUTES),
-                                      new Time(5,   TimeUnit.MINUTES) );
-        Agent server = new MyAgent( 1, generator );
+        Agent server = new ServerAgent( 1 );
         sim.addAgent( server );
+        
+        generator.setLink( client, server );
         
         // TODO aggiungere i vari nodi (o tramite lista)
         // TODO ognuno deve essere assegnato a un topologyNode => lo usero' per il calcolo del percorso piu' breve alla destinazione

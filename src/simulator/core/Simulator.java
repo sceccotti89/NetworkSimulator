@@ -15,11 +15,8 @@ import simulator.network.NetworkTopology;
 public class Simulator
 {
     private NetworkTopology _network;
-    
     private EventHandler _evHandler;
-    
     private List<Agent> _agents;
-    
     
     public Simulator()
     {
@@ -32,7 +29,7 @@ public class Simulator
     }
     
     public void addAgent( final Agent agent ) {
-        // TODO devo controllare che ogni id sia presente nella lsta di nodi della topologia??
+        // TODO devo controllare che ogni id sia presente nella lista di nodi della topologia??
         _agents.add( agent );
     }
     

@@ -28,13 +28,12 @@ public abstract class Event implements Comparable<Event>
         return _time.compareTo( o.getTime() );
     }
     
-    public abstract void execute( EventHandler ev_handler );
+    public abstract void execute( final EventHandler ev_handler );
     
     public Time getTime() {
         return _time;
     }
     
-    // TODO sia Request che Response hanno bisogno del nodo source e dest
     public static class RequestEvent extends Event
     {
         public RequestEvent( final Time time, final Agent from, final Agent to )
