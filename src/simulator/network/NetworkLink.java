@@ -4,6 +4,10 @@
 
 package simulator.network;
 
+import java.util.concurrent.TimeUnit;
+
+import simulator.utils.SimulatorUtils;
+
 /**
  * Link connecting two remote nodes.
  * By default it's unidirectional (whose direction is defined by the from and dest ids).
@@ -68,9 +72,11 @@ public class NetworkLink
     
     public long getTtrasm( final long size )
     {
-        // TODO Ttrasm = size/bandwith
-        //return (long) (size / _bandwith);
-        return 0;
+        // Ttrasm = size/bandwith
+    	//System.out.println( "BW: " + _bandwith + ", BW_BIT: " + (long) SimulatorUtils.getSizeInBit( _bandwith, SimulatorUtils.Size.MB ) );
+    	//System.out.println( "Tcalc: " + (size / SimulatorUtils.getSizeInByte( _bandwith, SimulatorUtils.Size.MB )) );
+    	System.out.println( "Tcalc: " + SimulatorUtils.getTimeInMicroseconds( (size / SimulatorUtils.getSizeInBit( _bandwith, SimulatorUtils.Size.MB )), TimeUnit.SECONDS ) + "ns" );
+        return SimulatorUtils.getTimeInMicroseconds( (size / SimulatorUtils.getSizeInBit( _bandwith, SimulatorUtils.Size.MB )), TimeUnit.SECONDS );
     }
     
     public long getTprop() {

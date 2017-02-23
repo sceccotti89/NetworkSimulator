@@ -10,9 +10,8 @@ import simulator.coordinator.EventGenerator;
 import simulator.coordinator.EventGenerator.ConstantEventGenerator;
 import simulator.core.Simulator;
 import simulator.core.Time;
-import simulator.network.NetworkLink;
-import simulator.network.NetworkNode;
 import simulator.network.NetworkTopology;
+import simulator.utils.SimulatorUtils;
 
 public class Main
 {
@@ -20,9 +19,9 @@ public class Main
     {
         public CBRGenerator( final Time duration,
                              final Time departureTime,
-                             final Time serviceTime )
+                             final Packet pkt )
         {
-            super( duration, departureTime, serviceTime );
+            super( duration, departureTime, pkt );
         }
         
         /*@Override
@@ -51,32 +50,33 @@ public class Main
     
     public static void main( final String argv[] ) throws IOException
     {
-        NetworkTopology net = new NetworkTopology( "Settings/Topology.json" );
-        net.addNode( new NetworkNode( 2L, "load_balancer", 5L, 10, 10 ) );
-        net.addLink( new NetworkLink( 2L, 0L, 125.0d, 0.1d ) );
+    	example1();
+    }
+    
+    private static void example1() throws IOException
+    {
+    	NetworkTopology net = new NetworkTopology( "Settings/Topology_ex1.json" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
         
-        CBRGenerator generator = new CBRGenerator( new Time(11, TimeUnit.MINUTES),
-                                                   new Time(10, TimeUnit.MINUTES),
-                                                   new Time(5,  TimeUnit.MINUTES) );// TODO non sono sicuro che l'ultimo parametro lo voglia settare in questa
-                                                                                    // TODO maniera. Potrei usare la stessa tecnica di NS2.
+        CBRGenerator generator = new CBRGenerator( new Time( 10, TimeUnit.MINUTES ),
+                                                   new Time( 5,  TimeUnit.MINUTES ),
+                                                   new Packet( 40, SimulatorUtils.Size.KB ) );
         Agent client = new ClientAgent( 0, generator );
         sim.addAgent( client );
         
-        CBRGenerator generator2 = new CBRGenerator( new Time(5, TimeUnit.MINUTES),
-                                                    new Time(1, TimeUnit.MINUTES),
-                                                    new Time(1, TimeUnit.MINUTES) );// TODO non sono sicuro che l'ultimo parametro lo voglia settare in questa
-                                                                                    // TODO maniera. Potrei usare la stessa tecnica di NS2.
+        /*CBRGenerator generator2 = new CBRGenerator( new Time( 5, TimeUnit.MINUTES ),
+                                                    new Time( 1, TimeUnit.MINUTES ),
+                                                    new Packet( 20, Packet.Size.B ) );
         Agent client2 = new ClientAgent( 1, generator2 );
-        sim.addAgent( client2 );
+        sim.addAgent( client2 );*/
         
         Agent server = new ServerAgent( 2 );
         sim.addAgent( server );
         
         client.connect( server );
-        client2.connect( server );
+        //client2.connect( server );
         
         sim.start();
         

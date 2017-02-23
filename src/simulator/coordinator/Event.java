@@ -7,10 +7,12 @@ package simulator.coordinator;
 import java.util.concurrent.TimeUnit;
 
 import simulator.Agent;
+import simulator.Packet;
 import simulator.core.Time;
 import simulator.network.NetworkLink;
 import simulator.network.NetworkNode;
 import simulator.network.NetworkTopology;
+import simulator.utils.SimulatorUtils;
 
 public abstract class Event implements Comparable<Event>
 {
@@ -23,14 +25,16 @@ public abstract class Event implements Comparable<Event>
     protected long _currentNodeId = 0;
     
     // Dimension of the "message".
-    protected long _size;
+    protected Packet _packet;
     
     
-    public Event( final Time time, final Agent from, final Agent to )
+    public Event( final Time time, final Agent from, final Agent to, final Packet packet )
     {
         _time = time;
         _from = from;
         _to = to;
+        
+        _packet = packet;
         
         _currentNodeId = from.getId();
     }
@@ -57,29 +61,27 @@ public abstract class Event implements Comparable<Event>
     
     public static class RequestEvent extends Event
     {
-        public RequestEvent( final Time time, final Agent from, final Agent to )
+        public RequestEvent( final Time time, final Agent from, final Agent to, final Packet pkt )
         {
-            super( time, from, to );
+            super( time, from, to, pkt );
         }
         
         @Override
         public void execute( final long nodeId, final EventHandler ev_handler, final NetworkTopology net )
         {
-            // TODO in questa fase dovrebbe aggiungere il tempo speso per trasmettere il pacchetto,
-            // TODO o lo puo' fare prima di questa fase?
+        	NetworkNode node = net.getNode( nodeId );
+            long delay = node.getTcalc();
+            
             if(nodeId == _to.getId())
-                ev_handler.schedule( _to.fireEvent() );
+            	ev_handler.schedule( _to.fireEvent() );
             else { // Assign the current node id.
                 _currentNodeId = nodeId;
-                // TODO aggiungi all'evento la latenza del nodo (Tcal processing del pacchetto) +
-                // TODO tempo di trasferimento (Ttrasm = PktSize / Bwt) +
-                // TODO latenza del collegamento (Tprop)
-                NetworkNode node = net.getNode( nodeId );
-                long delay = node.getTcalc();
                 NetworkLink link = net.getLink( nodeId, net.nextNode( nodeId ) );
-                delay += link.getTtrasm( _size ) + link.getTprop();
-                _time.addTime( new Time( delay, TimeUnit.MICROSECONDS ) );
+                delay += link.getTtrasm( (long) SimulatorUtils.getSizeInBitFromByte( _packet.getSize(), _packet.getSizeType() ) ) + link.getTprop();
             }
+            
+            System.out.println( "AGGIUNTA LATENZA: " + delay );
+            _time.addTime( new Time( delay, TimeUnit.MICROSECONDS ) );
             
             if(!_from.getEventGenerator().waitForResponse())
                 ev_handler.schedule( _from.fireEvent() ); // generate a new event, because it doesn't wait for the response.
@@ -92,9 +94,9 @@ public abstract class Event implements Comparable<Event>
     
     public static class ResponseEvent extends Event
     {
-        public ResponseEvent( final Time time, final Agent from, final Agent to )
+        public ResponseEvent( final Time time, final Agent from, final Agent to, final Packet packet )
         {
-            super( time, from, to );
+            super( time, from, to, packet );
         }
 
         @Override

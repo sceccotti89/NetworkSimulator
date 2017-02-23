@@ -7,6 +7,7 @@ package simulator.coordinator;
 import java.util.concurrent.TimeUnit;
 
 import simulator.Agent;
+import simulator.Packet;
 import simulator.coordinator.Event.RequestEvent;
 import simulator.core.Time;
 
@@ -16,7 +17,7 @@ public abstract class EventGenerator
     
     protected Time _duration;
     protected Time _departureTime;
-    protected Time _serviceTime;
+    protected Packet _packet;
     
     protected Agent _from;
     protected Agent _to;
@@ -26,13 +27,13 @@ public abstract class EventGenerator
     
     public EventGenerator( final Time duration,
                            final Time departureTime,
-                           final Time serviceTime )
+                           final Packet packet )
     {
         _time = new Time( 0, TimeUnit.MICROSECONDS );
         
         _duration = duration;
         _departureTime = departureTime;
-        _serviceTime = serviceTime;
+        _packet = packet;
     }
     
     public EventGenerator connect( final Agent from, final Agent to )
@@ -65,7 +66,7 @@ public abstract class EventGenerator
             return null; // No more events from this generator.
         
         //long nextTime = _time.getTimeMicroseconds() + _departureTime.getTimeMicroseconds();
-        Event next = new RequestEvent( _time.clone(), _from, _to );
+        Event next = new RequestEvent( _time.clone(), _from, _to, _packet );
         return next;
     }
     
@@ -77,9 +78,9 @@ public abstract class EventGenerator
 
         public ConstantEventGenerator( final Time duration,
                                        final Time departureTime,
-                                       final Time serviceTime )
+                                       final Packet pktSize )
         {
-            super( duration, departureTime, serviceTime );
+            super( duration, departureTime, pktSize );
             setWaitReponse( false );
         }
     }

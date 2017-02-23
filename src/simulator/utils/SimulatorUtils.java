@@ -1,0 +1,62 @@
+/**
+ * @author Stefano Ceccotti
+*/
+
+package simulator.utils;
+
+import java.util.concurrent.TimeUnit;
+
+public class SimulatorUtils
+{
+	public enum Size{ B, KB, MB, GB, TB };
+	
+	private static final long BYTE = 8;
+	private static final long KBYTES = 1024L;
+	private static final long MBYTES = 1024L * 1024L;
+	private static final long GBYTES = 1024L * 1024L * 1024L;
+	private static final long TBYTES = 1024L * 1024L * 1024L * 1024L;
+	
+	public static double getSizeInByte( final double pktSize, final Size sizeType )
+	{
+		switch( sizeType ) {
+			case B : return pktSize;
+			case KB: return pktSize * KBYTES;
+			case MB: return pktSize * MBYTES;
+			case GB: return pktSize * GBYTES;
+			case TB: return pktSize * TBYTES;
+		}
+		return pktSize;
+	}
+	
+	public static double getSizeInBit( final double pktSize, final Size sizeType )
+	{
+		switch( sizeType ) {
+			case B : return pktSize;
+			case KB: return pktSize * KBYTES;
+			case MB: return pktSize * MBYTES;
+			case GB: return pktSize * GBYTES;
+			case TB: return pktSize * TBYTES;
+		}
+		return pktSize;
+	}
+	
+	public static double getSizeInBitFromByte( final double pktSize, final Size sizeType ) {
+		return getSizeInByte( pktSize, sizeType ) * BYTE;
+	}
+	
+	public static long getTimeInMicroseconds( final double time, final TimeUnit tUnit )
+	{
+		System.out.println( "TIME: " + time + ", UNIT: " + tUnit );
+		switch( tUnit ) {
+			case DAYS:         return (long) (time * 24 * 60 * 60 * 1000L * 1000L);
+			case HOURS:        return (long) (time * 60 * 60 * 1000L * 1000L);
+			case MINUTES:      return (long) (time * 60 * 1000L * 1000L);
+			case SECONDS:      return (long) (time * 1000L * 1000L);
+			case MILLISECONDS: return (long) (time * 1000L);
+			case MICROSECONDS: return (long) (time);
+			case NANOSECONDS:  return (long) (time / 1000L);
+			default: break;
+		}
+		return (long) time;
+	}
+}
