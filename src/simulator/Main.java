@@ -10,6 +10,7 @@ import simulator.coordinator.EventGenerator;
 import simulator.coordinator.EventGenerator.ConstantEventGenerator;
 import simulator.core.Simulator;
 import simulator.core.Time;
+import simulator.exception.SimulatorException;
 import simulator.network.NetworkTopology;
 import simulator.utils.SimulatorUtils;
 
@@ -48,12 +49,12 @@ public class Main
         }
     }
     
-    public static void main( final String argv[] ) throws IOException
+    public static void main( final String argv[] ) throws Exception
     {
     	example1();
     }
     
-    private static void example1() throws IOException
+    private static void example1() throws IOException, SimulatorException
     {
     	NetworkTopology net = new NetworkTopology( "Settings/Topology_ex1.json" );
         System.out.println( net.toString() );

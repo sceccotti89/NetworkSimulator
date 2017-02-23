@@ -4,11 +4,13 @@
 
 package simulator.core;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import simulator.Agent;
 import simulator.coordinator.EventHandler;
+import simulator.exception.SimulatorException;
 import simulator.network.NetworkTopology;
 
 public class Simulator
@@ -18,7 +20,10 @@ public class Simulator
     private List<Agent> _agents;
     
     public Simulator()
-    { this( null ); }
+    { this( (NetworkTopology) null ); }
+    
+    public Simulator( final String filename ) throws IOException, SimulatorException
+    { this( new NetworkTopology( filename ) ); }
     
     public Simulator( final NetworkTopology network )
     {

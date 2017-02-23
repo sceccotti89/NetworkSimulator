@@ -46,13 +46,13 @@ public class GraphPath
 			if (n.isInfinite())
 				break; // All remaining nodes are non accessible from the source.
 			
-			System.out.println( "NEIGHBOURS: " + n._id );
+			//System.out.println( "NEIGHBOURS: " + n._id );
 			List<QueueNode> node_neighbours = neighbours.get( n._id );
 			if (node_neighbours != null) {
 				for (QueueNode node : node_neighbours) {
 					double dist = n._distance + getLink( links, n._id, node._id ).getDelay();
 					if(dist < node._distance) {
-						System.out.println( "TROVATO: " + node._id );
+						//System.out.println( "TROVATO: " + node._id );
 						node._distance = dist;
 						predecessors[node._index] = nodes.get( n._id );
 						// Reorder the queue.

@@ -15,6 +15,8 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import simulator.exception.SimulatorException;
+
 public class NetworkTopology
 {
 	private Map<Long,NetworkNode> nodes = new HashMap<>( 32 );
@@ -25,7 +27,7 @@ public class NetworkTopology
 	public NetworkTopology()
     { }
     
-    public NetworkTopology( final String filename ) throws IOException
+    public NetworkTopology( final String filename ) throws IOException, SimulatorException
     {
         try { build( filename ); }
         catch( IOException e ) {
@@ -38,8 +40,9 @@ public class NetworkTopology
      * Builds the network topology
      * 
      * @param filename  name of the file where nodes and links are loaded from
+     * @throws SimulatorException 
     */
-    private void build( final String filename ) throws IOException
+    private void build( final String filename ) throws IOException, SimulatorException
     {
         BufferedReader br = new BufferedReader( new FileReader( filename ) );
         StringBuilder content = new StringBuilder( 512 );
@@ -92,17 +95,21 @@ public class NetworkTopology
     
     public void addLink( final long fromId, final long destId,
                          final double bandwith, final long delay,
-                         final int type )
+                         final int linkType ) throws SimulatorException
     {
-        addLink( new NetworkLink( fromId, destId, bandwith, delay, type ) );
-        if(type == NetworkLink.BIDIRECTIONAL)
-        	addLink( new NetworkLink( destId, fromId, bandwith, delay, type ) );
+        addLink( new NetworkLink( fromId, destId, bandwith, delay, linkType ) );
+        if(linkType == NetworkLink.BIDIRECTIONAL)
+        	addLink( new NetworkLink( destId, fromId, bandwith, delay, linkType ) );
     }
     
-    public void addLink( final NetworkLink link )
+    public void addLink( final NetworkLink link ) throws SimulatorException
     {
-        // TODO do we must check if the source and dest ids are present in the nodes list?? penso di si
-        List<NetworkLink> sLinks = links.get( link.getSourceId() );
+        if (!nodes.containsKey( link.getSourceId() ))
+        	throw new SimulatorException( "Node '" + link.getSourceId() + "' not found." );
+        if (!nodes.containsKey( link.getDestId() ))
+        	throw new SimulatorException( "Node '" + link.getDestId() + "' not found." );
+        
+    	List<NetworkLink> sLinks = links.get( link.getSourceId() );
         if(sLinks == null) sLinks = new ArrayList<NetworkLink>();
         sLinks.add( link );
     	links.put( link.getSourceId(), sLinks );
