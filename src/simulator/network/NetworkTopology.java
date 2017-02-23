@@ -118,8 +118,7 @@ public class NetworkTopology
     }
     
     public long nextNode( final long fromId ) {
-        // TODO calcola il prossimo nodo nella rete a cui inivare l'evento => Dijkstra??
-        return 1;
+        return GraphPath.findPath( fromId );
     }
     
     @Override

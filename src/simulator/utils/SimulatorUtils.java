@@ -10,7 +10,7 @@ public class SimulatorUtils
 {
 	public enum Size{ B, KB, MB, GB, TB };
 	
-	private static final long BYTE = 8;
+	private static final long BYTE   = 8L;
 	private static final long KBYTES = 1024L;
 	private static final long MBYTES = 1024L * 1024L;
 	private static final long GBYTES = 1024L * 1024L * 1024L;

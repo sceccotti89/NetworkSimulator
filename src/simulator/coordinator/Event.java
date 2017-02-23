@@ -72,10 +72,13 @@ public abstract class Event implements Comparable<Event>
         	NetworkNode node = net.getNode( nodeId );
             long delay = node.getTcalc();
             
-            if(nodeId == _to.getId())
+            if(nodeId == _to.getId()) {
+            	System.out.println( "[" + _time + "] Reached destination node: " + nodeId );
             	ev_handler.schedule( _to.fireEvent() );
+            }
             else { // Assign the current node id.
-                _currentNodeId = nodeId;
+            	System.out.println( "[" + _time + "] Reached intermediate node: " + nodeId );
+            	_currentNodeId = nodeId;
                 NetworkLink link = net.getLink( nodeId, net.nextNode( nodeId ) );
                 delay += link.getTtrasm( (long) SimulatorUtils.getSizeInBitFromByte( _packet.getSize(), _packet.getSizeType() ) ) + link.getTprop();
             }

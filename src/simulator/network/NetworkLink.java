@@ -18,15 +18,15 @@ public class NetworkLink
     private final long _sourceId;
     private final long _destId;
     
-    private final double _bandwith;
+    private final double _bandwith; //TODO alla bandwith bisognerebbe aggiungere se sono Mb, Kb,..
     private final double _delay;
     
     private int _type = UNIDIRECTIONAL;
     
     public static final int UNIDIRECTIONAL = 0, BIDIRECTIONAL = 1;
     
-    public static final String FROM_ID = "fromId", DEST_ID = "destId",
-                               BANDWITH = "bandwith", DELAY = "delay";
+    public static final String FROM_ID = "fromId", DEST_ID = "destId";
+    public static final String BANDWITH = "bandwith", DELAY = "delay";
     
     public NetworkLink( final long sourceId, final long destId,
                         final double bandwith, final double delay )
@@ -73,8 +73,6 @@ public class NetworkLink
     public long getTtrasm( final long size )
     {
         // Ttrasm = size/bandwith
-    	//System.out.println( "BW: " + _bandwith + ", BW_BIT: " + (long) SimulatorUtils.getSizeInBit( _bandwith, SimulatorUtils.Size.MB ) );
-    	//System.out.println( "Tcalc: " + (size / SimulatorUtils.getSizeInByte( _bandwith, SimulatorUtils.Size.MB )) );
     	System.out.println( "Tcalc: " + SimulatorUtils.getTimeInMicroseconds( (size / SimulatorUtils.getSizeInBit( _bandwith, SimulatorUtils.Size.MB )), TimeUnit.SECONDS ) + "ns" );
         return SimulatorUtils.getTimeInMicroseconds( (size / SimulatorUtils.getSizeInBit( _bandwith, SimulatorUtils.Size.MB )), TimeUnit.SECONDS );
     }
