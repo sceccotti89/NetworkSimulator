@@ -24,12 +24,13 @@ public class NetworkLink
     private Size _bwType;
     private final long _delay;
     
-    private int _type;
+    private int _linkType;
     
     public static final int UNIDIRECTIONAL = 0, BIDIRECTIONAL = 1;
     
     public static final String FROM_ID = "fromId", DEST_ID = "destId";
     public static final String BANDWITH = "bandwith", DELAY = "delay";
+    public static final String LINK_TYPE = "linkType";
     
     public NetworkLink( final long sourceId, final long destId,
                         final double bandwith, final long delay )
@@ -39,7 +40,7 @@ public class NetworkLink
     
     public NetworkLink( final long sourceId, final long destId,
                         final double bandwith, final long delay,
-                        final int type )
+                        final int linkType )
     {
         _sourceId = sourceId;
         _destId = destId;
@@ -47,7 +48,7 @@ public class NetworkLink
         _bandwith = bandwith;
         _delay = new Time( delay, TimeUnit.MILLISECONDS ).getTimeMicroseconds();
         
-        _type = type;
+        _linkType = linkType;
     }
     
     public long getSourceId() {
@@ -66,15 +67,16 @@ public class NetworkLink
         return _delay;
     }
     
-    public int getType() {
-        return _type;
+    public int getLinkType() {
+        return _linkType;
     }
     
     public long getTtrasm( final long size )
     {
         // Ttrasm = size/bandwith
-    	System.out.println( "Tcalc: " + SimulatorUtils.getTimeInMicroseconds( (size / SimulatorUtils.getSizeInBit( _bandwith, SimulatorUtils.Size.MB )), TimeUnit.SECONDS ) + "ns" );
-        return SimulatorUtils.getTimeInMicroseconds( (size / SimulatorUtils.getSizeInBit( _bandwith, SimulatorUtils.Size.MB )), TimeUnit.SECONDS );
+        double tCalc = (size / SimulatorUtils.getSizeInBit( _bandwith, SimulatorUtils.Size.MB ));
+        //System.out.println( "Tcalc: " + tCalc + "ns" );
+    	return SimulatorUtils.getTimeInMicroseconds( tCalc, TimeUnit.SECONDS );
     }
     
     public long getTprop() {

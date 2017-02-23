@@ -51,7 +51,7 @@ public class Main
     
     public static void main( final String argv[] ) throws Exception
     {
-    	example1();
+    	example2();
     }
     
     private static void example1() throws IOException, SimulatorException
@@ -61,23 +61,44 @@ public class Main
         
         Simulator sim = new Simulator( net );
         
-        CBRGenerator generator = new CBRGenerator( new Time( 5, TimeUnit.MINUTES ),
+        CBRGenerator generator = new CBRGenerator( new Time( 10, TimeUnit.MINUTES ),
                                                    new Time( 5, TimeUnit.MINUTES ),
                                                    new Packet( 40, SimulatorUtils.Size.KB ) );
         Agent client = new ClientAgent( 0, generator );
         sim.addAgent( client );
         
-        /*CBRGenerator generator2 = new CBRGenerator( new Time( 5, TimeUnit.MINUTES ),
-                                                    new Time( 1, TimeUnit.MINUTES ),
-                                                    new Packet( 20, Packet.Size.B ) );
-        Agent client2 = new ClientAgent( 1, generator2 );
-        sim.addAgent( client2 );*/
-        
         Agent server = new ServerAgent( 2 );
         sim.addAgent( server );
         
         client.connect( server );
-        //client2.connect( server );
+        
+        sim.start();
+        
+        sim.stop();
+    }
+    
+    private static void example2() throws IOException, SimulatorException
+    {
+    	// Use 2 active generators, in a bi-directional graph.
+    	NetworkTopology net = new NetworkTopology( "Settings/Topology_ex2.json" );
+        System.out.println( net.toString() );
+        
+        Simulator sim = new Simulator( net );
+        
+        CBRGenerator generator = new CBRGenerator( new Time( 10, TimeUnit.MINUTES ),
+                                                   new Time( 5, TimeUnit.MINUTES ),
+                                                   new Packet( 40, SimulatorUtils.Size.KB ) );
+        Agent client1 = new ClientAgent( 0, generator );
+        sim.addAgent( client1 );
+        
+        CBRGenerator generator2 = new CBRGenerator( new Time( 5, TimeUnit.MINUTES ),
+                                                    new Time( 1, TimeUnit.MINUTES ),
+                                                    new Packet( 20, SimulatorUtils.Size.KB ) );
+        Agent client2 = new ClientAgent( 2, generator2 );
+        sim.addAgent( client2 );
+        
+        client1.connect( client2 );
+        client2.connect( client1 );
         
         sim.start();
         

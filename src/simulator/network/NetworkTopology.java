@@ -50,7 +50,7 @@ public class NetworkTopology
         /** File structure:
          * 
          * nodes => [{[xPos],[yPos],id, name, delay}]
-         * links => [{fromId, destId, bw, delay, type}]
+         * links => [{fromId, destId, bw, delay, [linkType]}]
         */
         
         String nextLine = null;
@@ -84,10 +84,17 @@ public class NetworkTopology
             long destId     = link.getLong( NetworkLink.DEST_ID );
             double bandwith = link.getDouble( NetworkLink.BANDWITH );
             long delay      = link.getLong( NetworkLink.DELAY );
+            int linkType    = (link.has( NetworkLink.LINK_TYPE )) ? link.getInt( NetworkLink.LINK_TYPE ) : 0;
             
-            NetworkLink _link = new NetworkLink( fromId, destId, bandwith, delay );
+            NetworkLink _link = new NetworkLink( fromId, destId, bandwith, delay, linkType );
             addLink( _link );
             _link.toString();
+            
+            if(linkType == NetworkLink.BIDIRECTIONAL) {
+            	_link = new NetworkLink( destId, fromId, bandwith, delay, linkType );
+                addLink( _link );
+                _link.toString();
+            }
         }
         
         br.close();
@@ -124,7 +131,8 @@ public class NetworkTopology
     	return null;
     }
     
-    public void addNode( final long id, final String name, final long delay, final int xPos, final int yPos ) {
+    public void addNode( final long id, final String name, final long delay,
+                         final int xPos, final int yPos ) {
         addNode( new NetworkNode( id, name, delay, xPos, yPos ) );
     }
     
@@ -144,7 +152,7 @@ public class NetworkTopology
     	NetworkNode[] predecessors = GraphPath.getShortestPath( sourceId, nodes, links );
     	// Just return the second node present in the list (if present).
     	NetworkNode currNode = nodes.get( destId ), nextNode = null;
-    	//System.out.println( "Scanning list from: " + destId );
+    	//System.out.println( "Scanning list from: " + destId + ", source: " + sourceId );
     	while (predecessors[currNode.getIndex()] != null) {
     		nextNode = predecessors[currNode.getIndex()];
     		//System.out.println( "PRED: " + currNode.getId() + " = " + nextNode.getId() );

@@ -51,7 +51,7 @@ public class EventHandler
             }
             
             System.out.println( "EVENT No: " + (++index) );
-            e.execute( /*_network.nextNode( e._currentNodeId )*/e._currentNodeId, this, _network );
+            e.execute( e._currentNodeId, this, _network );
         }
     }
     
