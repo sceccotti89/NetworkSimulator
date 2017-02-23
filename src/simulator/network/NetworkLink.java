@@ -22,7 +22,7 @@ public class NetworkLink
     
     private final double _bandwith; //TODO alla bandwith bisognerebbe aggiungere se sono Mb, Kb,..
     private Size _bwType;
-    private final double _delay;
+    private final long _delay;
     
     private int _type;
     
@@ -62,7 +62,7 @@ public class NetworkLink
         return _bandwith;
     }
     
-    public double getDelay() {
+    public long getDelay() {
         return _delay;
     }
     
@@ -86,7 +86,7 @@ public class NetworkLink
     {
         StringBuilder buffer = new StringBuilder( 512 );
         buffer.append( "SourceId: " + _sourceId + ", DestId: " + _destId +
-                       ", Bandwith: " + _bandwith + " Mb/s, Delay: " + _delay + "\n" );
+                       ", Bandwith: " + _bandwith + " Mb/s, Delay: " + _delay + "ns\n" );
         return buffer.toString();
     }
 }

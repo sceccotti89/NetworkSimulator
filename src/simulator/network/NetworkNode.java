@@ -74,7 +74,7 @@ public class NetworkNode
     {
         StringBuilder buffer = new StringBuilder( 512 );
         buffer.append( "Id: " + _id + ", Name: \"" + _name +
-                       "\", Delay: " + _delay + " at (" + _xPos + ", " + _yPos + ")\n" );
+                       "\", Delay: " + _delay + "ns at (" + _xPos + ", " + _yPos + ")\n" );
         return buffer.toString();
     }
 }
