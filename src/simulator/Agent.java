@@ -6,6 +6,7 @@ package simulator;
 
 import simulator.coordinator.Event;
 import simulator.coordinator.EventGenerator;
+import simulator.network.NetworkNode;
 
 public abstract class Agent
 {
@@ -13,9 +14,17 @@ public abstract class Agent
     protected EventGenerator _evGenerator;
     protected Agent _dest;
     
+    public Agent( final NetworkNode node )
+    { this( node.getId(), null ); }
+    
     public Agent( final long id )
+    { this( id, null ); }
+    
+    public Agent( final NetworkNode node, final EventGenerator evGenerator )
     {
-        _id = id;
+        _id = node.getId();
+        _evGenerator = evGenerator;
+        
     }
     
     public Agent( final long id, final EventGenerator evGenerator )

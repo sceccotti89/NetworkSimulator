@@ -6,7 +6,9 @@ package simulator.network;
 
 import java.util.concurrent.TimeUnit;
 
+import simulator.core.Time;
 import simulator.utils.SimulatorUtils;
+import simulator.utils.SimulatorUtils.Size;
 
 /**
  * Link connecting two remote nodes.
@@ -19,9 +21,10 @@ public class NetworkLink
     private final long _destId;
     
     private final double _bandwith; //TODO alla bandwith bisognerebbe aggiungere se sono Mb, Kb,..
+    private Size _bwType;
     private final double _delay;
     
-    private int _type = UNIDIRECTIONAL;
+    private int _type;
     
     public static final int UNIDIRECTIONAL = 0, BIDIRECTIONAL = 1;
     
@@ -29,23 +32,20 @@ public class NetworkLink
     public static final String BANDWITH = "bandwith", DELAY = "delay";
     
     public NetworkLink( final long sourceId, final long destId,
-                        final double bandwith, final double delay )
+                        final double bandwith, final long delay )
     {
-        _sourceId = sourceId;
-        _destId = destId;
-        
-        _bandwith = bandwith;
-        _delay = delay;
+        this( sourceId, destId, bandwith, delay, UNIDIRECTIONAL );
     }
     
     public NetworkLink( final long sourceId, final long destId,
-                        final double bandwith, final double delay, final int type )
+                        final double bandwith, final long delay,
+                        final int type )
     {
         _sourceId = sourceId;
         _destId = destId;
         
         _bandwith = bandwith;
-        _delay = delay;
+        _delay = new Time( delay, TimeUnit.MILLISECONDS ).getTimeMicroseconds();
         
         _type = type;
     }

@@ -43,7 +43,7 @@ public class EventHandler
         int index = 0;
         Event e;
         while((e = events.poll()) != null) {
-            System.out.println( e );
+            //System.out.println( e );
             if(_time.compareTo(e.getTime()) <= 0) {
                 _time.setTime( e.getTime() );
             } else {
@@ -51,7 +51,7 @@ public class EventHandler
             }
             
             System.out.println( "EVENT No: " + (++index) );
-            e.execute( _network.nextNode( e._currentNodeId ), this, _network );
+            e.execute( /*_network.nextNode( e._currentNodeId )*/e._currentNodeId, this, _network );
         }
     }
     

@@ -8,21 +8,22 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class NetworkTopology
 {
-    // TODO se questi devono essere acceduti conviene usare una struttura "piu' intelligente"
-    private List<NetworkLink> networkLinks = new ArrayList<>( 32 );
-    private List<NetworkNode> networkNodes = new ArrayList<>( 32 );
-    
-    public NetworkTopology()
-    {
-        
-    }
+	private Map<Long,NetworkNode> nodes = new HashMap<>( 32 );
+	private Map<Long,List<NetworkLink>> links = new HashMap<>( 32 );
+	
+	private int _nextIndex = 0;
+
+	public NetworkTopology()
+    { }
     
     public NetworkTopology( final String filename ) throws IOException
     {
@@ -79,7 +80,7 @@ public class NetworkTopology
             long fromId     = link.getLong( NetworkLink.FROM_ID );
             long destId     = link.getLong( NetworkLink.DEST_ID );
             double bandwith = link.getDouble( NetworkLink.BANDWITH );
-            double delay    = link.getDouble( NetworkLink.DELAY );
+            long delay      = link.getLong( NetworkLink.DELAY );
             
             NetworkLink _link = new NetworkLink( fromId, destId, bandwith, delay );
             addLink( _link );
@@ -90,35 +91,63 @@ public class NetworkTopology
     }
     
     public void addLink( final long fromId, final long destId,
-                         final double bandwith, final double delay, final int type ) {
+                         final double bandwith, final long delay,
+                         final int type )
+    {
         addLink( new NetworkLink( fromId, destId, bandwith, delay, type ) );
+        if(type == NetworkLink.BIDIRECTIONAL)
+        	addLink( new NetworkLink( destId, fromId, bandwith, delay, type ) );
     }
     
-    public void addLink( final NetworkLink link ) {
-        // TODO we must check if the source and dest ids are present in the nodes list??
-        networkLinks.add( link );
+    public void addLink( final NetworkLink link )
+    {
+        // TODO do we must check if the source and dest ids are present in the nodes list?? penso di si
+        List<NetworkLink> sLinks = links.get( link.getSourceId() );
+        if(sLinks == null) sLinks = new ArrayList<NetworkLink>();
+        sLinks.add( link );
+    	links.put( link.getSourceId(), sLinks );
     }
     
-    public NetworkLink getLink( final long nodeId, final long nextNode ) {
-     // TODO per adesso e' cosi' poi lo ricerca in modo corretto.
-        return networkLinks.get( 0 );
+    public NetworkLink getLink( final long sourceId, final long destId )
+    {
+    	for (NetworkLink link : links.get( sourceId )) {
+    		if (link.getDestId() == destId)
+    			return link;
+    	}
+    	return null;
     }
     
     public void addNode( final long id, final String name, final long delay, final int xPos, final int yPos ) {
         addNode( new NetworkNode( id, name, delay, xPos, yPos ) );
     }
     
-    public void addNode( final NetworkNode node ) {
-        networkNodes.add( node );
+    public void addNode( final NetworkNode node )
+    {
+    	node.setIndex( _nextIndex++ );
+        nodes.put( node.getId(), node );
     }
     
     public NetworkNode getNode( final long nodeId ) {
-        // TODO per adesso e' cosi' poi lo ricerca in modo corretto.
-        return networkNodes.get( 0 );
+        return nodes.get( nodeId );
     }
     
-    public long nextNode( final long fromId ) {
-        return GraphPath.findPath( fromId );
+    public NetworkNode nextNode( final long sourceId, final long destId )
+    {
+    	//System.out.println( "COMPUTING NEXT NODE FROM: " + sourceId );
+    	NetworkNode[] predecessors = GraphPath.getShortestPath( sourceId, nodes, links );
+    	// Just return the second node present in the list (if present).
+    	NetworkNode currNode = nodes.get( destId ), nextNode = null;
+    	//System.out.println( "Scanning list from: " + destId );
+    	while (predecessors[currNode.getIndex()] != null) {
+    		nextNode = predecessors[currNode.getIndex()];
+    		//System.out.println( "PRED: " + currNode.getId() + " = " + nextNode.getId() );
+    		if (nextNode.getId() == sourceId) {
+    			break;
+    		} else {
+    			currNode = nextNode;
+    		}
+    	}
+    	return currNode;
     }
     
     @Override
@@ -127,12 +156,14 @@ public class NetworkTopology
         StringBuilder buffer = new StringBuilder( 512 );
         
         buffer.append( "Nodes information:\n" );
-        for(NetworkNode node : networkNodes)
+        for (NetworkNode node : nodes.values())
             buffer.append( node.toString() );
         
         buffer.append( "\nLinks information:\n" );
-        for(NetworkLink link : networkLinks)
-            buffer.append( link.toString() );
+        for (List<NetworkLink> _links : links.values()) {
+            for(NetworkLink link : _links)
+            	buffer.append( link.toString() );
+        }
         
         return buffer.toString();
     }

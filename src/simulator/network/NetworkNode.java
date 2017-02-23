@@ -4,6 +4,10 @@
 
 package simulator.network;
 
+import java.util.concurrent.TimeUnit;
+
+import simulator.core.Time;
+
 public class NetworkNode
 {
     private final long   _id;
@@ -13,6 +17,9 @@ public class NetworkNode
     
     private final int _xPos;
     private final int _yPos;
+    
+    // Note: used internally tfor the shortest path calculation.
+    private int _index;
     
     public static final String ID = "id", NAME = "name", DELAY = "delay";
     public static final String X_POS = "xPos", Y_POS = "yPos";
@@ -28,7 +35,7 @@ public class NetworkNode
         _id = id;
         _name = name;
         
-        _delay = delay;
+        _delay = new Time( delay, TimeUnit.MILLISECONDS ).getTimeMicroseconds();
         
         _xPos = xPos;
         _yPos = yPos;
@@ -52,6 +59,14 @@ public class NetworkNode
     
     public int getYPos() {
         return _yPos;
+    }
+    
+    public void setIndex( final int index ) {
+    	_index = index;
+    }
+    
+    public int getIndex() {
+    	return _index;
     }
     
     @Override
