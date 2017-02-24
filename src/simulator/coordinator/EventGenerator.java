@@ -58,8 +58,8 @@ public abstract class EventGenerator
     
     public Event generate( final Time t )
     {
-        System.out.println( "MY_TIME: " + _time + ", INPUT_TIME: " + t );
-        if (t != null && !waitForResponse())
+        //System.out.println( "MY_TIME: " + _time + ", INPUT_TIME: " + t );
+        if (t != null && waitForResponse())
             _time = t;
         
         //System.out.println( "TIME: " + _time + ", DURATION: " + _departureTime );
@@ -107,6 +107,7 @@ public abstract class EventGenerator
                                        final Packet pktSize )
         {
             super( duration, departureTime, pktSize );
+            setWaitReponse( true );
         }
     }
 }
