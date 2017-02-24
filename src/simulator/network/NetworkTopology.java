@@ -142,6 +142,10 @@ public class NetworkTopology
         nodes.put( node.getId(), node );
     }
     
+    public boolean containsNode( final long nodeId ) {
+        return nodes.containsKey( nodeId );
+    }
+    
     public NetworkNode getNode( final long nodeId ) {
         return nodes.get( nodeId );
     }

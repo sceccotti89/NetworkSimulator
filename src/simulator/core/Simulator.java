@@ -27,17 +27,21 @@ public class Simulator
     
     public Simulator( final NetworkTopology network )
     {
-        _network = network;
+        _network   = network;
         _evHandler = new EventHandler( network );
-        _agents = new ArrayList<>();
+        _agents    = new ArrayList<>();
     }
     
     public void setNetworkTopology( final NetworkTopology network ) {
         _network = network;
     }
     
-    public void addAgent( final Agent agent ) {
-        // TODO devo controllare che ogni id sia presente nella lista di nodi della topologia??
+    public void addAgent( final Agent agent ) throws SimulatorException
+    {
+        if (_network == null)
+            throw new SimulatorException( "A network topology is not setted up." );
+        if (!_network.containsNode( agent.getId() ))
+            throw new SimulatorException( "No node found for ID: " + agent.getId() );
         _agents.add( agent );
     }
     
@@ -52,7 +56,7 @@ public class Simulator
         _evHandler.setNetworkTopology( _network );
         
         // Put the first message into the queue.
-        for(Agent agent : _agents)
+        for (Agent agent : _agents)
             _evHandler.schedule( agent.firstEvent() );
         
         _evHandler.doAllEvents();
