@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 
 import simulator.core.Time;
 import simulator.utils.SimulatorUtils;
-import simulator.utils.SimulatorUtils.Size;
 
 /**
  * Link connecting two remote nodes.
@@ -20,8 +19,7 @@ public class NetworkLink
     private final long _sourceId;
     private final long _destId;
     
-    private final double _bandwith; //TODO alla bandwith bisognerebbe aggiungere se sono Mb, Kb,..
-    private Size _bwType;
+    private final double _bandwith;
     private final long _delay;
     
     private int _linkType;

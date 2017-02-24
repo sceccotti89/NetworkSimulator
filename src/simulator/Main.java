@@ -51,11 +51,18 @@ public class Main
     
     public static void main( final String argv[] ) throws Exception
     {
+    	//example1();
     	example2();
     }
     
-    private static void example1() throws IOException, SimulatorException
+    public static void example1() throws IOException, SimulatorException
     {
+        /*
+               70Mb,5ms         50Mb,3ms
+        client --------> switch --------> server
+         10ms             7ms              5ms
+        */
+        
     	NetworkTopology net = new NetworkTopology( "Settings/Topology_ex1.json" );
         System.out.println( net.toString() );
         
@@ -77,8 +84,14 @@ public class Main
         sim.stop();
     }
     
-    private static void example2() throws IOException, SimulatorException
+    public static void example2() throws IOException, SimulatorException
     {
+        /*
+                70Mb,5ms         50Mb,3ms
+        client1 <--------> switch <--------> client2
+         10ms               7ms                5ms
+        */
+        
     	// Use 2 active generators, in a bi-directional graph.
     	NetworkTopology net = new NetworkTopology( "Settings/Topology_ex2.json" );
         System.out.println( net.toString() );

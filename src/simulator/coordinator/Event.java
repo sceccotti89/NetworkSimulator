@@ -44,7 +44,36 @@ public abstract class Event implements Comparable<Event>
         return _time.compareTo( o.getTime() );
     }
     
-    public abstract void execute( final long nodeId, final EventHandler ev_handler, final NetworkTopology net );
+    public void execute( final long nodeId, final EventHandler ev_handler, final NetworkTopology net )
+    {
+        NetworkNode node = net.getNode( nodeId );
+        long delay = node.getTcalc();
+        
+        if (nodeId == _to.getId()) {
+            System.out.println( "[" + _time + "] Reached destination node: " + node );
+            _time.addTime( new Time( delay, TimeUnit.MICROSECONDS ) );
+            ev_handler.schedule( _to.fireEvent( /*_time.clone()*/ ) );
+        } else {
+            if (nodeId == _from.getId()) {
+                System.out.println( "[" + _time + "] Starting from node: " + node );
+            } else { 
+                System.out.println( "[" + _time + "] Reached intermediate node: " + node );
+            }
+            NetworkLink link = net.getLink( nodeId, net.nextNode( nodeId, _to.getId() ).getId() );
+            //System.out.println( "CURRENT_ID: " + nodeId + ", FOUNDED_LINK: " + link );
+            // Assign the current node id.
+            _currentNodeId = link.getDestId();
+            delay += link.getTtrasm( (long) SimulatorUtils.getSizeInBitFromByte( _packet.getSize(), _packet.getSizeType() ) ) + link.getTprop();
+            System.out.println( "AGGIUNTA LATENZA: " + delay );
+            _time.addTime( new Time( delay, TimeUnit.MICROSECONDS ) );
+            
+            // Push back the modified event into the queue.
+            ev_handler.schedule( this );
+        }
+        
+        if(!_from.getEventGenerator().waitForResponse())
+            ev_handler.schedule( _from.fireEvent() ); // generate a new event, because it doesn't wait for the response.
+    }
     
     public Time getTime() {
         return _time;
@@ -57,42 +86,13 @@ public abstract class Event implements Comparable<Event>
     
     
     
-    /** ======= SPECIALIZED IMPLEMENTATIONS OF AN EVENT ======= **/
+    /** ======= SPECIALIZED IMPLEMENTATIONS OF EVENT ======= **/
     
     public static class RequestEvent extends Event
     {
         public RequestEvent( final Time time, final Agent from, final Agent to, final Packet pkt )
         {
             super( time, from, to, pkt );
-        }
-        
-        @Override
-        public void execute( final long nodeId, final EventHandler ev_handler, final NetworkTopology net )
-        {
-        	NetworkNode node = net.getNode( nodeId );
-            long delay = node.getTcalc();
-            
-            if(nodeId == _to.getId()) {
-            	System.out.println( "[" + _time + "] Reached destination node: " + node );
-            	_time.addTime( new Time( delay, TimeUnit.MICROSECONDS ) );
-            	ev_handler.schedule( _to.fireEvent( /*_time.clone()*/ ) );
-            }
-            else {
-            	System.out.println( "[" + _time + "] Reached intermediate node: " + node );
-                NetworkLink link = net.getLink( nodeId, net.nextNode( nodeId, _to.getId() ).getId() );
-                //System.out.println( "CURRENT_ID: " + nodeId + ", FOUNDED_LINK: " + link );
-                // Assign the current node id.
-                _currentNodeId = link.getDestId();
-                delay += link.getTtrasm( (long) SimulatorUtils.getSizeInBitFromByte( _packet.getSize(), _packet.getSizeType() ) ) + link.getTprop();
-                System.out.println( "AGGIUNTA LATENZA: " + delay );
-                _time.addTime( new Time( delay, TimeUnit.MICROSECONDS ) );
-                
-                // Put the modified event into the queue.
-                ev_handler.schedule( this );
-            }
-            
-            if(!_from.getEventGenerator().waitForResponse())
-                ev_handler.schedule( _from.fireEvent() ); // generate a new event, because it doesn't wait for the response.
         }
         
         @Override
@@ -105,13 +105,6 @@ public abstract class Event implements Comparable<Event>
         public ResponseEvent( final Time time, final Agent from, final Agent to, final Packet packet )
         {
             super( time, from, to, packet );
-        }
-
-        @Override
-        public void execute( final long nodeId, final EventHandler ev_handler, final NetworkTopology net )
-        {
-            // TODO questo metodo e' il solito dl RequestEvent?? in tal caso metterlo in Event.
-            
         }
         
         @Override
