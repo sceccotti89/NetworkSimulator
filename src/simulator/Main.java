@@ -7,38 +7,42 @@ import java.util.concurrent.TimeUnit;
 import simulator.Agent.ActiveAgent;
 import simulator.Agent.PassiveAgent;
 import simulator.coordinator.EventGenerator;
-import simulator.coordinator.EventGenerator.ConstantEventGenerator;
-import simulator.coordinator.EventGenerator.ResponseEventGenerator;
 import simulator.core.Simulator;
 import simulator.core.Time;
 import simulator.exception.SimulatorException;
 import simulator.network.NetworkTopology;
 import simulator.utils.SimulatorUtils;
+import simulator.utils.SimulatorUtils.Size;
 
 public class Main
 {
-    protected static class CBRGenerator extends ConstantEventGenerator
+    protected static class CBRGenerator extends EventGenerator
     {
         public CBRGenerator( final Time duration,
                              final Time departureTime,
-                             final Packet pkt )
+                             final Packet reqPacket,
+                             final Packet resPacket )
         {
-            super( duration, departureTime, pkt );
+            super( duration, departureTime, SimulatorUtils.INFINITE, reqPacket, resPacket, true, false );
         }
+
+        @Override
+        public void update()
+        {}
     }
     
-    protected static class SinkGenerator extends ResponseEventGenerator
+    protected static class SinkGenerator extends EventGenerator
     {
         public SinkGenerator( final Time duration,
-                              final Packet pkt )
+                              final Packet reqPacket,
+                              final Packet resPacket )
         {
-            super( duration, pkt );
+            super( duration, Time.ZERO, 1L, reqPacket, resPacket, false, true );
         }
 
         @Override
         public void update()
         {
-            System.out.println( "UPDATE!!" );
             _packetsInFly--;
         }
     }
@@ -61,7 +65,7 @@ public class Main
     
     protected static class ResponseServerAgent extends PassiveAgent
     {
-        public ResponseServerAgent( final long id, final ResponseEventGenerator generator )
+        public ResponseServerAgent( final long id, final EventGenerator generator )
         {
             super( id, generator );
         }
@@ -90,7 +94,8 @@ public class Main
         
         CBRGenerator generator = new CBRGenerator( new Time( 10, TimeUnit.SECONDS ),
                                                    new Time( 5,  TimeUnit.SECONDS ),
-                                                   new Packet( 40, SimulatorUtils.Size.KB ) );
+                                                   new Packet( 40, Size.KB ),
+                                                   new Packet( 40, Size.KB ) );
         Agent client = new ClientAgent( 0, generator );
         sim.addAgent( client );
         
@@ -120,13 +125,15 @@ public class Main
         
         CBRGenerator generator = new CBRGenerator( new Time( 10, TimeUnit.SECONDS ),
                                                    new Time( 5,  TimeUnit.SECONDS ),
-                                                   new Packet( 40, SimulatorUtils.Size.KB ) );
+                                                   new Packet( 40, Size.KB ),
+                                                   new Packet( 40, Size.KB ) );
         Agent client1 = new ClientAgent( 0, generator );
         sim.addAgent( client1 );
         
         CBRGenerator generator2 = new CBRGenerator( new Time( 5, TimeUnit.SECONDS ),
                                                     new Time( 1, TimeUnit.SECONDS ),
-                                                    new Packet( 20, SimulatorUtils.Size.KB ) );
+                                                    new Packet( 20, Size.KB ),
+                                                    new Packet( 40, Size.KB ) );
         Agent client2 = new ClientAgent( 2, generator2 );
         sim.addAgent( client2 );
         
@@ -158,13 +165,15 @@ public class Main
         
         CBRGenerator generator1 = new CBRGenerator( new Time( 10, TimeUnit.SECONDS ),
                                                     new Time( 5,  TimeUnit.SECONDS ),
-                                                    new Packet( 40, SimulatorUtils.Size.KB ) );
+                                                    new Packet( 40, Size.KB ),
+                                                    new Packet( 40, Size.KB ) );
         Agent client1 = new ClientAgent( 0, generator1 );
         sim.addAgent( client1 );
         
         CBRGenerator generator2 = new CBRGenerator( new Time( 5, TimeUnit.SECONDS ),
                                                     new Time( 1, TimeUnit.SECONDS ),
-                                                    new Packet( 20, SimulatorUtils.Size.KB ) );
+                                                    new Packet( 20, Size.KB ),
+                                                    new Packet( 40, Size.KB ) );
         Agent client2 = new ClientAgent( 1, generator2 );
         sim.addAgent( client2 );
         
@@ -197,12 +206,14 @@ public class Main
         
         CBRGenerator generator = new CBRGenerator( new Time( 10, TimeUnit.SECONDS ),
                                                    new Time( 5,  TimeUnit.SECONDS ),
-                                                   new Packet( 40, SimulatorUtils.Size.KB ) );
+                                                   new Packet( 40, Size.KB ),
+                                                   new Packet( 40, Size.KB ) );
         Agent client = new ClientAgent( 0, generator );
         sim.addAgent( client );
         
-        SinkGenerator generator2 = new SinkGenerator( new Time( 10, TimeUnit.SECONDS ),
-                                                      new Packet( 40, SimulatorUtils.Size.KB ) );
+        SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
+                                                      new Packet( 40, Size.KB ),
+                                                      new Packet( 40, Size.KB ) );
         Agent server = new ResponseServerAgent( 2, generator2 );
         sim.addAgent( server );
         

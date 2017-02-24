@@ -6,7 +6,6 @@ package simulator;
 
 import simulator.coordinator.Event;
 import simulator.coordinator.EventGenerator;
-import simulator.coordinator.EventGenerator.ResponseEventGenerator;
 import simulator.core.Time;
 import simulator.network.NetworkNode;
 
@@ -23,17 +22,12 @@ public abstract class Agent
     { this( id, null ); }
     
     public Agent( final NetworkNode node, final EventGenerator evGenerator )
-    {
-        _id = node.getId();
-        _evGenerator = evGenerator;
-        
-    }
+    { this( node.getId(), evGenerator ); }
     
     public Agent( final long id, final EventGenerator evGenerator )
     {
         _id = id;
         _evGenerator = evGenerator;
-        
     }
     
     public void connect( final Agent destination )
@@ -56,18 +50,24 @@ public abstract class Agent
      * Put the first message into the queue.</br>
      * In case of {@link PassiveAgent} no action will be performed,</br>
      * if {@link ActiveAgent} the first event is taken form it.
-     * 
-     * @param evHandler handler used to manage all the events
     */
-    public abstract Event firstEvent();
+    public Event firstEvent()
+    {
+        if ( _evGenerator != null && _evGenerator.isActive()) {
+            return _evGenerator.generate( null, null );
+        } else {
+            return null;
+        }
+    }
     
     /***/
     public Event fireEvent( final Time t, final Event e )
     {
-        if(_evGenerator != null)
+        if (_evGenerator != null) {
             return _evGenerator.generate( t, e );
-        else
+        } else {
             return null;
+        }
     }
     
     
@@ -81,10 +81,6 @@ public abstract class Agent
         {
             super( id, evGenerator );
         }
-        
-        @Override
-        public Event firstEvent()
-        { return _evGenerator.generate( null, null ); }
     }
     
     /***/
@@ -95,14 +91,10 @@ public abstract class Agent
             super( id );
         }
         
-        public PassiveAgent( final long id, final ResponseEventGenerator evGenerator )
+        public PassiveAgent( final long id, final EventGenerator evGenerator )
         {
             super( id, evGenerator );
         }
-        
-        @Override
-        public Event firstEvent()
-        { return null; }
     }
     
     /***/
@@ -117,9 +109,5 @@ public abstract class Agent
         {
             super( id, evGenerator );
         }
-        
-        @Override
-        public Event firstEvent()
-        { return _evGenerator.generate( null, null ); }
     }
 }

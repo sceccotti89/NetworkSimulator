@@ -11,6 +11,7 @@ import simulator.Packet;
 import simulator.coordinator.Event.RequestEvent;
 import simulator.coordinator.Event.ResponseEvent;
 import simulator.core.Time;
+import simulator.utils.SimulatorUtils;
 
 public abstract class EventGenerator
 {
@@ -18,37 +19,36 @@ public abstract class EventGenerator
     
     protected Time _duration;
     protected Time _departureTime;
-    protected Packet _packet;
+    protected Packet _reqPacket;
+    protected Packet _resPacket;
     
     protected Agent _from;
     protected Agent _to;
     
+    protected boolean _activeGenerator = false;
     protected boolean _waitResponse = true;
     protected long _packetsInFly = 0;
     protected long _maxPacketsInFly = 0;
     
-    private static final long INFINITE = Long.MAX_VALUE;
     
-    
-    
-    public EventGenerator( final Time duration,
-                           final Time departureTime,
-                           final Packet packet )
-    {
-        this( duration, departureTime, INFINITE, packet );
-    }
     
     public EventGenerator( final Time duration,
                            final Time departureTime,
                            final long maxPacketsInFly,
-                           final Packet packet )
+                           final Packet reqPacket,
+                           final Packet resPacket,
+                           final boolean isActive,
+                           final boolean waitResponse )
     {
         _time = new Time( 0, TimeUnit.MICROSECONDS );
         
-        _duration = duration;
-        _departureTime = departureTime;
+        _duration        = duration;
+        _departureTime   = departureTime;
         _maxPacketsInFly = maxPacketsInFly;
-        _packet = packet;
+        _reqPacket       = reqPacket;
+        _resPacket       = resPacket;
+        _activeGenerator = isActive;
+        _waitResponse    = waitResponse;
     }
     
     public EventGenerator connect( final Agent from, final Agent to )
@@ -91,16 +91,17 @@ public abstract class EventGenerator
         if(_time.compareTo( _duration ) > 0)
             return null; // No more events from this generator.
         
+        //System.out.println( "EVENT: " + e );
         if (e instanceof ResponseEvent)
             update();
         
         Event event = null;
-        if (_packetsInFly < _maxPacketsInFly) {
-            _packetsInFly = (_packetsInFly + 1L) % INFINITE;
-            if (e instanceof RequestEvent) {
-                event = new ResponseEvent( _time.clone(), e._to, e._from, _packet );
-            } else {
-                event = new RequestEvent( _time.clone(), _from, _to, _packet );
+        if (e instanceof RequestEvent) {
+            event = new ResponseEvent( _time.clone(), e._to, e._from, _resPacket );
+        } else {
+            if (_packetsInFly < _maxPacketsInFly) {
+                _packetsInFly = (_packetsInFly + 1L) % SimulatorUtils.INFINITE;
+                event = new RequestEvent( _time.clone(), _from, _to, _reqPacket );
             }
         }
         
@@ -111,12 +112,16 @@ public abstract class EventGenerator
         return _time.clone();
     }
     
+    public boolean isActive() {
+        return _activeGenerator;
+    }
+    
     
 
 
 
-
-    public static abstract class ConstantEventGenerator extends EventGenerator
+    // TODO Magari metterle come "specializzazioni" di generatori di eventi.
+    /*public static abstract class ConstantEventGenerator extends EventGenerator
     {
         
         public ConstantEventGenerator( final Time duration,
@@ -144,5 +149,5 @@ public abstract class EventGenerator
             super( duration, Time.ZERO, 1L, pktSize );
             setWaitReponse( true );
         }
-    }
+    }*/
 }
