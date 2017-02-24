@@ -99,7 +99,7 @@ public class Main
         Simulator sim = new Simulator( net );
         
         CBRGenerator generator = new CBRGenerator( new Time( 10, TimeUnit.MINUTES ),
-                                                   new Time( 5, TimeUnit.MINUTES ),
+                                                   new Time( 5,  TimeUnit.MINUTES ),
                                                    new Packet( 40, SimulatorUtils.Size.KB ) );
         Agent client1 = new ClientAgent( 0, generator );
         sim.addAgent( client1 );

@@ -72,7 +72,7 @@ public class NetworkNode
     @Override
     public String toString()
     {
-        StringBuilder buffer = new StringBuilder( 512 );
+        StringBuilder buffer = new StringBuilder( 128 );
         buffer.append( "Id: " + _id + ", Name: \"" + _name +
                        "\", Delay: " + _delay + "ns\n" );
         return buffer.toString();

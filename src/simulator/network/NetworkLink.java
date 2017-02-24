@@ -10,9 +10,9 @@ import simulator.core.Time;
 import simulator.utils.SimulatorUtils;
 
 /**
- * Link connecting two remote nodes.
- * By default it's unidirectional (whose direction is defined by the from and dest ids).
- * It can be configured to be bidirectional.
+ * Link connecting two remote nodes.</br>
+ * By default it's unidirectional (whose direction is defined by the from and dest ids),
+ * but it can be configured to be bidirectional.
 */
 public class NetworkLink
 {
@@ -78,13 +78,13 @@ public class NetworkLink
     }
     
     public long getTprop() {
-        return (long) _delay;
+        return _delay;
     }
 
     @Override
     public String toString()
     {
-        StringBuilder buffer = new StringBuilder( 512 );
+        StringBuilder buffer = new StringBuilder( 128 );
         buffer.append( "SourceId: " + _sourceId + ", DestId: " + _destId +
                        ", Bandwith: " + _bandwith + " Mb/s, Delay: " + _delay + "ns\n" );
         return buffer.toString();

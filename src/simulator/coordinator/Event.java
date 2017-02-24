@@ -52,19 +52,21 @@ public abstract class Event implements Comparable<Event>
         if (nodeId == _to.getId()) {
             System.out.println( "[" + _time + "] Reached destination node: " + node );
             _time.addTime( new Time( delay, TimeUnit.MICROSECONDS ) );
-            ev_handler.schedule( _to.fireEvent( /*_time.clone()*/ ) );
+            ev_handler.schedule( _to.fireEvent( _time.clone() ) ); // TODO questa chiamata e' sbagliata nel caso di CBR
         } else {
             if (nodeId == _from.getId()) {
                 System.out.println( "[" + _time + "] Starting from node: " + node );
             } else { 
                 System.out.println( "[" + _time + "] Reached intermediate node: " + node );
             }
+            
             NetworkLink link = net.getLink( nodeId, net.nextNode( nodeId, _to.getId() ).getId() );
             //System.out.println( "CURRENT_ID: " + nodeId + ", FOUNDED_LINK: " + link );
             // Assign the current node id.
             _currentNodeId = link.getDestId();
-            delay += link.getTtrasm( (long) SimulatorUtils.getSizeInBitFromByte( _packet.getSize(), _packet.getSizeType() ) ) + link.getTprop();
-            System.out.println( "AGGIUNTA LATENZA: " + delay );
+            long Ttrasm = link.getTtrasm( (long) SimulatorUtils.getSizeInBitFromByte( _packet.getSize(), _packet.getSizeType() ) );
+            delay += Ttrasm + link.getTprop();
+            //System.out.println( "AGGIUNTA LATENZA: " + delay );
             _time.addTime( new Time( delay, TimeUnit.MICROSECONDS ) );
             
             // Push back the modified event into the queue.
@@ -72,7 +74,7 @@ public abstract class Event implements Comparable<Event>
         }
         
         if(!_from.getEventGenerator().waitForResponse())
-            ev_handler.schedule( _from.fireEvent() ); // generate a new event, because it doesn't wait for the response.
+            ev_handler.schedule( _from.fireEvent( null ) ); // Generate a new event, because it doesn't wait for the response.
     }
     
     public Time getTime() {

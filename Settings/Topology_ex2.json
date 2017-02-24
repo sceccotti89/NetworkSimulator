@@ -1,7 +1,7 @@
 {
     "nodes": [
         {"id":0, "name":"client", "delay":10, "xPos":0,  "yPos":0},
-        {"id":1, "name":"switch", "delay":7,  "xPos":10, "yPos":0 },
+        {"id":1, "name":"switch", "delay":7,  "xPos":10, "yPos":0},
         {"id":2, "name":"server", "delay":5,  "xPos":20, "yPos":0}
     ],
     "links": [
