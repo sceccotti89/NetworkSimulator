@@ -6,6 +6,7 @@ package simulator;
 
 import simulator.coordinator.Event;
 import simulator.coordinator.EventGenerator;
+import simulator.coordinator.EventGenerator.ResponseEventGenerator;
 import simulator.core.Time;
 import simulator.network.NetworkNode;
 
@@ -61,10 +62,10 @@ public abstract class Agent
     public abstract Event firstEvent();
     
     /***/
-    public Event fireEvent( final Time t )
+    public Event fireEvent( final Time t, final Event e )
     {
         if(_evGenerator != null)
-            return _evGenerator.generate( t );
+            return _evGenerator.generate( t, e );
         else
             return null;
     }
@@ -83,7 +84,7 @@ public abstract class Agent
         
         @Override
         public Event firstEvent()
-        { return _evGenerator.generate( null ); }
+        { return _evGenerator.generate( null, null ); }
     }
     
     /***/
@@ -92,6 +93,11 @@ public abstract class Agent
         public PassiveAgent( final long id )
         {
             super( id );
+        }
+        
+        public PassiveAgent( final long id, final ResponseEventGenerator evGenerator )
+        {
+            super( id, evGenerator );
         }
         
         @Override
@@ -114,6 +120,6 @@ public abstract class Agent
         
         @Override
         public Event firstEvent()
-        { return _evGenerator.generate( null ); }
+        { return _evGenerator.generate( null, null ); }
     }
 }

@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import simulator.Agent;
 import simulator.Packet;
 import simulator.coordinator.Event.RequestEvent;
+import simulator.coordinator.Event.ResponseEvent;
 import simulator.core.Time;
 
 public abstract class EventGenerator
@@ -23,16 +24,30 @@ public abstract class EventGenerator
     protected Agent _to;
     
     protected boolean _waitResponse = true;
+    protected long _packetsInFly = 0;
+    protected long _maxPacketsInFly = 0;
+    
+    private static final long INFINITE = Long.MAX_VALUE;
+    
     
     
     public EventGenerator( final Time duration,
                            final Time departureTime,
                            final Packet packet )
     {
+        this( duration, departureTime, INFINITE, packet );
+    }
+    
+    public EventGenerator( final Time duration,
+                           final Time departureTime,
+                           final long maxPacketsInFly,
+                           final Packet packet )
+    {
         _time = new Time( 0, TimeUnit.MICROSECONDS );
         
         _duration = duration;
         _departureTime = departureTime;
+        _maxPacketsInFly = maxPacketsInFly;
         _packet = packet;
     }
     
@@ -43,7 +58,8 @@ public abstract class EventGenerator
         return this;
     }
     
-    public EventGenerator setWaitReponse( final boolean flag ) {
+    public EventGenerator setWaitReponse( final boolean flag )
+    {
         _waitResponse = flag;
         return this;
     }
@@ -52,26 +68,43 @@ public abstract class EventGenerator
         return _waitResponse;
     }
     
-    //public abstract void update();
-
-    //public abstract void generate( final EventHandler evHandler, final NetworkNode destNode );
+    /**
+     * Update the internal state of the generator.</br>
+     * This function is called everytime a new event arrived.
+    */
+    public abstract void update();
     
-    public Event generate( final Time t )
+    /**
+     * Generate a new event.</br>
+     * NOTE: event can be null.
+     * 
+     * @param t    time of the simulator
+     * @param e    input event
+    */
+    public Event generate( final Time t, final Event e )
     {
         //System.out.println( "MY_TIME: " + _time + ", INPUT_TIME: " + t );
         if (t != null && waitForResponse())
             _time = t;
         
-        //System.out.println( "TIME: " + _time + ", DURATION: " + _departureTime );
-        //Time time = evHandler.getTime();
         _time.addTime( _departureTime );
-        //System.out.println( "TIME: " + _time.getTimeMicroseconds() / 1000000 + ", DURATION: " + _duration.getTimeMicroseconds() / 1000000 );
         if(_time.compareTo( _duration ) > 0)
             return null; // No more events from this generator.
         
-        //long nextTime = _time.getTimeMicroseconds() + _departureTime.getTimeMicroseconds();
-        Event next = new RequestEvent( _time.clone(), _from, _to, _packet );
-        return next;
+        if (e instanceof ResponseEvent)
+            update();
+        
+        Event event = null;
+        if (_packetsInFly < _maxPacketsInFly) {
+            _packetsInFly = (_packetsInFly + 1L) % INFINITE;
+            if (e instanceof RequestEvent) {
+                event = new ResponseEvent( _time.clone(), e._to, e._from, _packet );
+            } else {
+                event = new RequestEvent( _time.clone(), _from, _to, _packet );
+            }
+        }
+        
+        return event;
     }
     
     public Time getTime() {
@@ -93,9 +126,12 @@ public abstract class EventGenerator
             super( duration, departureTime, pktSize );
             setWaitReponse( false );
         }
+        
+        @Override
+        public void update() {}
     }
     
-    // TODO Gestire in maniera efficace anche questo generatore
+    // TODO Gestire in maniera efficace anche questo generatore:
     // TODO prima di tutto devo inserire una variabile che conti il numero di pacchetti in volo
     // TODO se il numero e' minore di una certa soglia allora spedisco il prossimo messaggio,
     // TODO altrimenti aspetto una risposta per almeno uno di essi prima di andare avanti.
@@ -103,10 +139,9 @@ public abstract class EventGenerator
     {
         
         public ResponseEventGenerator( final Time duration,
-                                       final Time departureTime,
                                        final Packet pktSize )
         {
-            super( duration, departureTime, pktSize );
+            super( duration, Time.ZERO, 1L, pktSize );
             setWaitReponse( true );
         }
     }

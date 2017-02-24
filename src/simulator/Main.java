@@ -8,6 +8,7 @@ import simulator.Agent.ActiveAgent;
 import simulator.Agent.PassiveAgent;
 import simulator.coordinator.EventGenerator;
 import simulator.coordinator.EventGenerator.ConstantEventGenerator;
+import simulator.coordinator.EventGenerator.ResponseEventGenerator;
 import simulator.core.Simulator;
 import simulator.core.Time;
 import simulator.exception.SimulatorException;
@@ -24,13 +25,22 @@ public class Main
         {
             super( duration, departureTime, pkt );
         }
-        
-        /*@Override
-        public void generate( final EventHandler evHandler, final NetworkNode destNode )
+    }
+    
+    protected static class SinkGenerator extends ResponseEventGenerator
+    {
+        public SinkGenerator( final Time duration,
+                              final Packet pkt )
         {
-            Event next = nextEvent();
-            evHandler.schedule( next );
-        }*/
+            super( duration, pkt );
+        }
+
+        @Override
+        public void update()
+        {
+            System.out.println( "UPDATE!!" );
+            _packetsInFly--;
+        }
     }
     
     protected static class ClientAgent extends ActiveAgent
@@ -49,11 +59,20 @@ public class Main
         }
     }
     
+    protected static class ResponseServerAgent extends PassiveAgent
+    {
+        public ResponseServerAgent( final long id, final ResponseEventGenerator generator )
+        {
+            super( id, generator );
+        }
+    }
+    
     public static void main( final String argv[] ) throws Exception
     {
     	//example1();
     	//example2();
-    	example3();
+    	//example3();
+        example4();
     }
     
     public static void example1() throws IOException, SimulatorException
@@ -122,13 +141,13 @@ public class Main
     public static void example3() throws IOException, SimulatorException
     {
         /*
-        client1 \							   / server1
-          10ms	 \ 70Mb,5ms			100Mb,2ms /    5ms
-                  \							 /
+        client1 \                              / server1
+          10ms	 \ 70Mb,5ms         100Mb,2ms /    5ms
+                  \                          /
                    switch1 ---------- switch2
                   /  7ms    50Mb,3ms   5ms   \
-                 / 70Mb,5ms			 80Mb,3ms \
-        client2 /							   \ server2
+                 / 70Mb,5ms          80Mb,3ms \
+        client2 /                              \ server2
          10ms									   5ms
         */
         
@@ -157,6 +176,37 @@ public class Main
         
         client1.connect( server1 );
         client2.connect( server2 );
+        
+        sim.start();
+        
+        sim.stop();
+    }
+    
+    public static void example4() throws IOException, SimulatorException
+    {
+        /*
+                70Mb,5ms          50Mb,3ms
+        client <--------> switch <--------> server
+         10ms              7ms               5ms
+        */
+        
+        NetworkTopology net = new NetworkTopology( "Settings/Topology_ex4.json" );
+        System.out.println( net.toString() );
+        
+        Simulator sim = new Simulator( net );
+        
+        CBRGenerator generator = new CBRGenerator( new Time( 10, TimeUnit.SECONDS ),
+                                                   new Time( 5,  TimeUnit.SECONDS ),
+                                                   new Packet( 40, SimulatorUtils.Size.KB ) );
+        Agent client = new ClientAgent( 0, generator );
+        sim.addAgent( client );
+        
+        SinkGenerator generator2 = new SinkGenerator( new Time( 10, TimeUnit.SECONDS ),
+                                                      new Packet( 40, SimulatorUtils.Size.KB ) );
+        Agent server = new ResponseServerAgent( 2, generator2 );
+        sim.addAgent( server );
+        
+        client.connect( server );
         
         sim.start();
         

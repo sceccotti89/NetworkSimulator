@@ -33,14 +33,14 @@ public class EventHandler
     /**
      * Get simulation time in microseconds.
      * @return
-     */
-    public Time now() {
+    */
+    public Time getTime() {
         return _time;
     }
-    
+
     public void doAllEvents()
     {
-        int index = 0;
+        long index = 0;
         Event e;
         while((e = events.poll()) != null) {
             //System.out.println( e );
@@ -57,13 +57,13 @@ public class EventHandler
     
     public void schedule( final Event e )
     {
-        if(e != null)
+        if (e != null)
             events.add( e );
     }
     
     public void remove( final Event e )
     {
-        if(e != null)
+        if (e != null)
             events.remove( e );
     }
     
@@ -73,9 +73,5 @@ public class EventHandler
     
     public boolean isDone() {
         return false;
-    }
-
-    public Time getTime() {
-        return _time;
     }
 }

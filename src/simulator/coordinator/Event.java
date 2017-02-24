@@ -52,7 +52,7 @@ public abstract class Event implements Comparable<Event>
         if (nodeId == _to.getId()) {
             System.out.println( "[" + _time + "] Reached destination node: " + node );
             _time.addTime( new Time( delay, TimeUnit.MICROSECONDS ) );
-            ev_handler.schedule( _to.fireEvent( _time.clone() ) ); // TODO questa chiamata e' sbagliata nel caso di CBR
+            ev_handler.schedule( _to.fireEvent( _time.clone(), this ) );
         } else {
             if (nodeId == _from.getId()) {
                 System.out.println( "[" + _time + "] Starting from node: " + node );
@@ -69,12 +69,12 @@ public abstract class Event implements Comparable<Event>
             //System.out.println( "AGGIUNTA LATENZA: " + delay );
             _time.addTime( new Time( delay, TimeUnit.MICROSECONDS ) );
             
-            // Push back the modified event into the queue.
+            // Push-back the modified event into the queue.
             ev_handler.schedule( this );
         }
         
-        if(!_from.getEventGenerator().waitForResponse())
-            ev_handler.schedule( _from.fireEvent( null ) ); // Generate a new event, because it doesn't wait for the response.
+        if (!_from.getEventGenerator().waitForResponse())
+            ev_handler.schedule( _from.fireEvent( null, null ) ); // Generate a new event, because it doesn't wait for the response.
     }
     
     public Time getTime() {
