@@ -52,7 +52,6 @@ public abstract class Event implements Comparable<Event>
         if (nodeId == _to.getId()) {
             System.out.println( "[" + _time + "] Reached destination node: " + node );
             ev_handler.schedule( _to.fireEvent( _time.clone(), this ) );
-            //_time.addTime( delay, TimeUnit.MICROSECONDS );
         } else {
             if (nodeId == _from.getId()) {
                 System.out.println( "[" + _time + "] Starting from node: " + node );
@@ -69,15 +68,12 @@ public abstract class Event implements Comparable<Event>
             ev_handler.schedule( _from.fireEvent( _time.clone().addTime( Ttrasm, TimeUnit.MICROSECONDS ), null ) );
             
             delay += Ttrasm + link.getTprop();
-            //System.out.println( "AGGIUNTA LATENZA: " + delay );
+            //System.out.println( "Delay: " + delay );
             _time.addTime( delay, TimeUnit.MICROSECONDS );
             
             // Push-back the modified event into the queue.
             ev_handler.schedule( this );
         }
-        
-        if (!_from.getEventGenerator().waitForResponse())
-            ev_handler.schedule( _from.fireEvent( null, null ) ); // Generate a new event, because it doesn't wait for the response.
     }
     
     public Time getTime() {

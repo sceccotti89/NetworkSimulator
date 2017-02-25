@@ -98,11 +98,11 @@ public class Main
     
     public static void main( final String argv[] ) throws Exception
     {
-    	//example1();
+    	example1();
     	//example2();
     	//example3();
         //example4();
-        example5();
+        //example5();
     }
     
     public static void example1() throws IOException, SimulatorException
@@ -263,8 +263,8 @@ public class Main
         
         Simulator sim = new Simulator( net );
         
-        ClientGenerator generator = new ClientGenerator( new Time( 5, TimeUnit.SECONDS ),
-                                                         1L,
+        ClientGenerator generator = new ClientGenerator( new Time( 2, TimeUnit.SECONDS ),
+                                                         2L,
                                                          new Packet( 40, Size.KB ),
                                                          new Packet( 20, Size.KB ) );
         Agent client = new ClientAgent( 0, generator );
