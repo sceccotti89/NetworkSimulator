@@ -4,6 +4,8 @@
 
 package simulator.coordinator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import simulator.Agent;
@@ -23,7 +25,7 @@ public abstract class EventGenerator
     protected Packet _resPacket;
     
     protected Agent _from;
-    protected Agent _to;
+    protected List<Agent> _destinations;
     
     protected boolean _activeGenerator = false;
     protected boolean _waitResponse = true;
@@ -49,12 +51,23 @@ public abstract class EventGenerator
         _resPacket       = resPacket;
         _activeGenerator = isActive;
         _waitResponse    = waitResponse;
+        
+        _destinations = new ArrayList<>();
     }
     
-    public EventGenerator connect( final Agent from, final Agent to )
-    {
+    public void setAgent( final Agent from ) {
         _from = from;
-        _to = to;
+    }
+    
+    public EventGenerator connect( final Agent to )
+    {
+        _destinations.add( to );
+        return this;
+    }
+    
+    public EventGenerator connect( final List<Agent> to )
+    {
+        _destinations.addAll( to );
         return this;
     }
     
@@ -88,7 +101,7 @@ public abstract class EventGenerator
             _time = t;
         
         _time.addTime( _departureTime );
-        if(_time.compareTo( _duration ) > 0)
+        if (_time.compareTo( _duration ) > 0)
             return null; // No more events from this generator.
         
         //System.out.println( "EVENT: " + e );
@@ -99,9 +112,14 @@ public abstract class EventGenerator
         if (e instanceof RequestEvent) {
             event = new ResponseEvent( _time.clone(), e._to, e._from, _resPacket );
         } else {
+            // TODO inviare tutti i pacchetti possibili
+            // TODO ogni pacchetto viene inviato solo dopo che quello prima e' stato spedito
             if (_packetsInFly < _maxPacketsInFly) {
                 _packetsInFly = (_packetsInFly + 1L) % SimulatorUtils.INFINITE;
-                event = new RequestEvent( _time.clone(), _from, _to, _reqPacket );
+                // TODO inviare a tutti i destinatari possibili
+                for (Agent to : _destinations) {
+                    event = new RequestEvent( _time.clone(), _from, to, _reqPacket );
+                }
             }
         }
         

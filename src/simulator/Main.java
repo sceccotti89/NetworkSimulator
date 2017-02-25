@@ -4,8 +4,6 @@ package simulator;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import simulator.Agent.ActiveAgent;
-import simulator.Agent.PassiveAgent;
 import simulator.coordinator.EventGenerator;
 import simulator.core.Simulator;
 import simulator.core.Time;
@@ -47,7 +45,7 @@ public class Main
         }
     }
     
-    protected static class ClientAgent extends ActiveAgent
+    protected static class ClientAgent extends Agent
     {
         public ClientAgent( final long id, final EventGenerator evGenerator )
         {
@@ -55,7 +53,7 @@ public class Main
         }
     }
     
-    protected static class ServerAgent extends PassiveAgent
+    protected static class ServerAgent extends Agent
     {
         public ServerAgent( final long id )
         {
@@ -63,7 +61,7 @@ public class Main
         }
     }
     
-    protected static class ResponseServerAgent extends PassiveAgent
+    protected static class ResponseServerAgent extends Agent
     {
         public ResponseServerAgent( final long id, final EventGenerator generator )
         {

@@ -4,6 +4,9 @@
 
 package simulator;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import simulator.coordinator.Event;
 import simulator.coordinator.EventGenerator;
 import simulator.core.Time;
@@ -13,7 +16,7 @@ public abstract class Agent
 {
     protected long _id;
     protected EventGenerator _evGenerator;
-    protected Agent _dest;
+    protected List<Agent> _destinations;
     
     public Agent( final NetworkNode node )
     { this( node.getId(), null ); }
@@ -28,12 +31,21 @@ public abstract class Agent
     {
         _id = id;
         _evGenerator = evGenerator;
+        _destinations = new ArrayList<>();
+        
+        _evGenerator.setAgent( this );
     }
     
     public void connect( final Agent destination )
     {
-        _dest = destination;
-        _evGenerator.connect( this, destination );
+        _destinations.add( destination );
+        _evGenerator.connect( destination );
+    }
+    
+    public void connect( final List<Agent> destinations )
+    {
+        _destinations.addAll( destinations );
+        _evGenerator.connect( destinations );
     }
     
     //TODO public abstract void body();
@@ -74,6 +86,7 @@ public abstract class Agent
     
     
     
+    // TODO queste classi sono inutili, per adesso.
     /***/
     public static abstract class ActiveAgent extends Agent
     {
