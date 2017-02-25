@@ -11,6 +11,10 @@ public class Packet
 	private long _pktSize;
 	private Size _sizeType = Size.B;
 	
+	/** Type of packet used to tell the event generator that it's defined by the user.</br>
+	 * It can be defined as: new Packet( -1, null ); */
+	public static final Packet DYNAMIC = new Packet( -1, null );
+	
 	public Packet( final long pktSize, final Size sizeType )
 	{
 		_pktSize = pktSize;
@@ -23,5 +27,9 @@ public class Packet
 	
 	public Size getSizeType() {
 		return _sizeType;
+	}
+	
+	public boolean isDynamic() {
+	    return _pktSize == -1 && _sizeType == null;
 	}
 }

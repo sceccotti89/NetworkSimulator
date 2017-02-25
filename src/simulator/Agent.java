@@ -87,8 +87,7 @@ public abstract class Agent
     
     
     // TODO queste classi sono inutili, per adesso.
-    /***/
-    public static abstract class ActiveAgent extends Agent
+    /*public static abstract class ActiveAgent extends Agent
     {
         public ActiveAgent( final long id, final EventGenerator evGenerator )
         {
@@ -96,7 +95,6 @@ public abstract class Agent
         }
     }
     
-    /***/
     public static abstract class PassiveAgent extends Agent
     {
         public PassiveAgent( final long id )
@@ -110,7 +108,6 @@ public abstract class Agent
         }
     }
     
-    /***/
     public static abstract class ActiveAndPassiveAgent extends Agent
     {
         public ActiveAndPassiveAgent( final long id )
@@ -122,5 +119,5 @@ public abstract class Agent
         {
             super( id, evGenerator );
         }
-    }
+    }*/
 }

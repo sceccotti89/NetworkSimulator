@@ -83,9 +83,30 @@ public abstract class EventGenerator
     
     /**
      * Update the internal state of the generator.</br>
-     * This function is called everytime a new event arrived.
+     * This method is called everytime a new event arrived.
     */
     public abstract void update();
+    
+    /**
+     * Generate a new packet to be sent.</br>
+     * This method is called only if the request or response packet is
+     * {@link simulator.Packet#DYNAMIC DYNAMIC}.</br>
+     * A typical usage of the input event {@code e} is:
+     * 
+     * <pre>
+     * if (e instanceof RequestEvent) {
+     *     ... // produce response packet
+     * } else {
+     *     ... // produce request packet
+     * }
+     * </pre>
+     * 
+     * @param e    the input event
+     * 
+     * @return the generated packet.</br>
+     * NOTE: the returned packet must NOT be null.
+    */
+    public abstract Packet makePacket( final Event e );
     
     /**
      * Generate a new event.</br>
@@ -110,15 +131,23 @@ public abstract class EventGenerator
         
         Event event = null;
         if (e instanceof RequestEvent) {
-            event = new ResponseEvent( _time.clone(), e._to, e._from, _resPacket );
+            Packet resPacket = _resPacket;
+            if (_resPacket.isDynamic())
+                resPacket = makePacket( e );
+            
+            event = new ResponseEvent( _time.clone(), e._to, e._from, resPacket );
         } else {
             // TODO inviare tutti i pacchetti possibili
             // TODO ogni pacchetto viene inviato solo dopo che quello prima e' stato spedito
             if (_packetsInFly < _maxPacketsInFly) {
                 _packetsInFly = (_packetsInFly + 1L) % SimulatorUtils.INFINITE;
-                // TODO inviare a tutti i destinatari possibili
-                for (Agent to : _destinations) {
-                    event = new RequestEvent( _time.clone(), _from, to, _reqPacket );
+                
+                Packet reqPacket = _reqPacket;
+                if (_resPacket.isDynamic())
+                    reqPacket = makePacket( e );
+                
+                for (Agent dest : _destinations) {
+                    event = new RequestEvent( _time.clone(), _from, dest, reqPacket );
                 }
             }
         }

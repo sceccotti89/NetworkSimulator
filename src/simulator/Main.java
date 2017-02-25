@@ -4,6 +4,7 @@ package simulator;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import simulator.coordinator.Event;
 import simulator.coordinator.EventGenerator;
 import simulator.core.Simulator;
 import simulator.core.Time;
@@ -27,6 +28,12 @@ public class Main
         @Override
         public void update()
         {}
+
+        @Override
+        public Packet makePacket( final Event e ) {
+            // TODO Auto-generated method stub
+            return null;
+        }
     }
     
     protected static class SinkGenerator extends EventGenerator
@@ -42,6 +49,12 @@ public class Main
         public void update()
         {
             _packetsInFly--;
+        }
+
+        @Override
+        public Packet makePacket( final Event e ) {
+            // TODO Auto-generated method stub
+            return null;
         }
     }
     
@@ -205,13 +218,13 @@ public class Main
         CBRGenerator generator = new CBRGenerator( new Time( 10, TimeUnit.SECONDS ),
                                                    new Time( 5,  TimeUnit.SECONDS ),
                                                    new Packet( 40, Size.KB ),
-                                                   new Packet( 40, Size.KB ) );
+                                                   new Packet( 20, Size.KB ) );
         Agent client = new ClientAgent( 0, generator );
         sim.addAgent( client );
         
         SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
                                                       new Packet( 40, Size.KB ),
-                                                      new Packet( 40, Size.KB ) );
+                                                      new Packet( 20, Size.KB ) );
         Agent server = new ResponseServerAgent( 2, generator2 );
         sim.addAgent( server );
         
