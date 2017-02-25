@@ -139,6 +139,8 @@ public abstract class EventGenerator
         } else {
             // TODO inviare tutti i pacchetti possibili
             // TODO ogni pacchetto viene inviato solo dopo che quello prima e' stato spedito
+            // TODO se venisse invocato dalla funzione execute dell'event potrei usare come tempo
+            // TODO quello in input T.
             if (_packetsInFly < _maxPacketsInFly) {
                 _packetsInFly = (_packetsInFly + 1L) % SimulatorUtils.INFINITE;
                 
@@ -167,7 +169,7 @@ public abstract class EventGenerator
 
 
 
-    // TODO Magari metterle come "specializzazioni" di generatori di eventi.
+    // TODO Magari metterle come "specializzazioni" di generatori di eventi, ma per adesso sono inutili.
     /*public static abstract class ConstantEventGenerator extends EventGenerator
     {
         
@@ -183,10 +185,6 @@ public abstract class EventGenerator
         public void update() {}
     }
     
-    // TODO Gestire in maniera efficace anche questo generatore:
-    // TODO prima di tutto devo inserire una variabile che conti il numero di pacchetti in volo
-    // TODO se il numero e' minore di una certa soglia allora spedisco il prossimo messaggio,
-    // TODO altrimenti aspetto una risposta per almeno uno di essi prima di andare avanti.
     public static abstract class ResponseEventGenerator extends EventGenerator
     {
         

@@ -65,6 +65,10 @@ public abstract class Event implements Comparable<Event>
             // Assign the current node id.
             _currentNodeId = link.getDestId();
             long Ttrasm = link.getTtrasm( (long) SimulatorUtils.getSizeInBitFromByte( _packet.getSize(), _packet.getSizeType() ) );
+            
+            // TODO un modo per spedire tutti i pacchetti disponibili e' quello di
+            // TODO invocare il nodo _from con un tempo che e' pari a quello corrente + Ttrasm
+            
             delay += Ttrasm + link.getTprop();
             //System.out.println( "AGGIUNTA LATENZA: " + delay );
             _time.addTime( new Time( delay, TimeUnit.MICROSECONDS ) );
