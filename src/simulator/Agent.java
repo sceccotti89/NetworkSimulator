@@ -33,7 +33,8 @@ public abstract class Agent
         _evGenerator = evGenerator;
         _destinations = new ArrayList<>();
         
-        _evGenerator.setAgent( this );
+        if (_evGenerator != null)
+            _evGenerator.setAgent( this );
     }
     
     public void connect( final Agent destination )
