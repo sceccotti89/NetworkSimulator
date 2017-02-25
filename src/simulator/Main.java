@@ -98,11 +98,12 @@ public class Main
     
     public static void main( final String argv[] ) throws Exception
     {
-    	example1();
+    	//example1();
     	//example2();
     	//example3();
         //example4();
-        //example5();
+        example5();
+        //example6();
     }
     
     public static void example1() throws IOException, SimulatorException
@@ -277,6 +278,48 @@ public class Main
         sim.addAgent( server );
         
         client.connect( server );
+        
+        sim.start();
+        
+        sim.stop();
+    }
+    
+    public static void example6() throws IOException, SimulatorException
+    {
+        // TODO QUESTO TEST HA BISOGNO DI ALTRE RIFINITURE.
+        /*
+                                   / server1
+                        100Mb,2ms /    5ms
+                70Mb,5ms         /
+        client ---------- switch
+         10ms               7ms  \
+                         80Mb,3ms \
+                                   \ server2
+                                       6ms
+        */
+        
+        NetworkTopology net = new NetworkTopology( "Settings/Topology_ex6.json" );
+        System.out.println( net.toString() );
+        
+        Simulator sim = new Simulator( net );
+        
+        ClientGenerator generator = new ClientGenerator( new Time( 2, TimeUnit.SECONDS ),
+                                                         1L,
+                                                         new Packet( 40, Size.KB ),
+                                                         new Packet( 20, Size.KB ) );
+        Agent client = new ClientAgent( 0, generator );
+        sim.addAgent( client );
+        
+        SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
+                                                      Packet.DYNAMIC,
+                                                      Packet.DYNAMIC );
+        Agent server1 = new ResponseServerAgent( 2, generator2 );
+        sim.addAgent( server1 );
+        client.connect( server1 );
+        
+        Agent server2 = new ResponseServerAgent( 3, generator2 );
+        sim.addAgent( server2 );
+        client.connect( server2 );
         
         sim.start();
         

@@ -43,10 +43,10 @@ public abstract class Agent
         _evGenerator.connect( destination );
     }
     
-    public void connect( final List<Agent> destinations )
+    public void connectAll( final List<Agent> destinations )
     {
         _destinations.addAll( destinations );
-        _evGenerator.connect( destinations );
+        _evGenerator.connectAll( destinations );
     }
     
     //TODO public abstract void body();
@@ -54,15 +54,11 @@ public abstract class Agent
     public long getId() {
         return _id;
     }
-    
-    public EventGenerator getEventGenerator() {
-        return _evGenerator;
-    }
 
     /**
-     * Put the first message into the queue.</br>
+     * Put the first message into the queue.
     */
-    public Event firstEvent()
+    public List<Event> firstEvent()
     {
         if ( _evGenerator != null && _evGenerator.isActive()) {
             return _evGenerator.generate( null, null );
@@ -72,7 +68,7 @@ public abstract class Agent
     }
     
     /***/
-    public Event fireEvent( final Time t, final Event e )
+    public List<Event> fireEvent( final Time t, final Event e )
     {
         if (_evGenerator != null) {
             return _evGenerator.generate( t, e );

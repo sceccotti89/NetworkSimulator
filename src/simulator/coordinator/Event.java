@@ -4,6 +4,7 @@
 
 package simulator.coordinator;
 
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import simulator.Agent;
@@ -54,25 +55,28 @@ public abstract class Event implements Comparable<Event>
             ev_handler.schedule( _to.fireEvent( _time.clone(), this ) );
         } else {
             if (nodeId == _from.getId()) {
-                System.out.println( "[" + _time + "] Starting from node: " + node );
+                Time time = _time.clone().addTime( delay, TimeUnit.MICROSECONDS );
+                System.out.println( "[" + time + "] Starting from node: " + node );
             } else { 
                 System.out.println( "[" + _time + "] Reached intermediate node: " + node );
             }
             
             NetworkLink link = net.getLink( nodeId, net.nextNode( nodeId, _to.getId() ).getId() );
-            //System.out.println( "CURRENT_ID: " + nodeId + ", FOUNDED_LINK: " + link );
-            // Assign the current node id.
-            _currentNodeId = link.getDestId();
-            long Ttrasm = link.getTtrasm( (long) SimulatorUtils.getSizeInBitFromByte( _packet.getSize(), _packet.getSizeType() ) );
-            
-            ev_handler.schedule( _from.fireEvent( _time.clone().addTime( Ttrasm, TimeUnit.MICROSECONDS ), null ) );
-            
-            delay += Ttrasm + link.getTprop();
-            //System.out.println( "Delay: " + delay );
-            _time.addTime( delay, TimeUnit.MICROSECONDS );
-            
-            // Push-back the modified event into the queue.
-            ev_handler.schedule( this );
+            if (link != null) {
+                //System.out.println( "CURRENT_ID: " + nodeId + ", FOUNDED_LINK: " + link );
+                // Assign the current node id.
+                _currentNodeId = link.getDestId();
+                long Ttrasm = link.getTtrasm( (long) SimulatorUtils.getSizeInBitFromByte( _packet.getSize(), _packet.getSizeType() ) );
+                
+                ev_handler.schedule( _from.fireEvent( _time.clone().addTime( Ttrasm, TimeUnit.MICROSECONDS ), null ) );
+                
+                delay += Ttrasm + link.getTprop();
+                //System.out.println( "Delay: " + delay );
+                _time.addTime( delay, TimeUnit.MICROSECONDS );
+                
+                // Push-back the modified event into the queue.
+                ev_handler.schedule( Collections.singletonList( this ) );
+            }
         }
     }
     

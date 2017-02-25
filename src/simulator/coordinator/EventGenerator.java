@@ -65,7 +65,7 @@ public abstract class EventGenerator
         return this;
     }
     
-    public EventGenerator connect( final List<Agent> to )
+    public EventGenerator connectAll( final List<Agent> to )
     {
         _destinations.addAll( to );
         return this;
@@ -113,13 +113,15 @@ public abstract class EventGenerator
     public abstract Packet makePacket( final Event e );
     
     /**
-     * Generate a new event.</br>
+     * Generate a new list of events.</br>
      * NOTE: event can be null.
      * 
      * @param t    time of the simulator
      * @param e    input event
+     * 
+     * @return the new list of events. If the time is expired, {@code null} is returned.
     */
-    public Event generate( final Time t, final Event e )
+    public List<Event> generate( final Time t, final Event e )
     {
         //System.out.println( "MY_TIME: " + _time + ", INPUT_TIME: " + t );
         if (t != null && waitForResponse())
@@ -129,18 +131,19 @@ public abstract class EventGenerator
         if (_time.compareTo( _duration ) > 0)
             return null; // No more events from this generator.
         
+        List<Event> events = new ArrayList<>();
+        
         //System.out.println( "EVENT: " + e );
         if (e instanceof ResponseEvent)
             update();
         
-        Event event = null;
         if (e instanceof RequestEvent) {
             // Prepare the response packet.
             Packet resPacket = _resPacket;
             if (_resPacket.isDynamic())
                 resPacket = makePacket( e );
             
-            event = new ResponseEvent( _time.clone(), e._to, e._from, resPacket );
+            events.add( new ResponseEvent( _time.clone(), e._to, e._from, resPacket ) );
         } else {
             if (_packetsInFly < _maxPacketsInFly) {
                 _packetsInFly = (_packetsInFly + 1L) % SimulatorUtils.INFINITE;
@@ -151,12 +154,12 @@ public abstract class EventGenerator
                     reqPacket = makePacket( e );
                 
                 for (Agent dest : _destinations) {
-                    event = new RequestEvent( _time.clone(), _from, dest, reqPacket );
+                    events.add( new RequestEvent( _time.clone(), _from, dest, reqPacket ) );
                 }
             }
         }
         
-        return event;
+        return events;
     }
     
     public Time getTime() {

@@ -4,6 +4,7 @@
 
 package simulator.coordinator;
 
+import java.util.List;
 import java.util.PriorityQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -52,13 +53,21 @@ public class EventHandler
             
             System.out.println( "EVENT No: " + (++index) );
             e.execute( e._currentNodeId, this, _network );
+            try {
+                Thread.sleep( 1000 );
+            } catch (InterruptedException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
         }
     }
     
-    public void schedule( final Event e )
+    public void schedule( final List<Event> _events )
     {
-        if (e != null)
-            events.add( e );
+        if (_events != null) {
+            for (Event e : _events)
+                events.add( e );
+        }
     }
     
     public void remove( final Event e )

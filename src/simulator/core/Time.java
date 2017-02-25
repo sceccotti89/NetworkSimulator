@@ -45,9 +45,10 @@ class ImmutableTime extends Time
 
 public class Time implements Comparable<Time>
 {
-	public static final Time ZERO   = new ImmutableTime(0, TimeUnit.MICROSECONDS);
-	public static final Time SECOND = new ImmutableTime(1, TimeUnit.SECONDS);
-	public static final Time HOUR   = new ImmutableTime(1, TimeUnit.HOURS);
+	public static final Time ZERO     = new ImmutableTime(0, TimeUnit.MICROSECONDS);
+	public static final Time SECOND   = new ImmutableTime(1, TimeUnit.SECONDS);
+	public static final Time HOUR     = new ImmutableTime(1, TimeUnit.HOURS);
+	public static final Time INFINITE = new ImmutableTime( Long.MAX_VALUE, TimeUnit.MICROSECONDS );
 	
 	private long time;
 	

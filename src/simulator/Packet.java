@@ -12,9 +12,10 @@ public class Packet
 	private Size _sizeType = Size.B;
 	
 	/** Type of packet used to tell the event generator that it's defined by the user.</br>
-	 * It can be defined as:
+	 * The definition of a dynamic packet is the following:
 	 * <p>
-	 * {@code new Packet( -1, null )} */
+	 * {@code new Packet( -1, null )}
+	*/
 	public static final Packet DYNAMIC = new Packet( -1, null );
 	
 	public Packet( final long pktSize, final Size sizeType )
