@@ -72,9 +72,9 @@ public class NetworkLink
     public long getTtrasm( final long size )
     {
         // Ttrasm = size/bandwith
-        double tCalc = (size / SimulatorUtils.getSizeInBit( _bandwith, SimulatorUtils.Size.MB ));
-        //System.out.println( "Tcalc: " + tCalc + "ns" );
-    	return SimulatorUtils.getTimeInMicroseconds( tCalc, TimeUnit.SECONDS );
+        double Ttrasm = (size / SimulatorUtils.getSizeInBit( _bandwith, SimulatorUtils.Size.MB ));
+        System.out.println( "Ttrasm: " + Ttrasm + "s" );
+    	return SimulatorUtils.getTimeInMicroseconds( Ttrasm, TimeUnit.SECONDS );
     }
     
     public long getTprop() {

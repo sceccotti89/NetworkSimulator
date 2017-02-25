@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import simulator.coordinator.Event;
+import simulator.coordinator.Event.RequestEvent;
 import simulator.coordinator.EventGenerator;
 import simulator.core.Simulator;
 import simulator.core.Time;
@@ -24,14 +25,30 @@ public class Main
         {
             super( duration, departureTime, SimulatorUtils.INFINITE, reqPacket, resPacket, true, false );
         }
-
+        
         @Override
-        public void update()
-        {}
-
+        public void update() {
+            super.update();
+        }
+        
         @Override
         public Packet makePacket( final Event e ) {
-            // TODO Auto-generated method stub
+            return null;
+        }
+    }
+    
+    protected static class ClientGenerator extends EventGenerator
+    {
+        public ClientGenerator( final Time duration,
+                                final long maxPacketsInFly,
+                                final Packet reqPacket,
+                                final Packet resPacket )
+        {
+            super( duration, Time.ZERO, maxPacketsInFly, reqPacket, resPacket, true, true );
+        }
+        
+        @Override
+        public Packet makePacket( final Event e ) {
             return null;
         }
     }
@@ -44,17 +61,14 @@ public class Main
         {
             super( duration, Time.ZERO, 1L, reqPacket, resPacket, false, true );
         }
-
-        @Override
-        public void update()
-        {
-            _packetsInFly--;
-        }
-
+        
         @Override
         public Packet makePacket( final Event e ) {
-            // TODO Auto-generated method stub
-            return null;
+            if (e instanceof RequestEvent) {
+                return new Packet( 20, Size.KB );
+            } else {
+                return new Packet( 40, Size.KB );
+            }
         }
     }
     
@@ -87,7 +101,8 @@ public class Main
     	//example1();
     	//example2();
     	//example3();
-        example4();
+        //example4();
+        example5();
     }
     
     public static void example1() throws IOException, SimulatorException
@@ -223,8 +238,41 @@ public class Main
         sim.addAgent( client );
         
         SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
-                                                      new Packet( 40, Size.KB ),
-                                                      new Packet( 20, Size.KB ) );
+                                                      Packet.DYNAMIC,
+                                                      Packet.DYNAMIC );
+        Agent server = new ResponseServerAgent( 2, generator2 );
+        sim.addAgent( server );
+        
+        client.connect( server );
+        
+        sim.start();
+        
+        sim.stop();
+    }
+    
+    public static void example5() throws IOException, SimulatorException
+    {
+        /*
+                70Mb,5ms          50Mb,3ms
+        client <--------> switch <--------> server
+         10ms              7ms               5ms
+        */
+        
+        NetworkTopology net = new NetworkTopology( "Settings/Topology_ex5.json" );
+        System.out.println( net.toString() );
+        
+        Simulator sim = new Simulator( net );
+        
+        ClientGenerator generator = new ClientGenerator( new Time( 5, TimeUnit.SECONDS ),
+                                                         1L,
+                                                         new Packet( 40, Size.KB ),
+                                                         new Packet( 20, Size.KB ) );
+        Agent client = new ClientAgent( 0, generator );
+        sim.addAgent( client );
+        
+        SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
+                                                      Packet.DYNAMIC,
+                                                      Packet.DYNAMIC );
         Agent server = new ResponseServerAgent( 2, generator2 );
         sim.addAgent( server );
         

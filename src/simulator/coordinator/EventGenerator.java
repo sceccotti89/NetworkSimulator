@@ -83,9 +83,13 @@ public abstract class EventGenerator
     
     /**
      * Update the internal state of the generator.</br>
-     * This method is called everytime a new event arrived.
+     * The default method reduce by 1 the number of flying packets, but the user can
+     * extend it to properly update the generator.</br>
+     * NOTE: this method is called everytime a new event arrived.</br>
     */
-    public abstract void update();
+    public void update() {
+        _packetsInFly--;
+    }
     
     /**
      * Generate a new packet to be sent.</br>
@@ -131,19 +135,17 @@ public abstract class EventGenerator
         
         Event event = null;
         if (e instanceof RequestEvent) {
+            // Prepare the response packet.
             Packet resPacket = _resPacket;
             if (_resPacket.isDynamic())
                 resPacket = makePacket( e );
             
             event = new ResponseEvent( _time.clone(), e._to, e._from, resPacket );
         } else {
-            // TODO inviare tutti i pacchetti possibili
-            // TODO ogni pacchetto viene inviato solo dopo che quello prima e' stato spedito
-            // TODO se venisse invocato dalla funzione execute dell'event potrei usare come tempo
-            // TODO quello in input T.
             if (_packetsInFly < _maxPacketsInFly) {
                 _packetsInFly = (_packetsInFly + 1L) % SimulatorUtils.INFINITE;
                 
+                // Prepare the request packet.
                 Packet reqPacket = _reqPacket;
                 if (_resPacket.isDynamic())
                     reqPacket = makePacket( e );

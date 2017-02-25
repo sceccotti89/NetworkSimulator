@@ -51,8 +51,8 @@ public abstract class Event implements Comparable<Event>
         
         if (nodeId == _to.getId()) {
             System.out.println( "[" + _time + "] Reached destination node: " + node );
-            _time.addTime( new Time( delay, TimeUnit.MICROSECONDS ) );
             ev_handler.schedule( _to.fireEvent( _time.clone(), this ) );
+            //_time.addTime( delay, TimeUnit.MICROSECONDS );
         } else {
             if (nodeId == _from.getId()) {
                 System.out.println( "[" + _time + "] Starting from node: " + node );
@@ -66,12 +66,11 @@ public abstract class Event implements Comparable<Event>
             _currentNodeId = link.getDestId();
             long Ttrasm = link.getTtrasm( (long) SimulatorUtils.getSizeInBitFromByte( _packet.getSize(), _packet.getSizeType() ) );
             
-            // TODO un modo per spedire tutti i pacchetti disponibili e' quello di
-            // TODO invocare il nodo _from con un tempo che e' pari a quello corrente + Ttrasm
+            ev_handler.schedule( _from.fireEvent( _time.clone().addTime( Ttrasm, TimeUnit.MICROSECONDS ), null ) );
             
             delay += Ttrasm + link.getTprop();
             //System.out.println( "AGGIUNTA LATENZA: " + delay );
-            _time.addTime( new Time( delay, TimeUnit.MICROSECONDS ) );
+            _time.addTime( delay, TimeUnit.MICROSECONDS );
             
             // Push-back the modified event into the queue.
             ev_handler.schedule( this );

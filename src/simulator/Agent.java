@@ -61,8 +61,6 @@ public abstract class Agent
 
     /**
      * Put the first message into the queue.</br>
-     * In case of {@link PassiveAgent} no action will be performed,</br>
-     * if {@link ActiveAgent} the first event is taken form it.
     */
     public Event firstEvent()
     {
