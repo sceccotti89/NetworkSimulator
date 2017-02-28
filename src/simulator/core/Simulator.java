@@ -57,7 +57,7 @@ public class Simulator
         
         // Put the first message into the queue.
         for (Agent agent : _agents)
-            _evHandler.schedule( agent.firstEvent() );
+            _evHandler.schedule( agent.fireEvent( null, null ) );
         
         _evHandler.doAllEvents();
     }

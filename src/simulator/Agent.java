@@ -54,21 +54,9 @@ public abstract class Agent
     public long getId() {
         return _id;
     }
-
-    /**
-     * Put the first message into the queue.
-    */
-    public List<Event> firstEvent()
-    {
-        if ( _evGenerator != null && _evGenerator.isActive()) {
-            return _evGenerator.generate( null, null );
-        } else {
-            return null;
-        }
-    }
     
     /***/
-    public List<Event> fireEvent( final Time t, final Event e )
+    public Event fireEvent( final Time t, final Event e )
     {
         if (_evGenerator != null) {
             return _evGenerator.generate( t, e );
@@ -76,6 +64,13 @@ public abstract class Agent
             return null;
         }
     }
+    
+    /**
+     * Analyze the incoming packet.
+     * 
+     * @param p    the incoming packet
+    */
+    public abstract void analyzePacket( final Packet p );
     
     
     

@@ -23,7 +23,7 @@ public class Main
                              final Packet reqPacket,
                              final Packet resPacket )
         {
-            super( duration, departureTime, SimulatorUtils.INFINITE, reqPacket, resPacket, true, false );
+            super( duration, departureTime, SimulatorUtils.INFINITE, reqPacket, resPacket, true, false, false );
         }
         
         @Override
@@ -44,7 +44,23 @@ public class Main
                                 final Packet reqPacket,
                                 final Packet resPacket )
         {
-            super( duration, Time.ZERO, maxPacketsInFly, reqPacket, resPacket, true, true );
+            super( duration, Time.ZERO, maxPacketsInFly, reqPacket, resPacket, true, false, true );
+        }
+        
+        @Override
+        public Packet makePacket( final Event e ) {
+            return null;
+        }
+    }
+    
+    protected static class MulticastGenerator extends EventGenerator
+    {
+        public MulticastGenerator( final Time duration,
+                                   final long maxPacketsInFly,
+                                   final Packet reqPacket,
+                                   final Packet resPacket )
+        {
+            super( duration, Time.ZERO, maxPacketsInFly, reqPacket, resPacket, false, true, true );
         }
         
         @Override
@@ -59,7 +75,7 @@ public class Main
                               final Packet reqPacket,
                               final Packet resPacket )
         {
-            super( duration, Time.ZERO, 1L, reqPacket, resPacket, false, true );
+            super( duration, Time.ZERO, 1L, reqPacket, resPacket, false, false, true );
         }
         
         @Override
@@ -78,6 +94,11 @@ public class Main
         {
             super( id, evGenerator );
         }
+        
+        @Override
+        public void analyzePacket( final Packet p ) {
+            // TODO Auto-generated method stub
+        }
     }
     
     protected static class ServerAgent extends Agent
@@ -85,6 +106,11 @@ public class Main
         public ServerAgent( final long id )
         {
             super( id );
+        }
+        
+        @Override
+        public void analyzePacket( final Packet p ) {
+            // TODO Auto-generated method stub
         }
     }
     
@@ -94,6 +120,11 @@ public class Main
         {
             super( id, generator );
         }
+        
+        @Override
+        public void analyzePacket( final Packet p ) {
+            // TODO Auto-generated method stub
+        }
     }
     
     public static void main( final String argv[] ) throws Exception
@@ -101,8 +132,8 @@ public class Main
     	//example1();
     	//example2();
     	//example3();
-        //example4();
-        example5();
+        example4();
+        //example5();
         //example6();
     }
     
@@ -286,7 +317,6 @@ public class Main
     
     public static void example6() throws IOException, SimulatorException
     {
-        // TODO QUESTO TEST HA BISOGNO DI ALTRE RIFINITURE.
         /*
                                    / server1
                         100Mb,2ms /    5ms
@@ -315,11 +345,20 @@ public class Main
                                                       Packet.DYNAMIC );
         Agent server1 = new ResponseServerAgent( 2, generator2 );
         sim.addAgent( server1 );
-        client.connect( server1 );
         
         Agent server2 = new ResponseServerAgent( 3, generator2 );
         sim.addAgent( server2 );
-        client.connect( server2 );
+        
+        MulticastGenerator switchGenerator = new MulticastGenerator( new Time( 2, TimeUnit.SECONDS ),
+                                                                     1L,
+                                                                     new Packet( 40, Size.KB ),
+                                                                     new Packet( 20, Size.KB ) );
+        Agent Switch = new ClientAgent( 1, switchGenerator );
+        sim.addAgent( Switch );
+        Switch.connect( server1 );
+        //Switch.connect( server2 );
+        
+        client.connect( Switch );
         
         sim.start();
         

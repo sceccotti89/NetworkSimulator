@@ -65,7 +65,7 @@ public class NetworkLink
         return _delay;
     }
     
-    public int getLinkType() {
+    public int linkType() {
         return _linkType;
     }
     

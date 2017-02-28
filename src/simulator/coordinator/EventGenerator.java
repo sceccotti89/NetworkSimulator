@@ -29,8 +29,11 @@ public abstract class EventGenerator
     
     protected boolean _activeGenerator = false;
     protected boolean _waitResponse = true;
+    protected boolean _delayResponse = false;
     protected long _packetsInFly = 0;
     protected long _maxPacketsInFly = 0;
+    
+    protected List<Agent> _toAnswer;
     
     
     
@@ -40,6 +43,7 @@ public abstract class EventGenerator
                            final Packet reqPacket,
                            final Packet resPacket,
                            final boolean isActive,
+                           final boolean delayResponse,
                            final boolean waitResponse )
     {
         _time = new Time( 0, TimeUnit.MICROSECONDS );
@@ -50,9 +54,12 @@ public abstract class EventGenerator
         _reqPacket       = reqPacket;
         _resPacket       = resPacket;
         _activeGenerator = isActive;
+        _delayResponse   = delayResponse;
         _waitResponse    = waitResponse;
         
         _destinations = new ArrayList<>();
+        
+        _toAnswer = new ArrayList<>();
     }
     
     public void setAgent( final Agent from ) {
@@ -85,7 +92,7 @@ public abstract class EventGenerator
      * Update the internal state of the generator.</br>
      * The default method reduce by 1 the number of flying packets, but the user can
      * extend it to properly update the generator.</br>
-     * NOTE: this method is called everytime a new event arrived.</br>
+     * NOTE: this method is called everytime a new event arrive.</br>
     */
     public void update() {
         _packetsInFly--;
@@ -114,14 +121,14 @@ public abstract class EventGenerator
     
     /**
      * Generate a new list of events.</br>
-     * NOTE: event can be null.
+     * NOTE: time and event can be null.
      * 
      * @param t    time of the simulator
      * @param e    input event
      * 
-     * @return the new list of events. If the time is expired, {@code null} is returned.
+     * @return the new event, or {@code null} if the time is expired.
     */
-    public List<Event> generate( final Time t, final Event e )
+    public Event generate( final Time t, final Event e )
     {
         //System.out.println( "MY_TIME: " + _time + ", INPUT_TIME: " + t );
         if (t != null && waitForResponse())
@@ -131,36 +138,79 @@ public abstract class EventGenerator
         if (_time.compareTo( _duration ) > 0)
             return null; // No more events from this generator.
         
-        List<Event> events = new ArrayList<>();
+        Event event = null;
         
         //System.out.println( "EVENT: " + e );
-        if (e instanceof ResponseEvent)
+        if (e instanceof ResponseEvent) {
+            //System.out.println( "ID: " + _from.getId() + ", RICEVUTA EVENTO RESPONSE: " + e );
             update();
+        }
         
         if (e instanceof RequestEvent) {
-            // Prepare the response packet.
-            Packet resPacket = _resPacket;
-            if (_resPacket.isDynamic())
-                resPacket = makePacket( e );
-            
-            events.add( new ResponseEvent( _time.clone(), e._to, e._from, resPacket ) );
+            if (_delayResponse/* && !fromDestinationNode( e.getSource().getId() )*/) {
+                // Prepare and send the new request packet to the next node.
+                event = sendRequest( new ResponseEvent( _time.clone(), _from, null, null ) );
+                _toAnswer.add( e.getSource() );
+            } else {
+                //System.out.println( "ID: " + _from.getId() + ", RICEVUTA RICHIESTA: " + e );
+                event = sendResponse( e, e.getDest(), e.getSource() );
+            }
         } else {
-            if (_packetsInFly < _maxPacketsInFly) {
-                _packetsInFly = (_packetsInFly + 1L) % SimulatorUtils.INFINITE;
-                
-                // Prepare the request packet.
-                Packet reqPacket = _reqPacket;
-                if (_resPacket.isDynamic())
-                    reqPacket = makePacket( e );
-                
-                for (Agent dest : _destinations) {
-                    events.add( new RequestEvent( _time.clone(), _from, dest, reqPacket ) );
-                }
+            //System.out.println( "ID: " + _from.getId() + ", RICEVUTA RESPONSE: " + e );
+            if (e != null && !_toAnswer.isEmpty()) {
+                Agent dest = _toAnswer.remove( 0 );
+                event = sendResponse( e, _from, dest );
+            } else {
+                if (_activeGenerator)
+                    event = sendRequest( e );
             }
         }
         
-        return events;
+        return event;
     }
+    
+    /***/
+    private Event sendRequest( final Event e )
+    {
+        Event event = null;
+        if (_packetsInFly < _maxPacketsInFly) {
+            _packetsInFly = (_packetsInFly + 1L) % SimulatorUtils.INFINITE;
+            //System.out.println( "TIME: " + _time + ", ID: " + _from.getId() + ", CREATO EVENTO!" );
+            
+            // Prepare the request packet.
+            Packet reqPacket = _reqPacket;
+            if (_resPacket.isDynamic())
+                reqPacket = makePacket( e );
+            
+            // TODO questo for non sarebbe proprio corretto, bisognerebbe anche qui tenere conto di chi manca da spedire
+            // TODO e farlo uno alla volta
+            for (Agent dest : _destinations) {
+                event = new RequestEvent( _time.clone(), _from, dest, reqPacket );
+            }
+        }
+        
+        return event;
+    }
+    
+    /***/
+    private Event sendResponse( final Event e, final Agent from, final Agent dest )
+    {
+        Packet resPacket = _resPacket;
+        if (_resPacket.isDynamic())
+            resPacket = makePacket( e );
+        
+        return new ResponseEvent( _time.clone(), from, dest, resPacket );
+    }
+    
+    /***/
+    /*private boolean fromDestinationNode( final long id )
+    {
+        for (Agent dest : _destinations) {
+            if (dest.getId() == id)
+                return true;
+        }
+        return false;
+    }*/
     
     public Time getTime() {
         return _time.clone();

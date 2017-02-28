@@ -88,12 +88,10 @@ public class NetworkTopology
             
             NetworkLink _link = new NetworkLink( fromId, destId, bandwith, delay, linkType );
             addLink( _link );
-            _link.toString();
             
             if(linkType == NetworkLink.BIDIRECTIONAL) {
-            	_link = new NetworkLink( destId, fromId, bandwith, delay, linkType );
+                _link = new NetworkLink( destId, fromId, bandwith, delay, linkType );
                 addLink( _link );
-                _link.toString();
             }
         }
         
@@ -105,8 +103,6 @@ public class NetworkTopology
                          final int linkType ) throws SimulatorException
     {
         addLink( new NetworkLink( fromId, destId, bandwith, delay, linkType ) );
-        if(linkType == NetworkLink.BIDIRECTIONAL)
-        	addLink( new NetworkLink( destId, fromId, bandwith, delay, linkType ) );
     }
     
     public void addLink( final NetworkLink link ) throws SimulatorException
@@ -120,6 +116,7 @@ public class NetworkTopology
         if(sLinks == null) sLinks = new ArrayList<NetworkLink>();
         sLinks.add( link );
     	links.put( link.getSourceId(), sLinks );
+    	link.toString();
     }
     
     public NetworkLink getLink( final long sourceId, final long destId )

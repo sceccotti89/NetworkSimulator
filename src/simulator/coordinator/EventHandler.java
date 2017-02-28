@@ -4,7 +4,6 @@
 
 package simulator.coordinator;
 
-import java.util.List;
 import java.util.PriorityQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -43,7 +42,7 @@ public class EventHandler
     {
         long index = 0;
         Event e;
-        while((e = events.poll()) != null) {
+        while ((e = events.poll()) != null) {
             //System.out.println( e );
             if(_time.compareTo(e.getTime()) <= 0) {
                 _time.setTime( e.getTime() );
@@ -62,11 +61,10 @@ public class EventHandler
         }
     }
     
-    public void schedule( final List<Event> _events )
+    public void schedule( final Event e )
     {
-        if (_events != null) {
-            for (Event e : _events)
-                events.add( e );
+        if (e != null) {
+            events.add( e );
         }
     }
     
