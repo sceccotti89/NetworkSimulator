@@ -5,6 +5,7 @@
 package simulator.coordinator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -130,9 +131,9 @@ public abstract class EventGenerator
      * @param t    time of the simulator
      * @param e    input event
      * 
-     * @return the new event, or {@code null} if the time is expired.
+     * @return the new events list, or {@code null} if the time is expired.
     */
-    public Event generate( final Time t, final Event e )
+    public List<Event> generate( final Time t, final Event e )
     {
         //System.out.println( "MY_TIME: " + _time + ", INPUT_TIME: " + t );
         if (t != null && waitForResponse())
@@ -142,7 +143,7 @@ public abstract class EventGenerator
         if (_time.compareTo( _duration ) > 0)
             return null; // No more events from this generator.
         
-        Event event = null;
+        List<Event> events = null;
         
         //System.out.println( "EVENT: " + e );
         if (e instanceof ResponseEvent) {
@@ -153,33 +154,33 @@ public abstract class EventGenerator
         if (e instanceof RequestEvent) {
             if (_delayResponse/* && !fromDestinationNode( e.getSource().getId() )*/) {
                 // Prepare and send the new request packet to the next node.
-                event = sendRequest( new ResponseEvent( _time.clone(), _from, null, null ) );
+                events = sendRequest( new ResponseEvent( _time.clone(), _from, null, null ) );
                 _toAnswer.add( e.getSource() );
             } else {
                 //System.out.println( "ID: " + _from.getId() + ", RICEVUTA RICHIESTA: " + e );
-                event = sendResponse( e, e.getDest(), e.getSource() );
+                events = sendResponse( e, e.getDest(), e.getSource() );
             }
         } else {
             //System.out.println( "ID: " + _from.getId() + ", RICEVUTA RESPONSE: " + e );
             if (e != null && !_toAnswer.isEmpty()) {
                 if (++_destIndex == _destinations.size()) {
                     Agent dest = _toAnswer.remove( 0 );
-                    event = sendResponse( e, _from, dest );
+                    events = sendResponse( e, _from, dest );
                     _destIndex = 0;
                 }
             } else {
                 if (_activeGenerator)
-                    event = sendRequest( e );
+                    events = sendRequest( e );
             }
         }
         
-        return event;
+        return events;
     }
     
     /***/
-    private Event sendRequest( final Event e )
+    private List<Event> sendRequest( final Event e )
     {
-        Event event = null;
+        List<Event> events = null;
         if (_packetsInFly < _maxPacketsInFly) {
             _packetsInFly = (_packetsInFly + _destinations.size()) % SimulatorUtils.INFINITE;
             //System.out.println( "TIME: " + _time + ", ID: " + _from.getId() + ", CREATO EVENTO!" );
@@ -194,22 +195,23 @@ public abstract class EventGenerator
             // TODO e farlo uno alla volta
             // TODO Se pero' inviassi i messaggi in parallelo allora questo andrebbe bene.
             // TODO nel secondo caso dovrebbe spedire una lista di eventi...
+            events = new ArrayList<>( _destinations.size() );
             for (Agent dest : _destinations) {
-                event = new RequestEvent( _time.clone(), _from, dest, reqPacket );
+                events.add( new RequestEvent( _time.clone(), _from, dest, reqPacket ) );
             }
         }
         
-        return event;
+        return events;
     }
     
     /***/
-    private Event sendResponse( final Event e, final Agent from, final Agent dest )
+    private List<Event> sendResponse( final Event e, final Agent from, final Agent dest )
     {
         Packet resPacket = _resPacket;
         if (_resPacket.isDynamic())
             resPacket = makePacket( e );
         
-        return new ResponseEvent( _time.clone(), from, dest, resPacket );
+        return Collections.singletonList( new ResponseEvent( _time.clone(), from, dest, resPacket ) );
     }
     
     /***/

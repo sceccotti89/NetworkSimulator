@@ -56,7 +56,7 @@ public abstract class Agent
     }
     
     /***/
-    public Event fireEvent( final Time t, final Event e )
+    public List<Event> fireEvent( final Time t, final Event e )
     {
         if (_evGenerator != null) {
             return _evGenerator.generate( t, e );

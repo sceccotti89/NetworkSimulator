@@ -4,6 +4,7 @@
 
 package simulator.coordinator;
 
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import simulator.Agent;
@@ -63,9 +64,8 @@ public abstract class Event implements Comparable<Event>
             }
             
             NetworkLink link = net.getLink( nodeId, net.nextNode( nodeId, _to.getId() ).getId() );
-            //System.out.println( "CURRENT_ID: " + nodeId + ", FOUNDED_LINK: " + link );
+            //System.out.println( "NODE_ID: " + nodeId + ", FOUNDED_LINK: " + link );
             if (link != null) {
-                //System.out.println( "CURRENT_ID: " + nodeId + ", FOUNDED_LINK: " + link );
                 // Assign the current node id.
                 _currentNodeId = link.getDestId();
                 long Ttrasm = link.getTtrasm( (long) SimulatorUtils.getSizeInBitFromByte( _packet.getSize(), _packet.getSizeType() ) );
@@ -79,7 +79,7 @@ public abstract class Event implements Comparable<Event>
                 _time.addTime( delay, TimeUnit.MICROSECONDS );
                 
                 // Push-back the modified event into the queue.
-                ev_handler.schedule( this );
+                ev_handler.schedule( Collections.singletonList( this ) );
             }
         }
     }
