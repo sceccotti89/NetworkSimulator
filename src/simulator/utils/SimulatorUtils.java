@@ -8,6 +8,8 @@ import java.util.concurrent.TimeUnit;
 
 public class SimulatorUtils
 {
+    public static final int MILLION = 1000000;
+    
     public static final long INFINITE = Long.MAX_VALUE;
     
 	public enum Size{ B, KB, MB, GB, TB };

@@ -132,9 +132,9 @@ public class Main
     	//example1();
     	//example2();
     	//example3();
-        example4();
+        //example4();
         //example5();
-        //example6();
+        example6();
     }
     
     public static void example1() throws IOException, SimulatorException
@@ -356,7 +356,7 @@ public class Main
         Agent Switch = new ClientAgent( 1, switchGenerator );
         sim.addAgent( Switch );
         Switch.connect( server1 );
-        //Switch.connect( server2 );
+        Switch.connect( server2 );
         
         client.connect( Switch );
         

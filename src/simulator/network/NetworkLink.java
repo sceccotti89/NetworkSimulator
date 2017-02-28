@@ -61,10 +61,6 @@ public class NetworkLink
         return _bandwith;
     }
     
-    public long getDelay() {
-        return _delay;
-    }
-    
     public int linkType() {
         return _linkType;
     }
@@ -73,7 +69,6 @@ public class NetworkLink
     {
         // Ttrasm = size/bandwith
         double Ttrasm = (size / SimulatorUtils.getSizeInBit( _bandwith, SimulatorUtils.Size.MB ));
-        System.out.println( "Ttrasm: " + Ttrasm + "s" );
     	return SimulatorUtils.getTimeInMicroseconds( Ttrasm, TimeUnit.SECONDS );
     }
     

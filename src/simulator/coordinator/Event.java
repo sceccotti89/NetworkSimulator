@@ -63,7 +63,7 @@ public abstract class Event implements Comparable<Event>
             }
             
             NetworkLink link = net.getLink( nodeId, net.nextNode( nodeId, _to.getId() ).getId() );
-            System.out.println( "CURRENT_ID: " + nodeId + ", FOUNDED_LINK: " + link );
+            //System.out.println( "CURRENT_ID: " + nodeId + ", FOUNDED_LINK: " + link );
             if (link != null) {
                 //System.out.println( "CURRENT_ID: " + nodeId + ", FOUNDED_LINK: " + link );
                 // Assign the current node id.
@@ -73,7 +73,9 @@ public abstract class Event implements Comparable<Event>
                 ev_handler.schedule( _from.fireEvent( _time.clone().addTime( Ttrasm, TimeUnit.MICROSECONDS ), null ) );
                 
                 delay += Ttrasm + link.getTprop();
-                //System.out.println( "Delay: " + delay );
+                
+                System.out.println( "Ttrasm: " + ((double) Ttrasm)/((double) SimulatorUtils.MILLION) + "s" );
+                System.out.println( "Tprop:  " + ((double) link.getTprop())/((double) SimulatorUtils.MILLION) + "s" );
                 _time.addTime( delay, TimeUnit.MICROSECONDS );
                 
                 // Push-back the modified event into the queue.

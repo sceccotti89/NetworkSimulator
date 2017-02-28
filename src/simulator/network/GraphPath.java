@@ -58,7 +58,7 @@ public class GraphPath
 			List<QueueNode> node_neighbours = neighbours.get( n._id );
 			if (node_neighbours != null) {
 				for (QueueNode node : node_neighbours) {
-					double dist = Math.max( n._distance, n._distance + getLink( links, n._id, node._id ).getDelay() );
+					double dist = Math.max( n._distance, n._distance + getLink( links, n._id, node._id ).getTprop() );
 					//System.out.println( "NODE: " + node._id + ", DIST: " + dist + ", N_DIST: " + node._distance );
 					if (dist < node._distance) {
 						//System.out.println( "PREDECESSORE: " + node._id + " = " + n._id );

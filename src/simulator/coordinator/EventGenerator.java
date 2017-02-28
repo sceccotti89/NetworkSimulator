@@ -5,6 +5,7 @@
 package simulator.coordinator;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +34,7 @@ public abstract class EventGenerator
     protected long _packetsInFly = 0;
     protected long _maxPacketsInFly = 0;
     
+    protected int _destIndex = 0;
     protected List<Agent> _toAnswer;
     
     
@@ -59,7 +61,7 @@ public abstract class EventGenerator
         
         _destinations = new ArrayList<>();
         
-        _toAnswer = new ArrayList<>();
+        _toAnswer = new LinkedList<>();
     }
     
     public void setAgent( final Agent from ) {
@@ -69,12 +71,14 @@ public abstract class EventGenerator
     public EventGenerator connect( final Agent to )
     {
         _destinations.add( to );
+        _maxPacketsInFly += _destinations.size() - 1;
         return this;
     }
     
     public EventGenerator connectAll( final List<Agent> to )
     {
-        _destinations.addAll( to );
+        for (Agent dest : _destinations)
+            connect( dest );
         return this;
     }
     
@@ -158,8 +162,11 @@ public abstract class EventGenerator
         } else {
             //System.out.println( "ID: " + _from.getId() + ", RICEVUTA RESPONSE: " + e );
             if (e != null && !_toAnswer.isEmpty()) {
-                Agent dest = _toAnswer.remove( 0 );
-                event = sendResponse( e, _from, dest );
+                if (++_destIndex == _destinations.size()) {
+                    Agent dest = _toAnswer.remove( 0 );
+                    event = sendResponse( e, _from, dest );
+                    _destIndex = 0;
+                }
             } else {
                 if (_activeGenerator)
                     event = sendRequest( e );
@@ -174,7 +181,7 @@ public abstract class EventGenerator
     {
         Event event = null;
         if (_packetsInFly < _maxPacketsInFly) {
-            _packetsInFly = (_packetsInFly + 1L) % SimulatorUtils.INFINITE;
+            _packetsInFly = (_packetsInFly + _destinations.size()) % SimulatorUtils.INFINITE;
             //System.out.println( "TIME: " + _time + ", ID: " + _from.getId() + ", CREATO EVENTO!" );
             
             // Prepare the request packet.
@@ -182,8 +189,11 @@ public abstract class EventGenerator
             if (_resPacket.isDynamic())
                 reqPacket = makePacket( e );
             
-            // TODO questo for non sarebbe proprio corretto, bisognerebbe anche qui tenere conto di chi manca da spedire
+            // TODO questo for non sarebbe proprio corretto,
+            // TODO bisognerebbe anche qui tenere conto di chi manca da spedire
             // TODO e farlo uno alla volta
+            // TODO Se pero' inviassi i messaggi in parallelo allora questo andrebbe bene.
+            // TODO nel secondo caso dovrebbe spedire una lista di eventi...
             for (Agent dest : _destinations) {
                 event = new RequestEvent( _time.clone(), _from, dest, reqPacket );
             }
