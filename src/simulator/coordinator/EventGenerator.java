@@ -96,7 +96,7 @@ public abstract class EventGenerator
     /**
      * Update the internal state of the generator.</br>
      * This method is called everytime a new event arrive.</br>
-     * By default it reduces by 1 the number of flying packets, but the user can
+     * By default it reduces by 1 the number of flying packets, but the user can</br>
      * extend it to properly update the generator.</br>
     */
     public void update() {

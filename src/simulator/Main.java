@@ -119,12 +119,14 @@ public class Main
     protected static class ResponseServerAgent extends Agent
     {
         private CPU _cpu;
+        private long totalEnergy;
         
         public ResponseServerAgent( final long id, final EventGenerator generator, final CPU cpu )
         {
             super( id, generator );
             
             _cpu = cpu;
+            totalEnergy = 0;
         }
         
         @Override
@@ -132,9 +134,14 @@ public class Main
         {
             if (_cpu != null) {
                 System.out.println( "SIZE: " + p.getSize() );
-                long energy = _cpu.computeEnergyConsumption( p.getSize(), p.getSizeType() );
+                long energy = _cpu.computeEnergyConsumption( _elapsedTime, p.getSize(), p.getSizeType() );
                 System.out.println( "ENERGY: " + energy );
+                totalEnergy = totalEnergy + energy;
             }
+        }
+        
+        public long getTotalEnergy() {
+            return totalEnergy;
         }
     }
     
@@ -354,7 +361,7 @@ public class Main
         SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
                                                       Packet.DYNAMIC,
                                                       Packet.DYNAMIC );
-        Agent server1 = new ResponseServerAgent( 2, generator2, new CPU( "Xeo Phy", 300 ) );
+        Agent server1 = new ResponseServerAgent( 2, generator2, new CPU( "Xeon Phy", 300 ) );
         sim.addAgent( server1 );
         
         Agent server2 = new ResponseServerAgent( 3, generator2, null );
@@ -374,5 +381,7 @@ public class Main
         sim.start();
         
         sim.stop();
+        
+        System.out.println( "ENERGY: " + ((ResponseServerAgent) server1).getTotalEnergy() );
     }
 }

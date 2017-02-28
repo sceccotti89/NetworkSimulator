@@ -52,6 +52,7 @@ public abstract class Event implements Comparable<Event>
         
         if (nodeId == _to.getId()) {
             System.out.println( "[" + _time + "] Reached destination node: " + node );
+            _to.setElapsedTime( _time.getTimeMicroseconds() );
             _to.analyzePacket( _packet );
             // Prepare the response event.
             ev_handler.schedule( _to.fireEvent( _time.clone(), this ) );

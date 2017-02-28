@@ -54,7 +54,7 @@ public class EventHandler
             System.out.println( "EVENT No: " + (++index) );
             e.execute( e._currentNodeId, this, _network );
             try {
-                Thread.sleep( 1000 );
+                Thread.sleep( 1 );
             } catch (InterruptedException e1) {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();

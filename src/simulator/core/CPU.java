@@ -9,24 +9,31 @@ import simulator.utils.SimulatorUtils.Size;
 public class CPU
 {
     private String _model;
-    private double _frequency;
+    private int _frequency;
     
     /**
      * Create a new CPU object.</br>
      * 
-     * @param freq  the CPU frequency, expressed in MHz
+     * @param model    the CPU model
+     * @param freq     the CPU frequency, expressed in MHz
     */
-    public CPU( final String model, final double freq )
+    public CPU( final String model, final int freq )
     {
         _model = model;
         _frequency = freq;
     }
     
-    public long computeEnergyConsumption( final long input, final Size size )
+    /**
+     * Computes the CPU energy consumption, required to compute the input data.
+     * 
+     * @param elapsedTime    time elapsed from the previous received packet
+     * @param input          the input size
+     * @param size           type of the input size
+    */
+    public long computeEnergyConsumption( final long elapsedTime, final long input, final Size size )
     {
-        // TODO il costo dovrebbe dipendere anche dalla quantia' di carico su quella CPU.
+        // TODO il costo dovrebbe dipendere anche dalla quantita' di carico su quella CPU.
         // TODO Mettere qui tutti i dati raccolti e realizzare una funzione che ne faccia uso.
-        // TODO ovviamente si dovrebbe aggiungere anche l'energia della CPU in idle.
         /*
          * Tcpu = (Nistr / CPI) * frequency
          * 
@@ -36,9 +43,21 @@ public class CPU
          * 
          * Power = Energy/Time  ==>  1W = 1J/s
         */
+        // TODO aggiungere anche l'energia della CPU in idle.
+        // TODO In tal caso eseguire la seguente formula:
+        long cpuTime = timeToCompute( input, size );
+        long idle = Math.max( 0, elapsedTime - cpuTime );
+        long idle_energy = idle * _frequency;
         
-        // TODO implement!!
-        return 42;
+        System.out.println( "ELAPSED_TIME: " + elapsedTime );
+        
+        return idle_energy;
+    }
+    
+    private long timeToCompute( final long input, final Size size )
+    {
+        // TODO to implement..
+        return 22;
     }
     
     public double getFrequency() {

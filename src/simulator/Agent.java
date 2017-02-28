@@ -18,6 +18,9 @@ public abstract class Agent
     protected EventGenerator _evGenerator;
     protected List<Agent> _destinations;
     
+    protected long _lastArrival = 0;
+    protected long _elapsedTime = 0;
+    
     public Agent( final NetworkNode node )
     { this( node.getId(), null ); }
     
@@ -53,7 +56,12 @@ public abstract class Agent
         return _id;
     }
     
-    /***/
+    /**
+     * Returns the next list of events.
+     * 
+     * @param t    
+     * @param e    
+    */
     public List<Event> fireEvent( final Time t, final Event e )
     {
         if (_evGenerator != null) {
@@ -61,6 +69,17 @@ public abstract class Agent
         } else {
             return null;
         }
+    }
+    
+    /**
+     * Sets the time elapsed among two arrived packets.
+     * 
+     * @param time    time when the packet arrive
+    */
+    public void setElapsedTime( final long time )
+    {
+        _elapsedTime = time - _lastArrival;
+        _lastArrival = time;
     }
     
     /**
