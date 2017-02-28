@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import simulator.coordinator.Event;
 import simulator.coordinator.Event.RequestEvent;
 import simulator.coordinator.EventGenerator;
+import simulator.core.CPU;
 import simulator.core.Simulator;
 import simulator.core.Time;
 import simulator.exception.SimulatorException;
@@ -79,7 +80,8 @@ public class Main
         }
         
         @Override
-        public Packet makePacket( final Event e ) {
+        public Packet makePacket( final Event e )
+        {
             if (e instanceof RequestEvent) {
                 return new Packet( 20, Size.KB );
             } else {
@@ -116,14 +118,23 @@ public class Main
     
     protected static class ResponseServerAgent extends Agent
     {
-        public ResponseServerAgent( final long id, final EventGenerator generator )
+        private CPU _cpu;
+        
+        public ResponseServerAgent( final long id, final EventGenerator generator, final CPU cpu )
         {
             super( id, generator );
+            
+            _cpu = cpu;
         }
         
         @Override
-        public void analyzePacket( final Packet p ) {
-            // TODO Auto-generated method stub
+        public void analyzePacket( final Packet p )
+        {
+            if (_cpu != null) {
+                System.out.println( "SIZE: " + p.getSize() );
+                long energy = _cpu.computeEnergyConsumption( p.getSize(), p.getSizeType() );
+                System.out.println( "ENERGY: " + energy );
+            }
         }
     }
     
@@ -272,7 +283,7 @@ public class Main
         SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
                                                       Packet.DYNAMIC,
                                                       Packet.DYNAMIC );
-        Agent server = new ResponseServerAgent( 2, generator2 );
+        Agent server = new ResponseServerAgent( 2, generator2, null );
         sim.addAgent( server );
         
         client.connect( server );
@@ -305,7 +316,7 @@ public class Main
         SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
                                                       Packet.DYNAMIC,
                                                       Packet.DYNAMIC );
-        Agent server = new ResponseServerAgent( 2, generator2 );
+        Agent server = new ResponseServerAgent( 2, generator2, null );
         sim.addAgent( server );
         
         client.connect( server );
@@ -343,10 +354,10 @@ public class Main
         SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
                                                       Packet.DYNAMIC,
                                                       Packet.DYNAMIC );
-        Agent server1 = new ResponseServerAgent( 2, generator2 );
+        Agent server1 = new ResponseServerAgent( 2, generator2, new CPU( "Xeo Phy", 300 ) );
         sim.addAgent( server1 );
         
-        Agent server2 = new ResponseServerAgent( 3, generator2 );
+        Agent server2 = new ResponseServerAgent( 3, generator2, null );
         sim.addAgent( server2 );
         
         MulticastGenerator switchGenerator = new MulticastGenerator( new Time( 2, TimeUnit.SECONDS ),

@@ -49,8 +49,6 @@ public abstract class Agent
         _evGenerator.connectAll( destinations );
     }
     
-    //TODO public abstract void body();
-    
     public long getId() {
         return _id;
     }

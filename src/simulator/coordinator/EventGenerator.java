@@ -95,9 +95,9 @@ public abstract class EventGenerator
     
     /**
      * Update the internal state of the generator.</br>
-     * The default method reduce by 1 the number of flying packets, but the user can
+     * This method is called everytime a new event arrive.</br>
+     * By default it reduces by 1 the number of flying packets, but the user can
      * extend it to properly update the generator.</br>
-     * NOTE: this method is called everytime a new event arrive.</br>
     */
     public void update() {
         _packetsInFly--;
@@ -193,7 +193,7 @@ public abstract class EventGenerator
             // TODO chiedere se quasto for puo' andare bene, o se bisogna inviare un messaggio alla volta.
             events = new ArrayList<>( _destinations.size() );
             for (Agent dest : _destinations) {
-                events.add( new RequestEvent( _time.clone(), _from, dest, reqPacket ) );
+                events.add( new RequestEvent( _time.clone(), _from, dest, reqPacket.clone() ) );
             }
         }
         
@@ -207,7 +207,7 @@ public abstract class EventGenerator
         if (_resPacket.isDynamic())
             resPacket = makePacket( e );
         
-        return Collections.singletonList( new ResponseEvent( _time.clone(), from, dest, resPacket ) );
+        return Collections.singletonList( new ResponseEvent( _time.clone(), from, dest, resPacket.clone() ) );
     }
     
     /***/
