@@ -25,7 +25,7 @@ public abstract class Event implements Comparable<Event>
     
     protected long _currentNodeId = 0;
     
-    // Dimension of the "message".
+    // Message payload.
     protected Packet _packet;
     
     

@@ -190,11 +190,7 @@ public abstract class EventGenerator
             if (_resPacket.isDynamic())
                 reqPacket = makePacket( e );
             
-            // TODO questo for non sarebbe proprio corretto,
-            // TODO bisognerebbe anche qui tenere conto di chi manca da spedire
-            // TODO e farlo uno alla volta
-            // TODO Se pero' inviassi i messaggi in parallelo allora questo andrebbe bene.
-            // TODO nel secondo caso dovrebbe spedire una lista di eventi...
+            // TODO chiedere se quasto for puo' andare bene, o se bisogna inviare un messaggio alla volta.
             events = new ArrayList<>( _destinations.size() );
             for (Agent dest : _destinations) {
                 events.add( new RequestEvent( _time.clone(), _from, dest, reqPacket ) );
