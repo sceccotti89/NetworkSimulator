@@ -72,7 +72,7 @@ public abstract class EventGenerator
     public EventGenerator connect( final Agent to )
     {
         _destinations.add( to );
-        _maxPacketsInFly += _destinations.size() - 1;
+        _maxPacketsInFly += Math.min( 1, _destinations.size() - 1 );
         return this;
     }
     
@@ -177,7 +177,13 @@ public abstract class EventGenerator
         return events;
     }
     
-    /***/
+    /**
+     * Sends a new list of request messages.
+     * 
+     * @param e    the current received event. It could be {@code null}.
+     * 
+     * @return the list of "sent" messages
+    */
     private List<Event> sendRequest( final Event e )
     {
         List<Event> events = null;
@@ -190,7 +196,8 @@ public abstract class EventGenerator
             if (_resPacket.isDynamic())
                 reqPacket = makePacket( e );
             
-            // TODO chiedere se quasto for puo' andare bene, o se bisogna inviare un messaggio alla volta.
+            // TODO chiedere se questo for puo' andare bene
+            // TODO o se bisogna inviare un messaggio alla volta.
             events = new ArrayList<>( _destinations.size() );
             for (Agent dest : _destinations) {
                 events.add( new RequestEvent( _time.clone(), _from, dest, reqPacket.clone() ) );
@@ -200,7 +207,15 @@ public abstract class EventGenerator
         return events;
     }
     
-    /***/
+    /**
+     * Sends a new list of response messages.
+     * 
+     * @param e     the current received event. It could be {@code null}.
+     * @param from  the source node
+     * @param dest  the destination node
+     * 
+     * @return the list of "sent" messages
+    */
     private List<Event> sendResponse( final Event e, final Agent from, final Agent dest )
     {
         Packet resPacket = _resPacket;

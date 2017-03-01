@@ -367,7 +367,7 @@ public class Main
         Agent server2 = new ResponseServerAgent( 3, generator2, null );
         sim.addAgent( server2 );
         
-        MulticastGenerator switchGenerator = new MulticastGenerator( new Time( 2, TimeUnit.SECONDS ),
+        MulticastGenerator switchGenerator = new MulticastGenerator( new Time( 3, TimeUnit.SECONDS ),
                                                                      1L,
                                                                      new Packet( 40, Size.KB ),
                                                                      new Packet( 20, Size.KB ) );
