@@ -193,7 +193,7 @@ public abstract class EventGenerator
             
             // Prepare the request packet.
             Packet reqPacket = _reqPacket;
-            if (_resPacket.isDynamic())
+            if (_reqPacket.isDynamic())
                 reqPacket = makePacket( e );
             
             // TODO chiedere se questo for puo' andare bene
