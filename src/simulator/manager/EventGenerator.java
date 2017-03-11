@@ -162,7 +162,7 @@ public abstract class EventGenerator
      * Returns the departure time of the next event from this node.</br>
      * This method is called only if the specified departure time is
      * {@link simulator.core.Time#DYNAMIC DYNAMIC}.</br>
-     * In case of fixed packet just return {@code null}.
+     * In case of fixed interval just return {@code null}.
      * 
      * @param e    the input event
      * 
