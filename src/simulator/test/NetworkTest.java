@@ -199,10 +199,10 @@ public class NetworkTest
     {
     	//example1();
     	//example2();
-    	example3();
+    	//example3();
         //example4();
         //example5();
-        //example6();
+        example6();
         //example_test();
     	
     	System.out.println( "End of simulation." );

@@ -251,15 +251,9 @@ public abstract class EventGenerator
                 } else {
                     _packetsInFly = (_packetsInFly + 1) % SimulatorUtils.INFINITE;
                     
-                    //events = new ArrayList<>( _destinations.size() );
-                    //for (Agent dest : _destinations) {
-                    //    events.add( new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() ) );
-                    //}
-                    
-                    //System.out.println( "FLY: " + _packetsInFly + ", INIT: " + _initMaxPacketsInFly );
                     Agent dest = _destinations.get( _nextDestIndex );
                     Event request = new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() );
-                    events = new ArrayList<>( Collections.singletonList( request ) );
+                    events = Collections.singletonList( request );
                     if (_packetsInFly % _initMaxPacketsInFly == 0) {
                         // Select the next destination node.
                         _nextDestIndex = (_nextDestIndex + 1) % _destinations.size();
