@@ -1,13 +1,17 @@
 
-package simulator;
+package simulator.test;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import simulator.Agent;
+import simulator.Packet;
 import simulator.coordinator.Event;
 import simulator.coordinator.Event.RequestEvent;
 import simulator.coordinator.EventGenerator;
-import simulator.core.CPU;
 import simulator.core.Simulator;
 import simulator.core.Time;
 import simulator.exception.SimulatorException;
@@ -15,7 +19,7 @@ import simulator.network.NetworkTopology;
 import simulator.utils.SimulatorUtils;
 import simulator.utils.SimulatorUtils.Size;
 
-public class Main
+public class NetworkTest
 {
     protected static class CBRGenerator extends EventGenerator
     {
@@ -31,9 +35,10 @@ public class Main
         public void update() {
             super.update();
         }
-        
+
         @Override
-        public Packet makePacket( final Event e ) {
+        public Time computeDepartureTime( final Event e ) {
+            // TODO Auto-generated method stub
             return null;
         }
     }
@@ -47,9 +52,10 @@ public class Main
         {
             super( duration, Time.ZERO, maxPacketsInFly, reqPacket, resPacket, true, false, true );
         }
-        
+
         @Override
-        public Packet makePacket( final Event e ) {
+        public Time computeDepartureTime( final Event e ) {
+            // TODO Auto-generated method stub
             return null;
         }
     }
@@ -63,9 +69,10 @@ public class Main
         {
             super( duration, Time.ZERO, maxPacketsInFly, reqPacket, resPacket, false, true, true );
         }
-        
+
         @Override
-        public Packet makePacket( final Event e ) {
+        public Time computeDepartureTime( final Event e ) {
+            // TODO Auto-generated method stub
             return null;
         }
     }
@@ -87,6 +94,52 @@ public class Main
             } else {
                 return new Packet( 40, Size.KB );
             }
+        }
+
+        @Override
+        public Time computeDepartureTime( final Event e ) {
+            // TODO Auto-generated method stub
+            return null;
+        }
+    }
+    
+    protected static class ClientTestGenerator extends EventGenerator
+    {
+        private static final String QUERY_TRACE = "Settings/QueryArrivalTrace.txt";
+        
+        private BufferedReader queryReader;
+        
+        public ClientTestGenerator( final Packet reqPacket, final Packet resPacket ) throws FileNotFoundException
+        {
+            super( Time.INFINITE, Time.DYNAMIC, SimulatorUtils.INFINITE,
+                   reqPacket, resPacket, true, false, false );
+            
+            // Open the associated file.
+            queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
+        }
+        
+        @Override
+        public Packet makePacket( final Event e ) {
+            return null;
+        }
+        
+        @Override
+        public Time computeDepartureTime( final Event e )
+        {
+            try {
+                String queryLine = null;
+                if ((queryLine = queryReader.readLine()) != null) {
+                    System.out.println( "QUERY: " + Long.parseLong( queryLine ) );
+                    return new Time( Long.parseLong( queryLine ), TimeUnit.MILLISECONDS );
+                } else {
+                    // No more lines to read.
+                    queryReader.close();
+                }
+            } catch ( IOException e1 ) {
+                System.err.println( e1 );
+            }
+            
+            return null;
         }
     }
     
@@ -118,30 +171,27 @@ public class Main
     
     protected static class ResponseServerAgent extends Agent
     {
-        private CPU _cpu;
-        private long totalEnergy;
-        
-        public ResponseServerAgent( final long id, final EventGenerator generator, final CPU cpu )
+        public ResponseServerAgent( final long id, final EventGenerator generator )
         {
             super( id, generator );
-            
-            _cpu = cpu;
-            totalEnergy = 0;
         }
         
         @Override
-        public void analyzePacket( final Packet p )
+        public void analyzePacket( final Packet p ) {
+            
+        }
+    }
+    
+    protected static class ServerTestAgent extends Agent
+    {
+        public ServerTestAgent( final long id, final EventGenerator generator )
         {
-            if (_cpu != null) {
-                System.out.println( "SIZE: " + p.getSize() );
-                long energy = _cpu.computeEnergyConsumption( _elapsedTime, p.getSize(), p.getSizeType() );
-                System.out.println( "ENERGY: " + energy );
-                totalEnergy = totalEnergy + energy;
-            }
+            super( id, generator );
         }
         
-        public long getTotalEnergy() {
-            return totalEnergy;
+        @Override
+        public void analyzePacket( final Packet p ) {
+            
         }
     }
     
@@ -153,6 +203,9 @@ public class Main
         //example4();
         //example5();
         example6();
+        //example_test();
+    	
+    	System.out.println( "Test over." );
     }
     
     public static void example1() throws IOException, SimulatorException
@@ -290,7 +343,7 @@ public class Main
         SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
                                                       Packet.DYNAMIC,
                                                       Packet.DYNAMIC );
-        Agent server = new ResponseServerAgent( 2, generator2, null );
+        Agent server = new ResponseServerAgent( 2, generator2 );
         sim.addAgent( server );
         
         client.connect( server );
@@ -323,7 +376,7 @@ public class Main
         SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
                                                       Packet.DYNAMIC,
                                                       Packet.DYNAMIC );
-        Agent server = new ResponseServerAgent( 2, generator2, null );
+        Agent server = new ResponseServerAgent( 2, generator2 );
         sim.addAgent( server );
         
         client.connect( server );
@@ -337,7 +390,7 @@ public class Main
     {
         /*
                                    / server1
-                        100Mb,2ms /    5ms
+                        100Mb,2ms /  dynamic
                 70Mb,5ms         /
         client ---------- switch
          10ms               7ms  \
@@ -361,10 +414,10 @@ public class Main
         SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
                                                       Packet.DYNAMIC,
                                                       Packet.DYNAMIC );
-        Agent server1 = new ResponseServerAgent( 2, generator2, new CPU( "Xeon Phy", 300 ) );
+        Agent server1 = new ResponseServerAgent( 2, generator2 );
         sim.addAgent( server1 );
         
-        Agent server2 = new ResponseServerAgent( 3, generator2, null );
+        Agent server2 = new ResponseServerAgent( 3, generator2 );
         sim.addAgent( server2 );
         
         MulticastGenerator switchGenerator = new MulticastGenerator( new Time( 3, TimeUnit.SECONDS ),
@@ -381,7 +434,34 @@ public class Main
         sim.start();
         
         sim.stop();
+    }
+    
+    public static void example_test() throws IOException, SimulatorException
+    {
+        /*
+               InfiniteMb,0ms
+        client --------------> server
+         10ms  <-------------   5ms
+                  100Mb,2ms
+        */
         
-        System.out.println( "ENERGY: " + ((ResponseServerAgent) server1).getTotalEnergy() );
+        NetworkTopology net = new NetworkTopology( "Settings/Topology_test.json" );
+        System.out.println( net.toString() );
+        
+        Simulator sim = new Simulator( net );
+        
+        ClientTestGenerator generator = new ClientTestGenerator( new Packet( 40, Size.KB ),
+                                                                 new Packet( 40, Size.KB ) );
+        Agent client = new ClientAgent( 0, generator );
+        sim.addAgent( client );
+        
+        Agent server = new ServerAgent( 1 );
+        sim.addAgent( server );
+        
+        client.connect( server );
+        
+        sim.start();
+        
+        sim.stop();
     }
 }

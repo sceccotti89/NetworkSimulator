@@ -13,12 +13,12 @@ public class NetworkNode
     private final long   _id;
     private final String _name;
     
-    private final long _delay;
+    private final Time _delay;
     
     private final int _xPos;
     private final int _yPos;
     
-    // Note: used internally tfor the shortest path calculation.
+    // Note: used internally for the shortest path calculation.
     private int _index;
     
     public static final String ID = "id", NAME = "name", DELAY = "delay";
@@ -35,7 +35,7 @@ public class NetworkNode
         _id = id;
         _name = name;
         
-        _delay = new Time( delay, TimeUnit.MILLISECONDS ).getTimeMicroseconds();
+        _delay = new Time( delay, TimeUnit.MILLISECONDS );
         
         _xPos = xPos;
         _yPos = yPos;
@@ -50,7 +50,7 @@ public class NetworkNode
     }
     
     public long getTcalc() {
-        return _delay;
+        return _delay.getTimeMicroseconds();
     }
     
     public int getXPos() {
@@ -74,7 +74,7 @@ public class NetworkNode
     {
         StringBuilder buffer = new StringBuilder( 128 );
         buffer.append( "Id: " + _id + ", Name: \"" + _name +
-                       "\", Delay: " + _delay + "ns\n" );
+                       "\", Delay: " + ((_delay.isDynamic()) ? "Dynamic\n" : _delay + "ns\n") );
         return buffer.toString();
     }
 }

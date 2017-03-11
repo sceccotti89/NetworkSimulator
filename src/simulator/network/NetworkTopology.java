@@ -147,6 +147,20 @@ public class NetworkTopology
         return nodes.get( nodeId );
     }
     
+    /** Compute the shortest path for every node in the network. */
+    public void computeShortestPaths() {
+        GraphPath.computeAllSourcesShortestPath( nodes, links );
+    }
+    
+    /**
+     * Returns next node, according to some internal rule (e.g. shortest path),</br>
+     * starting from the source and arriving to the destination.
+     * 
+     * @param sourceId    starting node identifier
+     * @param destId      destination node identifier
+     * 
+     * @return the next node, if founde, {@code null} otherwise.
+    */
     public NetworkNode nextNode( final long sourceId, final long destId )
     {
     	//System.out.println( "COMPUTING NEXT NODE FROM: " + sourceId );

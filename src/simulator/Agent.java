@@ -15,20 +15,28 @@ import simulator.network.NetworkNode;
 public abstract class Agent
 {
     protected long _id;
+    protected NetworkNode _node;
+    
     protected EventGenerator _evGenerator;
     protected List<Agent> _destinations;
     
     protected long _lastArrival = 0;
     protected long _elapsedTime = 0;
     
-    public Agent( final NetworkNode node )
-    { this( node.getId(), null ); }
     
-    public Agent( final long id )
-    { this( id, null ); }
     
-    public Agent( final NetworkNode node, final EventGenerator evGenerator )
-    { this( node.getId(), evGenerator ); }
+    
+    public Agent( final NetworkNode node ) {
+        this( node.getId() );
+    }
+    
+    public Agent( final long id ) {
+        this( id, null );
+    }
+
+    public Agent( final NetworkNode node, final EventGenerator evGenerator ) {
+        this( node.getId(), evGenerator );
+    }
     
     public Agent( final long id, final EventGenerator evGenerator )
     {
@@ -56,11 +64,15 @@ public abstract class Agent
         return _id;
     }
     
+    public void setNode( final NetworkNode node ) {
+        _node = node;
+    }
+    
     /**
      * Returns the next list of events.
      * 
-     * @param t    
-     * @param e    
+     * @param t    current simulation time
+     * @param e    current event
     */
     public List<Event> fireEvent( final Time t, final Event e )
     {
@@ -74,7 +86,7 @@ public abstract class Agent
     /**
      * Sets the time elapsed among two arrived packets.
      * 
-     * @param time    time when the packet arrive
+     * @param time    time when the arrived packet
     */
     public void setElapsedTime( final long time )
     {
@@ -83,48 +95,11 @@ public abstract class Agent
     }
     
     /**
-     * Analyze the incoming packet.
+     * Analyze the incoming packet.</br>
+     * This method is user-defined, but if the packet doesn't need to be analyzed</br>
+     * just leave it empty.
      * 
      * @param p    the incoming packet
     */
     public abstract void analyzePacket( final Packet p );
-    
-    
-    
-    
-    
-    // TODO queste classi sono inutili, per adesso.
-    /*public static abstract class ActiveAgent extends Agent
-    {
-        public ActiveAgent( final long id, final EventGenerator evGenerator )
-        {
-            super( id, evGenerator );
-        }
-    }
-    
-    public static abstract class PassiveAgent extends Agent
-    {
-        public PassiveAgent( final long id )
-        {
-            super( id );
-        }
-        
-        public PassiveAgent( final long id, final EventGenerator evGenerator )
-        {
-            super( id, evGenerator );
-        }
-    }
-    
-    public static abstract class ActiveAndPassiveAgent extends Agent
-    {
-        public ActiveAndPassiveAgent( final long id )
-        {
-            super( id );
-        }
-        
-        public ActiveAndPassiveAgent( final long id, final EventGenerator evGenerator )
-        {
-            super( id, evGenerator );
-        }
-    }*/
 }

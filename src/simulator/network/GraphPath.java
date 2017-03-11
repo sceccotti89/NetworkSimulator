@@ -13,9 +13,41 @@ import java.util.Queue;
 
 public class GraphPath
 {
+    /* Map of nodeID, List of predecessors */
+    private static Map<Long,NetworkNode[]> shortestPath;
+    
+    public static void computeAllSourcesShortestPath( final Map<Long,NetworkNode> nodes,
+                                                      final Map<Long,List<NetworkLink>> links )
+    {
+        shortestPath = new HashMap<>( nodes.size() );
+        for (NetworkNode node : nodes.values()) {
+            NetworkNode[] pred = getShortestPath( node.getId(), nodes, links );
+            shortestPath.put( node.getId(), pred );
+        }
+    }
+    
     public static NetworkNode[] getShortestPath( final long sourceId,
                                                  final Map<Long,NetworkNode> nodes,
                                                  final Map<Long,List<NetworkLink>> links )
+    {
+        if (shortestPath == null) {
+            shortestPath = new HashMap<>( nodes.size() );
+            NetworkNode[] pred = computeShortestPath( sourceId, nodes, links );
+            shortestPath.put( sourceId, pred );
+            return pred;
+        }
+        
+        NetworkNode[] pred = shortestPath.get( sourceId );
+        if (pred != null) {
+            return pred;
+        } else {
+            return computeShortestPath( sourceId, nodes, links );
+        }
+    }
+    
+    private static NetworkNode[] computeShortestPath( final long sourceId,
+                                                      final Map<Long,NetworkNode> nodes,
+                                                      final Map<Long,List<NetworkLink>> links )
     {
         int size = nodes.size();
         Map<Long, List<QueueNode>> neighbours = new HashMap<>( size );

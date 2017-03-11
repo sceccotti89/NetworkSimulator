@@ -9,14 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import simulator.Agent;
-import simulator.coordinator.EventHandler;
+import simulator.coordinator.EventScheduler;
 import simulator.exception.SimulatorException;
 import simulator.network.NetworkTopology;
 
 public class Simulator
 {
     private NetworkTopology _network;
-    private EventHandler _evHandler;
+    private EventScheduler _evHandler;
     private List<Agent> _agents;
     
     public Simulator()
@@ -28,7 +28,7 @@ public class Simulator
     public Simulator( final NetworkTopology network )
     {
         _network   = network;
-        _evHandler = new EventHandler( network );
+        _evHandler = new EventScheduler( network );
         _agents    = new ArrayList<>();
     }
     
@@ -42,6 +42,8 @@ public class Simulator
             throw new SimulatorException( "A network topology is not setted up." );
         if (!_network.containsNode( agent.getId() ))
             throw new SimulatorException( "No node found for ID: " + agent.getId() );
+        
+        agent.setNode( _network.getNode( agent.getId() ) );
         _agents.add( agent );
     }
     
@@ -53,6 +55,7 @@ public class Simulator
     
     public void start()
     {
+        _network.computeShortestPaths();
         _evHandler.setNetworkTopology( _network );
         
         // Put the first message into the queue.

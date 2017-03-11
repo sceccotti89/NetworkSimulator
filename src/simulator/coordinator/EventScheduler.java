@@ -12,7 +12,7 @@ import simulator.core.Time;
 import simulator.exception.TimeException;
 import simulator.network.NetworkTopology;
 
-public class EventHandler
+public class EventScheduler
 {
     private NetworkTopology _network;
     
@@ -21,7 +21,7 @@ public class EventHandler
     private Time _time = new Time( 0, TimeUnit.MICROSECONDS );
     
     
-    public EventHandler( final NetworkTopology network )
+    public EventScheduler( final NetworkTopology network )
     {
         _network = network;
         _events = new PriorityQueue<Event>();
@@ -44,8 +44,7 @@ public class EventHandler
         long index = 0;
         Event e;
         while ((e = _events.poll()) != null) {
-            //System.out.println( e );
-            if(_time.compareTo(e.getTime()) <= 0) {
+            if (_time.compareTo( e.getTime() ) <= 0) {
                 _time.setTime( e.getTime() );
             } else {
                 throw new TimeException( "You can't go back in time!" );
@@ -54,9 +53,9 @@ public class EventHandler
             System.out.println( "EVENT No: " + (++index) );
             e.execute( e._currentNodeId, this, _network );
             try {
-                Thread.sleep( 1 );
-            } catch (InterruptedException e1) {
-                // TODO Auto-generated catch block
+                Thread.sleep( 000 );
+            } catch ( InterruptedException e1 ) {
+                // TODO Auto-generated catch block: REMOVE THIS AFTER TESTS
                 e1.printStackTrace();
             }
         }

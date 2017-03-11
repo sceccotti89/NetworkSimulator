@@ -45,27 +45,27 @@ public abstract class Event implements Comparable<Event>
         return _time.compareTo( o.getTime() );
     }
     
-    public void execute( final long nodeId, final EventHandler ev_handler, final NetworkTopology net )
+    public void execute( final long nodeId, final EventScheduler ev_handler, final NetworkTopology net )
     {
         NetworkNode node = net.getNode( nodeId );
-        long delay = node.getTcalc();
         
         if (nodeId == _to.getId()) {
             System.out.println( "[" + _time + "] Reached destination node: " + node );
             _to.setElapsedTime( _time.getTimeMicroseconds() );
             _to.analyzePacket( _packet );
-            // Prepare the response event.
-            ev_handler.schedule( _to.fireEvent( _time.clone(), this ) );
+            _time.addTime( node.getTcalc(), TimeUnit.MICROSECONDS );
+            // Prepare and schedule the response event.
+            ev_handler.schedule( _to.fireEvent( _time, this ) );
         } else {
+            long delay = 0;
             if (nodeId == _from.getId()) {
-                Time time = _time.clone().addTime( delay, TimeUnit.MICROSECONDS );
-                System.out.println( "[" + time + "] Starting from node: " + node );
-            } else { 
+                System.out.println( "[" + _time + "] Starting from node: " + node );
+            } else {
+                delay = node.getTcalc();
                 System.out.println( "[" + _time + "] Reached intermediate node: " + node );
             }
             
             NetworkLink link = net.getLink( nodeId, net.nextNode( nodeId, _to.getId() ).getId() );
-            //System.out.println( "NODE_ID: " + nodeId + ", FOUNDED_LINK: " + link );
             if (link != null) {
                 // Assign the current node id.
                 _currentNodeId = link.getDestId();
@@ -101,6 +101,10 @@ public abstract class Event implements Comparable<Event>
         return _currentNodeId;
     }
     
+    public Packet getPacket() {
+        return _packet;
+    }
+    
     
     
     
@@ -115,7 +119,7 @@ public abstract class Event implements Comparable<Event>
         
         @Override
         public String toString()
-        { return "Request: " + _time; }
+        { return "Request Event: " + _time + "ns"; }
     }
     
     public static class ResponseEvent extends Event
@@ -127,6 +131,6 @@ public abstract class Event implements Comparable<Event>
         
         @Override
         public String toString()
-        { return "Response: " + _time; }
+        { return "Response Event: " + _time + "ns"; }
     }
 }
