@@ -389,6 +389,9 @@ public class NetworkTest
     public static void example6() throws IOException, SimulatorException
     {
         /*
+        In case of broacast node it sends the request to all the possible destination,
+        waits for all the answers and replay with just one message (in case of input nodes).
+        
                                    / server1
                         100Mb,2ms /  dynamic
                 70Mb,5ms         /

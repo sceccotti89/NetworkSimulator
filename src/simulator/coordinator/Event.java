@@ -45,6 +45,26 @@ public abstract class Event implements Comparable<Event>
         return _time.compareTo( o.getTime() );
     }
     
+    public Time getTime() {
+        return _time;
+    }
+    
+    public Agent getSource() {
+        return _from;
+    }
+    
+    public Agent getDest() {
+        return _to;
+    }
+    
+    public long getCurrentNodeId() {
+        return _currentNodeId;
+    }
+    
+    public Packet getPacket() {
+        return _packet;
+    }
+    
     public void execute( final long nodeId, final EventScheduler ev_handler, final NetworkTopology net )
     {
         NetworkNode node = net.getNode( nodeId );
@@ -84,30 +104,10 @@ public abstract class Event implements Comparable<Event>
             }
         }
     }
-    
-    public Time getTime() {
-        return _time;
-    }
-    
-    public Agent getSource() {
-        return _from;
-    }
-    
-    public Agent getDest() {
-        return _to;
-    }
-    
-    public long getCurrentNodeId() {
-        return _currentNodeId;
-    }
-    
-    public Packet getPacket() {
-        return _packet;
-    }
-    
-    
-    
-    
+
+
+
+
     /** ======= SPECIALIZED IMPLEMENTATIONS OF EVENT ======= **/
     
     public static class RequestEvent extends Event

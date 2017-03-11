@@ -25,7 +25,7 @@ public abstract class EventGenerator
     protected Packet _reqPacket;
     protected Packet _resPacket;
     
-    protected Agent _from;
+    protected Agent _agent;
     protected List<Agent> _destinations;
     
     protected boolean _activeGenerator = false;
@@ -33,7 +33,10 @@ public abstract class EventGenerator
     protected boolean _delayResponse = false;
     protected Time    _departureTime;
     protected long    _packetsInFly = 0;
+    protected long    _initMaxPacketsInFly;
     protected long    _maxPacketsInFly = 0;
+    
+    private boolean _optimizedMulticast = false;
     
     protected int _destIndex = 0;
     protected List<Agent> _toAnswer;
@@ -60,19 +63,26 @@ public abstract class EventGenerator
         _delayResponse   = delayResponse;
         _waitResponse    = waitResponse;
         
+        _initMaxPacketsInFly = _maxPacketsInFly;
+        
         _destinations = new ArrayList<>();
         
         _toAnswer = new LinkedList<>();
     }
     
-    public void setAgent( final Agent from ) {
-        _from = from;
+    public EventGenerator setOptimizedMulticast( final boolean optimized ) {
+        _optimizedMulticast = optimized;
+        return this;
+    }
+    
+    public void setAgent( final Agent agent ) {
+        _agent = agent;
     }
     
     public EventGenerator connect( final Agent to )
     {
         _destinations.add( to );
-        _maxPacketsInFly += Math.min( 1, _destinations.size() - 1 );
+        _maxPacketsInFly = _initMaxPacketsInFly * _destinations.size();
         return this;
     }
     
@@ -87,6 +97,14 @@ public abstract class EventGenerator
     {
         _waitResponse = flag;
         return this;
+    }
+    
+    public Time getTime() {
+        return _time.clone();
+    }
+    
+    public boolean isActive() {
+        return _activeGenerator;
     }
     
     public boolean waitForResponse() {
@@ -185,7 +203,7 @@ public abstract class EventGenerator
         if (e instanceof RequestEvent) {
             if (_delayResponse) {
                 // Prepare and send the new request packet to the next node.
-                events = sendRequest( new ResponseEvent( _time.clone(), _from, null, null ) );
+                events = sendRequest( new ResponseEvent( _time.clone(), _agent, null, null ) );
                 _toAnswer.add( e.getSource() );
             } else {
                 events = sendResponse( e, e.getDest(), e.getSource() );
@@ -194,7 +212,7 @@ public abstract class EventGenerator
             if (e != null && !_toAnswer.isEmpty()) {
                 if (++_destIndex == _destinations.size()) {
                     Agent dest = _toAnswer.remove( 0 );
-                    events = sendResponse( e, _from, dest );
+                    events = sendResponse( e, _agent, dest );
                     _destIndex = 0;
                 }
             } else {
@@ -217,16 +235,23 @@ public abstract class EventGenerator
     {
         List<Event> events = null;
         if (_packetsInFly < _maxPacketsInFly) {
-            _packetsInFly = (_packetsInFly + _destinations.size()) % SimulatorUtils.INFINITE;
             // Prepare the request packet.
             Packet reqPacket = makePacket( e );
             
             if (reqPacket != null) {
-                // TODO chiedere se questo for puo' andare bene
-                // TODO o se bisogna inviare un messaggio alla volta in caso di piu' destinatari.
-                events = new ArrayList<>( _destinations.size() );
-                for (Agent dest : _destinations) {
-                    events.add( new RequestEvent( _time.clone(), _from, dest, reqPacket.clone() ) );
+                if (_optimizedMulticast) {
+                    _packetsInFly = (_packetsInFly + _destinations.size()) % SimulatorUtils.INFINITE;
+                    events = new ArrayList<>( _destinations.size() );
+                    for (Agent dest : _destinations) {
+                        events.add( new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() ) );
+                    }
+                } else {
+                    _packetsInFly = (_packetsInFly + 1) % SimulatorUtils.INFINITE;
+                    // TODO questo for non andrebbe bene, ma lo lascio solo per completare i test
+                    events = new ArrayList<>( _destinations.size() );
+                    for (Agent dest : _destinations) {
+                        events.add( new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() ) );
+                    }
                 }
             }
         }
@@ -252,13 +277,5 @@ public abstract class EventGenerator
         } else {
             return null;
         }
-    }
-    
-    public Time getTime() {
-        return _time.clone();
-    }
-    
-    public boolean isActive() {
-        return _activeGenerator;
     }
 }
