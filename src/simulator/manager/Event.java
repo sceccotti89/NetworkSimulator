@@ -65,7 +65,7 @@ public abstract class Event implements Comparable<Event>
         return _packet.clone();
     }
     
-    public void execute( final long nodeId, final EventScheduler ev_handler, final NetworkTopology net )
+    final public void execute( final long nodeId, final EventScheduler ev_handler, final NetworkTopology net )
     {
         NetworkNode node = net.getNode( nodeId );
         

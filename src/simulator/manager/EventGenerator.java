@@ -180,7 +180,7 @@ public abstract class EventGenerator
      * 
      * @return the new events list, or {@code null} if the time is expired.
     */
-    public List<Event> generate( final Time t, final Event e )
+    final public List<Event> generate( final Time t, final Event e )
     {
         if (t != null && waitForResponse())
             _time = t;
