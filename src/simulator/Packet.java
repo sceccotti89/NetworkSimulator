@@ -4,6 +4,7 @@
 
 package simulator;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,15 +61,23 @@ public class Packet
     public long getSizeInBytes() {
         return (long) _size.getBytes();
     }
-
+    
     @Override
     public Packet clone()
     {
         Packet p = new Packet( _size.getSize(), _size.getSizeUnit() );
         if (!_contents.isEmpty()) {
             for (Entry<String,Object> entry : _contents.entrySet()) {
-                // FIXME we have to clone the object instead of "entry.getValue()".
-                p.addContent( entry.getKey(), entry.getValue() );
+                Object value = entry.getValue();
+                try {
+                    Method cloneMethod = value.getClass().getMethod( "clone" );
+                    value = cloneMethod.invoke( value );
+                } catch ( final Exception e ) {
+                    // Method "clone" not present for this object.
+                    //e.printStackTrace();
+                }
+                
+                p.addContent( entry.getKey(), value );
             }
         }
         

@@ -38,7 +38,7 @@ public class NetworkLink
         this( sourceId, destId, bandwith, delay, UNIDIRECTIONAL );
     }
     
-    public NetworkLink( final long sourceId, final long destId,
+    public NetworkLink( final long sourceId,   final long destId,
                         final double bandwith, final long delay,
                         final int linkType )
     {

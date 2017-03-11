@@ -144,9 +144,9 @@ public abstract class EventGenerator
     public Packet makePacket( final Event e )
     {
         if (e instanceof RequestEvent) {
-            return _resPacket;
+            return _resPacket.clone();
         } else {
-            return _reqPacket;
+            return _reqPacket.clone();
         }
     }
     
@@ -273,14 +273,15 @@ public abstract class EventGenerator
      * @param from  the source node
      * @param dest  the destination node
      * 
-     * @return the list of "sent" messages
+     * @return the list of respose messages
     */
     private List<Event> sendResponse( final Event e, final Agent from, final Agent dest )
     {
         Packet resPacket = makePacket( e );
         
         if (resPacket != null) {
-            return Collections.singletonList( new ResponseEvent( _time.clone(), from, dest, resPacket.clone() ) );
+            Event response = new ResponseEvent( _time.clone(), from, dest, resPacket );
+            return Collections.singletonList( response );
         } else {
             return null;
         }
