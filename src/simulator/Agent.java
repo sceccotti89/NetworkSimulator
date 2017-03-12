@@ -84,7 +84,7 @@ public abstract class Agent
     }
     
     /**
-     * Sets the time elapsed among two arrived packets.
+     * Sets the time elapsed of two consecutive arrived packets.
      * 
      * @param time    time when the arrived packet
     */
