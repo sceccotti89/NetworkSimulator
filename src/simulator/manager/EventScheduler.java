@@ -38,7 +38,7 @@ public class EventScheduler
     public Time getTime() {
         return _time;
     }
-
+    
     public void doAllEvents()
     {
         long index = 0;
@@ -51,11 +51,12 @@ public class EventScheduler
             }
             
             System.out.println( "EVENT No: " + (++index) );
-            e.execute( e._currentNodeId, this, _network );
+            e.execute( e.getCurrentNodeId(), this, _network );
+            
+            // TODO Auto-generated catch block: REMOVE THIS AFTER TESTS
             try {
                 Thread.sleep( 000 );
             } catch ( InterruptedException e1 ) {
-                // TODO Auto-generated catch block: REMOVE THIS AFTER TESTS
                 e1.printStackTrace();
             }
         }
@@ -76,9 +77,5 @@ public class EventScheduler
     
     public boolean hasNextEvents() {
         return !_events.isEmpty();
-    }
-    
-    public boolean isDone() {
-        return false;
     }
 }

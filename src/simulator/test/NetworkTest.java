@@ -28,7 +28,8 @@ public class NetworkTest
                              final Packet reqPacket,
                              final Packet resPacket )
         {
-            super( duration, departureTime, SimulatorUtils.INFINITE, reqPacket, resPacket, true, false, false );
+            super( duration, departureTime, SimulatorUtils.INFINITE,
+                   reqPacket, resPacket, true, false, false );
         }
         
         @Override
@@ -197,6 +198,7 @@ public class NetworkTest
     
     public static void main( final String argv[] ) throws Exception
     {
+        //example0();
     	//example1();
     	//example2();
     	//example3();
@@ -206,6 +208,36 @@ public class NetworkTest
         //example_test();
     	
     	System.out.println( "End of simulation." );
+    }
+    
+    public static void example0() throws IOException, SimulatorException
+    {
+        /*
+               70Mb,5ms
+        client --------> server
+         10ms             5ms
+        */
+        
+        NetworkTopology net = new NetworkTopology( "Settings/Topology_ex0.json" );
+        System.out.println( net.toString() );
+        
+        Simulator sim = new Simulator( net );
+        
+        CBRGenerator generator = new CBRGenerator( new Time( 20, TimeUnit.SECONDS ),
+                                                   new Time( 5,  TimeUnit.SECONDS ),
+                                                   new Packet( 40, SizeUnit.KILOBYTE ),
+                                                   new Packet( 40, SizeUnit.KILOBYTE ) );
+        Agent client = new ClientAgent( 0, generator );
+        sim.addAgent( client );
+        
+        Agent server = new ServerAgent( 1 );
+        sim.addAgent( server );
+        
+        client.connect( server );
+        
+        sim.start();
+        
+        sim.stop();
     }
     
     public static void example1() throws IOException, SimulatorException

@@ -14,7 +14,7 @@ public class SimulatorUtils
     
     public static long getTimeInMicroseconds( final double time, final TimeUnit tUnit )
     {
-        switch( tUnit ) {
+        switch ( tUnit ) {
             case DAYS:         return (long) (time * 24 * 60 * 60 * 1000L * 1000L);
             case HOURS:        return (long) (time * 60 * 60 * 1000L * 1000L);
             case MINUTES:      return (long) (time * 60 * 1000L * 1000L);

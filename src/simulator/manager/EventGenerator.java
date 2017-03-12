@@ -198,14 +198,13 @@ public abstract class EventGenerator
         
         List<Event> events = null;
         
-        if (e instanceof ResponseEvent) {
+        if (e instanceof ResponseEvent)
             update();
-        }
         
         if (e instanceof RequestEvent) {
             if (_delayResponse) {
                 // Prepare and send the new request packet to the next node.
-                events = sendRequest( new ResponseEvent( _time.clone(), _agent, null, null ) );
+                events = sendRequest( new ResponseEvent( null, _agent, null, null ) );
                 _toAnswer.add( e.getSource() );
             } else {
                 events = sendResponse( e, e.getDest(), e.getSource() );
