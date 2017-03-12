@@ -7,9 +7,9 @@ package simulator;
 import java.util.ArrayList;
 import java.util.List;
 
-import simulator.coordinator.Event;
-import simulator.coordinator.EventGenerator;
 import simulator.core.Time;
+import simulator.manager.Event;
+import simulator.manager.EventGenerator;
 import simulator.network.NetworkNode;
 
 public abstract class Agent

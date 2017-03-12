@@ -2,7 +2,7 @@
  * @author Stefano Ceccotti
 */
 
-package simulator.coordinator;
+package simulator.manager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,9 +12,9 @@ import java.util.concurrent.TimeUnit;
 
 import simulator.Agent;
 import simulator.Packet;
-import simulator.coordinator.Event.RequestEvent;
-import simulator.coordinator.Event.ResponseEvent;
 import simulator.core.Time;
+import simulator.manager.Event.RequestEvent;
+import simulator.manager.Event.ResponseEvent;
 import simulator.utils.SimulatorUtils;
 
 public abstract class EventGenerator

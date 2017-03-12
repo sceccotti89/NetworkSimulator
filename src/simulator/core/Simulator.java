@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import simulator.Agent;
-import simulator.coordinator.EventScheduler;
 import simulator.exception.SimulatorException;
+import simulator.manager.EventScheduler;
 import simulator.network.NetworkTopology;
 
 public class Simulator

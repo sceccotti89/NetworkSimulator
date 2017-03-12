@@ -9,12 +9,12 @@ import java.util.concurrent.TimeUnit;
 
 import simulator.Agent;
 import simulator.Packet;
-import simulator.coordinator.Event;
-import simulator.coordinator.Event.RequestEvent;
-import simulator.coordinator.EventGenerator;
 import simulator.core.Simulator;
 import simulator.core.Time;
 import simulator.exception.SimulatorException;
+import simulator.manager.Event;
+import simulator.manager.EventGenerator;
+import simulator.manager.Event.RequestEvent;
 import simulator.network.NetworkTopology;
 import simulator.utils.SimulatorUtils;
 import simulator.utils.SizeUnit;

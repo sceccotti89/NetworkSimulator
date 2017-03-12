@@ -2,7 +2,7 @@
  * @author Stefano Ceccotti
 */
 
-package simulator.coordinator;
+package simulator.manager;
 
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
