@@ -37,6 +37,8 @@ public abstract class EventGenerator
     protected long    _maxPacketsInFly = 0;
     
     private boolean _optimizedMulticast = false;
+    private int     _nextDestIndex = 0;
+    private boolean _continueToSend = false;
     
     protected int _destIndex = 0;
     protected List<Agent> _toAnswer;
@@ -216,8 +218,9 @@ public abstract class EventGenerator
                     _destIndex = 0;
                 }
             } else {
-                if (_activeGenerator)
+                if (_activeGenerator || _continueToSend) {
                     events = sendRequest( e );
+                }
             }
         }
         
@@ -247,10 +250,20 @@ public abstract class EventGenerator
                     }
                 } else {
                     _packetsInFly = (_packetsInFly + 1) % SimulatorUtils.INFINITE;
-                    // TODO questo for non andrebbe bene, ma lo lascio solo per completare i test
-                    events = new ArrayList<>( _destinations.size() );
-                    for (Agent dest : _destinations) {
-                        events.add( new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() ) );
+                    
+                    //events = new ArrayList<>( _destinations.size() );
+                    //for (Agent dest : _destinations) {
+                    //    events.add( new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() ) );
+                    //}
+                    
+                    //System.out.println( "FLY: " + _packetsInFly + ", INIT: " + _initMaxPacketsInFly );
+                    Agent dest = _destinations.get( _nextDestIndex );
+                    Event request = new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() );
+                    events = new ArrayList<>( Collections.singletonList( request ) );
+                    if (_packetsInFly % _initMaxPacketsInFly == 0) {
+                        // Select the next destination node.
+                        _nextDestIndex = (_nextDestIndex + 1) % _destinations.size();
+                        _continueToSend = (_nextDestIndex != 0);
                     }
                 }
             }
