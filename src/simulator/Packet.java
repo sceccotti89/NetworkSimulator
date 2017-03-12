@@ -8,12 +8,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import simulator.utils.SimulatorUtils.Size;
+import simulator.utils.SizeUnit;
 
 public class Packet
 {
     private long _pktSize;
-    private Size _sizeType = Size.B;
+    private SizeUnit _sizeType = SizeUnit.BYTE;
     private Map<String,Object> _contents;
     
     /**
@@ -24,7 +24,7 @@ public class Packet
     */
     public static final Packet DYNAMIC = new Packet( -1, null );
     
-    public Packet( final long pktSize, final Size sizeType )
+    public Packet( final long pktSize, final SizeUnit sizeType )
     {
         _pktSize = pktSize;
         _sizeType = sizeType;
@@ -35,7 +35,7 @@ public class Packet
         return _pktSize;
     }
     
-    public Size getSizeType() {
+    public SizeUnit getSizeType() {
         return _sizeType;
     }
     

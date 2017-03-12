@@ -17,7 +17,7 @@ import simulator.core.Time;
 import simulator.exception.SimulatorException;
 import simulator.network.NetworkTopology;
 import simulator.utils.SimulatorUtils;
-import simulator.utils.SimulatorUtils.Size;
+import simulator.utils.SizeUnit;
 
 public class NetworkTest
 {
@@ -90,9 +90,9 @@ public class NetworkTest
         public Packet makePacket( final Event e )
         {
             if (e instanceof RequestEvent) {
-                return new Packet( 20, Size.KB );
+                return new Packet( 20, SizeUnit.KILOBYTE );
             } else {
-                return new Packet( 40, Size.KB );
+                return new Packet( 40, SizeUnit.KILOBYTE );
             }
         }
 
@@ -223,8 +223,8 @@ public class NetworkTest
         
         CBRGenerator generator = new CBRGenerator( new Time( 10, TimeUnit.SECONDS ),
                                                    new Time( 5,  TimeUnit.SECONDS ),
-                                                   new Packet( 40, Size.KB ),
-                                                   new Packet( 40, Size.KB ) );
+                                                   new Packet( 40, SizeUnit.KILOBYTE ),
+                                                   new Packet( 40, SizeUnit.KILOBYTE ) );
         Agent client = new ClientAgent( 0, generator );
         sim.addAgent( client );
         
@@ -254,15 +254,15 @@ public class NetworkTest
         
         CBRGenerator generator = new CBRGenerator( new Time( 10, TimeUnit.SECONDS ),
                                                    new Time( 5,  TimeUnit.SECONDS ),
-                                                   new Packet( 40, Size.KB ),
-                                                   new Packet( 40, Size.KB ) );
+                                                   new Packet( 40, SizeUnit.KILOBYTE ),
+                                                   new Packet( 40, SizeUnit.KILOBYTE ) );
         Agent client1 = new ClientAgent( 0, generator );
         sim.addAgent( client1 );
         
         CBRGenerator generator2 = new CBRGenerator( new Time( 5, TimeUnit.SECONDS ),
                                                     new Time( 1, TimeUnit.SECONDS ),
-                                                    new Packet( 20, Size.KB ),
-                                                    new Packet( 40, Size.KB ) );
+                                                    new Packet( 20, SizeUnit.KILOBYTE ),
+                                                    new Packet( 40, SizeUnit.KILOBYTE ) );
         Agent client2 = new ClientAgent( 2, generator2 );
         sim.addAgent( client2 );
         
@@ -294,15 +294,15 @@ public class NetworkTest
         
         CBRGenerator generator1 = new CBRGenerator( new Time( 10, TimeUnit.SECONDS ),
                                                     new Time( 5,  TimeUnit.SECONDS ),
-                                                    new Packet( 40, Size.KB ),
-                                                    new Packet( 40, Size.KB ) );
+                                                    new Packet( 40, SizeUnit.KILOBYTE ),
+                                                    new Packet( 40, SizeUnit.KILOBYTE ) );
         Agent client1 = new ClientAgent( 0, generator1 );
         sim.addAgent( client1 );
         
         CBRGenerator generator2 = new CBRGenerator( new Time( 5, TimeUnit.SECONDS ),
                                                     new Time( 1, TimeUnit.SECONDS ),
-                                                    new Packet( 20, Size.KB ),
-                                                    new Packet( 40, Size.KB ) );
+                                                    new Packet( 20, SizeUnit.KILOBYTE ),
+                                                    new Packet( 40, SizeUnit.KILOBYTE ) );
         Agent client2 = new ClientAgent( 1, generator2 );
         sim.addAgent( client2 );
         
@@ -335,8 +335,8 @@ public class NetworkTest
         
         CBRGenerator generator = new CBRGenerator( new Time( 10, TimeUnit.SECONDS ),
                                                    new Time( 5,  TimeUnit.SECONDS ),
-                                                   new Packet( 40, Size.KB ),
-                                                   new Packet( 20, Size.KB ) );
+                                                   new Packet( 40, SizeUnit.KILOBYTE ),
+                                                   new Packet( 20, SizeUnit.KILOBYTE ) );
         Agent client = new ClientAgent( 0, generator );
         sim.addAgent( client );
         
@@ -368,8 +368,8 @@ public class NetworkTest
         
         ClientGenerator generator = new ClientGenerator( new Time( 2, TimeUnit.SECONDS ),
                                                          2L,
-                                                         new Packet( 40, Size.KB ),
-                                                         new Packet( 20, Size.KB ) );
+                                                         new Packet( 40, SizeUnit.KILOBYTE ),
+                                                         new Packet( 20, SizeUnit.KILOBYTE ) );
         Agent client = new ClientAgent( 0, generator );
         sim.addAgent( client );
         
@@ -409,8 +409,8 @@ public class NetworkTest
         
         ClientGenerator generator = new ClientGenerator( new Time( 2, TimeUnit.SECONDS ),
                                                          1L,
-                                                         new Packet( 40, Size.KB ),
-                                                         new Packet( 20, Size.KB ) );
+                                                         new Packet( 40, SizeUnit.KILOBYTE ),
+                                                         new Packet( 20, SizeUnit.KILOBYTE ) );
         Agent client = new ClientAgent( 0, generator );
         sim.addAgent( client );
         
@@ -425,8 +425,8 @@ public class NetworkTest
         
         MulticastGenerator switchGenerator = new MulticastGenerator( new Time( 3, TimeUnit.SECONDS ),
                                                                      1L,
-                                                                     new Packet( 40, Size.KB ),
-                                                                     new Packet( 20, Size.KB ) );
+                                                                     new Packet( 40, SizeUnit.KILOBYTE ),
+                                                                     new Packet( 20, SizeUnit.KILOBYTE ) );
         Agent Switch = new ClientAgent( 1, switchGenerator );
         sim.addAgent( Switch );
         Switch.connect( server1 );
@@ -453,8 +453,8 @@ public class NetworkTest
         
         Simulator sim = new Simulator( net );
         
-        ClientTestGenerator generator = new ClientTestGenerator( new Packet( 40, Size.KB ),
-                                                                 new Packet( 40, Size.KB ) );
+        ClientTestGenerator generator = new ClientTestGenerator( new Packet( 40, SizeUnit.KILOBYTE ),
+                                                                 new Packet( 40, SizeUnit.KILOBYTE ) );
         Agent client = new ClientAgent( 0, generator );
         sim.addAgent( client );
         

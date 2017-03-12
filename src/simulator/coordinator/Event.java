@@ -89,7 +89,7 @@ public abstract class Event implements Comparable<Event>
             if (link != null) {
                 // Assign the current node id.
                 _currentNodeId = link.getDestId();
-                long Ttrasm = link.getTtrasm( (long) SimulatorUtils.getSizeInBitFromByte( _packet.getSize(), _packet.getSizeType() ) );
+                long Ttrasm = link.getTtrasm( (long) _packet.getSizeType().getBits( _packet.getSize() ) );
                 
                 ev_handler.schedule( _from.fireEvent( _time.clone().addTime( Ttrasm, TimeUnit.MICROSECONDS ), null ) );
                 

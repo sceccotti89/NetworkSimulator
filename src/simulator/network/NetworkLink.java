@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import simulator.core.Time;
 import simulator.utils.SimulatorUtils;
+import simulator.utils.SizeUnit;
 
 /**
  * Link connecting two remote nodes.</br>
@@ -68,7 +69,7 @@ public class NetworkLink
     public long getTtrasm( final long size )
     {
         // Ttrasm = size/bandwith
-        double Ttrasm = (size / SimulatorUtils.getSizeInBit( _bandwith, SimulatorUtils.Size.MB ));
+        double Ttrasm = (size / SizeUnit.getBits( _bandwith, SizeUnit.MEGABIT ));
     	return SimulatorUtils.getTimeInMicroseconds( Ttrasm, TimeUnit.SECONDS );
     }
     
