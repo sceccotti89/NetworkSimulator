@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import simulator.core.Time;
 import simulator.utils.SimulatorUtils;
+import simulator.utils.Size;
 import simulator.utils.SizeUnit;
 
 /**
@@ -20,7 +21,7 @@ public class NetworkLink
     private final long _sourceId;
     private final long _destId;
     
-    private final double _bandwith;
+    private final Size<Double> _bandwith;
     private final long _delay;
     
     private int _linkType;
@@ -44,7 +45,7 @@ public class NetworkLink
         _sourceId = sourceId;
         _destId = destId;
         
-        _bandwith = bandwith;
+        _bandwith = new Size<Double>( bandwith, SizeUnit.MEGABIT );
         _delay = new Time( delay, TimeUnit.MILLISECONDS ).getTimeMicroseconds();
         
         _linkType = linkType;
@@ -59,7 +60,7 @@ public class NetworkLink
     }
     
     public double getBandwith() {
-        return _bandwith;
+        return _bandwith.getSize();
     }
     
     public int linkType() {
@@ -69,8 +70,8 @@ public class NetworkLink
     public long getTtrasm( final long size )
     {
         // Ttrasm = size/bandwith
-        double Ttrasm = (size / SizeUnit.getBits( _bandwith, SizeUnit.MEGABIT ));
-    	return SimulatorUtils.getTimeInMicroseconds( Ttrasm, TimeUnit.SECONDS );
+        double Ttrasm = size / _bandwith.getBits();
+        return SimulatorUtils.getTimeInMicroseconds( Ttrasm, TimeUnit.SECONDS );
     }
     
     public long getTprop() {
@@ -82,7 +83,7 @@ public class NetworkLink
     {
         StringBuilder buffer = new StringBuilder( 128 );
         buffer.append( "SourceId: " + _sourceId + ", DestId: " + _destId +
-                       ", Bandwith: " + _bandwith + " Mb/s, Delay: " + _delay + "ns\n" );
+                       ", Bandwith: " + _bandwith.getSize() + " Mb/s, Delay: " + _delay + "ns\n" );
         return buffer.toString();
     }
 }
