@@ -71,7 +71,6 @@ public abstract class Event implements Comparable<Event>
         
         if (nodeId == _to.getId()) {
             System.out.println( "[" + _time + "] Reached destination node: " + node );
-            //System.out.println( "FROM: " + _from.getId() );
             _from.fireEvent( null, null );
             _to.setElapsedTime( _time.getTimeMicroseconds() );
             _to.analyzePacket( _packet );
@@ -91,9 +90,10 @@ public abstract class Event implements Comparable<Event>
             if (link != null) {
                 // Assign the current node id.
                 _currentNodeId = link.getDestId();
-                long Ttrasm = link.getTtrasm( (long) _packet.getSizeType().getBits( _packet.getSize() ) );
+                long Ttrasm = link.getTtrasm( _packet.getSizeInBits() );
                 
-                ev_handler.schedule( _from.fireEvent( _time.clone().addTime( Ttrasm, TimeUnit.MICROSECONDS ), null ) );
+                Time time = _time.clone().addTime( Ttrasm, TimeUnit.MICROSECONDS );
+                ev_handler.schedule( _from.fireEvent( time, null ) );
                 
                 delay += Ttrasm + link.getTprop();
                 

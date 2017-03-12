@@ -8,12 +8,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import simulator.utils.Size;
 import simulator.utils.SizeUnit;
 
 public class Packet
 {
-    private long _pktSize;
-    private SizeUnit _sizeType = SizeUnit.BYTE;
+    private Size<Long> _size;
     private Map<String,Object> _contents;
     
     /**
@@ -24,19 +24,20 @@ public class Packet
     */
     public static final Packet DYNAMIC = new Packet( -1, null );
     
+    
+    
     public Packet( final long pktSize, final SizeUnit sizeType )
     {
-        _pktSize = pktSize;
-        _sizeType = sizeType;
+        _size = new Size<Long>( pktSize, sizeType );
         _contents = new HashMap<>();
     }
     
     public long getSize() {
-        return _pktSize;
+        return _size.getSize();
     }
     
     public SizeUnit getSizeType() {
-        return _sizeType;
+        return _size.getSizeUnit();
     }
     
     public void addContent( final String field, final Object value ) {
@@ -49,16 +50,24 @@ public class Packet
     }
     
     public boolean isDynamic() {
-        return _pktSize == -1 && _sizeType == null;
+        return _size.getSize() == -1;
     }
     
+    public long getSizeInBits() {
+        return (long) _size.getBits();
+    }
+    
+    public long getSizeInBytes() {
+        return (long) _size.getBytes();
+    }
+
     @Override
     public Packet clone()
     {
-        Packet p = new Packet( _pktSize, _sizeType );
+        Packet p = new Packet( _size.getSize(), _size.getSizeUnit() );
         if (!_contents.isEmpty()) {
             for (Entry<String,Object> entry : _contents.entrySet()) {
-                // FIXME we have to clone the object.
+                // FIXME we have to clone the object instead of "entry.getValue()".
                 p.addContent( entry.getKey(), entry.getValue() );
             }
         }
