@@ -1,14 +1,11 @@
 
 package simulator.graphics;
 
-import java.awt.Color;
-
 import org.newdawn.slick.BasicGame;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.SlickException;
 
-import simulator.graphics.dataButton.SimpleButton;
 import simulator.graphics.interfaces.AnimationManager;
 import simulator.graphics.interfaces.OptionBar;
 import simulator.graphics.interfaces.TimeAnimation;
