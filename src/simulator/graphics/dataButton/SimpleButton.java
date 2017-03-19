@@ -16,20 +16,16 @@ public class SimpleButton extends Button
 	/* il colore del bottone */
 	private Color c;
 	
-	public static UnicodeFont font;
-	public float ratioH = 1.f;
-	/* offset per lo spostamento */
-	private float offset = 20.f;
-	/* i punti del bottone triangolare */
-	float[] points = new float[6];
-	/* lunghezza e altezza del bottone triangolare */
-	int width, height;
+	private static UnicodeFont font;
+	private float ratioH = 1.f;
 	// il rapproto di grandezza del font
-	float ratioFont = 10.0f;
+	private float ratioFont = 10.0f;
 	// determina se il bottone e' cliccabile
-	boolean clickable;
+	private boolean clickable;
 	// l'indice del bottone
-	int index;
+	private int index;
+	/* lunghezza e altezza del bottone triangolare */
+	float width, height;
 
 	/** crea un nuovo bottone rettangolare
 	 * @param x - coordinata X
@@ -44,7 +40,9 @@ public class SimpleButton extends Button
 			c = color;
 
 			this.name = name;
-			buildButton( x, y, width, height, gc );
+			this.width = width;
+			this.height = height;
+			buildButton( x, y, gc );
 			
 			clickable = true;
 			
@@ -52,7 +50,7 @@ public class SimpleButton extends Button
 		}
 	
 	@SuppressWarnings("unchecked")
-	public void buildButton( float x, float y, float width, float height, GameContainer gc ) throws SlickException
+	public void buildButton( float x, float y, GameContainer gc ) throws SlickException
 		{	
 	        ratioFont = ratioFont * ratioH;
 	        
@@ -116,9 +114,12 @@ public class SimpleButton extends Button
 
 			float width = 1.f;
 			if(pressed)
-				font.drawString( rect.getX() + offset/2 + width, rect.getY() + offset/2 + width, name, Color.black );
+				font.drawString( rect.getX() + this.width/2 - font.getWidth( name )/2 + width, rect.getY() + this.height/2 - font.getHeight( name )/2 + width, name, Color.black );
 			else
-				font.drawString( rect.getX() + offset/2, rect.getY() + offset/2, name, Color.black );
+				font.drawString( rect.getX() + this.width/2 - font.getWidth( name )/2, rect.getY() + this.height/2 - font.getHeight( name )/2, name, Color.black );
+				
+				
+				//font.drawString( rect.getX() + offset/2, rect.getY() + offset/2, name, Color.black );
 			
 			if(!active)
 				{
