@@ -4,7 +4,7 @@
 
 package simulator.manager;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import simulator.Agent;
@@ -13,7 +13,7 @@ import simulator.core.Time;
 import simulator.network.NetworkLink;
 import simulator.network.NetworkNode;
 import simulator.network.NetworkTopology;
-import simulator.utils.SimulatorUtils;
+import simulator.utils.Utils;
 
 public abstract class Event implements Comparable<Event>
 {
@@ -28,6 +28,8 @@ public abstract class Event implements Comparable<Event>
     // Message payload.
     protected Packet _packet;
     
+    private long eventID = -1;
+    
     
     public Event( final Time time, final Agent from, final Agent to, final Packet packet )
     {
@@ -40,13 +42,23 @@ public abstract class Event implements Comparable<Event>
         _currentNodeId = from.getId();
     }
     
+    public void setId( final long id ) {
+        if (eventID == -1) {
+            eventID = id;
+        }
+    }
+    
+    public long getId() {
+        return eventID;
+    }
+    
     @Override
     public int compareTo( final Event o ) {
         return _time.compareTo( o.getTime() );
     }
     
     public Time getTime() {
-        return _time;
+        return _time.clone();
     }
     
     public Agent getSource() {
@@ -71,9 +83,24 @@ public abstract class Event implements Comparable<Event>
         
         if (nodeId == _to.getId()) {
             System.out.println( "[" + _time + "] Reached destination node: " + node );
+            
             _to.setElapsedTime( _time.getTimeMicroseconds() );
-            _to.analyzePacket( _packet );
-            _time.addTime( node.getTcalc(), TimeUnit.MICROSECONDS );
+            _to.addEventOnQueue( this );
+            
+            System.out.println( ev_handler.checkForNearEvents( _to.getId(), _to.getTime() ) );
+            List<Event> nodeEvents = ev_handler.checkForNearEvents( _to.getId(), _to.getTime() );
+            if (nodeEvents != null) {
+                // Put the retrieved events into the destination queue.
+                for (Event e: nodeEvents) {
+                    _to.addEventOnQueue( e );
+                }
+            }
+            
+            if (node.getTcalc().isDynamic() && _to != null) {
+                _time.addTime( _to.analyzeEvent( _time, this ) );
+            } else {
+                _time.addTime( node.getTcalc() );
+            }
             // Prepare and schedule the response event.
             ev_handler.schedule( _to.fireEvent( _time, this ) );
         } else {
@@ -81,8 +108,12 @@ public abstract class Event implements Comparable<Event>
             if (nodeId == _from.getId()) {
                 System.out.println( "[" + _time + "] Starting from node: " + node );
             } else {
-                delay = node.getTcalc();
                 System.out.println( "[" + _time + "] Reached intermediate node: " + node );
+                if (node.getTcalc().isDynamic() && node.getAgent() != null) {
+                    delay = node.getAgent().analyzeEvent( _time, this ).getTimeMicroseconds();
+                } else {
+                    delay = node.getTcalc().getTimeMicroseconds();
+                }
             }
             
             NetworkLink link = net.getLink( nodeId, net.nextNode( nodeId, _to.getId() ).getId() );
@@ -96,19 +127,19 @@ public abstract class Event implements Comparable<Event>
                 
                 delay += Ttrasm + link.getTprop();
                 
-                System.out.println( "Ttrasm: " + ((double) Ttrasm)/((double) SimulatorUtils.MILLION) + "s" );
-                System.out.println( "Tprop:  " + ((double) link.getTprop())/((double) SimulatorUtils.MILLION) + "s" );
+                System.out.println( "Ttrasm: " + ((double) Ttrasm)/((double) Utils.MILLION) + "s" );
+                System.out.println( "Tprop:  " + ((double) link.getTprop())/((double) Utils.MILLION) + "s" );
                 _time.addTime( delay, TimeUnit.MICROSECONDS );
                 
                 // Push-back the modified event into the queue.
-                ev_handler.schedule( Collections.singletonList( this ) );
+                ev_handler.schedule( this );
             }
         }
     }
-
-
-
-
+    
+    
+    
+    
     /** ======= SPECIALIZED IMPLEMENTATIONS OF EVENT ======= **/
     
     public static class RequestEvent extends Event

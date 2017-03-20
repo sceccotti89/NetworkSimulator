@@ -16,7 +16,7 @@ import simulator.manager.Event;
 import simulator.manager.EventGenerator;
 import simulator.manager.Event.RequestEvent;
 import simulator.network.NetworkTopology;
-import simulator.utils.SimulatorUtils;
+import simulator.utils.Utils;
 import simulator.utils.SizeUnit;
 
 public class NetworkTest
@@ -28,7 +28,7 @@ public class NetworkTest
                              final Packet reqPacket,
                              final Packet resPacket )
         {
-            super( duration, departureTime, SimulatorUtils.INFINITE,
+            super( duration, departureTime, Utils.INFINITE,
                    reqPacket, resPacket, true, false, false );
         }
         
@@ -39,7 +39,7 @@ public class NetworkTest
 
         @Override
         public Time computeDepartureTime( final Event e ) {
-            // TODO Auto-generated method stub
+            // Empty method.
             return null;
         }
     }
@@ -56,7 +56,7 @@ public class NetworkTest
 
         @Override
         public Time computeDepartureTime( final Event e ) {
-            // TODO Auto-generated method stub
+            // Empty method.
             return null;
         }
     }
@@ -73,7 +73,7 @@ public class NetworkTest
 
         @Override
         public Time computeDepartureTime( final Event e ) {
-            // TODO Auto-generated method stub
+            // Empty method.
             return null;
         }
     }
@@ -99,7 +99,7 @@ public class NetworkTest
 
         @Override
         public Time computeDepartureTime( final Event e ) {
-            // TODO Auto-generated method stub
+            // Empty method.
             return null;
         }
     }
@@ -112,7 +112,7 @@ public class NetworkTest
         
         public ClientTestGenerator( final Packet reqPacket, final Packet resPacket ) throws FileNotFoundException
         {
-            super( Time.INFINITE, Time.DYNAMIC, SimulatorUtils.INFINITE,
+            super( Time.INFINITE, Time.DYNAMIC, Utils.INFINITE,
                    reqPacket, resPacket, true, false, false );
             
             // Open the associated file.
@@ -152,8 +152,9 @@ public class NetworkTest
         }
         
         @Override
-        public void analyzePacket( final Packet p ) {
-            // TODO Auto-generated method stub
+        public Time analyzeEvent( final Time time, final Event e ) {
+            // Empty method.
+            return null;
         }
     }
     
@@ -165,8 +166,9 @@ public class NetworkTest
         }
         
         @Override
-        public void analyzePacket( final Packet p ) {
-            // TODO Auto-generated method stub
+        public Time analyzeEvent( final Time time, final Event e ) {
+            // Empty method.
+            return null;
         }
     }
     
@@ -178,8 +180,9 @@ public class NetworkTest
         }
         
         @Override
-        public void analyzePacket( final Packet p ) {
-            // TODO Auto-generated method stub
+        public Time analyzeEvent( final Time time, final Event e ) {
+            // Empty method.
+            return null;
         }
     }
     
@@ -191,8 +194,9 @@ public class NetworkTest
         }
         
         @Override
-        public void analyzePacket( final Packet p ) {
-            // TODO Auto-generated method stub
+        public Time analyzeEvent( final Time time, final Event e ) {
+            // Empty method.
+            return null;
         }
     }
     
@@ -425,7 +429,7 @@ public class NetworkTest
         waits for all the answers and replay (in case) with just one message to the input node.
         
                                    / server1
-                        100Mb,2ms /  dynamic
+                        100Mb,2ms /    5ms
                 70Mb,5ms         /
         client ---------- switch
          10ms               7ms  \

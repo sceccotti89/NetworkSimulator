@@ -15,7 +15,7 @@ import simulator.Packet;
 import simulator.core.Time;
 import simulator.manager.Event.RequestEvent;
 import simulator.manager.Event.ResponseEvent;
-import simulator.utils.SimulatorUtils;
+import simulator.utils.Utils;
 
 public abstract class EventGenerator
 {
@@ -242,13 +242,13 @@ public abstract class EventGenerator
             
             if (reqPacket != null) {
                 if (_optimizedMulticast) {
-                    _packetsInFly = (_packetsInFly + _destinations.size()) % SimulatorUtils.INFINITE;
+                    _packetsInFly = (_packetsInFly + _destinations.size()) % Utils.INFINITE;
                     events = new ArrayList<>( _destinations.size() );
                     for (Agent dest : _destinations) {
                         events.add( new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() ) );
                     }
                 } else {
-                    _packetsInFly = (_packetsInFly + 1) % SimulatorUtils.INFINITE;
+                    _packetsInFly = (_packetsInFly + 1) % Utils.INFINITE;
                     
                     Agent dest = _destinations.get( _nextDestIndex );
                     Event request = new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() );

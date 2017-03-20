@@ -7,7 +7,7 @@ package simulator.network;
 import java.util.concurrent.TimeUnit;
 
 import simulator.core.Time;
-import simulator.utils.SimulatorUtils;
+import simulator.utils.Utils;
 import simulator.utils.Size;
 import simulator.utils.SizeUnit;
 
@@ -71,7 +71,7 @@ public class NetworkLink
     {
         // Ttrasm = size/bandwith
         double Ttrasm = size / _bandwith.getBits();
-        return SimulatorUtils.getTimeInMicroseconds( Ttrasm, TimeUnit.SECONDS );
+        return Utils.getTimeInMicroseconds( Ttrasm, TimeUnit.SECONDS );
     }
     
     public long getTprop() {

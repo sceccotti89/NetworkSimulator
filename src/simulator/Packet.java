@@ -17,6 +17,9 @@ public class Packet
     private Size<Long> _size;
     private Map<String,Object> _contents;
     
+    
+    
+    
     /**
      * Type of packet used to tell the event generator that it's defined by the user.</br>
      * The definition of a dynamic packet is the following:
@@ -48,6 +51,10 @@ public class Packet
     @SuppressWarnings("unchecked")
     public <T> T getContent( final String field ) {
         return (T) _contents.get( field );
+    }
+    
+    public Map<String,Object> getContents() {
+        return _contents;
     }
     
     public boolean isDynamic() {

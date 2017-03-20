@@ -6,7 +6,7 @@ package simulator.utils;
 
 import java.util.concurrent.TimeUnit;
 
-public class SimulatorUtils
+public class Utils
 {
     public static final int MILLION = 1000000;
     

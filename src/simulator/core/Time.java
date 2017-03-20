@@ -52,13 +52,17 @@ public class Time implements Comparable<Time>
     
     /**
      * Type of time used to tell the event generator that it's defined by the user.</br>
-     * The definition of a dynamic time is the following:
+     * The definition of a dynamic time is one as following:
      * <p>
-     * {@code new ImmutableTime( -1, TimeUnit.* )}
+     * {@code new Time( -1, TimeUnit.* )}
+     * <p>
+     * where the first parameter is a number < 0, with any {@linkplain TimeUnit}.
     */
     public static final Time DYNAMIC = new ImmutableTime( -1, TimeUnit.MICROSECONDS );
     
     private long time;
+    
+    
     
     public Time( final long time, final TimeUnit unit ) {
         this.time = unit.toMicros( time );

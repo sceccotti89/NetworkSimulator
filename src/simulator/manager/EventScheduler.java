@@ -4,6 +4,7 @@
 
 package simulator.manager;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.concurrent.TimeUnit;
@@ -19,6 +20,10 @@ public class EventScheduler
     private PriorityQueue<Event> _events;
     /** Simulator time in microseconds. */
     private Time _time = new Time( 0, TimeUnit.MICROSECONDS );
+    
+    // TODO Mettere un delay di qualche microsecondo: concordare con il proffe.
+    // TODO anche se formalmente il delay andrebbe calcolato in base al tipo di calcolo da eseguire.
+    private static final Time DELAY = new Time( 500, TimeUnit.MICROSECONDS );
     
     
     public EventScheduler( final NetworkTopology network )
@@ -41,7 +46,7 @@ public class EventScheduler
     
     public void doAllEvents()
     {
-        long index = 0;
+        long index = 1;
         Event e;
         while ((e = _events.poll()) != null) {
             if (_time.compareTo( e.getTime() ) <= 0) {
@@ -50,27 +55,51 @@ public class EventScheduler
                 throw new TimeException( "You can't go back in time!" );
             }
             
-            System.out.println( "EVENT No: " + (++index) );
+            e.setId( index++ );
+            System.out.println( "EVENT No: " + index );
             e.execute( e.getCurrentNodeId(), this, _network );
-            
-            // TODO Auto-generated catch block: REMOVE THIS AFTER TESTS
-            try {
-                Thread.sleep( 000 );
-            } catch ( InterruptedException e1 ) {
-                e1.printStackTrace();
-            }
         }
     }
     
-    public void schedule( final List<Event> events )
+    /**
+     * Checks in the queue if the time of an event lies between the current time
+     * and a delayed one, where delay is evaluated in some microseconds.
+     * 
+     * @param id      identifier of the calling node
+     * @param time    time of the calling node
+     * 
+     * @return list of events associated to the input node.
+    */
+    public List<Event> checkForNearEvents( final long id, final Time time )
     {
+        Time delayed = time.clone().addTime( DELAY );
+        List<Event> nodeEvents = null;
+        System.out.println( "TIME: " + time + ", DELAYED: " + delayed );
+        for (Event e : _events) {
+            if (e.getCurrentNodeId() == id && e.getDest().getId() == id && e.getTime().compareTo( delayed ) <= 0) {
+                // Founded an event whose destination is the input one.
+                System.out.println( "E_TIME: " + e.getTime() + ", CURRENT: " + e.getCurrentNodeId() + ", IN_ID: " + id );
+                if (nodeEvents == null)
+                    nodeEvents = new ArrayList<>();
+                nodeEvents.add( e );
+            }
+        }
+        return nodeEvents;
+    }
+    
+    public void schedule( final Event event ) {
+        if (event != null) {
+            _events.add( event );
+        }
+    }
+    
+    public void schedule( final List<Event> events ) {
         if (events != null) {
             _events.addAll( events );
         }
     }
     
-    public void remove( final Event e )
-    {
+    public void remove( final Event e ) {
         if (e != null)
             _events.remove( e );
     }

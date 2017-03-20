@@ -6,6 +6,7 @@ package simulator.network;
 
 import java.util.concurrent.TimeUnit;
 
+import simulator.Agent;
 import simulator.core.Time;
 
 public class NetworkNode
@@ -21,8 +22,15 @@ public class NetworkNode
     // Note: used internally for the shortest path calculation.
     private int _index;
     
+    // Associated agent.
+    private Agent _agent;
+    
     public static final String ID = "id", NAME = "name", DELAY = "delay";
     public static final String X_POS = "xPos", Y_POS = "yPos";
+    
+    
+    
+    
     
     public NetworkNode( final long id, final String name, final long delay )
     {
@@ -49,8 +57,8 @@ public class NetworkNode
         return _name;
     }
     
-    public long getTcalc() {
-        return _delay.getTimeMicroseconds();
+    public Time getTcalc() {
+        return _delay.clone();
     }
     
     public int getXPos() {
@@ -59,6 +67,14 @@ public class NetworkNode
     
     public int getYPos() {
         return _yPos;
+    }
+    
+    public void setAgent( final Agent agent ) {
+        _agent = agent;
+    }
+    
+    public Agent getAgent() {
+        return _agent;
     }
     
     public void setIndex( final int index ) {
