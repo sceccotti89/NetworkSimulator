@@ -16,7 +16,7 @@ public class AnimationManager implements AnimationInterface
 {
     private float width, height;
     
-    private Rectangle speed;
+    private Rectangle speed, showFrame;
     
     private ArrayList<SimpleButton> buttons;
     private SimpleButton start, stop, pause, plus, minus;
@@ -40,13 +40,19 @@ public class AnimationManager implements AnimationInterface
         minus = new SimpleButton( pause.getMaxX() + gc.getWidth()/15, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, MINUS, Color.yellow, 3, gc );
         plus = new SimpleButton( pause.getMaxX() + gc.getWidth()/4, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, PLUS, Color.yellow, 4, gc );
         
-        speed = new Rectangle( pause.getMaxX(), startY, gc.getWidth() - pause.getMaxX(), height );
+        speed     = new Rectangle( pause.getMaxX(), startY, gc.getWidth() - pause.getMaxX(), height );
+        // TODO DA SISTEMARE LA POSIZIONE DEL RETTANGOLO
+        showFrame = new Rectangle( minus.getMaxX() + (plus.getX() - minus.getMaxX())/2, minus.getY() + gc.getHeight()/40, gc.getWidth()/10*String.valueOf( frame ).length()/2 + gc.getWidth()/20, gc.getHeight()/20 );
         
         buttons.add( start );
         buttons.add( stop );
         buttons.add( pause );
         buttons.add( plus );
         buttons.add( minus );
+    }
+    
+    public void setLenghtShowFrame( GameContainer gc ){
+    	showFrame.setWidth( String.valueOf( frame ).length()*gc.getWidth()/10 + gc.getWidth()/20 );
     }
     
     @Override
@@ -66,9 +72,11 @@ public class AnimationManager implements AnimationInterface
 					ob.resetAllButtons();
 					if(button.getName().equals( PLUS )){
 						frame = Math.min( 100, frame + 10 );
+						setLenghtShowFrame( gc );
 					}
 					else if(button.getName().equals( MINUS )){
 						frame = Math.max( 0, frame - 10 );
+						setLenghtShowFrame( gc );
 					}
 					else if(button.getName().equals( START )){
 						nd.startAnimation();
@@ -104,6 +112,7 @@ public class AnimationManager implements AnimationInterface
     	}
     	
     	g.setColor( Color.black );
+    	g.draw( showFrame );
     	g.drawString( String.valueOf( frame ), plus.getMaxX() + (minus.getX() - plus.getMaxX())/2 - String.valueOf( frame ).length()/2*gc.getWidth()/80, plus.getY() + (plus.getMaxY() - plus.getY())/4 );
     }
     
