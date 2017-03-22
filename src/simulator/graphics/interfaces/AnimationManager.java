@@ -14,36 +14,35 @@ import simulator.graphics.dataButton.SimpleButton;
 
 public class AnimationManager implements AnimationInterface
 {
-    private Rectangle play, stop, pause, fastSlow;
     private float width, height;
     
+    private Rectangle speed;
+    
     private ArrayList<SimpleButton> buttons;
-    private SimpleButton start, fermo, pausa, speed;
+    private SimpleButton start, stop, pause, plus, minus;
     
     private int mouseX, mouseY;
     
     public AnimationManager( final GameContainer gc, final float startY ) throws SlickException
     {
         height = gc.getHeight()*10/75;
-        width = gc.getWidth()*10/53;
+        width  = gc.getWidth()*10/53;
         
         buttons = new ArrayList<SimpleButton>();
-        
-        play     = new Rectangle( 0, startY, width, height );
-        stop     = new Rectangle( play.getMaxX(), startY, width, height );
-        pause    = new Rectangle( stop.getMaxX(), startY, width, height );
-        fastSlow = new Rectangle( pause.getMaxX(), startY, gc.getWidth() - pause.getMaxX(), height );
-        
-        // TODO COMPLETARE I VARI BOTTONI        
+              
         start = new SimpleButton( 0, startY, width, height, "START", Color.gray, 0, gc );
-        fermo = new SimpleButton( start.getMaxX(), startY, width, height, "STOP", Color.gray, 1, gc );
-        pausa = new SimpleButton( fermo.getMaxX(), startY, width, height, "PAUSE", Color.gray, 2, gc );
-        speed = new SimpleButton( pausa.getMaxX(), startY, gc.getWidth() - pause.getMaxX(), height, "SPEED", Color.gray, 3, gc );
+        stop = new SimpleButton( start.getMaxX(), startY, width, height, "STOP", Color.gray, 1, gc );
+        pause = new SimpleButton( stop.getMaxX(), startY, width, height, "PAUSE", Color.gray, 2, gc );
+        plus = new SimpleButton( pause.getMaxX() + gc.getWidth()/40, startY + gc.getHeight()/20, gc.getWidth()/40, gc.getHeight()/30, "PLUS", Color.yellow, 3, gc );
+        minus = new SimpleButton( pause.getMaxX() + gc.getWidth()/5, startY + gc.getHeight()/20, gc.getWidth()/40, gc.getHeight()/30, "MINUS", Color.yellow, 4, gc );
+        
+        speed = new Rectangle( pause.getMaxX(), startY, gc.getWidth() - pause.getMaxX(), height );
         
         buttons.add( start );
-        buttons.add( fermo );
-        buttons.add( pausa );
-        buttons.add( speed );
+        buttons.add( stop );
+        buttons.add( pause );
+        buttons.add( plus );
+        buttons.add( minus );
     }
     
     @Override
@@ -70,16 +69,13 @@ public class AnimationManager implements AnimationInterface
     
     @Override
     public void render( final Graphics g )
-    {
-        g.draw( play );
-        g.draw( stop );
-        g.draw( pause );
-        g.draw( fastSlow );
-        
-        start.draw( g );
-        fermo.draw( g );
-        pausa.draw( g );
-        speed.draw( g );
+    {    	
+    	//g.setColor( Color.gray );
+    	g.fill( speed );
+    	
+    	for(SimpleButton button: buttons){
+    		button.draw( g );
+    	}
     }
     
     public void resetAllButtons()

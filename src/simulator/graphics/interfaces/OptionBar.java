@@ -67,10 +67,9 @@ public class OptionBar implements AnimationInterface
     @Override
     public void render( final Graphics g )
     {
-        g.draw( barOptions );
-        
-        file.draw( g );
-        options.draw( g );
+    	for(SimpleButton button: buttons){
+    		button.draw( g );
+    	}
     }
     
     public void resetAllButtons()
