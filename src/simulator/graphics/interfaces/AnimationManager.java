@@ -91,6 +91,9 @@ public class AnimationManager implements AnimationInterface
     	for(SimpleButton button: buttons){
     		button.draw( g );
     	}
+    	
+    	g.setColor( Color.black );
+    	g.drawString( String.valueOf( frame ), plus.getMaxX() + (minus.getX() - plus.getMaxX())/2 - String.valueOf( frame ).length()/2, plus.getY() + (plus.getMaxY() - plus.getY())/4 );
     }
     
     public void resetAllButtons()

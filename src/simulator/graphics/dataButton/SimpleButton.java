@@ -103,6 +103,9 @@ public class SimpleButton extends Button
 	
 	public float getMaxX()
 		{ return rect.getMaxX(); }
+	
+	public float getMaxY()
+		{ return rect.getMaxY(); }
 
 	public void draw( Graphics g )
 		{
