@@ -8,6 +8,7 @@ import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 
 import simulator.graphics.interfaces.AnimationManager;
+import simulator.graphics.interfaces.NetworkDisplay;
 import simulator.graphics.interfaces.OptionBar;
 import simulator.graphics.interfaces.TimeAnimation;
 
@@ -16,6 +17,7 @@ public class AnimationNetwork extends BasicGame
     private OptionBar ob;
     private AnimationManager am;
     private TimeAnimation ta;
+    private NetworkDisplay nd; 
     
     private boolean leftMouse;
     
@@ -30,6 +32,7 @@ public class AnimationNetwork extends BasicGame
         ob = new OptionBar( gc );
         am = new AnimationManager( gc, ob.getMaxY() );
         ta = new TimeAnimation();
+        nd = new NetworkDisplay();
     }
 
     @Override
@@ -37,9 +40,9 @@ public class AnimationNetwork extends BasicGame
     {
     	leftMouse = gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON );
     	
-    	ob.update( gc, delta, gc.getInput(), leftMouse, ob, am, ta );
-    	am.update( gc, delta, gc.getInput(), leftMouse, ob, am, ta );
-    	ta.update( gc, delta, gc.getInput(), leftMouse, ob, am, ta );
+    	ob.update( gc, delta, gc.getInput(), leftMouse, ob, am, ta, nd );
+    	am.update( gc, delta, gc.getInput(), leftMouse, ob, am, ta, nd );
+    	ta.update( gc, delta, gc.getInput(), leftMouse, ob, am, ta, nd );
     }
 
     @Override

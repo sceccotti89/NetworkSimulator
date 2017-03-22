@@ -11,7 +11,7 @@ public class TimeAnimation implements AnimationInterface
     private Rectangle barTiming  = new Rectangle( 0, 520, 800, 80 );
     
     @Override
-    public void update( final GameContainer gc, final int delta, final Input input, final boolean leftMouse, final OptionBar ob, final AnimationManager am, final TimeAnimation ta)
+    public void update( final GameContainer gc, final int delta, final Input input, final boolean leftMouse, final OptionBar ob, final AnimationManager am, final TimeAnimation ta, final NetworkDisplay nd )
     {
         
     }
