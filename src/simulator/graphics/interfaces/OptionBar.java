@@ -24,6 +24,8 @@ public class OptionBar implements AnimationInterface
     
     private int mouseX, mouseY;
     
+    private String FILE = "File", OPTIONS = "Options";
+    
     public OptionBar( GameContainer gc ) throws SlickException
 	{
     	width  = gc.getWidth()/10;
@@ -31,8 +33,8 @@ public class OptionBar implements AnimationInterface
     	
     	buttons = new ArrayList<SimpleButton>();
     	
-		file    = new SimpleButton( 0, 0, width, height, "File", Color.gray, 0, gc );
-		options = new SimpleButton( file.getMaxX(), 0, width, height, "Options", Color.gray, 1, gc );
+		file    = new SimpleButton( 0, 0, width, height, FILE, Color.gray, 0, gc );
+		options = new SimpleButton( file.getMaxX(), 0, width, height, OPTIONS, Color.gray, 1, gc );
 		
 		buttons.add( file );
 		buttons.add( options );
