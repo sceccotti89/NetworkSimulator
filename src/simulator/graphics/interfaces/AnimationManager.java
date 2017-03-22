@@ -23,6 +23,10 @@ public class AnimationManager implements AnimationInterface
     
     private int mouseX, mouseY;
     
+    private int frame = 0;
+    
+    private String START = "Start", STOP = "Stop", PAUSE = "Pause", PLUS = "Plus", MINUS = "Minus";
+    
     public AnimationManager( final GameContainer gc, final float startY ) throws SlickException
     {
         height = gc.getHeight()*10/75;
@@ -30,11 +34,11 @@ public class AnimationManager implements AnimationInterface
         
         buttons = new ArrayList<SimpleButton>();
               
-        start = new SimpleButton( 0, startY, width, height, "START", Color.gray, 0, gc );
-        stop = new SimpleButton( start.getMaxX(), startY, width, height, "STOP", Color.gray, 1, gc );
-        pause = new SimpleButton( stop.getMaxX(), startY, width, height, "PAUSE", Color.gray, 2, gc );
-        plus = new SimpleButton( pause.getMaxX() + gc.getWidth()/40, startY + gc.getHeight()/20, gc.getWidth()/40, gc.getHeight()/30, "PLUS", Color.yellow, 3, gc );
-        minus = new SimpleButton( pause.getMaxX() + gc.getWidth()/5, startY + gc.getHeight()/20, gc.getWidth()/40, gc.getHeight()/30, "MINUS", Color.yellow, 4, gc );
+        start = new SimpleButton( 0, startY, width, height, START, Color.gray, 0, gc );
+        stop = new SimpleButton( start.getMaxX(), startY, width, height, STOP, Color.gray, 1, gc );
+        pause = new SimpleButton( stop.getMaxX(), startY, width, height, PAUSE, Color.gray, 2, gc );
+        plus = new SimpleButton( pause.getMaxX() + gc.getWidth()/15, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, PLUS, Color.yellow, 3, gc );
+        minus = new SimpleButton( pause.getMaxX() + gc.getWidth()/4, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, MINUS, Color.yellow, 4, gc );
         
         speed = new Rectangle( pause.getMaxX(), startY, gc.getWidth() - pause.getMaxX(), height );
         
@@ -55,11 +59,17 @@ public class AnimationManager implements AnimationInterface
 			for(SimpleButton button: buttons){
 				if(button.checkClick( mouseX, mouseY )){
 					ob.resetAllButtons();
-					for(SimpleButton obj: buttons){
-						if(obj != button && obj.isPressed()){
-							obj.setPressed();
-						}
+					if(button.getName().equals( PLUS )){
+						frame = Math.min( 100, frame + 10 );
 					}
+					else if(button.getName().equals( MINUS )){
+						frame = Math.max( 0, frame - 10 );
+					}
+					else for(SimpleButton obj: buttons){
+							if(obj != button && obj.isPressed()){
+								obj.setPressed();
+							}
+						}
 					
 					button.setPressed();
 				}
@@ -70,7 +80,7 @@ public class AnimationManager implements AnimationInterface
     @Override
     public void render( final Graphics g )
     {    	
-    	//g.setColor( Color.gray );
+    	g.setColor( Color.gray );
     	g.fill( speed );
     	
     	for(SimpleButton button: buttons){
