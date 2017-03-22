@@ -55,6 +55,11 @@ public class AnimationManager implements AnimationInterface
     	mouseX = input.getMouseX();
 		mouseY = input.getMouseY();
 		
+		if(plus.isPressed())
+			plus.setPressed();
+		else if(minus.isPressed())
+			minus.setPressed();
+		
 		if(leftMouse){
 			for(SimpleButton button: buttons){
 				if(button.checkClick( mouseX, mouseY )){
@@ -65,11 +70,11 @@ public class AnimationManager implements AnimationInterface
 					else if(button.getName().equals( MINUS )){
 						frame = Math.max( 0, frame - 10 );
 					}
-					else for(SimpleButton obj: buttons){
-							if(obj != button && obj.isPressed()){
-								obj.setPressed();
-							}
+					for(SimpleButton obj: buttons){
+						if(obj != button && obj.isPressed()){
+							obj.setPressed();
 						}
+					}
 					
 					button.setPressed();
 				}
