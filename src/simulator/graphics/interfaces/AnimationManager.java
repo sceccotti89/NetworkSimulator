@@ -37,8 +37,8 @@ public class AnimationManager implements AnimationInterface
         start = new SimpleButton( 0, startY, width, height, START, Color.gray, 0, gc );
         stop = new SimpleButton( start.getMaxX(), startY, width, height, STOP, Color.gray, 1, gc );
         pause = new SimpleButton( stop.getMaxX(), startY, width, height, PAUSE, Color.gray, 2, gc );
-        plus = new SimpleButton( pause.getMaxX() + gc.getWidth()/15, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, PLUS, Color.yellow, 3, gc );
-        minus = new SimpleButton( pause.getMaxX() + gc.getWidth()/4, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, MINUS, Color.yellow, 4, gc );
+        minus = new SimpleButton( pause.getMaxX() + gc.getWidth()/15, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, MINUS, Color.yellow, 3, gc );
+        plus = new SimpleButton( pause.getMaxX() + gc.getWidth()/4, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, PLUS, Color.yellow, 4, gc );
         
         speed = new Rectangle( pause.getMaxX(), startY, gc.getWidth() - pause.getMaxX(), height );
         
@@ -93,7 +93,7 @@ public class AnimationManager implements AnimationInterface
     	}
     	
     	g.setColor( Color.black );
-    	g.drawString( String.valueOf( frame ), plus.getMaxX() + (minus.getX() - plus.getMaxX())/2 - String.valueOf( frame ).length()/2, plus.getY() + (plus.getMaxY() - plus.getY())/4 );
+    	g.drawString( String.valueOf( frame ), plus.getMaxX() + (minus.getX() - plus.getMaxX())/2 - String.valueOf( frame ).length()/2*10, plus.getY() + (plus.getMaxY() - plus.getY())/4 );
     }
     
     public void resetAllButtons()
