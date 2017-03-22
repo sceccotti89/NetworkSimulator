@@ -6,6 +6,10 @@ public class NetworkDisplay
 		
 	}
 	
+	public void pauseAnimation(){
+		
+	}
+	
 	public void stopAnimation(){
 		
 	}
