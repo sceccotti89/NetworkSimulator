@@ -17,8 +17,10 @@ public class TimeAnimation implements AnimationInterface
     }
     
     @Override
-    public void render( final Graphics g )
+    public void render( final GameContainer gc )
     {
+    	Graphics g = gc.getGraphics();
+    	
         g.draw( barTiming );
     }
 }

@@ -65,8 +65,10 @@ public class OptionBar implements AnimationInterface
     }
     
     @Override
-    public void render( final Graphics g )
+    public void render( final GameContainer gc )
     {
+    	Graphics g = gc.getGraphics();
+    	
     	for(SimpleButton button: buttons){
     		button.draw( g );
     	}

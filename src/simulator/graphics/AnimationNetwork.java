@@ -45,9 +45,9 @@ public class AnimationNetwork extends BasicGame
     @Override
     public void render( final GameContainer gc, final Graphics g ) throws SlickException
     {
-        ob.render( g );
-        am.render( g );
-        ta.render( g );
+        ob.render( gc );
+        am.render( gc );
+        ta.render( gc );
     }
 
 }

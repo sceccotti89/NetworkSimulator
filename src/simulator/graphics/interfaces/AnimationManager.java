@@ -83,8 +83,10 @@ public class AnimationManager implements AnimationInterface
     }
     
     @Override
-    public void render( final Graphics g )
+    public void render( final GameContainer gc )
     {    	
+    	Graphics g = gc.getGraphics();
+    	
     	g.setColor( Color.gray );
     	g.fill( speed );
     	
@@ -93,7 +95,7 @@ public class AnimationManager implements AnimationInterface
     	}
     	
     	g.setColor( Color.black );
-    	g.drawString( String.valueOf( frame ), plus.getMaxX() + (minus.getX() - plus.getMaxX())/2 - String.valueOf( frame ).length()/2*10, plus.getY() + (plus.getMaxY() - plus.getY())/4 );
+    	g.drawString( String.valueOf( frame ), plus.getMaxX() + (minus.getX() - plus.getMaxX())/2 - String.valueOf( frame ).length()/2*gc.getWidth()/80, plus.getY() + (plus.getMaxY() - plus.getY())/4 );
     }
     
     public void resetAllButtons()
