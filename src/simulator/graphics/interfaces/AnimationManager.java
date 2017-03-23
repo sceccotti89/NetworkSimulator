@@ -41,8 +41,7 @@ public class AnimationManager implements AnimationInterface
         plus = new SimpleButton( pause.getMaxX() + gc.getWidth()/4, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, PLUS, Color.yellow, 4, gc );
         
         speed     = new Rectangle( pause.getMaxX(), startY, gc.getWidth() - pause.getMaxX(), height );
-        // TODO DA SISTEMARE LA POSIZIONE DEL RETTANGOLO
-        showFrame = new Rectangle( minus.getMaxX() + (plus.getX() - minus.getMaxX())/2, minus.getY() + gc.getHeight()/40, gc.getWidth()/10*String.valueOf( frame ).length()/2 + gc.getWidth()/20, gc.getHeight()/20 );
+        showFrame = new Rectangle( minus.getMaxX() + (plus.getX() - minus.getMaxX())/2 - gc.getWidth()/22, minus.getY() + gc.getHeight()/270, gc.getWidth()/10*String.valueOf( frame ).length()/2 + gc.getWidth()/20, gc.getHeight()/20 );
         
         buttons.add( start );
         buttons.add( stop );
