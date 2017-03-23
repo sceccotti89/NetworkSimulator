@@ -32,7 +32,7 @@ public class AnimationNetwork extends BasicGame
         ob = new OptionBar( gc );
         am = new AnimationManager( gc, ob.getMaxY() );
         ta = new TimeAnimation();
-        nd = new NetworkDisplay();
+        nd = new NetworkDisplay( gc, am.getMaxY(), ta.getY() - am.getMaxY() );
     }
 
     @Override
@@ -51,6 +51,7 @@ public class AnimationNetwork extends BasicGame
         ob.render( gc );
         am.render( gc );
         ta.render( gc );
+        nd.render( gc );
     }
 
 }

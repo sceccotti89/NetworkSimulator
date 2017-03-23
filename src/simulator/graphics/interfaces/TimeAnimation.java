@@ -1,6 +1,7 @@
 
 package simulator.graphics.interfaces;
 
+import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
@@ -21,6 +22,11 @@ public class TimeAnimation implements AnimationInterface
     {
     	Graphics g = gc.getGraphics();
     	
+    	g.setColor( Color.black );
         g.draw( barTiming );
+    }
+    
+    public float getY(){
+    	return barTiming.getY();
     }
 }

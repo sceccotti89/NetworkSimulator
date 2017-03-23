@@ -50,10 +50,6 @@ public class AnimationManager implements AnimationInterface
         buttons.add( minus );
     }
     
-    public void setLenghtShowFrame( GameContainer gc ){
-    	showFrame.setWidth( String.valueOf( frame ).length()*gc.getWidth()/10 + gc.getWidth()/20 );
-    }
-    
     @Override
     public void update( final GameContainer gc, final int delta, final Input input, final boolean leftMouse, final OptionBar ob, final AnimationManager am, final TimeAnimation ta, final NetworkDisplay nd )
     {    	
@@ -71,11 +67,9 @@ public class AnimationManager implements AnimationInterface
 					ob.resetAllButtons();
 					if(button.getName().equals( PLUS )){
 						frame = Math.min( 100, frame + 10 );
-						setLenghtShowFrame( gc );
 					}
 					else if(button.getName().equals( MINUS )){
 						frame = Math.max( 0, frame - 10 );
-						setLenghtShowFrame( gc );
 					}
 					else if(button.getName().equals( START )){
 						nd.startAnimation();
@@ -96,6 +90,10 @@ public class AnimationManager implements AnimationInterface
 				}
 			}
 		}
+    }
+    
+    public float getMaxY(){
+    	return start.getMaxY();
     }
     
     @Override
