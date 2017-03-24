@@ -20,6 +20,7 @@ public class NetworkDisplay
 	private Packet packet;
 	
 	public NetworkDisplay( final GameContainer gc, final float startY, final float height, final ArrayList<Node> nodes, final Packet packet ){
+		
 		zone = new Rectangle( 0, startY, gc.getWidth(), height );
 		
 		animate = false;
@@ -43,13 +44,6 @@ public class NetworkDisplay
 	
 	public boolean getAnimate(){
 		return animate;
-	}
-	
-	public void setElements( ArrayList<Node> nodes, Packet packet )
-	{
-		this.nodes = nodes;
-		
-		this.packet = packet;
 	}
 	
 	public void update( GameContainer gc )

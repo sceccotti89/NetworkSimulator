@@ -4,6 +4,7 @@ package simulator.graphics;
 import java.util.ArrayList;
 
 import org.newdawn.slick.BasicGame;
+import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
@@ -35,7 +36,11 @@ public class AnimationNetwork extends BasicGame
 
     @Override
     public void init( final GameContainer gc ) throws SlickException
-    {
+    {        
+        nodes = new ArrayList<Node>();
+        
+        packet = new Packet( gc, 0, 0, 0, 0, Color.blue );
+        
         ob = new OptionBar( gc );
         am = new AnimationManager( gc, ob.getMaxY() );
         ta = new TimeAnimation();
