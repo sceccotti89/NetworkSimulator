@@ -91,7 +91,7 @@ public class AnimationManager implements AnimationInterface
 		}
     }
     
-    public float getMaxY(){
+    public float getMaxY() {
     	return start.getMaxY();
     }
     
@@ -103,7 +103,7 @@ public class AnimationManager implements AnimationInterface
     	g.setColor( Color.gray );
     	g.fill( speed );
     	
-    	for(SimpleButton button: buttons){
+    	for (SimpleButton button: buttons) {
     		button.draw( g );
     	}
     	
