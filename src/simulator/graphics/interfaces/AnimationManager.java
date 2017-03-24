@@ -25,7 +25,9 @@ public class AnimationManager implements AnimationInterface
     
     private int frame = 0;
     
-    private String START = "Start", STOP = "Stop", PAUSE = "Pause", PLUS = "Plus", MINUS = "Minus";
+    private static final int limit = Integer.MAX_VALUE;
+    
+    private final String START = "Start", STOP = "Stop", PAUSE = "Pause", PLUS = "Plus", MINUS = "Minus";
     
     public AnimationManager( final GameContainer gc, final float startY ) throws SlickException
     {
@@ -66,7 +68,7 @@ public class AnimationManager implements AnimationInterface
 				if(button.checkClick( mouseX, mouseY )){
 					ob.resetAllButtons();
 					if(button.getName().equals( PLUS )){
-						frame = Math.min( 100, frame + 10 );
+						frame = Math.min( limit, frame + 10 );
 					}
 					else if(button.getName().equals( MINUS )){
 						frame = Math.max( 0, frame - 10 );
