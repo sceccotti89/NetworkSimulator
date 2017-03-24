@@ -7,7 +7,7 @@ import org.newdawn.slick.geom.Rectangle;
 
 public class Packet
 {
-	private String ID_from, ID_to;
+	private int ID_from, ID_to;
 	
 	private Color color;
 	
@@ -15,7 +15,7 @@ public class Packet
 	
 	private float width;
 	
-	public Packet( final GameContainer gc, final float x, final float y, final String ID_from, String ID_to, Color color ) {
+	public Packet( final GameContainer gc, final float x, final float y, final int ID_from, int ID_to, Color color ) {
 		this.ID_from = ID_from;
 		this.ID_to = ID_to;
 		this.color = color;
@@ -30,11 +30,11 @@ public class Packet
 		g.draw( pack );
 	}
 	
-	public void setIDFrom( final String IDFrom ) {
+	public void setIDFrom( final int IDFrom ) {
 		ID_from = IDFrom;
 	}
 	
-	public void setIDTo( final String IDTo ) {
+	public void setIDTo( final int IDTo ) {
 		ID_to = IDTo;
 	}
 }

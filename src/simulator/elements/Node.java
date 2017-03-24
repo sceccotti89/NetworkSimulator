@@ -6,7 +6,7 @@ import org.newdawn.slick.geom.Circle;
 
 public class Node
 {
-	private String ID_from, ID_to;
+	private int ID_from, ID_to;
 	
 	private Color color;
 	
@@ -14,7 +14,7 @@ public class Node
 	
 	final private float ray = 25;
 	
-	public Node( final float x, final float y, final String ID_from, final String ID_to, final Color color ){
+	public Node( final float x, final float y, final int ID_from, final int ID_to, final Color color ){
 		this.ID_from = ID_from;
 		this.ID_to = ID_to;
 		this.color = color;
@@ -27,11 +27,11 @@ public class Node
 		g.fill( node );
 	}
 	
-	public String getIDFrom(){
+	public int getIDFrom(){
 		return ID_from;
 	}
 	
-	public String getIDTo(){
+	public int getIDTo(){
 		return ID_to;
 	}
 	

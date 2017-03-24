@@ -25,6 +25,8 @@ public class NetworkDisplay
 		animate = false;
 		
 		nodes = new ArrayList<Node>();
+		
+		packet = new Packet( gc, 0, 0, 0, 0, Color.black );
 	}
 	
 	public void startAnimation(){
