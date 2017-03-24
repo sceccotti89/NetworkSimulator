@@ -15,7 +15,7 @@ public class Packet
 	
 	private float width;
 	
-	public Packet( final GameContainer gc, final float x, final float y, final String ID_from, String ID_to, Color color ){
+	public Packet( final GameContainer gc, final float x, final float y, final String ID_from, String ID_to, Color color ) {
 		this.ID_from = ID_from;
 		this.ID_to = ID_to;
 		this.color = color;
@@ -25,16 +25,16 @@ public class Packet
 		pack = new Rectangle( x, y, width, width );
 	}
 	
-	public void draw( final Graphics g ){
+	public void draw( final Graphics g ) {
 		g.setColor( color );
 		g.draw( pack );
 	}
 	
-	public void setIDFrom( final String IDFrom ){
+	public void setIDFrom( final String IDFrom ) {
 		ID_from = IDFrom;
 	}
 	
-	public void setIDTo( final String IDTo ){
+	public void setIDTo( final String IDTo ) {
 		ID_to = IDTo;
 	}
 }

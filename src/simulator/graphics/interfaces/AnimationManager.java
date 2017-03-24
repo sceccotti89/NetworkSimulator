@@ -37,10 +37,10 @@ public class AnimationManager implements AnimationInterface
         buttons = new ArrayList<SimpleButton>();
               
         start = new SimpleButton( 0, startY, width, height, START, Color.gray, 0, gc );
-        stop = new SimpleButton( start.getMaxX(), startY, width, height, STOP, Color.gray, 1, gc );
+        stop  = new SimpleButton( start.getMaxX(), startY, width, height, STOP, Color.gray, 1, gc );
         pause = new SimpleButton( stop.getMaxX(), startY, width, height, PAUSE, Color.gray, 2, gc );
         minus = new SimpleButton( pause.getMaxX() + gc.getWidth()/15, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, MINUS, Color.yellow, 3, gc );
-        plus = new SimpleButton( pause.getMaxX() + gc.getWidth()/4, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, PLUS, Color.yellow, 4, gc );
+        plus  = new SimpleButton( pause.getMaxX() + gc.getWidth()/4, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, PLUS, Color.yellow, 4, gc );
         
         speed     = new Rectangle( pause.getMaxX(), startY, gc.getWidth() - pause.getMaxX(), height );
         showFrame = new Rectangle( minus.getMaxX() + (plus.getX() - minus.getMaxX())/2 - gc.getWidth()/22, minus.getY() + gc.getHeight()/270, gc.getWidth()/10*String.valueOf( frame ).length()/2 + gc.getWidth()/20, gc.getHeight()/20 );
@@ -58,32 +58,29 @@ public class AnimationManager implements AnimationInterface
     	mouseX = input.getMouseX();
 		mouseY = input.getMouseY();
 		
-		if(plus.isPressed())
+		if (plus.isPressed()) {
 			plus.setPressed();
-		else if(minus.isPressed())
+		} else if (minus.isPressed()) {
 			minus.setPressed();
+		}
 		
-		if(leftMouse){
-			for(SimpleButton button: buttons){
-				if(button.checkClick( mouseX, mouseY )){
+		if (leftMouse) {
+			for (SimpleButton button: buttons) {
+				if (button.checkClick( mouseX, mouseY )) {
 					ob.resetAllButtons();
-					if(button.getName().equals( PLUS )){
+					if (button.getName().equals( PLUS )) {
 						frame = Math.min( limit, frame + 10 );
-					}
-					else if(button.getName().equals( MINUS )){
+					} else if (button.getName().equals( MINUS )) {
 						frame = Math.max( 0, frame - 10 );
-					}
-					else if(button.getName().equals( START )){
+					} else if (button.getName().equals( START )) {
 						nd.startAnimation();
-					}
-					else if(button.getName().equals( PAUSE )){
+					} else if (button.getName().equals( PAUSE )) {
 						nd.pauseAnimation();
-					}
-					else if(button.getName().equals( STOP )){
+					} else if (button.getName().equals( STOP )) {
 						nd.stopAnimation();
 					}
-					for(SimpleButton obj: buttons){
-						if(obj != button && obj.isPressed()){
+					for (SimpleButton obj: buttons) {
+						if (obj != button && obj.isPressed()) {
 							obj.setPressed();
 						}
 					}
