@@ -34,4 +34,16 @@ public class Node
 	public String getIDTo(){
 		return ID_to;
 	}
+	
+	public Color getColor() {
+		return color;
+	}
+	
+	public float getX() {
+		return node.getX();
+	}
+	
+	public float getY() {
+		return node.getY();
+	}
 }

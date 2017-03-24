@@ -61,6 +61,11 @@ public class NetworkDisplay
 		g.setColor( Color.white );
 		g.fill( zone );
 		
+		for (int i = 0; i < nodes.size() - 1; i++) {
+			// TODO DISEGNARE LA LINEA CHE CONGIUNGE I 2 NODI
+			g.drawGradientLine( nodes.get( i ).getX(), nodes.get( i ).getY(), nodes.get( i + 1 ).getColor(), nodes.get( i + 1 ).getX(), nodes.get( i + 1 ).getY(), nodes.get( i + 1 ).getColor() );
+		}
+		
 		for (Node node: nodes) {
 			node.draw( g );
 		}
