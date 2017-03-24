@@ -27,7 +27,7 @@ public class Packet
 	
 	public void draw( final Graphics g ) {
 		g.setColor( color );
-		g.draw( pack );
+		g.fill( pack );
 	}
 	
 	public void setIDFrom( final int IDFrom ) {

@@ -29,6 +29,8 @@ public class AnimationNetwork extends BasicGame
     private ArrayList<Node> nodes;
     private Packet packet;
     
+    private Node node1, node2, node3;
+    
     public AnimationNetwork( final String title )
     {
         super( title );
@@ -39,7 +41,16 @@ public class AnimationNetwork extends BasicGame
     {        
         nodes = new ArrayList<Node>();
         
-        packet = new Packet( gc, 0, 0, 0, 0, Color.blue );
+        //TESTING DELLA DRAW
+        node1 = new Node( 150, 150, 0, 1, Color.black );
+        node2 = new Node( 300, 150, 1, 2, Color.green );
+        node3 = new Node( 450, 150, 2, 2, Color.red );
+        
+        nodes.add( node1 );
+        nodes.add( node2 );
+        nodes.add( node3 );
+        
+        packet = new Packet( gc, nodes.get( 0 ).getCenterX(), nodes.get( 0 ).getCenterY(), 0, 2, Color.blue );
         
         ob = new OptionBar( gc );
         am = new AnimationManager( gc, ob.getMaxY() );

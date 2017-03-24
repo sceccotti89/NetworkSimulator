@@ -46,4 +46,12 @@ public class Node
 	public float getY() {
 		return node.getY();
 	}
+	
+	public float getCenterX() {
+		return node.getCenterX();
+	}
+	
+	public float getCenterY() {
+		return node.getCenterY();
+	}
 }
