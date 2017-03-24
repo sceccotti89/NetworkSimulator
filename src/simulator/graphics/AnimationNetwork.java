@@ -1,12 +1,16 @@
 
 package simulator.graphics;
 
+import java.util.ArrayList;
+
 import org.newdawn.slick.BasicGame;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 
+import simulator.elements.Node;
+import simulator.elements.Packet;
 import simulator.graphics.interfaces.AnimationManager;
 import simulator.graphics.interfaces.NetworkDisplay;
 import simulator.graphics.interfaces.OptionBar;
@@ -21,6 +25,9 @@ public class AnimationNetwork extends BasicGame
     
     private boolean leftMouse;
     
+    private ArrayList<Node> nodes;
+    private Packet packet;
+    
     public AnimationNetwork( final String title )
     {
         super( title );
@@ -32,7 +39,7 @@ public class AnimationNetwork extends BasicGame
         ob = new OptionBar( gc );
         am = new AnimationManager( gc, ob.getMaxY() );
         ta = new TimeAnimation();
-        nd = new NetworkDisplay( gc, am.getMaxY(), ta.getY() - am.getMaxY() );
+        nd = new NetworkDisplay( gc, am.getMaxY(), ta.getY() - am.getMaxY(), nodes, packet );
     }
 
     @Override
@@ -53,5 +60,4 @@ public class AnimationNetwork extends BasicGame
         ta.render( gc );
         nd.render( gc );
     }
-
 }

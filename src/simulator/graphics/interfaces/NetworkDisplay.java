@@ -19,14 +19,14 @@ public class NetworkDisplay
 	private ArrayList<Node> nodes;
 	private Packet packet;
 	
-	public NetworkDisplay( final GameContainer gc, final float startY, final float height ){
+	public NetworkDisplay( final GameContainer gc, final float startY, final float height, final ArrayList<Node> nodes, final Packet packet ){
 		zone = new Rectangle( 0, startY, gc.getWidth(), height );
 		
 		animate = false;
 		
-		nodes = new ArrayList<Node>();
+		this.nodes = nodes;
 		
-		packet = new Packet( gc, 0, 0, 0, 0, Color.black );
+		this.packet = packet;
 	}
 	
 	public void startAnimation(){
