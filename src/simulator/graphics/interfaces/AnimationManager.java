@@ -69,9 +69,9 @@ public class AnimationManager implements AnimationInterface
 				if (button.checkClick( mouseX, mouseY )) {
 					ob.resetAllButtons();
 					if (button.getName().equals( PLUS )) {
-						frame = Math.min( limit, frame + 10 );
+						frame = Math.min( limit, frame + 5 );
 					} else if (button.getName().equals( MINUS )) {
-						frame = Math.max( 0, frame - 10 );
+						frame = Math.max( 0, frame - 5 );
 					} else if (button.getName().equals( START )) {
 						nd.startAnimation();
 					} else if (button.getName().equals( PAUSE )) {
@@ -121,5 +121,9 @@ public class AnimationManager implements AnimationInterface
     		if(button.isPressed())
     			button.setPressed();
     	}
+    }
+    
+    public int getFrames() {
+    	return frame;
     }
 }

@@ -42,6 +42,9 @@ public class NetworkDisplay
 	
 	public void stopAnimation(){
 		animate = false;
+		packet.getArea().setX( nodes.get( 0 ).getCenterX() );
+		packet.setColor( nodes.get( 0 ).getColor() );
+		nextNode = 0;
 	}
 	
 	public boolean getAnimate(){
@@ -61,7 +64,7 @@ public class NetworkDisplay
 			}
 		}
 		
-		packet.getArea().setX( packet.getArea().getX() + 5 );
+		packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
 	}
 	
 	public void render( GameContainer gc ){
