@@ -66,6 +66,9 @@ public class AnimationNetwork extends BasicGame
     	ob.update( gc, delta, gc.getInput(), leftMouse, ob, am, ta, nd );
     	am.update( gc, delta, gc.getInput(), leftMouse, ob, am, ta, nd );
     	ta.update( gc, delta, gc.getInput(), leftMouse, ob, am, ta, nd );
+		
+		if(nd.getAnimate())
+			nd.update( gc, am );
     }
 
     @Override

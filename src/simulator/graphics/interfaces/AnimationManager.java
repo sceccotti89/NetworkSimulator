@@ -89,9 +89,6 @@ public class AnimationManager implements AnimationInterface
 				}
 			}
 		}
-		
-		if(nd.getAnimate())
-			nd.update( gc, am );
     }
     
     public float getMaxY() {
