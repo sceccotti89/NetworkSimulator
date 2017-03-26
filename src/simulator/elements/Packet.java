@@ -45,4 +45,12 @@ public class Packet
 	public void setColor( Color color ){
 		this.color = color;
 	}
+	
+	public int getIDFrom(){
+		return ID_from;
+	}
+	
+	public int getIDTo(){
+		return ID_to;
+	}
 }

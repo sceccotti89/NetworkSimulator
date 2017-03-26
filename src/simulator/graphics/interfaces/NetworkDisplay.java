@@ -53,18 +53,26 @@ public class NetworkDisplay
 	
 	public void update( GameContainer gc, AnimationManager am )
 	{
-		if (packet.getArea().intersects( nodes.get( nextNode ).getArea() )) {
-			if (nodes.get( nextNode ).getIDTo() == nextNode) {
-				animate = false;
-				am.resetAllButtons();
-				return;
-			} else {
-				nextNode++;
-				packet.setColor( nodes.get( nextNode ).getColor() );
+		if (animate) {		
+			if (packet.getArea().intersects( nodes.get( nextNode ).getArea() )) {
+				if (nodes.get( nextNode ).getIDTo() == nextNode) {
+					animate = false;
+					am.resetAllButtons();
+					return;
+				} else {
+					nextNode++;
+					packet.setColor( nodes.get( nextNode ).getColor() );
+				}
 			}
+			packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
 		}
+
 		
-		packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
+		if (packet.getArea().contains( gc.getInput().getMouseX(), gc.getInput().getMouseY() )) {
+			// TODO INSERIRE GRAFICO CON DATI RIASSUNTIVI
+			
+			
+		}
 	}
 	
 	public void render( GameContainer gc ){
