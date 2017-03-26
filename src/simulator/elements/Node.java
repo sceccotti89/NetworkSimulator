@@ -54,4 +54,8 @@ public class Node
 	public float getCenterY() {
 		return node.getCenterY();
 	}
+	
+	public Circle getArea(){
+		return node;
+	}
 }

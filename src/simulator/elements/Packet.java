@@ -37,4 +37,12 @@ public class Packet
 	public void setIDTo( final int IDTo ) {
 		ID_to = IDTo;
 	}
+	
+	public Rectangle getArea(){
+		return pack;
+	}
+	
+	public void setColor( Color color ){
+		this.color = color;
+	}
 }

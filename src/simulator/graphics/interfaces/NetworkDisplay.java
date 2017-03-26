@@ -19,6 +19,8 @@ public class NetworkDisplay
 	private ArrayList<Node> nodes;
 	private Packet packet;
 	
+	private int nextNode = 0;
+	
 	public NetworkDisplay( final GameContainer gc, final float startY, final float height, final ArrayList<Node> nodes, final Packet packet ){
 		
 		zone = new Rectangle( 0, startY, gc.getWidth(), height );
@@ -48,7 +50,14 @@ public class NetworkDisplay
 	
 	public void update( GameContainer gc )
 	{
-		
+		if (packet.getArea().intersects( nodes.get( nextNode ).getArea() )) {
+			if (nodes.get( nextNode ).getIDTo() == nextNode) {
+				animate = false;
+			} else {
+				nextNode++;
+				packet.setColor( nodes.get( nextNode ).getColor() );
+			}
+		}
 	}
 	
 	public void render( GameContainer gc ){
