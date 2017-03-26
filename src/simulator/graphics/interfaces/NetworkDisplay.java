@@ -21,6 +21,11 @@ public class NetworkDisplay
 	
 	private int nextNode = 0;
 	
+	private Rectangle infos;
+	private boolean drawInfo;
+	
+	private float widthInfo, heightInfo;
+	
 	public NetworkDisplay( final GameContainer gc, final float startY, final float height, final ArrayList<Node> nodes, final Packet packet ){
 		
 		zone = new Rectangle( 0, startY, gc.getWidth(), height );
@@ -30,6 +35,13 @@ public class NetworkDisplay
 		this.nodes = nodes;
 		
 		this.packet = packet;
+		
+		widthInfo  = gc.getWidth()/20;
+		heightInfo = gc.getHeight()/20;
+		
+		infos = new Rectangle( 0, 0, widthInfo, heightInfo );
+		
+		drawInfo = false;
 	}
 	
 	public void startAnimation(){
@@ -69,9 +81,10 @@ public class NetworkDisplay
 
 		
 		if (packet.getArea().contains( gc.getInput().getMouseX(), gc.getInput().getMouseY() )) {
-			// TODO INSERIRE GRAFICO CON DATI RIASSUNTIVI
-			
-			
+			drawInfo = true;
+			infos.setLocation( gc.getInput().getMouseX(), gc.getInput().getMouseY() - heightInfo );
+		} else {
+			drawInfo = false;
 		}
 	}
 	
@@ -90,5 +103,10 @@ public class NetworkDisplay
 		}
 		
 		packet.draw( g );
+		
+		if (drawInfo) {
+			g.setColor( Color.magenta );
+			g.fill( infos );
+		}
 	}
 }
