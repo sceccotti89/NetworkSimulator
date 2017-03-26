@@ -41,7 +41,7 @@ public class AnimationNetwork extends BasicGame
     {        
         nodes = new ArrayList<Node>();
         
-        //TESTING DELLA DRAW
+        //TESTING OF THE DRAW
         node1 = new Node( 150, 150, 0, 1, Color.black );
         node2 = new Node( 300, 150, 1, 2, Color.green );
         node3 = new Node( 450, 150, 2, 2, Color.red );
@@ -50,7 +50,7 @@ public class AnimationNetwork extends BasicGame
         nodes.add( node2 );
         nodes.add( node3 );
         
-        packet = new Packet( gc, nodes.get( 0 ).getCenterX(), nodes.get( 0 ).getCenterY(), 0, 2, Color.blue );
+        packet = new Packet( gc, nodes.get( 0 ).getCenterX(), nodes.get( 0 ).getCenterY(), 0, 2, nodes.get( 0 ).getColor() );
         
         ob = new OptionBar( gc );
         am = new AnimationManager( gc, ob.getMaxY() );

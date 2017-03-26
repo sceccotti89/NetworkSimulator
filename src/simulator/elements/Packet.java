@@ -22,7 +22,7 @@ public class Packet
 		
 		width = gc.getWidth()/80;
 		
-		pack = new Rectangle( x, y, width, width );
+		pack = new Rectangle( x, y - width/2, width, width );
 	}
 	
 	public void draw( final Graphics g ) {

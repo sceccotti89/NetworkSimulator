@@ -48,16 +48,20 @@ public class NetworkDisplay
 		return animate;
 	}
 	
-	public void update( GameContainer gc )
+	public void update( GameContainer gc, AnimationManager am )
 	{
 		if (packet.getArea().intersects( nodes.get( nextNode ).getArea() )) {
 			if (nodes.get( nextNode ).getIDTo() == nextNode) {
 				animate = false;
+				am.resetAllButtons();
+				return;
 			} else {
 				nextNode++;
 				packet.setColor( nodes.get( nextNode ).getColor() );
 			}
 		}
+		
+		packet.getArea().setX( packet.getArea().getX() + 5 );
 	}
 	
 	public void render( GameContainer gc ){
