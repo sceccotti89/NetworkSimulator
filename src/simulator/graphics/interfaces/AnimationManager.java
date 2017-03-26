@@ -23,7 +23,7 @@ public class AnimationManager implements AnimationInterface
     
     private int mouseX, mouseY;
     
-    private int frame = 5;
+    private int frame = 3;
     
     private static final int limit = Integer.MAX_VALUE;
     

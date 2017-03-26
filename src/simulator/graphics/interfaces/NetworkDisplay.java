@@ -36,8 +36,8 @@ public class NetworkDisplay
 		
 		this.packet = packet;
 		
-		widthInfo  = gc.getWidth()/20;
-		heightInfo = gc.getHeight()/20;
+		widthInfo  = gc.getWidth()/7;
+		heightInfo = gc.getHeight()/13;
 		
 		infos = new Rectangle( 0, 0, widthInfo, heightInfo );
 		
@@ -78,11 +78,10 @@ public class NetworkDisplay
 			}
 			packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
 		}
-
 		
 		if (packet.getArea().contains( gc.getInput().getMouseX(), gc.getInput().getMouseY() )) {
 			drawInfo = true;
-			infos.setLocation( gc.getInput().getMouseX(), gc.getInput().getMouseY() - heightInfo );
+			infos.setLocation( gc.getInput().getMouseX() + gc.getWidth()/80, gc.getInput().getMouseY() - heightInfo );
 		} else {
 			drawInfo = false;
 		}
@@ -107,6 +106,11 @@ public class NetworkDisplay
 		if (drawInfo) {
 			g.setColor( Color.magenta );
 			g.fill( infos );
+			g.setColor( Color.black );
+			g.draw( infos );
+			
+			g.drawString( "ID_From = " + packet.getIDFrom(), infos.getX(), infos.getY() );
+			g.drawString( "ID_To = " + packet.getIDTo(), infos.getX(), infos.getY() + gc.getHeight()/30 );
 		}
 	}
 }

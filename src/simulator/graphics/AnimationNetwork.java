@@ -29,7 +29,7 @@ public class AnimationNetwork extends BasicGame
     private ArrayList<Node> nodes;
     private Packet packet;
     
-    private Node node1, node2, node3;
+    private Node node1, node2, node3, node4;
     
     public AnimationNetwork( final String title )
     {
@@ -44,11 +44,13 @@ public class AnimationNetwork extends BasicGame
         //TESTING OF THE DRAW
         node1 = new Node( 150, 150, 0, 1, Color.black );
         node2 = new Node( 300, 150, 1, 2, Color.green );
-        node3 = new Node( 450, 150, 2, 2, Color.red );
+        node3 = new Node( 450, 150, 2, 3, Color.red );
+        node4 = new Node( 600, 150, 3, 3, Color.yellow );
         
         nodes.add( node1 );
         nodes.add( node2 );
         nodes.add( node3 );
+        nodes.add( node4 );
         
         packet = new Packet( gc, nodes.get( 0 ).getCenterX(), nodes.get( 0 ).getCenterY(), 0, 2, nodes.get( 0 ).getColor() );
         
