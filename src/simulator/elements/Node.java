@@ -25,6 +25,9 @@ public class Node
 	public void draw( Graphics g ){
 		g.setColor( color );
 		g.fill( node );
+		
+		g.setColor( Color.black );
+		g.draw( node );
 	}
 	
 	public int getIDFrom(){

@@ -127,10 +127,6 @@ public class NetworkDisplay
 			node.draw( g );
 		}
 		
-		for (Packet packet: packets) {
-			packet.draw( g );
-		}
-		
 		if (drawInfo) {
 			g.setColor( Color.magenta );
 			g.fill( infos );
@@ -139,6 +135,10 @@ public class NetworkDisplay
 			
 			g.drawString( "ID_From = " + packet.getIDFrom(), infos.getX(), infos.getY() );
 			g.drawString( "ID_To = " + packet.getIDTo(), infos.getX(), infos.getY() + gc.getHeight()/30 );
+		}
+		
+		for (Packet packet: packets) {
+			packet.draw( g );
 		}
 	}
 }
