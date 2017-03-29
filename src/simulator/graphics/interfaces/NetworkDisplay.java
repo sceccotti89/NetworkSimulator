@@ -52,7 +52,8 @@ public class NetworkDisplay
 		animate = false;
 	}
 	
-	public void stopAnimation() {
+	public void stopAnimation()
+	{
 		animate = false;
 		for (Packet packet: packets ) {
 			packet.getArea().setX( nodes.get( 0 ).getCenterX() );
