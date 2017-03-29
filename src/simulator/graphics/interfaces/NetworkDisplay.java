@@ -17,7 +17,7 @@ public class NetworkDisplay
 	private boolean animate;
 	
 	private ArrayList<Node> nodes;
-	private Packet packet;
+	private ArrayList<Packet> packets;
 	
 	private int nextNode = 0;
 	
@@ -28,7 +28,7 @@ public class NetworkDisplay
 	
 	private float widthInfo, heightInfo;
 	
-	public NetworkDisplay( final GameContainer gc, final float startY, final float height, final ArrayList<Node> nodes, final Packet packet ){
+	public NetworkDisplay( final GameContainer gc, final float startY, final float height, final ArrayList<Node> nodes, final ArrayList<Packet> packets ){
 		
 		zone = new Rectangle( 0, startY, gc.getWidth(), height );
 		
@@ -36,7 +36,7 @@ public class NetworkDisplay
 		
 		this.nodes = nodes;
 		
-		this.packet = packet;
+		this.packets = packets;
 		
 		widthInfo  = gc.getWidth()/7;
 		heightInfo = gc.getHeight()/13;
@@ -48,53 +48,71 @@ public class NetworkDisplay
 		isInNode = false;
 	}
 	
-	public void startAnimation(){
+	public void startAnimation() {
 		animate = true;
 	}
 	
-	public void pauseAnimation(){
+	public void pauseAnimation() {
 		animate = false;
 	}
 	
-	public void stopAnimation(){
+	public void stopAnimation() {
 		animate = false;
 		isInNode = false;
-		packet.getArea().setX( nodes.get( 0 ).getCenterX() );
-		packet.setColor( nodes.get( 0 ).getColor() );
-		nextNode = 0;
+		for (Packet packet: packets ) {
+			packet.getArea().setX( nodes.get( 0 ).getCenterX() );
+			packet.setNextNode( 0 );
+			packet.setColor( nodes.get( packet.getNextNode() ).getColor() );
+		}
 	}
 	
 	public boolean getAnimate(){
 		return animate;
 	}
 	
+	private boolean checkAllPacket( AnimationManager am ) {
+		for (Packet packet: packets) {
+			if (!packet.getFinished()) {
+				return false;
+			}
+		}
+
+		animate = false;
+		am.resetAllButtons();
+		return true;
+	}
+	
 	public void update( GameContainer gc, AnimationManager am )
 	{
-		if (animate) {		
-			if (packet.getArea().intersects( nodes.get( nextNode ).getArea() )) {
-				if (!isInNode) {
-					isInNode = true;
-					nextNode++;
-					if (nodes.get( nextNode ).getIDTo() == nodes.get( nextNode ).getIDFrom()) {
-						animate = false;
-						am.resetAllButtons();
-						return;
+		if (animate) {
+			for (Packet packet: packets) {
+				if (packet.getArea().intersects( nodes.get( packet.getNextNode() ).getArea() )) {
+					if (!packet.getIsInNode()) {
+						packet.setIsInNode( true );
+						if (packet.getIDTo() == nodes.get( packet.getNextNode() ).getIDFrom()) {
+							packet.setFinished( true );
+							if (checkAllPacket( am )) {
+								return;
+							}
+						}
+						packet.incNextNode();
+						packet.setColor( nodes.get( packet.getNextNode() ).getColor() );
 					}
-					packet.setColor( nodes.get( nextNode ).getColor() );
+				} else {
+					packet.setIsInNode( false );
 				}
-			} else {
-				isInNode = false;
+				
+				packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
 			}
-			
-			packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
 		}
 		
-		if (packet.getArea().contains( gc.getInput().getMouseX(), gc.getInput().getMouseY() )) {
+		// TODO SETTARE LE INFO PER CIASCUN PACKET
+		/*if (packet.getArea().contains( gc.getInput().getMouseX(), gc.getInput().getMouseY() )) {
 			drawInfo = true;
 			infos.setLocation( gc.getInput().getMouseX() + gc.getWidth()/80, gc.getInput().getMouseY() - heightInfo );
 		} else {
 			drawInfo = false;
-		}
+		}*/
 	}
 	
 	public void render( GameContainer gc ){
@@ -111,7 +129,9 @@ public class NetworkDisplay
 			node.draw( g );
 		}
 		
-		packet.draw( g );
+		for (Packet packet: packets) {
+			packet.draw( g );
+		}
 		
 		if (drawInfo) {
 			g.setColor( Color.magenta );
@@ -119,8 +139,8 @@ public class NetworkDisplay
 			g.setColor( Color.black );
 			g.draw( infos );
 			
-			g.drawString( "ID_From = " + packet.getIDFrom(), infos.getX(), infos.getY() );
-			g.drawString( "ID_To = " + packet.getIDTo(), infos.getX(), infos.getY() + gc.getHeight()/30 );
+			/*g.drawString( "ID_From = " + packet.getIDFrom(), infos.getX(), infos.getY() );
+			g.drawString( "ID_To = " + packet.getIDTo(), infos.getX(), infos.getY() + gc.getHeight()/30 );*/
 		}
 	}
 }

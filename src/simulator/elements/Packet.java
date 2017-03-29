@@ -15,6 +15,10 @@ public class Packet
 	
 	private float width;
 	
+	private boolean hasFinished, isInNode;
+	
+	private int nextNode;
+	
 	public Packet( final GameContainer gc, final float x, final float y, final int ID_from, int ID_to, Color color ) {
 		this.ID_from = ID_from;
 		this.ID_to = ID_to;
@@ -23,6 +27,40 @@ public class Packet
 		width = gc.getWidth()/80;
 		
 		pack = new Rectangle( x, y - width/2, width, width );
+		
+		hasFinished = false;
+		isInNode = false;
+		
+		// TODO SETTARE QUESTO PARAMETRO (QUANDO STEFANO CHIARIRA QUESTO PUNTO) DA INPUT
+		nextNode = 0;
+	}
+	
+	public void setFinished( boolean val ) {
+		hasFinished = val;
+	}
+	
+	public boolean getFinished() {
+		return hasFinished;
+	}
+	
+	public void setIsInNode( boolean val ) {
+		isInNode = val;
+	}
+	
+	public boolean getIsInNode() {
+		return isInNode;
+	}
+	
+	public void incNextNode() {
+		nextNode++;
+	}
+	
+	public int getNextNode() {
+		return nextNode;
+	}
+	
+	public void setNextNode( int val ) {
+		nextNode = val;
 	}
 	
 	public void draw( final Graphics g ) {

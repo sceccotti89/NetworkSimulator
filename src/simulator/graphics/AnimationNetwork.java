@@ -27,9 +27,10 @@ public class AnimationNetwork extends BasicGame
     private boolean leftMouse;
     
     private ArrayList<Node> nodes;
-    private Packet packet;
+    private ArrayList<Packet> packets;
     
     private Node node1, node2, node3, node4;
+    private Packet packet;
     
     public AnimationNetwork( final String title )
     {
@@ -40,6 +41,7 @@ public class AnimationNetwork extends BasicGame
     public void init( final GameContainer gc ) throws SlickException
     {        
         nodes = new ArrayList<Node>();
+        packets = new ArrayList<Packet>();
         
         //TESTING OF THE DRAW
         node1 = new Node( 150, 150, 0, 1, Color.black );
@@ -53,11 +55,12 @@ public class AnimationNetwork extends BasicGame
         nodes.add( node4 );
         
         packet = new Packet( gc, nodes.get( 0 ).getCenterX(), nodes.get( 0 ).getCenterY(), 0, 2, nodes.get( 0 ).getColor() );
+        packets.add( packet );
         
         ob = new OptionBar( gc );
         am = new AnimationManager( gc, ob.getMaxY() );
         ta = new TimeAnimation();
-        nd = new NetworkDisplay( gc, am.getMaxY(), ta.getY() - am.getMaxY(), nodes, packet );
+        nd = new NetworkDisplay( gc, am.getMaxY(), ta.getY() - am.getMaxY(), nodes, packets );
     }
 
     @Override
