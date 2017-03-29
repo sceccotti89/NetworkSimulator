@@ -129,6 +129,10 @@ public class NetworkDisplay
 			g.drawGradientLine( nodes.get( i ).getCenterX(), nodes.get( i ).getCenterY(), nodes.get( i + 1 ).getColor(), nodes.get( i + 1 ).getCenterX(), nodes.get( i + 1 ).getCenterY(), nodes.get( i + 1 ).getColor() );
 		}
 		
+		for (Packet packet: packets) {
+			packet.draw( g );
+		}
+		
 		for (Node node: nodes) {
 			node.draw( g );
 		}
@@ -141,10 +145,6 @@ public class NetworkDisplay
 			
 			g.drawString( "ID_From = " + packet.getIDFrom(), infos.getX(), infos.getY() );
 			g.drawString( "ID_To = " + packet.getIDTo(), infos.getX(), infos.getY() + gc.getHeight()/30 );
-		}
-		
-		for (Packet packet: packets) {
-			packet.draw( g );
 		}
 	}
 }
