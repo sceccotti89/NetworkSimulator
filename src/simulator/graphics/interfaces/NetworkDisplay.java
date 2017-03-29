@@ -19,12 +19,8 @@ public class NetworkDisplay
 	private ArrayList<Node> nodes;
 	private ArrayList<Packet> packets;
 	
-	private int nextNode = 0;
-	
 	private Rectangle infos;
 	private boolean drawInfo;
-	
-	private boolean isInNode;
 	
 	private float widthInfo, heightInfo;
 	
@@ -44,8 +40,6 @@ public class NetworkDisplay
 		infos = new Rectangle( 0, 0, widthInfo, heightInfo );
 		
 		drawInfo = false;
-		
-		isInNode = false;
 	}
 	
 	public void startAnimation() {
@@ -58,11 +52,11 @@ public class NetworkDisplay
 	
 	public void stopAnimation() {
 		animate = false;
-		isInNode = false;
 		for (Packet packet: packets ) {
 			packet.getArea().setX( nodes.get( 0 ).getCenterX() );
 			packet.setNextNode( 0 );
 			packet.setColor( nodes.get( packet.getNextNode() ).getColor() );
+			packet.setIsInNode( false );
 		}
 	}
 	
@@ -96,10 +90,10 @@ public class NetworkDisplay
 							}
 						}
 						packet.incNextNode();
-						packet.setColor( nodes.get( packet.getNextNode() ).getColor() );
 					}
 				} else {
 					packet.setIsInNode( false );
+					packet.setColor( nodes.get( packet.getNextNode() ).getColor() );
 				}
 				
 				packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
