@@ -45,7 +45,12 @@ public class NetworkDisplay
 	}
 	
 	public void startAnimation() {
-		animate = true;
+		for (Packet packet: packets) {
+			if (!packet.getFinished()) {
+				animate = true;
+				return;
+			}
+		}
 	}
 	
 	public void pauseAnimation() {
