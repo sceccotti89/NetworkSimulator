@@ -61,7 +61,7 @@ public class NetworkDisplay
 	{
 		animate = false;
 		for (Packet packet: packets ) {
-			packet.getArea().setX( nodes.get( 0 ).getCenterX() );
+			packet.getArea().setX( nodes.get( packet.getIDFrom() ).getCenterX() );
 			packet.setNextNode( 0 );
 			packet.setColor( nodes.get( packet.getNextNode() ).getColor() );
 			packet.setIsInNode( false );
