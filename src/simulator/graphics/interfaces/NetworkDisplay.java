@@ -24,6 +24,8 @@ public class NetworkDisplay
 	
 	private float widthInfo, heightInfo;
 	
+	private Packet packet;
+	
 	public NetworkDisplay( final GameContainer gc, final float startY, final float height, final ArrayList<Node> nodes, final ArrayList<Packet> packets ){
 		
 		zone = new Rectangle( 0, startY, gc.getWidth(), height );
@@ -101,12 +103,15 @@ public class NetworkDisplay
 		}
 		
 		// TODO SETTARE LE INFO PER CIASCUN PACKET
-		/*if (packet.getArea().contains( gc.getInput().getMouseX(), gc.getInput().getMouseY() )) {
-			drawInfo = true;
-			infos.setLocation( gc.getInput().getMouseX() + gc.getWidth()/80, gc.getInput().getMouseY() - heightInfo );
-		} else {
-			drawInfo = false;
-		}*/
+		for (Packet packet: packets) {
+			if (packet.getArea().contains( gc.getInput().getMouseX(), gc.getInput().getMouseY() )) {
+				drawInfo = true;
+				infos.setLocation( gc.getInput().getMouseX() + gc.getWidth()/80, gc.getInput().getMouseY() - heightInfo );
+				this.packet = packet;
+			} else {
+				drawInfo = false;
+			}
+		}
 	}
 	
 	public void render( GameContainer gc ){
@@ -133,8 +138,8 @@ public class NetworkDisplay
 			g.setColor( Color.black );
 			g.draw( infos );
 			
-			/*g.drawString( "ID_From = " + packet.getIDFrom(), infos.getX(), infos.getY() );
-			g.drawString( "ID_To = " + packet.getIDTo(), infos.getX(), infos.getY() + gc.getHeight()/30 );*/
+			g.drawString( "ID_From = " + packet.getIDFrom(), infos.getX(), infos.getY() );
+			g.drawString( "ID_To = " + packet.getIDTo(), infos.getX(), infos.getY() + gc.getHeight()/30 );
 		}
 	}
 }
