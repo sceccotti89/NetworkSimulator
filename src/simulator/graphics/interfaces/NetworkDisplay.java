@@ -26,8 +26,8 @@ public class NetworkDisplay
 	
 	private Packet packet;
 	
-	public NetworkDisplay( final GameContainer gc, final float startY, final float height, final ArrayList<Node> nodes, final ArrayList<Packet> packets ){
-		
+	public NetworkDisplay( final GameContainer gc, final float startY, final float height, final ArrayList<Node> nodes, final ArrayList<Packet> packets )
+	{
 		zone = new Rectangle( 0, startY, gc.getWidth(), height );
 		
 		animate = false;
@@ -101,8 +101,7 @@ public class NetworkDisplay
 				packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
 			}
 		}
-		
-		// TODO SETTARE LE INFO PER CIASCUN PACKET
+
 		for (Packet packet: packets) {
 			if (packet.getArea().contains( gc.getInput().getMouseX(), gc.getInput().getMouseY() )) {
 				drawInfo = true;
