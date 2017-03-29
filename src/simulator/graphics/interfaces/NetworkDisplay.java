@@ -24,6 +24,8 @@ public class NetworkDisplay
 	private Rectangle infos;
 	private boolean drawInfo;
 	
+	private boolean isInNode;
+	
 	private float widthInfo, heightInfo;
 	
 	public NetworkDisplay( final GameContainer gc, final float startY, final float height, final ArrayList<Node> nodes, final Packet packet ){
@@ -42,6 +44,8 @@ public class NetworkDisplay
 		infos = new Rectangle( 0, 0, widthInfo, heightInfo );
 		
 		drawInfo = false;
+		
+		isInNode = false;
 	}
 	
 	public void startAnimation(){
@@ -54,6 +58,7 @@ public class NetworkDisplay
 	
 	public void stopAnimation(){
 		animate = false;
+		isInNode = false;
 		packet.getArea().setX( nodes.get( 0 ).getCenterX() );
 		packet.setColor( nodes.get( 0 ).getColor() );
 		nextNode = 0;
@@ -67,15 +72,20 @@ public class NetworkDisplay
 	{
 		if (animate) {		
 			if (packet.getArea().intersects( nodes.get( nextNode ).getArea() )) {
-				if (nodes.get( nextNode ).getIDTo() == nextNode) {
-					animate = false;
-					am.resetAllButtons();
-					return;
-				} else {
+				if (!isInNode) {
+					isInNode = true;
 					nextNode++;
+					if (nodes.get( nextNode ).getIDTo() == nodes.get( nextNode ).getIDFrom()) {
+						animate = false;
+						am.resetAllButtons();
+						return;
+					}
 					packet.setColor( nodes.get( nextNode ).getColor() );
 				}
+			} else {
+				isInNode = false;
 			}
+			
 			packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
 		}
 		
