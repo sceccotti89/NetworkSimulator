@@ -65,6 +65,7 @@ public class NetworkDisplay
 			packet.setNextNode( 0 );
 			packet.setColor( nodes.get( packet.getNextNode() ).getColor() );
 			packet.setIsInNode( false );
+			packet.setFinished( false );
 		}
 	}
 	
