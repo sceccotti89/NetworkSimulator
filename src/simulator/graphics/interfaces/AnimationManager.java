@@ -68,9 +68,8 @@ public class AnimationManager implements AnimationInterface
 			minus.setPressed();
 		}
 		
-		resetButton = true;
-		
-		if (leftMouse) {
+		if (leftMouse) {			
+			resetButton = false;
 			for (SimpleButton button: buttons) {
 				if (button.checkClick( mouseX, mouseY )) {
 					if (button.getName().equals( PLUS )) {
