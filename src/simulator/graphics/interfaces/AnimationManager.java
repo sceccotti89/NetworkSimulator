@@ -41,12 +41,11 @@ public class AnimationManager implements AnimationInterface
         
         resetButton = false;
 
-        // TODO RAGIONARE SU WIDTH ED HEIGHT DEI BOTTONI
-        start = new ImageButton( 0, startY, width, height, START, Color.gray, 0, gc, new Image( "./data/Image/Start.png" ) );
-        stop  = new ImageButton( start.getMaxX(), startY, width, height, STOP, Color.gray, 1, gc, new Image( "./data/Image/Stop.png" ) );
-        pause = new ImageButton( stop.getMaxX(), startY, width, height, PAUSE, Color.gray, 2, gc, new Image( "./data/Image/Pause.png" ) );
-        minus = new ImageButton( pause.getMaxX() + gc.getWidth()/15, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, MINUS, Color.yellow, 3, gc, new Image( "./data/Image/Minus.png" ) );
-        plus  = new ImageButton( pause.getMaxX() + gc.getWidth()/4, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, PLUS, Color.yellow, 4, gc, new Image( "./data/Image/Plus.png" ) );
+        start = new ImageButton( 0, startY, width, height, START, Color.gray, 0, gc, new Image( "./data/Image/Start.png" ), gc.getWidth()/20, gc.getHeight()/20 );
+        pause  = new ImageButton( start.getMaxX(), startY, width, height, PAUSE, Color.gray, 1, gc, new Image( "./data/Image/Pause.png" ), gc.getWidth()/20, gc.getHeight()/20 );
+        stop = new ImageButton( pause.getMaxX(), startY, width, height, STOP, Color.gray, 2, gc, new Image( "./data/Image/Stop.png" ), gc.getWidth()/20, gc.getHeight()/20 );
+        minus = new ImageButton( stop.getMaxX() + gc.getWidth()/15, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, MINUS, Color.yellow, 3, gc, new Image( "./data/Image/Minus.png" ), gc.getWidth()/45, gc.getHeight()/70 );
+        plus  = new ImageButton( stop.getMaxX() + gc.getWidth()/4, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, PLUS, Color.yellow, 4, gc, new Image( "./data/Image/Plus.png" ), gc.getWidth()/40, gc.getHeight()/30 );
         
         speed     = new Rectangle( pause.getMaxX(), startY, gc.getWidth() - pause.getMaxX(), height );
         showFrame = new Rectangle( minus.getMaxX() + (plus.getX() - minus.getMaxX())/2 - gc.getWidth()/22, minus.getY() + gc.getHeight()/270, gc.getWidth()/10*String.valueOf( frame ).length()/2 + gc.getWidth()/20, gc.getHeight()/20 );
