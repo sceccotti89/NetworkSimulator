@@ -26,6 +26,8 @@ public class NetworkDisplay
 	
 	private Packet packet;
 	
+	private float offset;
+	
 	public NetworkDisplay( final GameContainer gc, final float startY, final float height, final ArrayList<Node> nodes, final ArrayList<Packet> packets )
 	{
 		zone = new Rectangle( 0, startY, gc.getWidth(), height );
@@ -42,6 +44,8 @@ public class NetworkDisplay
 		infos = new Rectangle( 0, 0, widthInfo, heightInfo );
 		
 		drawInfo = false;
+		
+		offset = gc.getWidth()/40;
 	}
 	
 	public boolean startAnimation() {
@@ -133,7 +137,8 @@ public class NetworkDisplay
 		g.fill( zone );
 		
 		for (int i = 0; i < nodes.size() - 1; i++) {
-			g.drawGradientLine( nodes.get( i ).getCenterX(), nodes.get( i ).getCenterY(), nodes.get( i + 1 ).getColor(), nodes.get( i + 1 ).getCenterX(), nodes.get( i + 1 ).getCenterY(), nodes.get( i + 1 ).getColor() );
+			g.drawGradientLine( nodes.get( i ).getCenterX() - offset, nodes.get( i ).getCenterY(), nodes.get( i + 1 ).getColor(), nodes.get( i + 1 ).getCenterX() - offset, nodes.get( i + 1 ).getCenterY(), nodes.get( i + 1 ).getColor() );
+			g.drawGradientLine( nodes.get( i ).getCenterX() + offset, nodes.get( i ).getCenterY(), nodes.get( i + 1 ).getColor(), nodes.get( i + 1 ).getCenterX() + offset, nodes.get( i + 1 ).getCenterY(), nodes.get( i + 1 ).getColor() );
 		}
 		
 		for (Packet packet: packets) {
