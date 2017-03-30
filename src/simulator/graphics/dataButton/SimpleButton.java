@@ -26,12 +26,6 @@ public class SimpleButton extends Button
 	private int index;
 	/* lunghezza e altezza del bottone triangolare */
 	float width, height;
-	
-	private String FILE = "File", OPTIONS = "Options";
-	private final String START = "Start", STOP = "Stop", PAUSE = "Pause", PLUS = "Plus", MINUS = "Minus";
-	
-	private Rectangle minus, plus1, plus2;
-	private float widthMinus, heightMinus, widthPlus, heightPlus;
 
 	/** crea un nuovo bottone rettangolare
 	 * @param x - coordinata X
@@ -53,19 +47,6 @@ public class SimpleButton extends Button
 			clickable = true;
 			
 			this.index = index;
-			
-			widthMinus  = gc.getWidth()/40;
-			heightMinus = gc.getHeight()/80;
-			
-			widthPlus  = widthMinus;
-			heightPlus = heightMinus;
-			
-			if (name.equals( MINUS )) {
-				minus = new Rectangle( x + (width - widthMinus)/2, y + (height - heightMinus)/2, widthMinus, heightMinus );
-			} else if (name.equals( PLUS )) {
-				plus1 = new Rectangle( x + (width - widthPlus)/2, y + (height - heightPlus)/2, widthPlus, heightPlus );
-				plus2 = new Rectangle( x + (width - heightPlus)/2, y + (height - widthPlus)/2, heightPlus, widthPlus );
-			}
 		}
 	
 	@SuppressWarnings("unchecked")
@@ -135,25 +116,10 @@ public class SimpleButton extends Button
 			super.draw( g );
 
 			float width = 1.f;
-			if (pressed) {
-				if (name.equals( PLUS )) {
-					
-				} else if (name.equals( MINUS )) {
-					
-				} else {
-					font.drawString( rect.getX() + this.width/2 - font.getWidth( name )/2 + width, rect.getY() + this.height/2 - font.getHeight( name )/2 + width, name, Color.black );
-				}
-			} else {
-				if (name.equals( PLUS )) {
-					g.setColor( Color.black );
-					g.fill( plus1 );
-					g.fill( plus2 );
-				} else if (name.equals( MINUS )) {
-					g.setColor( Color.black );
-					g.fill( minus );
-				} else {
-					font.drawString( rect.getX() + this.width/2 - font.getWidth( name )/2, rect.getY() + this.height/2 - font.getHeight( name )/2, name, Color.black );
-				}
+			if (pressed) {				
+				font.drawString( rect.getX() + this.width/2 - font.getWidth( name )/2 + width, rect.getY() + this.height/2 - font.getHeight( name )/2 + width, name, Color.black );				
+			} else {				
+				font.drawString( rect.getX() + this.width/2 - font.getWidth( name )/2, rect.getY() + this.height/2 - font.getHeight( name )/2, name, Color.black );
 			}
 			
 			if(!active)
