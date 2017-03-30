@@ -155,9 +155,6 @@ public class SimpleButton extends Button
 					font.drawString( rect.getX() + this.width/2 - font.getWidth( name )/2, rect.getY() + this.height/2 - font.getHeight( name )/2, name, Color.black );
 				}
 			}
-				
-				
-				//font.drawString( rect.getX() + offset/2, rect.getY() + offset/2, name, Color.black );
 			
 			if(!active)
 				{

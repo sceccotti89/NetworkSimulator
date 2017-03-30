@@ -50,12 +50,11 @@ public class OptionBar implements AnimationInterface
     	mouseX = input.getMouseX();
 		mouseY = input.getMouseY();
     	
-    	if(leftMouse){
-			for(SimpleButton button: buttons){
-				if(button.checkClick( mouseX, mouseY )){
-					am.resetAllButtons();
-					for(SimpleButton obj: buttons){
-						if(obj != button && obj.isPressed()){
+    	if (leftMouse) {
+			for (SimpleButton button: buttons) {
+				if (button.checkClick( mouseX, mouseY )) {
+					for (SimpleButton obj: buttons) {
+						if (obj != button && obj.isPressed()) {
 							obj.setPressed();
 						}
 					}
@@ -71,16 +70,17 @@ public class OptionBar implements AnimationInterface
     {
     	Graphics g = gc.getGraphics();
     	
-    	for(SimpleButton button: buttons){
+    	for (SimpleButton button: buttons) {
     		button.draw( g );
     	}
     }
     
     public void resetAllButtons()
     {
-    	for(SimpleButton button: buttons){
-    		if(button.isPressed())
+    	for (SimpleButton button: buttons) {
+    		if (button.isPressed()) {
     			button.setPressed();
+    		}
     	}
     }
 }
