@@ -54,10 +54,10 @@ public class SimpleButton extends Button
 			
 			this.index = index;
 			
-			widthMinus = gc.getWidth()/40;
+			widthMinus  = gc.getWidth()/40;
 			heightMinus = gc.getHeight()/80;
 			
-			widthPlus = widthMinus;
+			widthPlus  = widthMinus;
 			heightPlus = heightMinus;
 			
 			if (name.equals( MINUS )) {
