@@ -5,6 +5,7 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
+import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
@@ -74,11 +75,11 @@ public class ImageButton extends Button
 	
 	/** modifica la lunghezza del bottone*/
 	public float getLungh()
-		{  return rect.getWidth(); }
+		{ return rect.getWidth(); }
 	
 	/** modifica l'altezza del bottone*/
 	public float getAlt()
-		{  return rect.getHeight(); }
+		{ return rect.getHeight(); }
 
 	/** modifica il valore di attivazione*/
 	public void setActive()
@@ -99,6 +100,9 @@ public class ImageButton extends Button
 	
 	public float getMaxY()
 		{ return rect.getMaxY(); }
+	
+	public boolean checkClick( int x, int y, Input input )
+		{ return rect.contains( x, y ); }
 
 	public void draw( Graphics g )
 		{

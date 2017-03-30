@@ -19,6 +19,9 @@ public class Packet
 	
 	private int nextNode;
 	
+	// TODO CHIARIRE A COSA SERVA
+	private String name;
+	
 	public Packet( final GameContainer gc, final float x, final float y, final int ID_from, int ID_to, Color color ) {
 		this.ID_from = ID_from;
 		this.ID_to = ID_to;

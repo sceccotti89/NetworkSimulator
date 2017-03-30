@@ -43,7 +43,7 @@ public class AnimationNetwork extends BasicGame
         nodes = new ArrayList<Node>();
         packets = new ArrayList<Packet>();
         
-        //TESTING OF THE DRAW
+        //TESTING
         node1 = new Node( 150, 150, 0, 1, Color.black );
         node2 = new Node( 300, 150, 1, 2, Color.green );
         node3 = new Node( 450, 150, 2, 3, Color.red );
@@ -55,6 +55,7 @@ public class AnimationNetwork extends BasicGame
         nodes.add( node4 );
         
         packet = new Packet( gc, nodes.get( 0 ).getCenterX(), nodes.get( 0 ).getCenterY(), 0, 2, nodes.get( 0 ).getColor() );
+        
         packets.add( packet );
         
         ob = new OptionBar( gc );
@@ -66,7 +67,7 @@ public class AnimationNetwork extends BasicGame
     @Override
     public void update( final GameContainer gc, final int delta ) throws SlickException
     {
-    	leftMouse = gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON );
+    	leftMouse = gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
     	
     	ob.update( gc, delta, gc.getInput(), leftMouse, ob, am, ta, nd );
     	am.update( gc, delta, gc.getInput(), leftMouse, ob, am, ta, nd );
