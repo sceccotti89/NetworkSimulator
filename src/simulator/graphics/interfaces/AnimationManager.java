@@ -6,11 +6,12 @@ import java.util.ArrayList;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
-import simulator.graphics.dataButton.SimpleButton;
+import simulator.graphics.dataButton.ImageButton;
 
 public class AnimationManager implements AnimationInterface
 {
@@ -18,8 +19,8 @@ public class AnimationManager implements AnimationInterface
     
     private Rectangle speed, showFrame;
     
-    private ArrayList<SimpleButton> buttons;
-    private SimpleButton start, stop, pause, plus, minus;
+    private ArrayList<ImageButton> buttons;
+    private ImageButton start, stop, pause, plus, minus;
     
     private int mouseX, mouseY;
     
@@ -36,15 +37,16 @@ public class AnimationManager implements AnimationInterface
         height = gc.getHeight()*10/75;
         width  = gc.getWidth()*10/53;
         
-        buttons = new ArrayList<SimpleButton>();
+        buttons = new ArrayList<ImageButton>();
         
         resetButton = false;
-              
-        start = new SimpleButton( 0, startY, width, height, START, Color.gray, 0, gc );
-        stop  = new SimpleButton( start.getMaxX(), startY, width, height, STOP, Color.gray, 1, gc );
-        pause = new SimpleButton( stop.getMaxX(), startY, width, height, PAUSE, Color.gray, 2, gc );
-        minus = new SimpleButton( pause.getMaxX() + gc.getWidth()/15, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, MINUS, Color.yellow, 3, gc );
-        plus  = new SimpleButton( pause.getMaxX() + gc.getWidth()/4, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, PLUS, Color.yellow, 4, gc );
+
+        // TODO RAGIONARE SU WIDTH ED HEIGHT DEI BOTTONI
+        start = new ImageButton( 0, startY, width, height, START, Color.gray, 0, gc, new Image( "./data/Image/Start.png" ) );
+        stop  = new ImageButton( start.getMaxX(), startY, width, height, STOP, Color.gray, 1, gc, new Image( "./data/Image/Stop.png" ) );
+        pause = new ImageButton( stop.getMaxX(), startY, width, height, PAUSE, Color.gray, 2, gc, new Image( "./data/Image/Pause.png" ) );
+        minus = new ImageButton( pause.getMaxX() + gc.getWidth()/15, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, MINUS, Color.yellow, 3, gc, new Image( "./data/Image/Minus.png" ) );
+        plus  = new ImageButton( pause.getMaxX() + gc.getWidth()/4, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, PLUS, Color.yellow, 4, gc, new Image( "./data/Image/Plus.png" ) );
         
         speed     = new Rectangle( pause.getMaxX(), startY, gc.getWidth() - pause.getMaxX(), height );
         showFrame = new Rectangle( minus.getMaxX() + (plus.getX() - minus.getMaxX())/2 - gc.getWidth()/22, minus.getY() + gc.getHeight()/270, gc.getWidth()/10*String.valueOf( frame ).length()/2 + gc.getWidth()/20, gc.getHeight()/20 );
@@ -70,7 +72,7 @@ public class AnimationManager implements AnimationInterface
 		
 		if (leftMouse) {			
 			resetButton = false;
-			for (SimpleButton button: buttons) {
+			for (ImageButton button: buttons) {
 				if (button.checkClick( mouseX, mouseY )) {
 					if (button.getName().equals( PLUS )) {
 						frame = Math.min( limit, frame + 5 );
@@ -88,7 +90,7 @@ public class AnimationManager implements AnimationInterface
 					}
 					
 					if (resetButton) {
-						for (SimpleButton obj: buttons) {
+						for (ImageButton obj: buttons) {
 							if (obj != button && obj.isPressed()) {
 								obj.setPressed();
 							}
@@ -113,7 +115,7 @@ public class AnimationManager implements AnimationInterface
     	g.setColor( Color.gray );
     	g.fill( speed );
     	
-    	for (SimpleButton button: buttons) {
+    	for (ImageButton button: buttons) {
     		button.draw( g );
     	}
     	
@@ -124,7 +126,7 @@ public class AnimationManager implements AnimationInterface
     
     public void resetAllButtons()
     {
-    	for(SimpleButton button: buttons){
+    	for(ImageButton button: buttons){
     		if(button.isPressed())
     			button.setPressed();
     	}

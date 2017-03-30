@@ -15,7 +15,6 @@ public class ImageButton extends Button
 	/* il colore del bottone */
 	private Color c;
 	
-	private float ratioH = 1.f;
 	// determina se il bottone e' cliccabile
 	private boolean clickable;
 	// l'indice del bottone
@@ -24,6 +23,7 @@ public class ImageButton extends Button
 	float width, height;
 	
 	private Image image;
+	private float widthImg, heightImg;
 
 	/** crea un nuovo bottone rettangolare
 	 * @param x - coordinata X
@@ -31,7 +31,7 @@ public class ImageButton extends Button
 	 * @param name - il nome del bottone
 	 * @throws SlickException 
 	*/
-    public ImageButton( float x, float y, float width, float height, String name, Color color, int index, GameContainer gc, Image image ) throws SlickException
+    public ImageButton( float x, float y, float width, float height, String name, Color color, int index, GameContainer gc, Image image, float widthImg, float heightImg ) throws SlickException
 		{
 			super();
 			
@@ -47,6 +47,9 @@ public class ImageButton extends Button
 			this.index = index;
 			
 			this.image = image;
+			
+			this.widthImg = widthImg;
+			this.heightImg = heightImg;
 		}
 	
 	public void buildButton( float x, float y, GameContainer gc ) throws SlickException {
@@ -105,18 +108,10 @@ public class ImageButton extends Button
 
 			super.draw( g );
 
-			float width = 1.f;
 			if (pressed) {
-				
+				image.draw( rect.getX() + (width - widthImg)/2, rect.getY() + (height - heightImg)/2, widthImg, heightImg );
 			} else {
-				// TODO SU QUESTO CI SARA' DA RAGIONARE UN PO
-				image.draw( rect.getX(), rect.getY(), width, width );
+				image.draw( rect.getX() + (width - widthImg)/2, rect.getY() + (height - heightImg)/2, widthImg, heightImg);
 			}
-			
-			if(!active)
-				{
-					g.setColor( new Color( 0, 0, 0, 100 ) );
-					g.fill( rect );
-				}
 		}
 }
