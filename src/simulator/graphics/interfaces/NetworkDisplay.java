@@ -44,20 +44,24 @@ public class NetworkDisplay
 		drawInfo = false;
 	}
 	
-	public void startAnimation() {
+	public boolean startAnimation() {
 		for (Packet packet: packets) {
 			if (!packet.getFinished()) {
 				animate = true;
-				return;
+				return true;
 			}
 		}
+		
+		return true;
 	}
 	
-	public void pauseAnimation() {
+	public boolean pauseAnimation() {
 		animate = false;
+		
+		return true;
 	}
 	
-	public void stopAnimation()
+	public boolean stopAnimation()
 	{
 		animate = false;
 		for (Packet packet: packets ) {
@@ -67,6 +71,8 @@ public class NetworkDisplay
 			packet.setIsInNode( false );
 			packet.setFinished( false );
 		}
+		
+		return true;
 	}
 	
 	public boolean getAnimate(){

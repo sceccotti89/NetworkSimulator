@@ -29,12 +29,16 @@ public class AnimationManager implements AnimationInterface
     
     private final String START = "Start", STOP = "Stop", PAUSE = "Pause", PLUS = "Plus", MINUS = "Minus";
     
+    private boolean resetButton;
+    
     public AnimationManager( final GameContainer gc, final float startY ) throws SlickException
     {
         height = gc.getHeight()*10/75;
         width  = gc.getWidth()*10/53;
         
         buttons = new ArrayList<SimpleButton>();
+        
+        resetButton = false;
               
         start = new SimpleButton( 0, startY, width, height, START, Color.gray, 0, gc );
         stop  = new SimpleButton( start.getMaxX(), startY, width, height, STOP, Color.gray, 1, gc );
@@ -64,24 +68,31 @@ public class AnimationManager implements AnimationInterface
 			minus.setPressed();
 		}
 		
+		resetButton = true;
+		
 		if (leftMouse) {
 			for (SimpleButton button: buttons) {
 				if (button.checkClick( mouseX, mouseY )) {
-					ob.resetAllButtons();
 					if (button.getName().equals( PLUS )) {
 						frame = Math.min( limit, frame + 5 );
 					} else if (button.getName().equals( MINUS )) {
 						frame = Math.max( 0, frame - 5 );
 					} else if (button.getName().equals( START )) {
-						nd.startAnimation();
+						resetButton = nd.startAnimation();
+						ob.resetAllButtons();
 					} else if (button.getName().equals( PAUSE )) {
-						nd.pauseAnimation();
+						resetButton = nd.pauseAnimation();
+						ob.resetAllButtons();
 					} else if (button.getName().equals( STOP )) {
-						nd.stopAnimation();
+						resetButton = nd.stopAnimation();
+						ob.resetAllButtons();
 					}
-					for (SimpleButton obj: buttons) {
-						if (obj != button && obj.isPressed()) {
-							obj.setPressed();
+					
+					if (resetButton) {
+						for (SimpleButton obj: buttons) {
+							if (obj != button && obj.isPressed()) {
+								obj.setPressed();
+							}
 						}
 					}
 					
