@@ -125,38 +125,6 @@ public class AnimationManager implements AnimationInterface
             	}
             }
 		}
-		
-		/*if (leftMouse) {			
-			resetButton = false;
-			for (ImageButton button: buttons) {
-				if (button.checkClick( mouseX, mouseY )) {
-					if (button.getName().equals( PLUS )) {
-						frame = Math.min( limit, frame + 5 );
-					} else if (button.getName().equals( MINUS )) {
-						frame = Math.max( 0, frame - 5 );
-					} else if (button.getName().equals( START )) {
-						resetButton = nd.startAnimation();
-						ob.resetAllButtons();
-					} else if (button.getName().equals( PAUSE )) {
-						resetButton = nd.pauseAnimation();
-						ob.resetAllButtons();
-					} else if (button.getName().equals( STOP )) {
-						resetButton = nd.stopAnimation();
-						ob.resetAllButtons();
-					}
-					
-					if (resetButton) {
-						for (ImageButton obj: buttons) {
-							if (obj != button && obj.isPressed()) {
-								obj.setPressed();
-							}
-						}
-					}
-					
-					button.setPressed();
-				}
-			}
-		}*/
     }
     
     public float getMaxY() {
