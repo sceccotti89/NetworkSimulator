@@ -45,7 +45,7 @@ public class NetworkDisplay
 		
 		drawInfo = false;
 		
-		offset = gc.getWidth()/40;
+		offset = gc.getWidth()/100;
 	}
 	
 	public boolean startAnimation() {
@@ -112,7 +112,6 @@ public class NetworkDisplay
 					}
 				} else {
 					packet.setIsInNode( false );
-					packet.setColor( nodes.get( packet.getNextNode() ).getColor() );
 				}
 				
 				packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
@@ -137,8 +136,8 @@ public class NetworkDisplay
 		g.fill( zone );
 		
 		for (int i = 0; i < nodes.size() - 1; i++) {
-			g.drawGradientLine( nodes.get( i ).getCenterX() - offset, nodes.get( i ).getCenterY(), nodes.get( i + 1 ).getColor(), nodes.get( i + 1 ).getCenterX() - offset, nodes.get( i + 1 ).getCenterY(), nodes.get( i + 1 ).getColor() );
-			g.drawGradientLine( nodes.get( i ).getCenterX() + offset, nodes.get( i ).getCenterY(), nodes.get( i + 1 ).getColor(), nodes.get( i + 1 ).getCenterX() + offset, nodes.get( i + 1 ).getCenterY(), nodes.get( i + 1 ).getColor() );
+			g.drawGradientLine( nodes.get( i ).getCenterX(), nodes.get( i ).getCenterY() - offset, nodes.get( i + 1 ).getColor(), nodes.get( i + 1 ).getCenterX(), nodes.get( i + 1 ).getCenterY() - offset, nodes.get( i + 1 ).getColor() );
+			g.drawGradientLine( nodes.get( i ).getCenterX(), nodes.get( i ).getCenterY() + offset, nodes.get( i + 1 ).getColor(), nodes.get( i + 1 ).getCenterX(), nodes.get( i + 1 ).getCenterY() + offset, nodes.get( i + 1 ).getColor() );
 		}
 		
 		for (Packet packet: packets) {
