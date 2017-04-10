@@ -26,6 +26,8 @@ public class OptionBar implements AnimationInterface
     
     private String FILE = "File", OPTIONS = "Options";
     
+    private boolean mouseDown;
+    
     public OptionBar( GameContainer gc ) throws SlickException
 	{
     	width  = gc.getWidth()/10;
@@ -43,25 +45,57 @@ public class OptionBar implements AnimationInterface
     public float getMaxY() {
         return barOptions.getMaxY();
     }
+	
+	private int checkButton( SimpleButton button, Input input, int i ) {
+		if (button.isPressed()) {
+			return 1;
+		}
+	
+		return 0;
+	}
     
     @Override
     public void update( final GameContainer gc, final int delta, final Input input, final boolean leftMouse, final OptionBar ob, final AnimationManager am, final TimeAnimation ta, final NetworkDisplay nd )
     {
     	mouseX = input.getMouseX();
 		mouseY = input.getMouseY();
-    	
-    	if (leftMouse) {
-			for (SimpleButton button: buttons) {
-				if (button.checkClick( mouseX, mouseY )) {
-					for (SimpleButton obj: buttons) {
-						if (obj != button && obj.isPressed()) {
-							obj.setPressed();
-						}
-					}
-					
-					button.setPressed();
-				}
-			}
+		
+		if (leftMouse) {
+			if (!mouseDown) {
+	            mouseDown = true;
+	            
+	            for (SimpleButton button : buttons) {
+	                if (button.checkClick( mouseX, mouseY )) {
+	                	if (!button.isPressed()) {
+	                		button.setPressed();
+	                	}
+	                }
+	            }
+            }
+		} else {
+			if (mouseDown) {
+                mouseDown = false;
+                
+                for (SimpleButton button: buttons) {
+            		int value = checkButton( button, input, button.getIndex() );
+                	// se e' stato premuto il tasto
+            		if (value > 0) {
+                        for (SimpleButton bottone: buttons) {
+                        	if (bottone.isPressed()) {
+                        		bottone.setPressed();
+                        	}
+                        }
+                        // pressed tramite mouse
+                        if (button.checkClick( mouseX, mouseY )) {
+                        	if (button.getName().equals( FILE )) {
+        						;
+                        	} else if (button.getName().equals( OPTIONS )) {
+                        		;
+                        	}
+                        }
+        			}
+            	}
+            }
 		}
     }
     
