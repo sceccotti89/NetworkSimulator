@@ -14,7 +14,7 @@ public class Node
 	
 	final private float ray = 25;
 	
-	private Link link;
+	private Link link = null;
 	
 	private float offset;
 	
@@ -28,7 +28,9 @@ public class Node
 	}
 	
 	public void draw( Graphics g ) {
-		link.draw( g, offset);
+	    if (link != null) {
+	        link.draw( g, offset );
+	    }
 		
 		g.setColor( color );
 		g.fill( node );
@@ -69,7 +71,25 @@ public class Node
 		return node;
 	}
 	
-	public void creatLink( Link link ) {
-		this.link = link;
+	public float getAngle() {
+	    return link.getAngle();
+	}
+	
+	private float calculateAngle( float x1, float y1, float x2, float y2 ) {
+	    float catetum1 = Math.abs( x2 - x1 ), catetum2 = Math.abs( y1 - y2 );
+	    //float ipo = (float) Math.sqrt( catetum1 * catetum1 + catetum2*catetum2 );
+	    float gamma = (float) Math.atan( catetum2/catetum1 );
+	    System.out.println( "CATETO2 = " + catetum2 );
+	    return (float) ((Math.PI/2 - gamma)*180/Math.PI);
+	}
+	
+	public void createLink( float x1, float y1, float x2, float y2, Color color ) {
+	    if (x1 != x2 && y1 != y2) {
+            //System.out.print( "ANGOLO != 0" );
+	        link = new Link( x1, y1, x2, y2, color, calculateAngle( x1, x2, y1, y2 ) );
+	    } else {
+	        //System.out.print( "ANGOLO = 0" );
+	        link = new Link( x1, y1, x2, y2, color, 0 );
+	    }
 	}
 }

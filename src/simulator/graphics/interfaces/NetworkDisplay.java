@@ -26,8 +26,6 @@ public class NetworkDisplay
 	
 	private Packet packet;
 	
-	private float offset;
-	
 	public NetworkDisplay( final GameContainer gc, final float startY, final float height, final ArrayList<Node> nodes, final ArrayList<Packet> packets )
 	{
 		zone = new Rectangle( 0, startY, gc.getWidth(), height );
@@ -44,8 +42,6 @@ public class NetworkDisplay
 		infos = new Rectangle( 0, 0, widthInfo, heightInfo );
 		
 		drawInfo = false;
-		
-		offset = gc.getWidth()/100;
 	}
 	
 	public boolean startAnimation() {
@@ -97,9 +93,11 @@ public class NetworkDisplay
 	
 	public void update( GameContainer gc, AnimationManager am )
 	{
+	    Graphics g = gc.getGraphics();
+	    
 		if (animate) {
 			for (Packet packet: packets) {
-				if (packet.getArea().intersects( nodes.get( packet.getNextNode() ).getArea() )) {
+				if (packet.getNextNode() != packet.getIDTo() && packet.getArea().intersects( nodes.get( packet.getNextNode() ).getArea() )) {
 					if (!packet.getIsInNode()) {
 						packet.setIsInNode( true );
 						if (packet.getIDTo() == nodes.get( packet.getNextNode() ).getIDFrom()) {
@@ -115,7 +113,9 @@ public class NetworkDisplay
 				}
 				
 				// TODO SETTARE IN MODO CORRETTO LO SPOSTAMENTO
+				g.rotate( nodes.get( packet.getNextNode() ).getCenterX(), nodes.get( packet.getNextNode() ).getCenterY(), nodes.get( packet.getNextNode() ).getAngle() );
 				packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
+				g.resetTransform();
 			}
 		}
 
@@ -136,13 +136,11 @@ public class NetworkDisplay
 		g.setColor( Color.white );
 		g.fill( zone );
 		
-		for (int i = 0; i < nodes.size() - 1; i++) {
-			g.drawGradientLine( nodes.get( i ).getCenterX(), nodes.get( i ).getCenterY() - offset, nodes.get( i + 1 ).getColor(), nodes.get( i + 1 ).getCenterX(), nodes.get( i + 1 ).getCenterY() - offset, nodes.get( i + 1 ).getColor() );
-			g.drawGradientLine( nodes.get( i ).getCenterX(), nodes.get( i ).getCenterY() + offset, nodes.get( i + 1 ).getColor(), nodes.get( i + 1 ).getCenterX(), nodes.get( i + 1 ).getCenterY() + offset, nodes.get( i + 1 ).getColor() );
-		}
-		
 		for (Packet packet: packets) {
+		    // TODO RUOTARE IL PACCHETTO E POI RIPORTARLO ALLE CONDIZIONI INIZIALI
+		    g.rotate( nodes.get( packet.getNextNode() ).getCenterX(), nodes.get( packet.getNextNode() ).getCenterY(), nodes.get( packet.getNextNode() ).getAngle() );
 			packet.draw( g );
+			g.resetTransform();
 		}
 		
 		for (Node node: nodes) {

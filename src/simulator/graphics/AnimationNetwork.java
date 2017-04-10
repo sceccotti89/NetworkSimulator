@@ -42,7 +42,7 @@ public class AnimationNetwork extends BasicGame
     @Override
     public void init( final GameContainer gc ) throws SlickException
     {        
-        nodes = new ArrayList<Node>();
+        nodes   = new ArrayList<Node>();
         packets = new ArrayList<Packet>();
         
         offset = gc.getWidth()/100;
@@ -57,6 +57,14 @@ public class AnimationNetwork extends BasicGame
         nodes.add( node2 );
         nodes.add( node3 );
         nodes.add( node4 );
+        
+        // TODO CREARE L'ANGOLO DEL LINK
+        for (int i = 0; i < nodes.size() - 1; i++) {
+            Node node1 = nodes.get( i ), node2 = nodes.get( i + 1 );
+            node1.createLink( node1.getArea().getCenterX(), node1.getArea().getCenterY(), node2.getArea().getCenterX(), node2.getArea().getCenterY(), node2.getColor() );
+
+            System.out.println( "ANGLE = " + nodes.get( i ).getAngle() );
+        }
         
         packet = new Packet( gc, nodes.get( 0 ).getCenterX(), nodes.get( 0 ).getCenterY() + gc.getWidth()/50, 0, 2, nodes.get( 0 ).getColor() );
         
