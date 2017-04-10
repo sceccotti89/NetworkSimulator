@@ -19,6 +19,8 @@ public class Packet
 	
 	private int nextNode;
 	
+	private int indexRotation;
+	
 	// TODO CHIARIRE A COSA SERVA
 	private String name;
 	
@@ -32,10 +34,19 @@ public class Packet
 		pack = new Rectangle( x, y - width/2, width, width );
 		
 		hasFinished = false;
-		isInNode = false;
+		isInNode = true;
 		
 		// TODO SETTARE QUESTO PARAMETRO (QUANDO STEFANO CHIARIRA QUESTO PUNTO) DA INPUT
-		nextNode = 0;
+		nextNode = ID_from;
+		indexRotation = ID_from;
+	}
+	
+	public void setIndexRotation( int val ) {
+		indexRotation = val;
+	}
+	
+	public int getIndexRotation() {
+		return indexRotation;
 	}
 	
 	public void setFinished( boolean val ) {
@@ -66,11 +77,6 @@ public class Packet
 		nextNode = val;
 	}
 	
-	public void draw( final Graphics g ) {
-		g.setColor( color );
-		g.fill( pack );
-	}
-	
 	public void setIDFrom( final int IDFrom ) {
 		ID_from = IDFrom;
 	}
@@ -93,5 +99,10 @@ public class Packet
 	
 	public int getIDTo(){
 		return ID_to;
+	}
+	
+	public void draw( final Graphics g ) {
+		g.setColor( color );
+		g.fill( pack );
 	}
 }

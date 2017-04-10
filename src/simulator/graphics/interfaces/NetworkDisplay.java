@@ -97,23 +97,25 @@ public class NetworkDisplay
 	    
 		if (animate) {
 			for (Packet packet: packets) {
-				if (packet.getNextNode() != packet.getIDTo() && packet.getArea().intersects( nodes.get( packet.getNextNode() ).getArea() )) {
+				if (packet.getArea().intersects( nodes.get( packet.getNextNode() ).getArea() )) {
+					System.out.println( "ECCHIME" );
 					if (!packet.getIsInNode()) {
 						packet.setIsInNode( true );
+						packet.incNextNode();
+						packet.setIndexRotation( packet.getNextNode() );
 						if (packet.getIDTo() == nodes.get( packet.getNextNode() ).getIDFrom()) {
 							packet.setFinished( true );
 							if (checkAllPacket( am )) {
 								return;
 							}
 						}
-						packet.incNextNode();
 					}
 				} else {
 					packet.setIsInNode( false );
 				}
 				
 				// TODO SETTARE IN MODO CORRETTO LO SPOSTAMENTO
-				g.rotate( nodes.get( packet.getNextNode() ).getCenterX(), nodes.get( packet.getNextNode() ).getCenterY(), nodes.get( packet.getNextNode() ).getAngle() );
+				g.rotate( nodes.get( packet.getIndexRotation() ).getCenterX(), nodes.get( packet.getIndexRotation() ).getCenterY(), nodes.get( packet.getIndexRotation() ).getAngle() );
 				packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
 				g.resetTransform();
 			}
@@ -130,15 +132,17 @@ public class NetworkDisplay
 		}
 	}
 	
-	public void render( GameContainer gc ){
+	public void render( GameContainer gc ) {
 		Graphics g = gc.getGraphics();
 		
 		g.setColor( Color.white );
 		g.fill( zone );
 		
 		for (Packet packet: packets) {
+			//System.out.println( "INDEX = " + packet.getIndexRotation() );
+			//System.out.println( "ROTATION = " + nodes.get( packet.getIndexRotation() ).getAngle() );
 		    // TODO RUOTARE IL PACCHETTO E POI RIPORTARLO ALLE CONDIZIONI INIZIALI
-		    g.rotate( nodes.get( packet.getNextNode() ).getCenterX(), nodes.get( packet.getNextNode() ).getCenterY(), nodes.get( packet.getNextNode() ).getAngle() );
+		    g.rotate( nodes.get( packet.getIndexRotation() ).getCenterX(), nodes.get( packet.getIndexRotation() ).getCenterY(), nodes.get( packet.getIndexRotation() ).getAngle() );
 			packet.draw( g );
 			g.resetTransform();
 		}

@@ -49,7 +49,7 @@ public class AnimationNetwork extends BasicGame
         
         //TESTING
         node1 = new Node( 150, 150, 0, 1, Color.black, offset );
-        node2 = new Node( 300, 150, 1, 2, Color.green, offset );
+        node2 = new Node( 300, 300, 1, 2, Color.green, offset );
         node3 = new Node( 450, 300, 2, 3, Color.red, offset );
         node4 = new Node( 600, 150, 3, 3, Color.yellow, offset );
         
@@ -66,7 +66,7 @@ public class AnimationNetwork extends BasicGame
             System.out.println( "ANGLE = " + nodes.get( i ).getAngle() );
         }
         
-        packet = new Packet( gc, nodes.get( 0 ).getCenterX(), nodes.get( 0 ).getCenterY() + gc.getWidth()/50, 0, 2, nodes.get( 0 ).getColor() );
+        packet = new Packet( gc, nodes.get( 0 ).getCenterX(), nodes.get( 0 ).getCenterY() + gc.getWidth()/50, 0, 1, nodes.get( 0 ).getColor() );
         
         packets.add( packet );
         

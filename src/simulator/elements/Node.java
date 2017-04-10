@@ -79,16 +79,17 @@ public class Node
 	    float catetum1 = Math.abs( x2 - x1 ), catetum2 = Math.abs( y1 - y2 );
 	    //float ipo = (float) Math.sqrt( catetum1 * catetum1 + catetum2*catetum2 );
 	    float gamma = (float) Math.atan( catetum2/catetum1 );
-	    System.out.println( "CATETO2 = " + catetum2 );
+	    if(color.equals( Color.black ))
+	    	System.out.println( "Y1 = " + y1 + " - Y2 = " + y2 );	    
 	    return (float) ((Math.PI/2 - gamma)*180/Math.PI);
 	}
 	
 	public void createLink( float x1, float y1, float x2, float y2, Color color ) {
 	    if (x1 != x2 && y1 != y2) {
-            //System.out.print( "ANGOLO != 0" );
-	        link = new Link( x1, y1, x2, y2, color, calculateAngle( x1, x2, y1, y2 ) );
+            System.out.print( "ANGOLO != 0" );
+	        link = new Link( x1, y1, x2, y2, color, calculateAngle( x1, y1, x2, y2 ) );
 	    } else {
-	        //System.out.print( "ANGOLO = 0" );
+	        System.out.print( "ANGOLO = 0" );
 	        link = new Link( x1, y1, x2, y2, color, 0 );
 	    }
 	}
