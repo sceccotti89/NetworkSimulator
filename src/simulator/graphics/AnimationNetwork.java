@@ -32,6 +32,8 @@ public class AnimationNetwork extends BasicGame
     private Node node1, node2, node3, node4;
     private Packet packet;
     
+    private float offset;
+    
     public AnimationNetwork( final String title )
     {
         super( title );
@@ -43,11 +45,13 @@ public class AnimationNetwork extends BasicGame
         nodes = new ArrayList<Node>();
         packets = new ArrayList<Packet>();
         
+        offset = gc.getWidth()/100;
+        
         //TESTING
-        node1 = new Node( 150, 150, 0, 1, Color.black );
-        node2 = new Node( 300, 150, 1, 2, Color.green );
-        node3 = new Node( 450, 300, 2, 3, Color.red );
-        node4 = new Node( 600, 150, 3, 3, Color.yellow );
+        node1 = new Node( 150, 150, 0, 1, Color.black, offset );
+        node2 = new Node( 300, 150, 1, 2, Color.green, offset );
+        node3 = new Node( 450, 300, 2, 3, Color.red, offset );
+        node4 = new Node( 600, 150, 3, 3, Color.yellow, offset );
         
         nodes.add( node1 );
         nodes.add( node2 );

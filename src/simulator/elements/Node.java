@@ -14,15 +14,22 @@ public class Node
 	
 	final private float ray = 25;
 	
-	public Node( final float x, final float y, final int ID_from, final int ID_to, final Color color ){
+	private Link link;
+	
+	private float offset;
+	
+	public Node( final float x, final float y, final int ID_from, final int ID_to, final Color color, float offset ) {
 		this.ID_from = ID_from;
 		this.ID_to = ID_to;
 		this.color = color;
+		this.offset = offset;
 		
 		node = new Circle( x, y, ray );
 	}
 	
-	public void draw( Graphics g ){
+	public void draw( Graphics g ) {
+		link.draw( g, offset);
+		
 		g.setColor( color );
 		g.fill( node );
 		
@@ -30,11 +37,11 @@ public class Node
 		g.draw( node );
 	}
 	
-	public int getIDFrom(){
+	public int getIDFrom() {
 		return ID_from;
 	}
 	
-	public int getIDTo(){
+	public int getIDTo() {
 		return ID_to;
 	}
 	
@@ -60,5 +67,9 @@ public class Node
 	
 	public Circle getArea(){
 		return node;
+	}
+	
+	public void creatLink( Link link ) {
+		this.link = link;
 	}
 }
