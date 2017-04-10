@@ -46,7 +46,7 @@ public class AnimationNetwork extends BasicGame
         //TESTING
         node1 = new Node( 150, 150, 0, 1, Color.black );
         node2 = new Node( 300, 150, 1, 2, Color.green );
-        node3 = new Node( 450, 150, 2, 3, Color.red );
+        node3 = new Node( 450, 300, 2, 3, Color.red );
         node4 = new Node( 600, 150, 3, 3, Color.yellow );
         
         nodes.add( node1 );
@@ -54,7 +54,7 @@ public class AnimationNetwork extends BasicGame
         nodes.add( node3 );
         nodes.add( node4 );
         
-        packet = new Packet( gc, nodes.get( 0 ).getCenterX(), nodes.get( 0 ).getCenterY(), 0, 2, nodes.get( 0 ).getColor() );
+        packet = new Packet( gc, nodes.get( 0 ).getCenterX(), nodes.get( 0 ).getCenterY() + gc.getWidth()/50, 0, 2, nodes.get( 0 ).getColor() );
         
         packets.add( packet );
         

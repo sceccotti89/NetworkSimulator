@@ -114,6 +114,7 @@ public class NetworkDisplay
 					packet.setIsInNode( false );
 				}
 				
+				// TODO SETTARE IN MODO CORRETTO LO SPOSTAMENTO
 				packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
 			}
 		}
