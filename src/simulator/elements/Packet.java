@@ -25,6 +25,8 @@ public class Packet
 	
 	private String name;
 	
+	private boolean active;
+	
 	public Packet( final GameContainer gc, final float x, final float y, final int ID_from, int ID_to, Color color, int time ) {
 		this.ID_from = ID_from;
 		this.ID_to = ID_to;
@@ -41,6 +43,16 @@ public class Packet
 		indexRotation = ID_from;
 		
 		this.time = time;
+		
+		active = true;
+	}
+	
+	public boolean isActive() {
+		return active;
+	}
+	
+	public void setActive( boolean val ) {
+		active = val;
 	}
 	
 	public void setTime( int val ) {

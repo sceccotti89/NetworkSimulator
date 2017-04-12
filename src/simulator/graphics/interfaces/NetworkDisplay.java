@@ -110,12 +110,16 @@ public class NetworkDisplay
 	    
 		if (animate) {
 			for (Packet packet: packets) {
-				if (timer >= packet.getTime()) {
-					
-					
-					g.rotate( nodes.get( packet.getIndexRotation() ).getCenterX(), nodes.get( packet.getIndexRotation() ).getCenterY(), nodes.get( packet.getIndexRotation() ).getAngle() );
-					packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
-					g.resetTransform();
+				if (packet.isActive() && timer >= packet.getTime()) {
+					if (packet.getArea().intersects( nodes.get( packet.getIDTo() ).getArea() )) {
+						packet.setActive( false );
+					} else {
+						g.rotate( nodes.get( packet.getIndexRotation() ).getCenterX(), nodes.get( packet.getIndexRotation() ).getCenterY(), nodes.get( packet.getIndexRotation() ).getAngle() );
+						packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
+						g.resetTransform();
+					}
+				} else {
+					break;
 				}
 			}
 		}
