@@ -123,8 +123,9 @@ public class NetworkDisplay
 							
 							//g.rotate( nodes.get( packet.getIndexRotation() ).getCenterX(), nodes.get( packet.getIndexRotation() ).getCenterY(), nodes.get( packet.getIndexRotation() ).getAngle() );
 							
-							packet.getArea().setX( (float) (packet.getArea().getX() + am.getFrames() * Math.sin( nodes.get( packet.getIndexRotation() ).getAngle() ) ) );
-							packet.getArea().setY( (float) (packet.getArea().getY() + am.getFrames() * Math.cos( nodes.get( packet.getIndexRotation() ).getAngle() ) ) );
+							float angle = nodes.get( packet.getIndexRotation() ).getAngle();
+							packet.getArea().setX( (float) (packet.getArea().getX() + am.getFrames() * Math.sin( angle ) ) );
+							packet.getArea().setY( (float) (packet.getArea().getY() + am.getFrames() * Math.cos( angle ) ) );
 							
 							//packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
 							//g.resetTransform();
