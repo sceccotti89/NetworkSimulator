@@ -108,17 +108,27 @@ public class NetworkDisplay
 	{
 	    Graphics g = gc.getGraphics();
 	    
+	    // TODO CAMBIARE IL DISCORSO DEL TIMER
 	    timer = (int) (System.currentTimeMillis() - startTime);
 	    
 		if (animate) {
 			for (Packet packet: packets) {
-				if (packet.isActive() && timer >= packet.getTime()) {
-					if (packet.getArea().intersects( nodes.get( packet.getIDTo() ).getArea() )) {
-						packet.setActive( false );
-					} else {
-						g.rotate( nodes.get( packet.getIndexRotation() ).getCenterX(), nodes.get( packet.getIndexRotation() ).getCenterY(), nodes.get( packet.getIndexRotation() ).getAngle() );
-						packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
-						g.resetTransform();
+				if (timer >= packet.getTime()) {
+					if (packet.isActive()) {
+						if (packet.getArea().intersects( nodes.get( packet.getIDTo() ).getArea() )) {
+							packet.setActive( false );
+						} else {
+							System.out.println( "ANGOLO = " + nodes.get( packet.getIndexRotation() ).getAngle() );
+							System.out.println( "VAL_X = " + (packet.getArea().getX() + am.getFrames() * (float) Math.sin( nodes.get( packet.getIndexRotation() ).getAngle() )) );
+							
+							//g.rotate( nodes.get( packet.getIndexRotation() ).getCenterX(), nodes.get( packet.getIndexRotation() ).getCenterY(), nodes.get( packet.getIndexRotation() ).getAngle() );
+							
+							packet.getArea().setX( (float) (packet.getArea().getX() + am.getFrames() * Math.sin( nodes.get( packet.getIndexRotation() ).getAngle() ) ) );
+							packet.getArea().setY( (float) (packet.getArea().getY() + am.getFrames() * Math.cos( nodes.get( packet.getIndexRotation() ).getAngle() ) ) );
+							
+							//packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
+							//g.resetTransform();
+						}
 					}
 				} else {
 					break;
@@ -147,9 +157,9 @@ public class NetworkDisplay
 			//System.out.println( "INDEX = " + packet.getIndexRotation() );
 			//System.out.println( "ROTATION = " + nodes.get( packet.getIndexRotation() ).getAngle() );
 		    // TODO RUOTARE IL PACCHETTO E POI RIPORTARLO ALLE CONDIZIONI INIZIALI
-		    g.rotate( nodes.get( packet.getIndexRotation() ).getCenterX(), nodes.get( packet.getIndexRotation() ).getCenterY(), nodes.get( packet.getIndexRotation() ).getAngle() );
+		    //g.rotate( nodes.get( packet.getIndexRotation() ).getCenterX(), nodes.get( packet.getIndexRotation() ).getCenterY(), nodes.get( packet.getIndexRotation() ).getAngle() );
 			packet.draw( g );
-			g.resetTransform();
+			//g.resetTransform();
 		}
 		
 		for (Node node: nodes) {
