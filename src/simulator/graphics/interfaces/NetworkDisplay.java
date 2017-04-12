@@ -113,10 +113,14 @@ public class NetworkDisplay
 		if (animate) {
 			for (Packet packet: packets) {
 				if (packet.isActive() && timer >= packet.getTime()) {
+                    //System.out.println( "AREAPACKET = " + packet.getArea().getX() + " " + packet.getArea().getY() );
+                    //System.out.println( "AREANODE = " + nodes.get( 1 ).getArea().getX() + " " + nodes.get( 1 ).getArea().getY() );
 					if (packet.getArea().intersects( nodes.get( packet.getIDTo() ).getArea() )) {
 						packet.setActive( false );
 					} else {
 						g.rotate( nodes.get( packet.getIndexRotation() ).getCenterX(), nodes.get( packet.getIndexRotation() ).getCenterY(), nodes.get( packet.getIndexRotation() ).getAngle() );
+	                    System.out.println( "AREAPACKET = " + packet.getArea().getX() + " " + packet.getArea().getY() );
+	                    System.out.println( "AREANODE = " + nodes.get( 1 ).getArea().getX() + " " + nodes.get( 1 ).getArea().getY() );
 						packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
 						g.resetTransform();
 					}
