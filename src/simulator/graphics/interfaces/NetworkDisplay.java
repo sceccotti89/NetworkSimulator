@@ -26,6 +26,10 @@ public class NetworkDisplay
 	
 	private Packet packet;
 	
+	private int startTime, timer;
+	
+	private boolean inPause;
+	
 	public NetworkDisplay( final GameContainer gc, final float startY, final float height, final ArrayList<Node> nodes, final ArrayList<Packet> packets )
 	{
 		zone = new Rectangle( 0, startY, gc.getWidth(), height );
@@ -42,11 +46,20 @@ public class NetworkDisplay
 		infos = new Rectangle( 0, 0, widthInfo, heightInfo );
 		
 		drawInfo = false;
+		
+		inPause = false;
 	}
 	
 	public boolean startAnimation() {
 		for (Packet packet: packets) {
 			if (!packet.getFinished()) {
+				// TODO GESTIRE IL TIMER DA PAUSE E NON
+				startTime = (int) System.currentTimeMillis();
+				if (inPause) {
+					inPause = false;
+				} else {
+					timer = 0;
+				}
 				animate = true;
 				return true;
 			}
@@ -97,27 +110,13 @@ public class NetworkDisplay
 	    
 		if (animate) {
 			for (Packet packet: packets) {
-				if (packet.getArea().intersects( nodes.get( packet.getNextNode() ).getArea() )) {
-					System.out.println( "ECCHIME" );
-					if (!packet.getIsInNode()) {
-						packet.setIsInNode( true );
-						packet.incNextNode();
-						packet.setIndexRotation( packet.getNextNode() );
-						if (packet.getIDTo() == nodes.get( packet.getNextNode() ).getIDFrom()) {
-							packet.setFinished( true );
-							if (checkAllPacket( am )) {
-								return;
-							}
-						}
-					}
-				} else {
-					packet.setIsInNode( false );
+				if (timer >= packet.getTime()) {
+					
+					
+					g.rotate( nodes.get( packet.getIndexRotation() ).getCenterX(), nodes.get( packet.getIndexRotation() ).getCenterY(), nodes.get( packet.getIndexRotation() ).getAngle() );
+					packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
+					g.resetTransform();
 				}
-				
-				// TODO SETTARE IN MODO CORRETTO LO SPOSTAMENTO
-				g.rotate( nodes.get( packet.getIndexRotation() ).getCenterX(), nodes.get( packet.getIndexRotation() ).getCenterY(), nodes.get( packet.getIndexRotation() ).getAngle() );
-				packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
-				g.resetTransform();
 			}
 		}
 

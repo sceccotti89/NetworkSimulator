@@ -38,6 +38,25 @@ public class AnimationNetwork extends BasicGame
     {
         super( title );
     }
+    
+    public void sortPackets() {
+    	Packet tmpi, tmpj;
+    	
+    	for (int i = 0; i < packets.size() - 1; i++) {
+    		for (int j = i + 1; j < packets.size(); j++) {
+    			if (packets.get( j ).getTime() < packets.get( i ).getTime()) {
+    				tmpi = packets.get( i );
+    				tmpj = packets.get( j );
+    				
+    				packets.remove( i );
+    				packets.remove( j );
+    				
+    				packets.add( i, tmpj );
+    				packets.add( j, tmpi );
+    			}
+    		}
+    	}
+    }
 
     @Override
     public void init( final GameContainer gc ) throws SlickException
@@ -58,17 +77,16 @@ public class AnimationNetwork extends BasicGame
         nodes.add( node3 );
         nodes.add( node4 );
         
-        // TODO CREARE L'ANGOLO DEL LINK
         for (int i = 0; i < nodes.size() - 1; i++) {
             Node node1 = nodes.get( i ), node2 = nodes.get( i + 1 );
             node1.createLink( node1.getArea().getCenterX(), node1.getArea().getCenterY(), node2.getArea().getCenterX(), node2.getArea().getCenterY(), node2.getColor() );
-
-            System.out.println( "ANGLE = " + nodes.get( i ).getAngle() );
         }
         
-        packet = new Packet( gc, nodes.get( 0 ).getCenterX(), nodes.get( 0 ).getCenterY() + gc.getWidth()/50, 0, 1, nodes.get( 0 ).getColor() );
+        packet = new Packet( gc, nodes.get( 0 ).getCenterX(), nodes.get( 0 ).getCenterY() + gc.getWidth()/50, 0, 1, nodes.get( 0 ).getColor(), 5 );
         
         packets.add( packet );
+        
+        sortPackets();
         
         ob = new OptionBar( gc );
         am = new AnimationManager( gc, ob.getMaxY() );

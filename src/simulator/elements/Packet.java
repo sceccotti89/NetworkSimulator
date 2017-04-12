@@ -21,10 +21,11 @@ public class Packet
 	
 	private int indexRotation;
 	
-	// TODO CHIARIRE A COSA SERVA
+	private int time;
+	
 	private String name;
 	
-	public Packet( final GameContainer gc, final float x, final float y, final int ID_from, int ID_to, Color color ) {
+	public Packet( final GameContainer gc, final float x, final float y, final int ID_from, int ID_to, Color color, int time ) {
 		this.ID_from = ID_from;
 		this.ID_to = ID_to;
 		this.color = color;
@@ -36,9 +37,18 @@ public class Packet
 		hasFinished = false;
 		isInNode = true;
 		
-		// TODO SETTARE QUESTO PARAMETRO (QUANDO STEFANO CHIARIRA QUESTO PUNTO) DA INPUT
 		nextNode = ID_from;
 		indexRotation = ID_from;
+		
+		this.time = time;
+	}
+	
+	public void setTime( int val ) {
+		time = val;
+	}
+	
+	public int getTime() {
+		return time;
 	}
 	
 	public void setIndexRotation( int val ) {
