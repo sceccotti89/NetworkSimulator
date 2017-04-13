@@ -1,6 +1,7 @@
 package simulator.elements;
 
 import org.newdawn.slick.Color;
+import org.newdawn.slick.Font;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Circle;
 
@@ -37,6 +38,10 @@ public class Node
 		
 		g.setColor( Color.black );
 		g.draw( node );
+		
+		Font f = g.getFont();
+		g.setColor( Color.white );
+		g.drawString( ID_from + "", node.getCenterX() - f.getWidth( ID_from + "" )/2, node.getCenterY() - f.getHeight( ID_from + "" )/2 );
 	}
 	
 	public int getIDFrom() {
