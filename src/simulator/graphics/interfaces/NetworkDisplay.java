@@ -118,17 +118,7 @@ public class NetworkDisplay
 						if (packet.getArea().intersects( nodes.get( packet.getIDTo() ).getArea() )) {
 							packet.setActive( false );
 						} else {
-							System.out.println( "ANGOLO = " + nodes.get( packet.getIndexRotation() ).getAngle() );
-							System.out.println( "VAL_X = " + (packet.getArea().getX() + am.getFrames() * (float) Math.sin( nodes.get( packet.getIndexRotation() ).getAngle() )) );
-							
-							//g.rotate( nodes.get( packet.getIndexRotation() ).getCenterX(), nodes.get( packet.getIndexRotation() ).getCenterY(), nodes.get( packet.getIndexRotation() ).getAngle() );
-							
-							float angle = nodes.get( packet.getIndexRotation() ).getAngle();
-							packet.getArea().setX( (float) (packet.getArea().getX() + am.getFrames() * Math.sin( angle )) );
-							packet.getArea().setY( (float) (packet.getArea().getY() + am.getFrames() * Math.cos( angle )) );
-							
-							//packet.getArea().setX( packet.getArea().getX() + am.getFrames() );
-							//g.resetTransform();
+							packet.update( am.getFrames() );
 						}
 					}
 				} else {
@@ -155,12 +145,7 @@ public class NetworkDisplay
 		g.fill( zone );
 		
 		for (Packet packet: packets) {
-			//System.out.println( "INDEX = " + packet.getIndexRotation() );
-			//System.out.println( "ROTATION = " + nodes.get( packet.getIndexRotation() ).getAngle() );
-		    // TODO RUOTARE IL PACCHETTO E POI RIPORTARLO ALLE CONDIZIONI INIZIALI
-		    //g.rotate( nodes.get( packet.getIndexRotation() ).getCenterX(), nodes.get( packet.getIndexRotation() ).getCenterY(), nodes.get( packet.getIndexRotation() ).getAngle() );
-			packet.draw( g );
-			//g.resetTransform();
+		    packet.draw( g );
 		}
 		
 		for (Node node: nodes) {

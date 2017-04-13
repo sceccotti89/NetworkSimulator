@@ -11,7 +11,7 @@ public class Packet
 	
 	private Color color;
 	
-	private Rectangle pack;
+	private Rectangle area;
 	
 	private float width;
 	
@@ -27,6 +27,10 @@ public class Packet
 	
 	private boolean active;
 	
+	private float speedX, speedY;
+	
+	private float angle;
+	
 	public Packet( final GameContainer gc, final float x, final float y, final int ID_from, int ID_to, Color color, int time ) {
 		this.ID_from = ID_from;
 		this.ID_to = ID_to;
@@ -34,7 +38,7 @@ public class Packet
 		
 		width = gc.getWidth()/80;
 		
-		pack = new Rectangle( x, y - width/2, width, width );
+		area = new Rectangle( x, y - width/2, width, width );
 		
 		hasFinished = false;
 		isInNode = true;
@@ -45,6 +49,23 @@ public class Packet
 		this.time = time;
 		
 		active = true;
+	}
+	
+	public float getSpeedX() {
+		return speedX;
+	}
+	
+	public float getSpeedY() {
+		return speedY;
+	}
+	
+	public void setSpeed( float angle ) {
+		this.angle = angle;
+		
+		float rad = (float) (angle * Math.PI / 180);
+		
+		speedX = (float) Math.sin( rad );
+		speedY = (float) Math.cos( rad );
 	}
 	
 	public boolean isActive() {
@@ -108,7 +129,7 @@ public class Packet
 	}
 	
 	public Rectangle getArea(){
-		return pack;
+		return area;
 	}
 	
 	public void setColor( Color color ){
@@ -123,8 +144,14 @@ public class Packet
 		return ID_to;
 	}
 	
+	public void update( final int animTime ) {
+		area.setLocation( area.getX() + speedX * animTime, area.getY() + speedY * animTime );
+	}
+	
 	public void draw( final Graphics g ) {
+		g.rotate( area.getX(), area.getY(), angle );		
 		g.setColor( color );
-		g.fill( pack );
+		g.fill( area );		
+		g.resetTransform();
 	}
 }

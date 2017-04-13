@@ -88,6 +88,10 @@ public class AnimationNetwork extends BasicGame
         
         sortPackets();
         
+        for (Packet packet: packets) {
+        	packet.setSpeed( nodes.get( packet.getIndexRotation() ).getAngle() );
+        }
+        
         ob = new OptionBar( gc );
         am = new AnimationManager( gc, ob.getMaxY() );
         ta = new TimeAnimation();

@@ -87,10 +87,10 @@ public class Node
 	public void createLink( float x1, float y1, float x2, float y2, Color color ) {
 	    if (x1 != x2 && y1 != y2) {
             System.out.print( "ANGOLO != 0" );
-	        link = new Link( x1, y1, x2, y2, color, calculateAngle( x1, y1, x2, y2 ) );
+	        link = new Link( x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ) );
 	    } else {
 	        System.out.print( "ANGOLO = 0" );
-	        link = new Link( x1, y1, x2, y2, color, 0 );
+	        link = new Link( x1, y1, x2, y2, 0 );
 	    }
 	}
 }
