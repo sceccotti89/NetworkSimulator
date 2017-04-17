@@ -111,7 +111,11 @@ public class NetworkDisplay
 		}
 		
 		for (Node node: nodes) {
-			node.draw( g );
+			node.drawNode( g );
+		}
+		
+		for (Node node: nodes) {
+			node.drawInfo( g );
 		}
 	}
 }

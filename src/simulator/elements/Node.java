@@ -82,7 +82,7 @@ public class Node
 		}
 	}
 	
-	public void draw( Graphics g ) {
+	public void drawNode( Graphics g ) {
 	    if (link != null) {
 	        link.drawLink( g, offset );
 	    }
@@ -96,7 +96,9 @@ public class Node
 		Font f = g.getFont();
 		g.setColor( Color.white );
 		g.drawString( ID_from + "", node.getCenterX() - f.getWidth( ID_from + "" )/2, node.getCenterY() - f.getHeight( ID_from + "" )/2 );
-		
+	}
+	
+	public void drawInfo( Graphics g ) {
 		if (link != null) {
 	        link.drawInfo( g );
 	    }
