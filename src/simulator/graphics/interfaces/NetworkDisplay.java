@@ -56,6 +56,7 @@ public class NetworkDisplay
 	
 	public boolean pauseAnimation() {
 		animate = false;
+		inPause = true;
 		
 		return true;
 	}
@@ -68,6 +69,7 @@ public class NetworkDisplay
 			packet.setActive( true );
 		}
 		animate = false;
+		timer = 0;
 		
 		return true;
 	}
