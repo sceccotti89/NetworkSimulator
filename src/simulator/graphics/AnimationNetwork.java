@@ -66,6 +66,8 @@ public class AnimationNetwork extends BasicGame
         
         offset = gc.getWidth()/100;
         
+        // TODO FARE UNA PROVA DI LETTURA DA FILE
+        
         //TESTING
         node1 = new Node( 150, 150, 0, 1, Color.black, offset );
         node2 = new Node( 300, 300, 1, 2, Color.green, offset );
