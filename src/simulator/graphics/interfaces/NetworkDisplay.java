@@ -98,7 +98,7 @@ public class NetworkDisplay
 		}
 		
 		for (Node node: nodes) {
-			node.checkMouse( gc, gc.getInput() );
+			node.update( gc );
 		}
 	}
 	

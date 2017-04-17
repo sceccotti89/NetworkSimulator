@@ -4,7 +4,6 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.Font;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
-import org.newdawn.slick.Input;
 import org.newdawn.slick.geom.Polygon;
 import org.newdawn.slick.geom.Rectangle;
 
@@ -47,9 +46,9 @@ public class Link
 	    return angle;
 	}
 	
-	public boolean checkMouse( GameContainer gc, Input input ) {
-		float mouseX = input.getMouseX();
-		float mouseY = input.getMouseY();
+	public boolean checkMouse( GameContainer gc ) {
+		float mouseX = gc.getInput().getMouseX();
+		float mouseY = gc.getInput().getMouseY();
 		
 		if (area.contains( mouseX, mouseY )) {
 			showInfos = true;

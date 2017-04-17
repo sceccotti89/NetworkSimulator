@@ -4,7 +4,6 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.Font;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
-import org.newdawn.slick.Input;
 import org.newdawn.slick.geom.Circle;
 
 public class Node
@@ -66,14 +65,6 @@ public class Node
 	    return link.getAngle();
 	}
 	
-	public boolean checkMouse( GameContainer gc, Input input ) {
-		if (link != null) {
-			return link.checkMouse( gc, input );
-		}
-		
-		return false;
-	}
-	
 	private float calculateAngle( float x1, float y1, float x2, float y2 ) {
 	    float catetum1 = x2 - x1, catetum2 = y2 - y1;
 	    //float ipo = (float) Math.sqrt( catetum1 * catetum1 + catetum2*catetum2 );
@@ -83,6 +74,12 @@ public class Node
 	
 	public void createLink( float x1, float y1, float x2, float y2, Color color ) {
 	    link = new Link( x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ) );
+	}
+	
+	public void update( GameContainer gc ) {
+		if (link != null) {
+			link.checkMouse( gc );
+		}
 	}
 	
 	public void draw( Graphics g ) {
