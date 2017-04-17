@@ -30,8 +30,6 @@ public class AnimationManager implements AnimationInterface
     
     private final String START = "Start", STOP = "Stop", PAUSE = "Pause", PLUS = "Plus", MINUS = "Minus";
     
-    private boolean resetButton;
-    
     private boolean mouseDown;
     
     public AnimationManager( final GameContainer gc, final float startY ) throws SlickException
@@ -40,8 +38,6 @@ public class AnimationManager implements AnimationInterface
         width  = gc.getWidth()*10/53;
         
         buttons = new ArrayList<ImageButton>();
-        
-        resetButton = false;
 
         start = new ImageButton( 0, startY, width, height, START, Color.gray, 0, gc, new Image( "./data/Image/Start.png" ), gc.getWidth()/20, gc.getHeight()/20 );
         pause = new ImageButton( start.getMaxX(), startY, width, height, PAUSE, Color.gray, 1, gc, new Image( "./data/Image/Pause.png" ), gc.getWidth()/20, gc.getHeight()/20 );
@@ -111,13 +107,13 @@ public class AnimationManager implements AnimationInterface
         					} else if (button.getName().equals( MINUS )) {
         						frame = Math.max( 0, frame - 5 );
         					} else if (button.getName().equals( START )) {
-        						resetButton = nd.startAnimation();
+        						nd.startAnimation();
         						ob.resetAllButtons();
         					} else if (button.getName().equals( PAUSE )) {
-        						resetButton = nd.pauseAnimation();
+        						nd.pauseAnimation();
         						ob.resetAllButtons();
         					} else if (button.getName().equals( STOP )) {
-        						resetButton = nd.stopAnimation( gc );
+        						nd.stopAnimation( gc );
         						ob.resetAllButtons();
         					}
                         }

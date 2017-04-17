@@ -169,7 +169,7 @@ public class Packet
 			drawInfo = false;
 		}
 		
-		if (animate) {
+		if (animate && isActive()) {
 			area.setLocation( area.getX() + speedX * animTime, area.getY() + speedY * animTime );
 		}
 	}

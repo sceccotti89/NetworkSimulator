@@ -88,12 +88,10 @@ public class NetworkDisplay
 				if (packet.isActive()) {
 					if (packet.getArea().intersects( nodes.get( packet.getIDTo() ).getArea() )) {
 						packet.setActive( false );
-					} else {
-						packet.update( am.getFrames(), gc, animate );
 					}
 				}
-			} else {
-				break;
+				
+				packet.update( am.getFrames(), gc, animate );
 			}
 		}
 		
