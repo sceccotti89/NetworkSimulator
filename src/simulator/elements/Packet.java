@@ -157,9 +157,9 @@ public class Packet
 		return ID_to;
 	}
 	
-	public void checkMouse( GameContainer gc, Input input ) {
-		float mouseX = input.getMouseX();
-		float mouseY = input.getMouseY();
+	public void update( final int animTime, GameContainer gc, boolean animate ) {		
+		float mouseX = gc.getInput().getMouseX();
+		float mouseY = gc.getInput().getMouseY();
 		
 		if (area.contains( mouseX, mouseY )) {
 			drawInfo = true;
@@ -169,10 +169,10 @@ public class Packet
 		} else {
 			drawInfo = false;
 		}
-	}
-	
-	public void update( final int animTime ) {
-		area.setLocation( area.getX() + speedX * animTime, area.getY() + speedY * animTime );
+		
+		if (animate) {
+			area.setLocation( area.getX() + speedX * animTime, area.getY() + speedY * animTime );
+		}
 	}
 	
 	public void draw( final Graphics g ) {

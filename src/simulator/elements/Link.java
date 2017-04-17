@@ -76,7 +76,7 @@ public class Link
 		if (showInfos) {
 			g.setColor( Color.black );
 			g.draw( infos );
-			g.setColor( Color.blue );
+			g.setColor( Color.lightGray );
 			g.fill( infos );
 			g.setColor( Color.black );
 			g.drawString( value, infos.getX(), infos.getY() );

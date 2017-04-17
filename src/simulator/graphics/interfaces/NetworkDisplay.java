@@ -62,16 +62,14 @@ public class NetworkDisplay
 		return true;
 	}
 	
-	public boolean stopAnimation()
+	public boolean stopAnimation( GameContainer gc )
 	{
-		animate = false;
 		for (Packet packet: packets ) {
-			packet.getArea().setX( nodes.get( packet.getIDFrom() ).getCenterX() );
-			packet.setNextNode( 0 );
-			packet.setColor( nodes.get( packet.getNextNode() ).getColor() );
-			packet.setIsInNode( false );
+			packet.getArea().setLocation( nodes.get( packet.getIDFrom() ).getCenterX(), nodes.get( packet.getIDFrom() ).getCenterY() + gc.getWidth()/50 );
 			packet.setFinished( false );
+			packet.setActive( true );
 		}
+		animate = false;
 		
 		return true;
 	}
@@ -80,43 +78,23 @@ public class NetworkDisplay
 		return animate;
 	}
 	
-	private boolean checkAllPacket( AnimationManager am ) {
-		for (Packet packet: packets) {
-			if (!packet.getFinished()) {
-				return false;
-			}
-		}
-
-		animate = false;
-		am.resetAllButtons();
-		return true;
-	}
-	
 	public void update( GameContainer gc, AnimationManager am )
 	{
-	    Graphics g = gc.getGraphics();
-	    
 	    // TODO CAMBIARE IL DISCORSO DEL TIMER
 	    timer = (int) (System.currentTimeMillis() - startTime);
-	    
-		if (animate) {
-			for (Packet packet: packets) {
-				if (timer >= packet.getTime()) {
-					if (packet.isActive()) {
-						if (packet.getArea().intersects( nodes.get( packet.getIDTo() ).getArea() )) {
-							packet.setActive( false );
-						} else {
-							packet.update( am.getFrames() );
-						}
-					}
-				} else {
-					break;
-				}
-			}
-		}
-
+	
 		for (Packet packet: packets) {
-			packet.checkMouse( gc, gc.getInput() );
+			if (timer >= packet.getTime()) {
+				if (packet.isActive()) {
+					if (packet.getArea().intersects( nodes.get( packet.getIDTo() ).getArea() )) {
+						packet.setActive( false );
+					} else {
+						packet.update( am.getFrames(), gc, animate );
+					}
+				}
+			} else {
+				break;
+			}
 		}
 		
 		for (Node node: nodes) {
