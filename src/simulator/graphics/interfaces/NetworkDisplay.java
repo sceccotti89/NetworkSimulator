@@ -19,8 +19,6 @@ public class NetworkDisplay
 	private ArrayList<Node> nodes;
 	private ArrayList<Packet> packets;
 	
-	private Packet packet;
-	
 	private long startTime;
 	private int timer;
 	
@@ -74,10 +72,6 @@ public class NetworkDisplay
 		return true;
 	}
 	
-	public boolean getAnimate(){
-		return animate;
-	}
-	
 	public void update( GameContainer gc, AnimationManager am )
 	{
 	    // TODO CAMBIARE IL DISCORSO DEL TIMER
@@ -110,6 +104,7 @@ public class NetworkDisplay
 		    packet.draw( g );
 		}
 		
+		// TODO PROVVISORIO, POI FARO' COME HA DETTO STEFANO
 		for (Node node: nodes) {
 			node.drawNode( g );
 		}
