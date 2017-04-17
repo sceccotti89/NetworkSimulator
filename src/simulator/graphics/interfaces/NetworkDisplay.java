@@ -19,11 +19,6 @@ public class NetworkDisplay
 	private ArrayList<Node> nodes;
 	private ArrayList<Packet> packets;
 	
-	private Rectangle infos;
-	private boolean drawInfo;
-	
-	private float widthInfo, heightInfo;
-	
 	private Packet packet;
 	
 	private long startTime;
@@ -40,13 +35,6 @@ public class NetworkDisplay
 		this.nodes = nodes;
 		
 		this.packets = packets;
-		
-		widthInfo  = gc.getWidth()/7;
-		heightInfo = gc.getHeight()/13;
-		
-		infos = new Rectangle( 0, 0, widthInfo, heightInfo );
-		
-		drawInfo = false;
 		
 		inPause = false;
 	}
@@ -128,13 +116,7 @@ public class NetworkDisplay
 		}
 
 		for (Packet packet: packets) {
-			if (packet.getArea().contains( gc.getInput().getMouseX(), gc.getInput().getMouseY() )) {
-				drawInfo = true;
-				infos.setLocation( gc.getInput().getMouseX() + gc.getWidth()/80, gc.getInput().getMouseY() - heightInfo );
-				this.packet = packet;
-			} else {
-				drawInfo = false;
-			}
+			packet.checkMouse( gc, gc.getInput() );
 		}
 		
 		for (Node node: nodes) {
@@ -154,16 +136,6 @@ public class NetworkDisplay
 		
 		for (Node node: nodes) {
 			node.draw( g );
-		}
-		
-		if (drawInfo) {
-			g.setColor( Color.magenta );
-			g.fill( infos );
-			g.setColor( Color.black );
-			g.draw( infos );
-			
-			g.drawString( "ID_From = " + packet.getIDFrom(), infos.getX(), infos.getY() );
-			g.drawString( "ID_To = " + packet.getIDTo(), infos.getX(), infos.getY() + gc.getHeight()/30 );
 		}
 	}
 }

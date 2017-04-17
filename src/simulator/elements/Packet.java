@@ -1,8 +1,10 @@
 package simulator.elements;
 
 import org.newdawn.slick.Color;
+import org.newdawn.slick.Font;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Input;
 import org.newdawn.slick.geom.Rectangle;
 
 public class Packet
@@ -31,6 +33,10 @@ public class Packet
 	
 	private float angle;
 	
+	private float widthInfo, heightInfo;
+	private Rectangle infos;
+	private boolean drawInfo;
+	
 	public Packet( final GameContainer gc, final float x, final float y, final int ID_from, int ID_to, Color color, int time ) {
 		this.ID_from = ID_from;
 		this.ID_to = ID_to;
@@ -49,6 +55,13 @@ public class Packet
 		this.time = time;
 		
 		active = true;
+		
+		widthInfo  = gc.getWidth()/7;
+		heightInfo = gc.getHeight()/13;
+		
+		infos = new Rectangle( 0, 0, widthInfo, heightInfo );
+		
+		drawInfo = false;
 	}
 	
 	public float getSpeedX() {
@@ -144,6 +157,20 @@ public class Packet
 		return ID_to;
 	}
 	
+	public void checkMouse( GameContainer gc, Input input ) {
+		float mouseX = input.getMouseX();
+		float mouseY = input.getMouseY();
+		
+		if (area.contains( mouseX, mouseY )) {
+			drawInfo = true;
+			
+			float offset = gc.getWidth()/80;
+			infos.setLocation( mouseX + offset, mouseY - offset );
+		} else {
+			drawInfo = false;
+		}
+	}
+	
 	public void update( final int animTime ) {
 		area.setLocation( area.getX() + speedX * animTime, area.getY() + speedY * animTime );
 	}
@@ -153,5 +180,18 @@ public class Packet
 		g.setColor( color );
 		g.fill( area );		
 		g.resetTransform();
+		
+		if (drawInfo) {
+			Font f = g.getFont();
+			String info = "ID_From = " + ID_from + "\n" + "ID_To = " + ID_to;
+			infos.setSize( f.getWidth( info ), f.getHeight( info ) );
+			
+			g.setColor( Color.magenta );
+			g.fill( infos );
+			g.setColor( Color.black );
+			g.draw( infos );
+			
+			g.drawString( info, infos.getX(), infos.getY() );
+		}
 	}
 }
