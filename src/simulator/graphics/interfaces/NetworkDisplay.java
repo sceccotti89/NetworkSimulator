@@ -136,6 +136,10 @@ public class NetworkDisplay
 				drawInfo = false;
 			}
 		}
+		
+		for (Node node: nodes) {
+			node.checkMouse( gc, gc.getInput() );
+		}
 	}
 	
 	public void render( GameContainer gc ) {

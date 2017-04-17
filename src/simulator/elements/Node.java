@@ -2,7 +2,9 @@ package simulator.elements;
 
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Font;
+import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Input;
 import org.newdawn.slick.geom.Circle;
 
 public class Node
@@ -26,22 +28,6 @@ public class Node
 		this.offset = offset;
 		
 		node = new Circle( x, y, ray );
-	}
-	
-	public void draw( Graphics g ) {
-	    if (link != null) {
-	        link.draw( g, offset );
-	    }
-		
-		g.setColor( color );
-		g.fill( node );
-		
-		g.setColor( Color.black );
-		g.draw( node );
-		
-		Font f = g.getFont();
-		g.setColor( Color.white );
-		g.drawString( ID_from + "", node.getCenterX() - f.getWidth( ID_from + "" )/2, node.getCenterY() - f.getHeight( ID_from + "" )/2 );
 	}
 	
 	public int getIDFrom() {
@@ -80,18 +66,42 @@ public class Node
 	    return link.getAngle();
 	}
 	
+	public boolean checkMouse( GameContainer gc, Input input ) {
+		if (link != null) {
+			return link.checkMouse( gc, input );
+		}
+		
+		return false;
+	}
+	
 	private float calculateAngle( float x1, float y1, float x2, float y2 ) {
 	    float catetum1 = x2 - x1, catetum2 = y2 - y1;
 	    //float ipo = (float) Math.sqrt( catetum1 * catetum1 + catetum2*catetum2 );
-	    float gamma = (float) Math.atan( catetum2/catetum1 );	    
+	    float gamma = (float) Math.atan( catetum2/catetum1 );
 	    return (float) ((Math.PI/2 - gamma)*180/Math.PI);
 	}
 	
 	public void createLink( float x1, float y1, float x2, float y2, Color color ) {
-	    if (x1 != x2 && y1 != y2) {
-	        link = new Link( x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ) );
-	    } else {
-	        link = new Link( x1, y1, x2, y2, 0 );
+	    link = new Link( x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ) );
+	}
+	
+	public void draw( Graphics g ) {
+	    if (link != null) {
+	        link.drawLink( g, offset );
+	    }
+		
+		g.setColor( color );
+		g.fill( node );
+		
+		g.setColor( Color.black );
+		g.draw( node );
+		
+		Font f = g.getFont();
+		g.setColor( Color.white );
+		g.drawString( ID_from + "", node.getCenterX() - f.getWidth( ID_from + "" )/2, node.getCenterY() - f.getHeight( ID_from + "" )/2 );
+		
+		if (link != null) {
+	        link.drawInfo( g );
 	    }
 	}
 }
