@@ -15,6 +15,7 @@ import simulator.Packet;
 import simulator.core.Time;
 import simulator.manager.Event.RequestEvent;
 import simulator.manager.Event.ResponseEvent;
+import simulator.manager.EventHandler.EventType;
 import simulator.utils.Utils;
 
 public abstract class EventGenerator
@@ -36,11 +37,12 @@ public abstract class EventGenerator
     protected long    _initMaxPacketsInFly;
     protected long    _maxPacketsInFly = 0;
     
+    // Used for multiple destinations.
+    private boolean _isMulticasted = false;
     private boolean _optimizedMulticast = false;
-    private int     _nextDestIndex = 0;
+    private int     _nextDestIndex = -1;
     private boolean _continueToSend = false;
-    
-    protected int _destIndex = 0;
+    protected int   _destIndex = 0;
     protected List<Agent> _toAnswer;
     
     
@@ -72,8 +74,23 @@ public abstract class EventGenerator
         _toAnswer = new LinkedList<>();
     }
     
-    public EventGenerator setOptimizedMulticast( final boolean optimized ) {
-        _optimizedMulticast = optimized;
+    /**
+     * Set the communication as a multicast.</br>
+     * This is usefull in case of sending several copies of the input message to multiple destinations.</br>
+     * You can also override the {@linkplain #selectDestination()} method to generate its own next destination node.
+     * 
+     * @param multicasted    {@code true} if the output transmission is considered as a multicast,
+     *                       {@code false} otherwise
+     * @param optimized      {@code true} if the multicast is optimized, hence the Ttrasm is not payed among two consecutive messages,
+     *                       {@code false} otherwise
+    */
+    public EventGenerator setMulticast( final boolean multicasted, final boolean optimized )
+    {
+        _isMulticasted = multicasted;
+        if (multicasted) {
+            _maxPacketsInFly = _initMaxPacketsInFly * _destinations.size();
+            _optimizedMulticast = optimized;
+        }
         return this;
     }
     
@@ -84,14 +101,16 @@ public abstract class EventGenerator
     public EventGenerator connect( final Agent to )
     {
         _destinations.add( to );
-        _maxPacketsInFly = _initMaxPacketsInFly * _destinations.size();
+        if (_isMulticasted) {
+            _maxPacketsInFly = _initMaxPacketsInFly * _destinations.size();
+        }
         return this;
     }
     
-    public EventGenerator connectAll( final List<Agent> to )
-    {
-        for (Agent dest : _destinations)
+    public EventGenerator connectAll( final List<Agent> to ) {
+        for (Agent dest : _destinations) {
             connect( dest );
+        }
         return this;
     }
     
@@ -105,6 +124,10 @@ public abstract class EventGenerator
         return _time.clone();
     }
     
+    public void setTime( final Time t ) {
+        _time = t;
+    }
+    
     public boolean isActive() {
         return _activeGenerator;
     }
@@ -116,7 +139,7 @@ public abstract class EventGenerator
     /**
      * Update the internal state of the generator.</br>
      * This method is called everytime a new event arrive.</br>
-     * By default it reduces by 1 the number of flying packets, but the user can</br>
+     * By default it reduces by 1 the number of flying packets, but you can</br>
      * extend it to properly update the event generator.</br>
     */
     public void update() {
@@ -162,12 +185,13 @@ public abstract class EventGenerator
      * Returns the departure time of the next event from this node.</br>
      * This method is called only if the specified departure time is
      * {@link simulator.core.Time#DYNAMIC DYNAMIC}.</br>
-     * In case of fixed interval just return {@code null}.
+     * In case of fixed interval just return {@code null}.</br>
+     * Returning {@code null} with dynamic time makes the generator to produce no event.
      * 
      * @param e    the input event
      * 
      * @return the departure time.</br>
-     * NOTE: time can be {@code null}.
+     * NOTE: returned time can be {@code null}.
     */
     public abstract Time computeDepartureTime( final Event e );
     
@@ -182,8 +206,10 @@ public abstract class EventGenerator
     */
     final public List<Event> generate( final Time t, final Event e )
     {
-        if (t != null && waitForResponse())
-            _time = t;
+        System.out.println( "TIME: " + t );
+        if (t != null && (waitForResponse() || _delayResponse)) {
+            setTime( t );
+        }
         
         Time departureTime = _departureTime;
         if (_departureTime.isDynamic()) {
@@ -204,21 +230,32 @@ public abstract class EventGenerator
         if (e instanceof RequestEvent) {
             if (_delayResponse) {
                 // Prepare and send the new request packet to the next node.
-                events = sendRequest( new ResponseEvent( null, _agent, null, null ) );
+                Event event = new ResponseEvent( e.getArrivalTime(), _agent, null, e.getPacket() );
+                event.setArrivalTime( e.getArrivalTime() );
+                events = sendRequest( event );
                 _toAnswer.add( e.getSource() );
             } else {
                 events = sendResponse( e, e.getDest(), e.getSource() );
             }
         } else {
+            // Response message.
             if (e != null && !_toAnswer.isEmpty()) {
-                if (++_destIndex == _destinations.size()) {
+                if (!_isMulticasted) {
                     Agent dest = _toAnswer.remove( 0 );
                     events = sendResponse( e, _agent, dest );
-                    _destIndex = 0;
+                } else {
+                    if (++_destIndex == _destinations.size()) {
+                        // Send back the "delayed" response.
+                        Agent dest = _toAnswer.remove( 0 );
+                        events = sendResponse( e, _agent, dest );
+                        _destIndex = 0;
+                    }
                 }
             } else {
                 if (_activeGenerator || _continueToSend) {
-                    events = sendRequest( e );
+                    Event event = new ResponseEvent( _time, _agent, null, null );
+                    event.setArrivalTime( _time );
+                    events = sendRequest( event );
                 }
             }
         }
@@ -239,25 +276,22 @@ public abstract class EventGenerator
         if (_packetsInFly < _maxPacketsInFly) {
             // Prepare the request packet.
             Packet reqPacket = makePacket( e );
-            
             if (reqPacket != null) {
                 if (_optimizedMulticast) {
                     _packetsInFly = (_packetsInFly + _destinations.size()) % Utils.INFINITE;
                     events = new ArrayList<>( _destinations.size() );
-                    for (Agent dest : _destinations) {
-                        events.add( new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() ) );
+                    for (int i = 0; i < _destinations.size(); i++) {
+                        Agent dest = _destinations.get( _nextDestIndex = selectDestination( e.getArrivalTime() ) );
+                        Event request = new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() );
+                        request.setArrivalTime( e.getArrivalTime() );
+                        events.add( request );
                     }
                 } else {
                     _packetsInFly = (_packetsInFly + 1) % Utils.INFINITE;
-                    
-                    Agent dest = _destinations.get( _nextDestIndex );
+                    Agent dest = _destinations.get( _nextDestIndex = selectDestination( e.getArrivalTime() ) );
                     Event request = new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() );
                     events = Collections.singletonList( request );
-                    if (_packetsInFly % _initMaxPacketsInFly == 0) {
-                        // Select the next destination node.
-                        _nextDestIndex = (_nextDestIndex + 1) % _destinations.size();
-                        _continueToSend = (_nextDestIndex != 0);
-                    }
+                    _continueToSend = _isMulticasted && _packetsInFly < _maxPacketsInFly;
                 }
             }
         }
@@ -266,13 +300,25 @@ public abstract class EventGenerator
     }
     
     /**
+     * Select the index of the next destination node at the specified time.
+     * 
+     * @param time    time to check the destination. Useful in multicast/anycast transmission.
+     * 
+     * @return the index of the next destination.</br>
+     *         It must be in the range [0 - _destinations.size())
+    */
+    protected int selectDestination( final Time time ) {
+        return (_nextDestIndex + 1) % _destinations.size();
+    }
+    
+    /**
      * Sends a new list of response messages.
      * 
-     * @param e     the current received event. It could be {@code null}.
+     * @param e     the current received event.
      * @param from  the source node
      * @param dest  the destination node
      * 
-     * @return the list of respose messages
+     * @return the list of response messages
     */
     private List<Event> sendResponse( final Event e, final Agent from, final Agent dest )
     {
@@ -280,6 +326,10 @@ public abstract class EventGenerator
         
         if (resPacket != null) {
             Event response = new ResponseEvent( _time.clone(), from, dest, resPacket );
+            if (from.getEventHandler() != null) {
+                from.getEventHandler().handle( response, EventType.GENERATED );
+            }
+            response.setArrivalTime( e.getArrivalTime() );
             return Collections.singletonList( response );
         } else {
             return null;

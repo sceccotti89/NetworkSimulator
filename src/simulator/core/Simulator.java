@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.PropertyConfigurator;
+
 import simulator.Agent;
 import simulator.exception.SimulatorException;
 import simulator.manager.EventScheduler;
@@ -16,7 +19,7 @@ import simulator.network.NetworkTopology;
 public class Simulator
 {
     private NetworkTopology _network;
-    private EventScheduler _evHandler;
+    private EventScheduler _evtScheduler;
     private List<Agent> _agents;
     
     public Simulator()
@@ -27,9 +30,12 @@ public class Simulator
     
     public Simulator( final NetworkTopology network )
     {
-        _network   = network;
-        _evHandler = new EventScheduler( network );
-        _agents    = new ArrayList<>();
+        PropertyConfigurator.configure( "Settings/log4j.properties" );
+        BasicConfigurator.configure();
+        
+        _network      = network;
+        _evtScheduler = new EventScheduler( network );
+        _agents       = new ArrayList<>();
     }
     
     public void setNetworkTopology( final NetworkTopology network ) {
@@ -44,6 +50,7 @@ public class Simulator
             throw new SimulatorException( "No node found for ID: " + agent.getId() );
         
         agent.setNode( _network.getNode( agent.getId() ) );
+        agent.setEventScheduler( _evtScheduler );
         _agents.add( agent );
     }
     
@@ -51,18 +58,23 @@ public class Simulator
         _agents.addAll( agents );
     }
     
-    // TODO aggiungere l'opzione di poter lanciare la simulazione per tot secondi
+    public void start() {
+        start( Time.INFINITE );
+    }
     
-    public void start()
+    public void start( final Time duration )
     {
         _network.computeShortestPaths();
-        _evHandler.setNetworkTopology( _network );
+        
+        _evtScheduler.setNetworkTopology( _network );
+        _evtScheduler.setDuration( duration );
         
         // Put the first message into the queue.
-        for (Agent agent : _agents)
-            _evHandler.schedule( agent.fireEvent( null, null ) );
+        for (Agent agent : _agents) {
+            _evtScheduler.schedule( agent.fireEvent( null, null ) );
+        }
         
-        _evHandler.doAllEvents();
+        _evtScheduler.doAllEvents();
     }
     
     public void pause()
@@ -77,6 +89,12 @@ public class Simulator
     
     public void stop()
     {
-        // TODO
+        // TODO close also the event handler.
+        //_evHandler.shutdown();
+        //_network.shutdown();
+        
+        for (Agent agent : _agents) {
+            agent.shutdown();
+        }
     }
 }

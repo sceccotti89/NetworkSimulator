@@ -3,8 +3,8 @@ package simulator.utils;
 
 public class Pair<F,S>
 {
-    private final F left;
-    private final S right;
+    private F left;
+    private S right;
     
     public Pair( final F left, final S right )
     {
@@ -16,8 +16,16 @@ public class Pair<F,S>
         return left;
     }
     
+    public void setFirst( F value ) {
+        this.left = value;
+    }
+    
     public S getSecond() {
         return right;
+    }
+    
+    public void setSecond( S value ) {
+        this.right = value;
     }
     
     @Override

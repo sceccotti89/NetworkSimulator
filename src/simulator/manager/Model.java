@@ -5,37 +5,34 @@
 package simulator.manager;
 
 import java.io.IOException;
+import java.util.List;
 
-import simulator.Agent;
-import simulator.core.Device;
+import simulator.core.Time;
 
+/**
+ * Interface representing a generic model.
+ * 
+ * @param <E>    type of the evaluated parameters,
+ *               returned by the {@linkplain #eval(Object...) eval} method.
+ * @param <P>    type of input parameters of the {@linkplain #eval(Object...) eval} method.
+*/
 public interface Model<E,P>
 {
     /**
      * Load the model.
      * 
-     * @param device    associated device. It can be {@code null}.
+     * @param frequencies    list of available frequencies
     */
-    public void loadModel( final Device device ) throws IOException;
+    public void loadModel( final List<Long> frequencies ) throws IOException;
     
     /**
-     * Assign the agent.
-    */
-    public void setAgent( final Agent agent );
-    
-    /**
-     * Evaluate the input parameters, passed as strings.
+     * Evaluate the input parameters.
      * 
+     * @param now       the current time
      * @param params    list of input parameters
      * 
-     * @return object representing the evaluation of the input parameter
+     * @return object representing the evaluation of the input parameter.
     */
     @SuppressWarnings("unchecked")
-    public E eval( final P... params );
-
-    /**
-     * Returns the separator used in the model to generate the input parameter
-     * for the {@link #eval(String) eval} method.
-    */
-    public String getSeparator();
+    public E eval( final Time now, final P... params );
 }

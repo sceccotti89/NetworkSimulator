@@ -4,6 +4,7 @@
 
 package simulator;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,6 +16,8 @@ import simulator.core.Device;
 import simulator.core.Time;
 import simulator.manager.Event;
 import simulator.manager.EventGenerator;
+import simulator.manager.EventHandler;
+import simulator.manager.EventScheduler;
 import simulator.network.NetworkNode;
 
 public abstract class Agent
@@ -22,17 +25,22 @@ public abstract class Agent
     protected long _id;
     protected NetworkNode _node;
     
+    private EventScheduler _evtScheduler;
+    private EventHandler _evtHandler = null;
     protected EventGenerator _evGenerator;
     protected List<Agent> _destinations;
     
     private Time _time;
+
+    // TODO questi mi sa che sono inutili
+    //protected long _lastArrival = 0;
+    //protected long _elapsedTime = 0;
     
-    protected long _lastArrival = 0;
-    protected long _elapsedTime = 0;
+    private Map<String,Device<?,?>> _devices;
     
-    private Map<String,Device> _devices;
+    private List<Event> _eventQueue;
     
-    private List<Event> eventQueue;
+    private boolean _parallelTransmission = false;
     
     
     
@@ -44,7 +52,7 @@ public abstract class Agent
     public Agent( final long id ) {
         this( id, null );
     }
-
+    
     public Agent( final NetworkNode node, final EventGenerator evGenerator ) {
         this( node.getId(), evGenerator );
     }
@@ -56,7 +64,7 @@ public abstract class Agent
         _destinations = new ArrayList<>();
         _devices = new HashMap<>();
         
-        eventQueue = new ArrayList<>();
+        _eventQueue = new ArrayList<>();
         
         _time = new Time( 0, TimeUnit.MICROSECONDS );
         
@@ -80,17 +88,21 @@ public abstract class Agent
         return _id;
     }
     
-    public void addDevice( final Device device ) {
+    public void addDevice( final Device<?,?> device ) {
+        device.setEventScheduler( _evtScheduler );
         _devices.put( device.getID(), device );
-        device.setAgent( this );
+    }
+    
+    public <T extends Device<?,?>> T getDevice( final T device ) {
+        return getDevice( device.getID() );
     }
     
     @SuppressWarnings("unchecked")
-    public <T extends Device> T getDevice( final T device ) {
-        return (T) _devices.get( device.getID() );
+    public <T extends Device<?,?>> T getDevice( final String id ) {
+        return (T) _devices.get( id );
     }
     
-    public Collection<Device> getDevices() {
+    public Collection<Device<?,?>> getDevices() {
         return _devices.values();
     }
     
@@ -104,31 +116,80 @@ public abstract class Agent
         node.setAgent( this );
     }
     
+    public void setEventScheduler( final EventScheduler evtScheduler ) {
+        _evtScheduler = evtScheduler;
+        for (Device<?,?> device : _devices.values()) {
+            device.setEventScheduler( evtScheduler );
+        }
+    }
+    
     /**
-     * Checks for a duplicated event on queue.
+     * Put an input event into the queue.
+     * 
+     * @param e    the input event
     */
-    public boolean checkEventOnQueue( final long eventId )
-    {
-        for (Event e : eventQueue) {
-            if (e.getId() == eventId) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
     public void addEventOnQueue( final Event e ) {
-        eventQueue.add( e );
+        _eventQueue.add( e );
     }
     
-    public void removeEventOnQueue( final int index ) {
-        if (!eventQueue.isEmpty()) {
-            eventQueue.remove( index );
+    /**
+     * Remove an event from the queue.
+     * 
+     * @param index    position of the event to remove
+     * 
+     * @return e    the removed event
+    */
+    public Event removeEventFromQueue( final int index ) {
+        if (!_eventQueue.isEmpty()) {
+            return _eventQueue.remove( index );
         }
+        return null;
+    }
+    
+    /**
+     * Cheks if the current event can be executed.</br>
+     * In presence of any device an override of this method is suggested.</br>
+     * NOTE: this method sets also the time of the event, in case the current event can't be executed.
+     * 
+     * @param eventTime    time of the event
+     * 
+     * @return {@code true} if the event can be executed immediately,
+     *         {@code false} otherwise
+    */
+    public boolean canExecute( final Time eventTime)
+    {
+        boolean execute = eventTime.compareTo( _time ) >= 0;
+        if (!execute) {
+            // Set the time of the agent.
+            eventTime.setTime( _time );
+        }
+        return execute;
+    }
+    
+    public void addEventHandler( final EventHandler evtHandler ) {
+        _evtHandler = evtHandler;
+    }
+    
+    public EventHandler getEventHandler() {
+        return _evtHandler;
     }
     
     public List<Event> getQueue() {
-        return eventQueue;
+        return _eventQueue;
+    }
+    
+    /**
+     * Setting true this flag, makes the agent don't pay the transmission delay.
+     * 
+     * @param flag    
+    */
+    public Agent setParallelTransmission( final boolean flag ) {
+        _parallelTransmission = flag;
+        return this;
+    }
+    
+    public boolean parallelTransmission() {
+        return _parallelTransmission;
     }
     
     /**
@@ -137,11 +198,11 @@ public abstract class Agent
      * @param t    current simulation time
      * @param e    current event
     */
-    public List<Event> fireEvent( final Time t, final Event e )
+    public final List<Event> fireEvent( final Time t, final Event e )
     {
-        if (t != null) {
-            updateTime( t.clone() );
-        }
+        /*if (t != null) {
+            setTime( t.clone() );
+        }*/
         
         if (_evGenerator != null) {
             return _evGenerator.generate( t, e );
@@ -155,7 +216,7 @@ public abstract class Agent
      * 
      * @param time    time of the last arrived packet
     */
-    public void setElapsedTime( final long time )
+    /*public void setElapsedTime( final long time )
     {
         _elapsedTime = time - _lastArrival;
         _lastArrival = time;
@@ -163,19 +224,36 @@ public abstract class Agent
         if (_time.getTimeMicroseconds() == 0) {
             _time.addTime( _lastArrival, TimeUnit.MICROSECONDS );
         }
-    }
+    }*/
     
-    public void updateTime( final Time now ) {
-        _time = now;
+    /**
+     * Sets the time of the agent.</br>
+     * The internal time of the agent will be updated only if the input time is greater
+     * than the current one.
+     * 
+     * @param now    set the current time
+    */
+    public void setTime( final Time now ) {
+        if (_time.compareTo( now ) < 0) {
+            _time = now;
+        }
     }
     
     /**
-     * Analyze the incoming event.</br>
-     * This method is user-defined, but if the event doesn't need to be analyzed</br>
-     * just leave it empty (return {@code null}).
-     * 
-     * @param time    time when the packet arrived
-     * @param e       the incoming event
+     * Method used to close all the resources opened by this agent.
     */
-    public abstract Time analyzeEvent( final Time time, final Event e );
+    public void shutdown() {
+        for (Device<?,?> device : _devices.values()) {
+            try {
+                device.shutdown();
+            } catch ( IOException e ) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    @Override
+    public String toString() {
+        return "Id: " + _id;
+    }
 }

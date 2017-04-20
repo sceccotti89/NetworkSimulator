@@ -49,7 +49,7 @@ public class NetworkTopology
         
         /** File structure:
          * 
-         * nodes => [{[xPos],[yPos],id, name, delay}]
+         * nodes => [{id, name, delay, [xPos, yPos]}]
          * links => [{fromId, destId, bw, delay, [linkType]}]
         */
         
@@ -84,12 +84,14 @@ public class NetworkTopology
             long destId     = link.getLong( NetworkLink.DEST_ID );
             double bandwith = link.getDouble( NetworkLink.BANDWITH );
             long delay      = link.getLong( NetworkLink.DELAY );
-            int linkType    = (link.has( NetworkLink.LINK_TYPE )) ? link.getInt( NetworkLink.LINK_TYPE ) : 0;
+            String linkType = (link.has( NetworkLink.LINK_TYPE )) ?
+                                    link.getString( NetworkLink.LINK_TYPE ) :
+                                    NetworkLink.UNIDIRECTIONAL;
             
             NetworkLink _link = new NetworkLink( fromId, destId, bandwith, delay, linkType );
             addLink( _link );
             
-            if(linkType == NetworkLink.BIDIRECTIONAL) {
+            if(linkType.equals( NetworkLink.BIDIRECTIONAL )) {
                 _link = new NetworkLink( destId, fromId, bandwith, delay, linkType );
                 addLink( _link );
             }
@@ -100,7 +102,7 @@ public class NetworkTopology
     
     public void addLink( final long fromId, final long destId,
                          final double bandwith, final long delay,
-                         final int linkType ) throws SimulatorException
+                         final String linkType ) throws SimulatorException
     {
         addLink( new NetworkLink( fromId, destId, bandwith, delay, linkType ) );
     }
@@ -163,14 +165,10 @@ public class NetworkTopology
     */
     public NetworkNode nextNode( final long sourceId, final long destId )
     {
-    	//System.out.println( "COMPUTING NEXT NODE FROM: " + sourceId );
     	NetworkNode[] predecessors = GraphPath.getShortestPath( sourceId, nodes, links );
-    	// Just return the second node present in the list (if present).
     	NetworkNode currNode = nodes.get( destId ), nextNode = null;
-    	//System.out.println( "Scanning list from: " + destId + ", source: " + sourceId );
     	while (predecessors[currNode.getIndex()] != null) {
     		nextNode = predecessors[currNode.getIndex()];
-    		//System.out.println( "PRED: " + currNode.getId() + " = " + nextNode.getId() );
     		if (nextNode.getId() == sourceId) {
     			break;
     		} else {

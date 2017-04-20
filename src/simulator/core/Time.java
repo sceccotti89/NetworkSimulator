@@ -50,6 +50,8 @@ public class Time implements Comparable<Time>
     public static final Time HOUR     = new ImmutableTime(1, TimeUnit.HOURS);
     public static final Time INFINITE = new ImmutableTime(Long.MAX_VALUE, TimeUnit.MICROSECONDS);
     
+    protected TimeUnit unit;
+    
     /**
      * Type of time used to tell the event generator that it's defined by the user.</br>
      * The definition of a dynamic time is one as following:
@@ -66,10 +68,15 @@ public class Time implements Comparable<Time>
     
     public Time( final long time, final TimeUnit unit ) {
         this.time = unit.toMicros( time );
+        this.unit = unit;
     }
     
     public Long getTimeMicroseconds() {
         return time;
+    }
+    
+    public TimeUnit getTimeUnit() {
+        return unit;
     }
     
     public Time setTime( final long time, final TimeUnit unit ) {
@@ -130,6 +137,21 @@ public class Time implements Comparable<Time>
     */
     public boolean isDynamic() {
         return time < 0;
+    }
+    
+    public double convert( final TimeUnit tUnit )
+    {
+        switch ( tUnit ) {
+            case DAYS:         return time / 24d / 60d / 60d / 1000d / 1000d;
+            case HOURS:        return time / 60d / 60d / 1000d / 1000d;
+            case MINUTES:      return time / 60d / 1000d / 1000d;
+            case SECONDS:      return time / 1000d / 1000d;
+            case MILLISECONDS: return time / 1000d;
+            case MICROSECONDS: return time;
+            case NANOSECONDS:  return time * 1000d;
+        }
+        
+        return time;
     }
     
     @Override
