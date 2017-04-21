@@ -36,7 +36,7 @@ public class AnimationNetwork extends BasicGame
     private ArrayList<Node> nodes;
     private ArrayList<Packet> packets;
     
-    private Node node, node1, node2, node3, node4;
+    private Node node;
     private Packet packet;
     
     private float offset;
@@ -82,7 +82,7 @@ public class AnimationNetwork extends BasicGame
  
 			builder = documentFactory.newDocumentBuilder();
 			
-			/* LETTURA FILE CONFIGURAZIONE TASTI */
+			/* NODES CONFIGURATION */
 			File levels = new File( "data/File/" );
 			String[] files = levels.list();
 				
@@ -94,7 +94,8 @@ public class AnimationNetwork extends BasicGame
 				org.w3c.dom.Node nodo = config.item( i );
 				Element obj = (Element) nodo;
 				
-				node = new Node( Integer.parseInt( obj.getAttribute( "x" ).substring( 0, obj.getAttribute( "x" ).length() - 2 ) ),
+				node = new Node( 
+						Integer.parseInt( obj.getAttribute( "x" ).substring( 0, obj.getAttribute( "x" ).length() - 2 ) ),
 						Integer.parseInt( obj.getAttribute( "y" ).substring( 0, obj.getAttribute( "x" ).length() - 2 ) ),
 						Integer.parseInt( obj.getAttribute( "from" ) ),
 						Integer.parseInt( obj.getAttribute( "to" ) ),
@@ -104,7 +105,25 @@ public class AnimationNetwork extends BasicGame
 				nodes.add( node );
 			}
 			
-			System.out.println( "NODI = " + nodes.size() );
+			/* PACKETS CONFIGURATION */
+			config = document.getElementsByTagName( "packet" );
+			
+			for (int i = 0; i < config.getLength(); i++) {
+				org.w3c.dom.Node pack = config.item( i );
+				Element obj = (Element) pack;
+				
+				packet = new Packet(
+						gc,
+						nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) ).getCenterX(),
+						nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) ).getCenterY() + gc.getWidth()/50,
+						Integer.parseInt( obj.getAttribute( "from" ) ),
+						Integer.parseInt( obj.getAttribute( "to" ) ),
+						nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) ).getColor(),
+						Integer.parseInt( obj.getAttribute( "time" ) )
+						);
+
+		        packets.add( packet );
+			}
 			
 			System.out.println( "nodi " + files[0] + " caricati" );
 		}
@@ -116,10 +135,6 @@ public class AnimationNetwork extends BasicGame
             Node node1 = nodes.get( i ), node2 = nodes.get( i + 1 );
             node1.createLink( node1.getArea().getCenterX(), node1.getArea().getCenterY(), node2.getArea().getCenterX(), node2.getArea().getCenterY(), node2.getColor() );
         }
-        
-        packet = new Packet( gc, nodes.get( 0 ).getCenterX(), nodes.get( 0 ).getCenterY() + gc.getWidth()/50, 0, 1, nodes.get( 0 ).getColor(), 5 );
-        
-        packets.add( packet );
         
         sortPackets();
         
