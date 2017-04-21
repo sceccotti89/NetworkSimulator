@@ -13,8 +13,6 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -31,9 +29,11 @@ public class PlotEditDialog extends JDialog implements ActionListener
     /** Generated serial ID */
     private static final long serialVersionUID = -2779232040438364524L;
     
-    private final List<JTextField> fields;
     private final Plot plot;
     private final Plot plotClone;
+    
+    private JButton buttonLine;
+    private JTextField fieldName;
     
 
     public PlotEditDialog( final Frame frame, final Plot plot )
@@ -44,14 +44,13 @@ public class PlotEditDialog extends JDialog implements ActionListener
         
         this.plot = plot;
         plotClone = plot.clone();
-        fields = new ArrayList<>( 10 );
         
         JPanel boxPanel = new JPanel();
         boxPanel.setLayout( new BoxLayout( boxPanel, BoxLayout.Y_AXIS ) );
         
         boxPanel.add( createTitlePanel( plot.title ) );
         boxPanel.add( createLinePanel(   ) );
-        boxPanel.add( createColorPanel(  ) );
+        boxPanel.add( createColorPanel( frame ) );
         
         JPanel panel = new JPanel();
         panel.setLayout( new FlowLayout() );
@@ -77,22 +76,21 @@ public class PlotEditDialog extends JDialog implements ActionListener
     private JPanel createTitlePanel( final String value )
     {
         JPanel panel = new JPanel();
-        JTextField fieldName = new JTextField( "Title", 6 );
-        fieldName.setEditable( false );
+        JTextField fieldText = new JTextField( "Title", 6 );
+        fieldText.setEditable( false );
+        fieldText.setHorizontalAlignment( JTextField.CENTER );
+        fieldText.setBorder( null );
+        panel.add( fieldText );
+        fieldName = new JTextField( 17 );
+        fieldName.setToolTipText( "Title name" );
         fieldName.setHorizontalAlignment( JTextField.CENTER );
-        fieldName.setBorder( null );
+        fieldName.setText( value );
         panel.add( fieldName );
-        JTextField field1 = new JTextField( 17 );
-        field1.setToolTipText( "Title name" );
-        field1.setHorizontalAlignment( JTextField.CENTER );
-        field1.setText( value );
-        panel.add( field1 );
-        fields.add( field1 );
         
         return panel;
     }
     
-    private void drawOnLineButton( final JButton button )
+    private void drawLineOnButton( final JButton button )
     {
         final int BI_WIDTH  = 155;
         final int BI_HEIGHT =  15;
@@ -117,14 +115,14 @@ public class PlotEditDialog extends JDialog implements ActionListener
         fieldName.setBorder( null );
         panel.add( fieldName );
         
-        JButton buttonLine = new JButton();
+        buttonLine = new JButton();
         buttonLine.setBackground( Color.GRAY );
         buttonLine.setFocusable( false );
         panel.add( buttonLine );
         //final int BI_WIDTH  = buttonColor.getBounds().width;
         //final int BI_HEIGHT = buttonColor.getBounds().height;
         
-        drawOnLineButton( buttonLine );
+        drawLineOnButton( buttonLine );
         
         buttonLine.addActionListener( new ActionListener() {
             @Override
@@ -137,14 +135,14 @@ public class PlotEditDialog extends JDialog implements ActionListener
                     plotClone.line = Line.DASHED;
                     plotClone.stroke = new BasicStroke( 2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{ 20f, 10f }, 0 );
                 }
-                drawOnLineButton( buttonLine );
+                drawLineOnButton( buttonLine );
             }
         } );
         
         return panel;
     }
     
-    private void drawOnColorButton( final JButton button )
+    private void drawColorOnButton( final JButton button )
     {
         final int BI_WIDTH  = 155;
         final int BI_HEIGHT =  15;
@@ -159,7 +157,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
         g.dispose();
     }
     
-    private JPanel createColorPanel()
+    private JPanel createColorPanel( final Frame frame )
     {
         JPanel panel = new JPanel();
         JTextField fieldName = new JTextField( "Color", 6 );
@@ -174,14 +172,15 @@ public class PlotEditDialog extends JDialog implements ActionListener
         //final int BI_WIDTH  = buttonColor.getBounds().width;
         //final int BI_HEIGHT = buttonColor.getBounds().height;
         
-        drawOnColorButton( buttonColor );
+        drawColorOnButton( buttonColor );
         
         buttonColor.addActionListener( new ActionListener() {
             @Override
             public void actionPerformed( final ActionEvent e ) {
-                // TODO creare un menu a tendina per i colori?
-                // TODO oppure aprire una schermata in cui uno o seleziona un colore predefinito o se lo crea da se'?
-                
+                ColorEditDialog dialog = new ColorEditDialog( frame, plotClone );
+                dialog.setVisible( true );
+                drawColorOnButton( buttonColor );
+                drawLineOnButton( buttonLine );
             }
         } );
         
@@ -193,8 +192,8 @@ public class PlotEditDialog extends JDialog implements ActionListener
     {
         if (e.getActionCommand().equals( "Save" )) {
             // Save the inserted values.
-            plot.title  = fields.get( 0 ).getText();
-            plot.line = plotClone.line;
+            plot.title = fieldName.getText();
+            plot.line  = plotClone.line;
             plot.color = plotClone.color;
             
             plot.updateValues();

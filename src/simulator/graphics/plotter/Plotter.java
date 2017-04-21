@@ -85,15 +85,19 @@ public class Plotter
     
     
     // List of predefined color.
-    private static final List<Color> colors = new ArrayList<>( Arrays.asList(
+    protected static final List<Color> colors = new ArrayList<>( Arrays.asList(
         Color.GREEN,
         Color.RED,
         Color.BLUE,
         Color.ORANGE,
-        Color.BLUE,
+        Color.DARK_GRAY,
         Color.CYAN,
         Color.YELLOW,
-        Color.MAGENTA
+        Color.MAGENTA,
+        Color.WHITE,
+        Color.BLACK,
+        Color.GRAY,
+        Color.LIGHT_GRAY
     ) );
     private Set<Color> colorsInUse;
     
@@ -451,7 +455,7 @@ public class Plotter
         
         @Override
         public Plot clone() {
-            Plot plot = new Plot( title, points, new Color( color.getRGB() ), line, box );
+            Plot plot = new Plot( title, points, new Color( color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() ), line, box );
             return plot;
         }
     }
@@ -586,29 +590,25 @@ public class Plotter
         private Color chooseColor( final Color selected )
         {
             if (selected != null) {
-                // Remove the selected color.
-                for (int i = 0; i < colors.size(); i++) {
-                    if (colors.get( i ).equals( selected )) {
-                        colors.remove( i );
-                        break;
-                    }
-                }
                 colorsInUse.add( selected );
                 return selected;
             } else {
-                if (!colors.isEmpty()) {
-                    colorsInUse.add( colors.get( 0 ) );
-                    return colors.remove( 0 );
-                } else {
-                    // Create a random color.
-                    while (true) {
-                        Color color = new Color( (int) (Math.random() * 256),
-                                                 (int) (Math.random() * 256),
-                                                 (int) (Math.random() * 256) );
-                        if (!colorsInUse.contains( color )) {
-                            colorsInUse.add( color );
-                            return color;
-                        }
+                // Choose a color from the not selected ones (if any).
+                for (Color color : colors) {
+                    if (!colorsInUse.contains( color )) {
+                        colorsInUse.add( color );
+                        return color;
+                    }
+                }
+                
+                // All colors are taken: create a random color.
+                while (true) {
+                    Color color = new Color( (int) (Math.random() * 256),
+                                             (int) (Math.random() * 256),
+                                             (int) (Math.random() * 256) );
+                    if (!colorsInUse.contains( color )) {
+                        colorsInUse.add( color );
+                        return color;
                     }
                 }
             }
