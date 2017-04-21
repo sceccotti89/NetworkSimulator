@@ -18,6 +18,9 @@ public class Utils
     public static final long INFINITE = Long.MAX_VALUE;
     // The simulator log writer.
     public static final Logger LOGGER = Logger.getLogger( "Simulator" );
+    
+    // Folder used to store the results.
+    public static final String RESULTS_DIR = "Results/";
     // Folder used to store the images.
     public static final String IMAGES_DIR = "Results/Images/";
     
