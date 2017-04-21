@@ -6,4 +6,5 @@
   <node x="450.0" y="300.0" from ="2" to="3" name="server" Color="Color.red" />
   <node x="600.0" y="150.0" from ="3" to="3" name="server" Color="Color.yellow" />
   <packet from ="0" to="1" time="5" />
+  <packet from ="1" to="2" time="1" />
 </configuration>

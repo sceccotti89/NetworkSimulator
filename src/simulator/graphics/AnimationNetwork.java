@@ -55,12 +55,13 @@ public class AnimationNetwork extends BasicGame
     	
     	for (int i = 0; i < packets.size() - 1; i++) {
     		for (int j = i + 1; j < packets.size(); j++) {
+    			System.out.println( "J = " + j );
     			if (packets.get( j ).getTime() < packets.get( i ).getTime()) {
     				tmpi = packets.get( i );
     				tmpj = packets.get( j );
-    				
-    				packets.remove( i );
+
     				packets.remove( j );
+    				packets.remove( i );
     				
     				packets.add( i, tmpj );
     				packets.add( j, tmpi );
@@ -119,8 +120,7 @@ public class AnimationNetwork extends BasicGame
 						Integer.parseInt( obj.getAttribute( "from" ) ),
 						Integer.parseInt( obj.getAttribute( "to" ) ),
 						nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) ).getColor(),
-						Integer.parseInt( obj.getAttribute( "time" ) )
-						);
+						Integer.parseInt( obj.getAttribute( "time" ) ) );
 
 		        packets.add( packet );
 			}
