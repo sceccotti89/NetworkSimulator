@@ -55,7 +55,6 @@ public class AnimationNetwork extends BasicGame
     	
     	for (int i = 0; i < packets.size() - 1; i++) {
     		for (int j = i + 1; j < packets.size(); j++) {
-    			System.out.println( "J = " + j );
     			if (packets.get( j ).getTime() < packets.get( i ).getTime()) {
     				tmpi = packets.get( i );
     				tmpj = packets.get( j );
@@ -94,10 +93,7 @@ public class AnimationNetwork extends BasicGame
 			for (int i = 0; i < config.getLength(); i++) {
 				org.w3c.dom.Node nodo = config.item( i );
 				Element obj = (Element) nodo;
-				
-				System.out.println( "COLORE = " + Color.decode( obj.getAttribute( "color" ) ).toString() );
-				
-				// TODO CAPIRE COME OTTIMIZZARE IL VALORE DEL COLORE				
+								
 				node = new Node( 
 						Integer.parseInt( obj.getAttribute( "x" ).substring( 0, obj.getAttribute( "x" ).length() - 2 ) ),
 						Integer.parseInt( obj.getAttribute( "y" ).substring( 0, obj.getAttribute( "x" ).length() - 2 ) ),
