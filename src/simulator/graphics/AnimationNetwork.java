@@ -95,12 +95,15 @@ public class AnimationNetwork extends BasicGame
 				org.w3c.dom.Node nodo = config.item( i );
 				Element obj = (Element) nodo;
 				
+				System.out.println( "COLORE = " + Color.decode( obj.getAttribute( "color" ) ).toString() );
+				
+				// TODO CAPIRE COME OTTIMIZZARE IL VALORE DEL COLORE				
 				node = new Node( 
 						Integer.parseInt( obj.getAttribute( "x" ).substring( 0, obj.getAttribute( "x" ).length() - 2 ) ),
 						Integer.parseInt( obj.getAttribute( "y" ).substring( 0, obj.getAttribute( "x" ).length() - 2 ) ),
 						Integer.parseInt( obj.getAttribute( "from" ) ),
 						Integer.parseInt( obj.getAttribute( "to" ) ),
-						Color.black,
+						Color.decode( obj.getAttribute( "color" ) ),
 						offset );
 				
 				nodes.add( node );
