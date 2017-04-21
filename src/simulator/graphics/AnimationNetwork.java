@@ -76,8 +76,7 @@ public class AnimationNetwork extends BasicGame
         packets = new ArrayList<Packet>();
         
         offset = gc.getWidth()/100;
-        
-        // TODO FARE UNA PROVA DI LETTURA DA FILE
+
         try {
 			documentFactory = DocumentBuilderFactory.newInstance();
  
