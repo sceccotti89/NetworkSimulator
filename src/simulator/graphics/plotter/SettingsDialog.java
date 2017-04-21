@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +30,8 @@ public class SettingsDialog extends JDialog implements ActionListener
     
     private final List<JTextField> fields;
     private final PlotterSettings settings;
+    
+    private JButton saveButton;
     
 
     public SettingsDialog( final Frame frame, final PlotterSettings settings )
@@ -55,9 +58,27 @@ public class SettingsDialog extends JDialog implements ActionListener
         JPanel panel = new JPanel();
         panel.setLayout( new FlowLayout() );
         
-        JButton saveButton = new JButton( "Save" );
+        saveButton = new JButton( "Save" );
         saveButton.setActionCommand( "Save" );
         saveButton.addActionListener( this );
+        saveButton.setFocusable( true );
+        saveButton.addKeyListener( new KeyListener() {
+            @Override
+            public void keyTyped( final KeyEvent e ) {}
+            @Override
+            public void keyReleased( final KeyEvent e ) {}
+            
+            @Override
+            public void keyPressed( final KeyEvent e ) {
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    dispose();
+                }
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    saveValues();
+                    dispose();
+                }
+            }
+        } );
         panel.add( saveButton);
         
         JButton cancelButton = new JButton( "Cancel" );
@@ -71,6 +92,17 @@ public class SettingsDialog extends JDialog implements ActionListener
         
         pack();
         setLocationRelativeTo( frame );
+    }
+    
+    @Override
+    public void setVisible( final boolean visible )
+    {
+        if (visible) {
+            saveButton.requestFocus( false );
+            saveButton.requestFocusInWindow();
+        }
+        
+        super.setVisible( visible );
     }
     
     private String getValue( final double value )
@@ -152,13 +184,12 @@ public class SettingsDialog extends JDialog implements ActionListener
         return panel;
     }
     
-    @Override
-    public void actionPerformed( final ActionEvent e )
+    private void saveValues()
     {
-        if (e.getActionCommand().equals( "Save" )) {
-            // Save the inserted values.
-            int index = 0;
-            for (JTextField field : fields) {
+        // Save the inserted values.
+        int index = 0;
+        for (JTextField field : fields) {
+            if (!field.getText().isEmpty()) {
                 switch (index) {
                     case( 0 ): settings._xNumTicks = Integer.parseInt( field.getText() ); break;
                     case( 1 ): settings.xTickInterval = Integer.parseInt( field.getText() ); break;
@@ -171,11 +202,20 @@ public class SettingsDialog extends JDialog implements ActionListener
                     case( 8 ): settings.xScale = Double.parseDouble( field.getText() ); break;
                     case( 9 ): settings.yScale = Double.parseDouble( field.getText() ); break;
                 }
-                
-                index++;
             }
+            
+            index++;
+        }
+    }
+    
+    @Override
+    public void actionPerformed( final ActionEvent e )
+    {
+        if (e.getActionCommand().equals( "Save" )) {
+            saveValues();
         }
         
         dispose();
+        setVisible( false );
     }
 }
