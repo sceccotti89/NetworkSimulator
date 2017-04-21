@@ -36,7 +36,7 @@ public class NetworkTest
         public void update() {
             super.update();
         }
-
+        
         @Override
         public Time computeDepartureTime( final Event e ) {
             // Empty method.
@@ -53,7 +53,7 @@ public class NetworkTest
         {
             super( duration, Time.ZERO, maxPacketsInFly, reqPacket, resPacket, true, false, true );
         }
-
+        
         @Override
         public Time computeDepartureTime( final Event e ) {
             // Empty method.
@@ -69,8 +69,9 @@ public class NetworkTest
                                    final Packet resPacket )
         {
             super( duration, Time.ZERO, maxPacketsInFly, reqPacket, resPacket, false, true, true );
+            setMulticast( true, false );
         }
-
+        
         @Override
         public Time computeDepartureTime( final Event e ) {
             // Empty method.
@@ -96,7 +97,7 @@ public class NetworkTest
                 return new Packet( 40, SizeUnit.KILOBYTE );
             }
         }
-
+        
         @Override
         public Time computeDepartureTime( final Event e ) {
             // Empty method.
@@ -150,12 +151,6 @@ public class NetworkTest
         {
             super( id, evGenerator );
         }
-        
-        @Override
-        public Time analyzeEvent( final Time time, final Event e ) {
-            // Empty method.
-            return null;
-        }
     }
     
     protected static class ServerAgent extends Agent
@@ -163,12 +158,6 @@ public class NetworkTest
         public ServerAgent( final long id )
         {
             super( id );
-        }
-        
-        @Override
-        public Time analyzeEvent( final Time time, final Event e ) {
-            // Empty method.
-            return null;
         }
     }
     
@@ -178,12 +167,6 @@ public class NetworkTest
         {
             super( id, generator );
         }
-        
-        @Override
-        public Time analyzeEvent( final Time time, final Event e ) {
-            // Empty method.
-            return null;
-        }
     }
     
     protected static class ServerTestAgent extends Agent
@@ -191,12 +174,6 @@ public class NetworkTest
         public ServerTestAgent( final long id, final EventGenerator generator )
         {
             super( id, generator );
-        }
-        
-        @Override
-        public Time analyzeEvent( final Time time, final Event e ) {
-            // Empty method.
-            return null;
         }
     }
     
@@ -222,7 +199,7 @@ public class NetworkTest
          10ms             5ms
         */
         
-        NetworkTopology net = new NetworkTopology( "Settings/Topology_ex0.json" );
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_ex0.json" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -252,7 +229,7 @@ public class NetworkTest
          10ms             7ms              5ms
         */
         
-    	NetworkTopology net = new NetworkTopology( "Settings/Topology_ex1.json" );
+    	NetworkTopology net = new NetworkTopology( "Topology/Topology_ex1.json" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -283,7 +260,7 @@ public class NetworkTest
         */
         
     	// Use 2 active generators, in a bi-directional graph.
-    	NetworkTopology net = new NetworkTopology( "Settings/Topology_ex2.json" );
+    	NetworkTopology net = new NetworkTopology( "Topology/Topology_ex2.json" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -323,7 +300,7 @@ public class NetworkTest
          10ms									   5ms
         */
         
-    	NetworkTopology net = new NetworkTopology( "Settings/Topology_ex3.json" );
+    	NetworkTopology net = new NetworkTopology( "Topology/Topology_ex3.json" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -364,7 +341,7 @@ public class NetworkTest
          10ms              7ms               5ms
         */
         
-        NetworkTopology net = new NetworkTopology( "Settings/Topology_ex4.json" );
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_ex4.json" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -397,7 +374,7 @@ public class NetworkTest
          10ms              7ms               5ms
         */
         
-        NetworkTopology net = new NetworkTopology( "Settings/Topology_ex5.json" );
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_ex5.json" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -425,11 +402,11 @@ public class NetworkTest
     public static void example6() throws IOException, SimulatorException
     {
         /*
-        In case of broadcast node it sends the request to all the possible destination,
+        In case of multicast node it sends the request to all the possible destination,
         waits for all the answers and replay (in case) with just one message to the input node.
         
                                    / server1
-                        100Mb,2ms /    5ms
+                        100Mb,2ms /  dynamic
                 70Mb,5ms         /
         client ---------- switch
          10ms               7ms  \
@@ -438,7 +415,7 @@ public class NetworkTest
                                        6ms
         */
         
-        NetworkTopology net = new NetworkTopology( "Settings/Topology_ex6.json" );
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_ex6.json" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -469,35 +446,6 @@ public class NetworkTest
         Switch.connect( server2 );
         
         client.connect( Switch );
-        
-        sim.start();
-        
-        sim.stop();
-    }
-    
-    public static void example_test() throws IOException, SimulatorException
-    {
-        /*
-               InfiniteMb,0ms
-        client --------------> server
-         10ms  <-------------   5ms
-                  100Mb,2ms
-        */
-        
-        NetworkTopology net = new NetworkTopology( "Settings/Topology_test.json" );
-        System.out.println( net.toString() );
-        
-        Simulator sim = new Simulator( net );
-        
-        ClientTestGenerator generator = new ClientTestGenerator( new Packet( 40, SizeUnit.KILOBYTE ),
-                                                                 new Packet( 40, SizeUnit.KILOBYTE ) );
-        Agent client = new ClientAgent( 0, generator );
-        sim.addAgent( client );
-        
-        Agent server = new ServerAgent( 1 );
-        sim.addAgent( server );
-        
-        client.connect( server );
         
         sim.start();
         

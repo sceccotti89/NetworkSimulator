@@ -24,9 +24,9 @@ public class NetworkLink
     private final Size<Double> _bandwith;
     private final long _delay;
     
-    private int _linkType;
+    private String _linkType;
     
-    public static final int UNIDIRECTIONAL = 0, BIDIRECTIONAL = 1;
+    public static final String UNIDIRECTIONAL = "simplex", BIDIRECTIONAL = "duplex";
     
     public static final String FROM_ID = "fromId", DEST_ID = "destId";
     public static final String BANDWITH = "bandwith", DELAY = "delay";
@@ -40,7 +40,7 @@ public class NetworkLink
     
     public NetworkLink( final long sourceId,   final long destId,
                         final double bandwith, final long delay,
-                        final int linkType )
+                        final String linkType )
     {
         _sourceId = sourceId;
         _destId = destId;
@@ -63,7 +63,7 @@ public class NetworkLink
         return _bandwith.getSize();
     }
     
-    public int linkType() {
+    public String linkType() {
         return _linkType;
     }
     
@@ -82,8 +82,9 @@ public class NetworkLink
     public String toString()
     {
         StringBuilder buffer = new StringBuilder( 128 );
-        buffer.append( "SourceId: " + _sourceId + ", DestId: " + _destId +
-                       ", Bandwith: " + _bandwith.getSize() + " Mb/s, Delay: " + _delay + "ns\n" );
+        buffer.append( "Source: " + _sourceId + ", Dest: " + _destId +
+                       ", Bandwith: " + _bandwith.getSize() + " Mb/s, " +
+                       "Delay: " + _delay + "ns, Type: " + _linkType + "\n" );
         return buffer.toString();
     }
 }

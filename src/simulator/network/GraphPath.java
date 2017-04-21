@@ -13,7 +13,7 @@ import java.util.Queue;
 
 public class GraphPath
 {
-    /* Map of nodeID, List of predecessors */
+    /* Map of {nodeID, [predecessors]} */
     private static Map<Long,NetworkNode[]> shortestPath;
     
     public static void computeAllSourcesShortestPath( final Map<Long,NetworkNode> nodes,
@@ -85,14 +85,11 @@ public class GraphPath
             if (n.isInfinite())
                 break; // All remaining nodes are not accessible from the source.
             
-            //System.out.println( "ESTRATTO: " + n._id );
             List<QueueNode> node_neighbours = neighbours.get( n._id );
             if (node_neighbours != null) {
                 for (QueueNode node : node_neighbours) {
                     double dist = Math.max( n._distance, n._distance + getLink( links, n._id, node._id ).getTprop() );
-                    //System.out.println( "NODE: " + node._id + ", DIST: " + dist + ", N_DIST: " + node._distance );
                     if (dist < node._distance) {
-                        //System.out.println( "PREDECESSORE: " + node._id + " = " + n._id );
                         node._distance = dist;
                         predecessors[node._index] = nodes.get( n._id );
                         // Reorder the queue.

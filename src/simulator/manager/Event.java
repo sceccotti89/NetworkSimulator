@@ -4,26 +4,28 @@
 
 package simulator.manager;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import simulator.Agent;
 import simulator.Packet;
 import simulator.core.Time;
+import simulator.manager.EventHandler.EventType;
 import simulator.network.NetworkLink;
 import simulator.network.NetworkNode;
 import simulator.network.NetworkTopology;
-import simulator.utils.Utils;
 
 public abstract class Event implements Comparable<Event>
 {
     /** Event time in microseconds. */
     protected Time _time;
+    protected Time _arrivalTime;
     
     protected Agent _from;
     protected Agent _to;
     
     protected long _currentNodeId = 0;
+    
+    private boolean _firstArrive = true;
     
     // Message payload.
     protected Packet _packet;
@@ -33,19 +35,18 @@ public abstract class Event implements Comparable<Event>
     
     public Event( final Time time, final Agent from, final Agent to, final Packet packet )
     {
-        _time = time;
+        _time = time.clone();
         _from = from;
         _to = to;
         
         _packet = packet;
         
         _currentNodeId = from.getId();
+        setId();
     }
     
-    public void setId( final long id ) {
-        if (eventID == -1) {
-            eventID = id;
-        }
+    public void setId() {
+        eventID = EventScheduler.nextEventId();
     }
     
     public long getId() {
@@ -53,12 +54,34 @@ public abstract class Event implements Comparable<Event>
     }
     
     @Override
-    public int compareTo( final Event o ) {
-        return _time.compareTo( o.getTime() );
+    public int compareTo( final Event o )
+    {
+        int compare = _time.compareTo( o.getTime() );
+        if (compare != 0) {
+            return compare;
+        } else {
+            // If they have the same time, compare they arrival time.
+            if (_arrivalTime == null && o.getArrivalTime() == null) return 0;
+            if (_arrivalTime != null && o.getArrivalTime() == null) return -1;
+            if (_arrivalTime == null && o.getArrivalTime() != null) return 1;
+            return _arrivalTime.compareTo( o.getArrivalTime() );
+        }
+    }
+    
+    public void setTime( final Time time ) {
+        _time = time;
     }
     
     public Time getTime() {
         return _time.clone();
+    }
+    
+    public void setArrivalTime( final Time time ) {
+        _arrivalTime = time;
+    }
+    
+    public Time getArrivalTime() {
+        return _arrivalTime;
     }
     
     public Agent getSource() {
@@ -77,31 +100,44 @@ public abstract class Event implements Comparable<Event>
         return _packet.clone();
     }
     
-    final public void execute( final long nodeId, final EventScheduler ev_handler, final NetworkTopology net )
+    /**
+     * Verify if the current event can be processed immediately,
+     * or if it has to be reinserted into the queue.
+     * 
+     * @param ev_handler    the event handler
+     * @param net           the associate network
+     * 
+     * @return {@code true} if the event has been processed,
+     *         {@code false} otherwise.
+    */
+    final public boolean execute( final EventScheduler ev_handler, final NetworkTopology net )
     {
+        long nodeId = _currentNodeId;
         NetworkNode node = net.getNode( nodeId );
         
+        System.out.println( "\nNode: " + node.getName() + ", execute: " + this );
+        
         if (nodeId == _to.getId()) {
-            System.out.println( "[" + _time + "] Reached destination node: " + node );
-            
-            _to.setElapsedTime( _time.getTimeMicroseconds() );
-            _to.addEventOnQueue( this );
-            
-            System.out.println( ev_handler.checkForNearEvents( _to.getId(), _to.getTime() ) );
-            List<Event> nodeEvents = ev_handler.checkForNearEvents( _to.getId(), _to.getTime() );
-            if (nodeEvents != null) {
-                // Put the retrieved events into the destination queue.
-                for (Event e: nodeEvents) {
-                    _to.addEventOnQueue( e );
-                }
+            System.out.println( "EV_TIME: " + _time + ", DEST_TIME: " + _to.getTime() );
+            if (_firstArrive) {
+                setArrivalTime( _time.clone() );
+                System.out.println( "[" + _arrivalTime + "] Reached destination node: " + node );
+                _firstArrive = false;
+                _to.addEventOnQueue( this );
             }
             
-            if (node.getTcalc().isDynamic() && _to != null) {
-                _time.addTime( _to.analyzeEvent( _time, this ) );
-            } else {
-                _time.addTime( node.getTcalc() );
+            if (!_to.canExecute( _time )) {
+                // Reinsert the query to the scheduler.
+                System.out.println( _time + " = REINSERT: " + this );
+                ev_handler.schedule( this );
+                return false;
             }
+            
+            _time.addTime( getTcalc( node, _to ) );
+            _to.removeEventFromQueue( 0 );
+            
             // Prepare and schedule the response event.
+            _to.setTime( _arrivalTime );
             ev_handler.schedule( _to.fireEvent( _time, this ) );
         } else {
             long delay = 0;
@@ -109,11 +145,7 @@ public abstract class Event implements Comparable<Event>
                 System.out.println( "[" + _time + "] Starting from node: " + node );
             } else {
                 System.out.println( "[" + _time + "] Reached intermediate node: " + node );
-                if (node.getTcalc().isDynamic() && node.getAgent() != null) {
-                    delay = node.getAgent().analyzeEvent( _time, this ).getTimeMicroseconds();
-                } else {
-                    delay = node.getTcalc().getTimeMicroseconds();
-                }
+                delay = getTcalc( node, node.getAgent() ).getTimeMicroseconds();
             }
             
             NetworkLink link = net.getLink( nodeId, net.nextNode( nodeId, _to.getId() ).getId() );
@@ -122,22 +154,68 @@ public abstract class Event implements Comparable<Event>
                 _currentNodeId = link.getDestId();
                 long Ttrasm = link.getTtrasm( _packet.getSizeInBits() );
                 
-                Time time = _time.clone().addTime( Ttrasm, TimeUnit.MICROSECONDS );
+                Agent agent = node.getAgent();
+                
+                Time time = _time.clone();
+                if (agent != null) {
+                    if (nodeId != _from.getId()) {
+                        // Add event on queue only for intermediate nodes.
+                        agent.addEventOnQueue( this );
+                    }
+                    // If the transmission is not in parallel add the corresponding delay.
+                    if (!agent.parallelTransmission()) {
+                        time.addTime( Ttrasm, TimeUnit.MICROSECONDS );
+                        delay += Ttrasm;
+                    }
+                }
+                
+                _from.setTime( time );
                 ev_handler.schedule( _from.fireEvent( time, null ) );
                 
-                delay += Ttrasm + link.getTprop();
-                
-                System.out.println( "Ttrasm: " + ((double) Ttrasm)/((double) Utils.MILLION) + "s" );
-                System.out.println( "Tprop:  " + ((double) link.getTprop())/((double) Utils.MILLION) + "s" );
+                // Here delay is the sum of Tcal (only for intermediate nodes) and Ttrasm.
                 _time.addTime( delay, TimeUnit.MICROSECONDS );
+                
+                if (agent != null) {
+                    agent.setTime( agent.getTime().addTime( delay, TimeUnit.MICROSECONDS ) );
+                    if (agent.getEventHandler() != null) {
+                        agent.getEventHandler().handle( this, EventType.RECEIVED );
+                    }
+                    if (nodeId != _from.getId()) {
+                        agent.removeEventFromQueue( 0 );
+                    }
+                }
+                
+                // The link propagation time is added here.
+                _time.addTime( link.getTprop(), TimeUnit.MICROSECONDS );
+                
+                //System.out.println( "Ttrasm: " + ((double) Ttrasm)/((double) Utils.MILLION) + "s" );
+                //System.out.println( "Tprop:  " + ((double) link.getTprop())/((double) Utils.MILLION) + "s" );
                 
                 // Push-back the modified event into the queue.
                 ev_handler.schedule( this );
             }
         }
+        
+        return true;
     }
     
+    private Time getTcalc( final NetworkNode node, final Agent agent )
+    {
+        long delay;
+        if (agent.getEventHandler() != null) {
+            delay = agent.getEventHandler().handle( this, EventType.SENT ).getTimeMicroseconds();
+        } else {
+            delay = node.getTcalc().getTimeMicroseconds();
+        }
+        
+        return new Time( delay, TimeUnit.MICROSECONDS );
+    }
     
+    @Override
+    public String toString() {
+        return eventID + ", From: " + _from + ", To: " + _to + ", Time: " +
+               _time + "ns, arrival time: " + ((_arrivalTime == null) ? 0 : _arrivalTime) + "ns";
+    }
     
     
     /** ======= SPECIALIZED IMPLEMENTATIONS OF EVENT ======= **/
@@ -150,8 +228,9 @@ public abstract class Event implements Comparable<Event>
         }
         
         @Override
-        public String toString()
-        { return "Request Event: " + _time + "ns"; }
+        public String toString() {
+            return "Request Event: " + super.toString();
+        }
     }
     
     public static class ResponseEvent extends Event
@@ -162,7 +241,8 @@ public abstract class Event implements Comparable<Event>
         }
         
         @Override
-        public String toString()
-        { return "Response Event: " + _time + "ns"; }
+        public String toString() {
+            return "Response Event: " + super.toString();
+        }
     }
 }
