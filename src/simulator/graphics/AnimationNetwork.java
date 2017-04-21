@@ -1,7 +1,11 @@
 
 package simulator.graphics;
 
+import java.io.File;
 import java.util.ArrayList;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.newdawn.slick.BasicGame;
 import org.newdawn.slick.Color;
@@ -9,6 +13,9 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import simulator.elements.Node;
 import simulator.elements.Packet;
@@ -29,10 +36,14 @@ public class AnimationNetwork extends BasicGame
     private ArrayList<Node> nodes;
     private ArrayList<Packet> packets;
     
-    private Node node1, node2, node3, node4;
+    private Node node, node1, node2, node3, node4;
     private Packet packet;
     
     private float offset;
+    
+    private DocumentBuilderFactory documentFactory;
+	private DocumentBuilder builder;
+	private Document document;
     
     public AnimationNetwork( final String title )
     {
@@ -67,17 +78,40 @@ public class AnimationNetwork extends BasicGame
         offset = gc.getWidth()/100;
         
         // TODO FARE UNA PROVA DI LETTURA DA FILE
-        
-        //TESTING
-        node1 = new Node( 150, 150, 0, 1, Color.black, offset );
-        node2 = new Node( 300, 300, 1, 2, Color.green, offset );
-        node3 = new Node( 450, 300, 2, 3, Color.red, offset );
-        node4 = new Node( 600, 150, 3, 3, Color.yellow, offset );
-        
-        nodes.add( node1 );
-        nodes.add( node2 );
-        nodes.add( node3 );
-        nodes.add( node4 );
+        try {
+			documentFactory = DocumentBuilderFactory.newInstance();
+ 
+			builder = documentFactory.newDocumentBuilder();
+			
+			/* LETTURA FILE CONFIGURAZIONE TASTI */
+			File levels = new File( "data/File/" );
+			String[] files = levels.list();
+				
+			document = builder.parse( new File( "data/File/" + files[0] ) );
+
+			NodeList config = document.getElementsByTagName( "node" );
+			
+			for (int i = 0; i < config.getLength(); i++) {
+				org.w3c.dom.Node nodo = config.item( i );
+				Element obj = (Element) nodo;
+				
+				node = new Node( Integer.parseInt( obj.getAttribute( "x" ).substring( 0, obj.getAttribute( "x" ).length() - 2 ) ),
+						Integer.parseInt( obj.getAttribute( "y" ).substring( 0, obj.getAttribute( "x" ).length() - 2 ) ),
+						Integer.parseInt( obj.getAttribute( "from" ) ),
+						Integer.parseInt( obj.getAttribute( "to" ) ),
+						Color.black,
+						offset );
+				
+				nodes.add( node );
+			}
+			
+			System.out.println( "NODI = " + nodes.size() );
+			
+			System.out.println( "nodi " + files[0] + " caricati" );
+		}
+        catch(Exception e) {
+        	e.printStackTrace();
+        }
         
         for (int i = 0; i < nodes.size() - 1; i++) {
             Node node1 = nodes.get( i ), node2 = nodes.get( i + 1 );
