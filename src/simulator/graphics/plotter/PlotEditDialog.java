@@ -35,6 +35,8 @@ public class PlotEditDialog extends JDialog implements ActionListener
     private JButton buttonLine;
     private JTextField fieldName;
     
+    private final PlotEditDialog DIALOG = this;
+    
 
     public PlotEditDialog( final Frame frame, final Plot plot )
     {
@@ -177,7 +179,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
         buttonColor.addActionListener( new ActionListener() {
             @Override
             public void actionPerformed( final ActionEvent e ) {
-                ColorEditDialog dialog = new ColorEditDialog( frame, plotClone );
+                ColorEditDialog dialog = new ColorEditDialog( DIALOG, frame, plotClone );
                 dialog.setVisible( true );
                 drawColorOnButton( buttonColor );
                 drawLineOnButton( buttonLine );

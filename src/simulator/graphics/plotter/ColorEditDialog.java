@@ -40,9 +40,9 @@ public class ColorEditDialog extends JDialog implements ActionListener
     private JButton colorButton;
     
 
-    public ColorEditDialog( final Frame frame, final Plot plot )
+    public ColorEditDialog( final JDialog parent, final Frame frameLocation, final Plot plot )
     {
-        super( frame, true );
+        super( parent, true );
         
         setTitle( "Color" );
         
@@ -81,7 +81,7 @@ public class ColorEditDialog extends JDialog implements ActionListener
         add( boxPanel );
         
         pack();
-        setLocationRelativeTo( frame );
+        setLocationRelativeTo( frameLocation );
     }
     
     private JPanel createColorTable( final int from, final int to )
@@ -89,20 +89,8 @@ public class ColorEditDialog extends JDialog implements ActionListener
         JPanel panel = new JPanel();
         for (int i = from; i < to; i++) {
             Color color = Plotter.colors.get( i );
-            JButton button = new JButton();
+            JButton button = new ColorButton( this, color );
             drawColorOnButton( button, color, 25, 25 );
-            if (plot.color.equals( color )) {
-                button.requestFocusInWindow();
-            }
-            button.addFocusListener( new FocusListener() {
-                @Override
-                public void focusLost( final FocusEvent e ) {}
-                
-                @Override
-                public void focusGained( final FocusEvent e ) {
-                    setColorValue( color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() );
-                }
-            } );
             panel.add( button );
         }
         
@@ -206,5 +194,34 @@ public class ColorEditDialog extends JDialog implements ActionListener
         }
         
         dispose();
+    }
+    
+    @Override
+    public void setVisible( final boolean visible ) {
+        colorButton.requestFocusInWindow();
+        super.setVisible( visible );
+    }
+    
+    private static class ColorButton extends JButton implements FocusListener
+    {
+        /** Generated serial ID. */
+        private static final long serialVersionUID = 5648900962203337154L;
+        private final ColorEditDialog dialog;
+        private final Color color;
+        
+        public ColorButton( final ColorEditDialog dialog, final Color color )
+        {
+            this.dialog = dialog;
+            this.color = color;
+            addFocusListener( this );
+        }
+        
+        @Override
+        public void focusGained( final FocusEvent e ) {
+            dialog.setColorValue( color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() );
+        }
+
+        @Override
+        public void focusLost( final FocusEvent e ) {}
     }
 }
