@@ -81,13 +81,12 @@ public class NetworkDisplay
 	
 		for (Packet packet: packets) {
 			if (timer >= packet.getTime()) {
+				packet.update( am.getFrames(), gc, animate );
 				if (packet.isActive()) {
 					if (packet.getArea().intersects( nodes.get( packet.getIDTo() ).getArea() )) {
 						packet.setActive( false );
 					}
 				}
-				
-				packet.update( am.getFrames(), gc, animate );
 			}
 		}
 		

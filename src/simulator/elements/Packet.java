@@ -43,7 +43,7 @@ public class Packet
 		
 		width = gc.getWidth()/80;
 		
-		area = new Rectangle( x, y - width/2, width, width );
+		area = new Rectangle( x, y, width, width );
 		
 		hasFinished = false;
 		isInNode = true;
@@ -160,6 +160,10 @@ public class Packet
 		float mouseX = gc.getInput().getMouseX();
 		float mouseY = gc.getInput().getMouseY();
 		
+		if (animate && active) {
+			area.setLocation( area.getX() + speedX * animTime, area.getY() + speedY * animTime );
+		}
+		
 		if (area.contains( mouseX, mouseY )) {
 			drawInfo = true;
 			
@@ -168,14 +172,10 @@ public class Packet
 		} else {
 			drawInfo = false;
 		}
-		
-		if (animate && isActive()) {
-			area.setLocation( area.getX() + speedX * animTime, area.getY() + speedY * animTime );
-		}
 	}
 	
 	public void draw( final Graphics g ) {
-		g.rotate( area.getX(), area.getY(), angle );		
+		g.rotate( area.getX() + area.getWidth()/2, area.getY() + area.getHeight()/2, angle );		
 		g.setColor( color );
 		g.fill( area );		
 		g.resetTransform();
