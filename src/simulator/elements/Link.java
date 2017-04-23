@@ -24,13 +24,13 @@ public class Link
 	
 	private final float offset;
 	
-	public Link( GameContainer gc, float x1, float y1, float x2, float y2, float angle, int ID_from ) {
+	public Link( GameContainer gc, float x1, float y1, float x2, float y2, float angle ) {
 		
 		this.angle = angle;
 		
 		offset = gc.getWidth()/80;
 		
-		System.out.println( "ID = " + ID_from );
+		//System.out.println( "ID = " + ID_from );
 		
 		System.out.println( "X1 + off = " + (x1 + offset) );
 		System.out.println( "X1 - off = " + (x1 - offset) );

@@ -73,7 +73,7 @@ public class Node
 	}
 	
 	public void createLink( GameContainer gc, float x1, float y1, float x2, float y2, Color color ) {
-	    link = new Link( gc, x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ), ID_from );
+	    link = new Link( gc, x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ) );
 	}
 	
 	public void update( GameContainer gc ) {
@@ -88,7 +88,7 @@ public class Node
 	    }
 		
 		g.setColor( color );
-		//g.fill( node );
+		g.fill( node );
 		
 		g.setColor( Color.black );
 		g.draw( node );
