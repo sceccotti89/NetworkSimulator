@@ -43,7 +43,7 @@ public class Packet
 		
 		width = gc.getWidth()/80;
 		
-		area = new Rectangle( x, y, width, width );
+		area = new Rectangle( x, y + gc.getHeight()/150, width, width );
 		
 		hasFinished = false;
 		isInNode = true;
