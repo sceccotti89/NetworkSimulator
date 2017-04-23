@@ -72,8 +72,8 @@ public class Node
 	    return (float) ((Math.PI/2 - gamma)*180/Math.PI);
 	}
 	
-	public void createLink( float x1, float y1, float x2, float y2, Color color ) {
-	    link = new Link( x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ) );
+	public void createLink( GameContainer gc, float x1, float y1, float x2, float y2, Color color ) {
+	    link = new Link( gc, x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ), ID_from );
 	}
 	
 	public void update( GameContainer gc ) {
@@ -88,7 +88,7 @@ public class Node
 	    }
 		
 		g.setColor( color );
-		g.fill( node );
+		//g.fill( node );
 		
 		g.setColor( Color.black );
 		g.draw( node );

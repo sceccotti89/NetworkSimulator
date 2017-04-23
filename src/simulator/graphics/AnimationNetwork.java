@@ -132,7 +132,7 @@ public class AnimationNetwork extends BasicGame
         
         for (int i = 0; i < nodes.size() - 1; i++) {
             Node node1 = nodes.get( i ), node2 = nodes.get( i + 1 );
-            node1.createLink( node1.getArea().getCenterX(), node1.getArea().getCenterY(), node2.getArea().getCenterX(), node2.getArea().getCenterY(), node2.getColor() );
+            node1.createLink( gc, node1.getArea().getCenterX(), node1.getArea().getCenterY(), node2.getArea().getCenterX(), node2.getArea().getCenterY(), node2.getColor() );
         }
         
         sortPackets();

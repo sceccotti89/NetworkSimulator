@@ -22,11 +22,25 @@ public class Link
 	private Rectangle infos;
 	private boolean showInfos = false;
 	
-	public Link( float x1, float y1, float x2, float y2, float angle ) {
+	private final float offset;
+	
+	public Link( GameContainer gc, float x1, float y1, float x2, float y2, float angle, int ID_from ) {
 		
 		this.angle = angle;
 		
-		float offset = 10;
+		offset = gc.getWidth()/80;
+		
+		System.out.println( "ID = " + ID_from );
+		
+		System.out.println( "X1 + off = " + (x1 + offset) );
+		System.out.println( "X1 - off = " + (x1 - offset) );
+		System.out.println( "X2 + off = " + (x2 + offset) );
+		System.out.println( "X2 - off = " + (x2 - offset) );
+		
+		System.out.println( "Y1 + off = " + (y1 + offset) );
+		System.out.println( "Y1 - off = " + (y1 - offset) );
+		System.out.println( "Y2 + off = " + (y2 + offset) );
+		System.out.println( "Y2 - off = " + (y2 - offset) );
 		
 		area = new Polygon( new float[] {x1 + offset, y1 + offset, x2 + offset, y2 + offset, x2 - offset, y2 - offset, x1 - offset, y1 - offset} );
 		infos = new Rectangle( 0, 0, 0, 0 );
@@ -47,7 +61,6 @@ public class Link
 		if (area.contains( mouseX, mouseY )) {
 			showInfos = true;
 			
-			float offset = gc.getWidth()/80;
 			infos.setLocation( mouseX + offset, mouseY - offset );
 		} else {
 			showInfos = false;
