@@ -19,6 +19,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -39,8 +40,11 @@ import javax.imageio.ImageIO;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
 
@@ -81,15 +85,19 @@ public class Plotter
     
     
     // List of predefined color.
-    private static final List<Color> colors = new ArrayList<>( Arrays.asList(
+    protected static final List<Color> colors = new ArrayList<>( Arrays.asList(
         Color.GREEN,
         Color.RED,
         Color.BLUE,
         Color.ORANGE,
-        Color.BLUE,
+        Color.DARK_GRAY,
         Color.CYAN,
         Color.YELLOW,
-        Color.MAGENTA
+        Color.MAGENTA,
+        Color.WHITE,
+        Color.BLACK,
+        Color.GRAY,
+        Color.LIGHT_GRAY
     ) );
     private Set<Color> colorsInUse;
     
@@ -413,17 +421,42 @@ public class Plotter
         }
     }
     
-    private static class Plot
+    public static class Plot
     {
-        private List<Pair<Double,Double>> points;
-        private Color color;
-        private Line line;
+        protected String title;
+        protected List<Pair<Double,Double>> points;
+        protected Color color;
+        protected Line line;
+        protected Stroke stroke;
+        protected JCheckBox box;
         
-        public Plot( final List<Pair<Double,Double>> points,
-                     final Color color, final Line line ) {
+        public Plot( final String title,
+                     final List<Pair<Double,Double>> points,
+                     final Color color, final Line line,
+                     final JCheckBox box )
+        {
+            this.title = title;
             this.points = points;
             this.color = color;
             this.line = line;
+            this.box = box;
+            
+            updateValues();
+        }
+        
+        public void updateValues() {
+            box.setText( title );
+            if (line == Line.UNIFORM) {
+                stroke = new BasicStroke( 2f );
+            } else { // Dashed.
+                stroke = new BasicStroke( 2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{ 20f, 10f }, 0 );
+            }
+        }
+        
+        @Override
+        public Plot clone() {
+            Plot plot = new Plot( title, points, new Color( color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() ), line, box );
+            return plot;
         }
     }
     
@@ -434,7 +467,6 @@ public class Plotter
         private List<Plot> _plots;
         private Point mouse = new Point( 0, 0 );
         private JTextArea description;
-        private List<JCheckBox> legendBox;
         private Rectangle area;
         
         private long currentFPS = 0;
@@ -451,7 +483,6 @@ public class Plotter
         public GraphicPlotter()
         {
             _plots = new ArrayList<>();
-            legendBox = new ArrayList<>();
             
             setDoubleBuffered( true );
             addMouseMotionListener( this );
@@ -481,11 +512,10 @@ public class Plotter
                              final Color color, final Line line,
                              final String title )
         {
-            _plots.add( new Plot( points, chooseColor( color ), line ) );
-            
             int maxWidth = 0;
             int startY = 100;
-            for (JCheckBox box : legendBox) {
+            for (Plot plot : _plots) {
+                JCheckBox box = plot.box;
                 startY   = (int) box.getBounds().getMaxY();
                 maxWidth = (int) Math.max( maxWidth, box.getBounds().getWidth() );
             }
@@ -497,36 +527,88 @@ public class Plotter
             box.setBounds( getWidth() - 200, startY,
                            Math.max( maxWidth, getWidth( text, getGraphics() ) + 40 ),
                            getHeight( text, getGraphics() ) + 10 );
-            legendBox.add( box );
+            box.addMouseListener( new MouseListener() {
+                @Override
+                public void mouseReleased( final MouseEvent e ) {}
+                
+                @Override
+                public void mousePressed( final MouseEvent e ) {}
+                
+                @Override
+                public void mouseExited( final MouseEvent e ) {}
+                
+                @Override
+                public void mouseEntered( final MouseEvent e ) {}
+                
+                @Override
+                public void mouseClicked( final MouseEvent e )
+                {
+                    if (SwingUtilities.isRightMouseButton( e ) || e.isControlDown()) {
+                        int idx = 0;
+                        for (Plot plot : _plots) {
+                            JCheckBox jBox = plot.box;
+                            if (jBox == box) {
+                                break;
+                            }
+                            idx++;
+                        }
+                        final int index = idx;
+                        
+                        JPopupMenu menu = new JPopupMenu( "Menu Plot" );
+                        JMenuItem modify = new JMenuItem( "Modify" );
+                        modify.addActionListener( new ActionListener() {
+                            @Override
+                            public void actionPerformed( final ActionEvent e ) {
+                                PlotEditDialog dialog = new PlotEditDialog( frame, _plots.get( index ) );
+                                dialog.setVisible( true );
+                            }
+                        } );
+                        menu.add( modify );
+                        
+                        JMenuItem remove = new JMenuItem( "Remove" );
+                        remove.addActionListener( new ActionListener() {
+                            @Override
+                            public void actionPerformed( final ActionEvent e ) {
+                                removePlot( index );
+                            }
+                        } );
+                        menu.add( remove );
+                        
+                        menu.show( e.getComponent(), e.getX(), e.getY() );
+                    }
+                }
+            } );
+            _plots.add( new Plot( title, points, chooseColor( color ), line, box ) );
             add( box );
+        }
+        
+        private void removePlot( final int index ) {
+            Plot plot = _plots.remove( index );
+            remove( plot.box );
         }
         
         private Color chooseColor( final Color selected )
         {
             if (selected != null) {
-                // Remove the selected color.
-                for (int i = 0; i < colors.size(); i++) {
-                    if (colors.get( i ).equals( selected )) {
-                        colors.remove( i );
-                        break;
-                    }
-                }
                 colorsInUse.add( selected );
                 return selected;
             } else {
-                if (!colors.isEmpty()) {
-                    colorsInUse.add( colors.get( 0 ) );
-                    return colors.remove( 0 );
-                } else {
-                    // Create a random color.
-                    while (true) {
-                        Color color = new Color( (int) (Math.random() * 256),
-                                                 (int) (Math.random() * 256),
-                                                 (int) (Math.random() * 256) );
-                        if (!colorsInUse.contains( color )) {
-                            colorsInUse.add( color );
-                            return color;
-                        }
+                // Choose a color from the not selected ones (if any).
+                for (Color color : colors) {
+                    if (!colorsInUse.contains( color )) {
+                        colorsInUse.add( color );
+                        return color;
+                    }
+                }
+                
+                // All colors are taken: create a random color.
+                while (true) {
+                    Color color = new Color( (int) (Math.random() * 256),
+                                             (int) (Math.random() * 256),
+                                             (int) (Math.random() * 256) );
+                    if (!colorsInUse.contains( color )) {
+                        colorsInUse.add( color );
+                        return color;
                     }
                 }
             }
@@ -649,12 +731,6 @@ public class Plotter
 
         private boolean drawPlot( final Graphics2D g, final Range range, final Plot plot )
         {
-            Stroke stroke;
-            if (plot.line == Line.UNIFORM) {
-                stroke = new BasicStroke( 2f );
-            } else { // Dashed.
-                stroke = new BasicStroke( 2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{ 20f, 10f }, 0 );
-            }
             g.setColor( (theme == Theme.BLACK) ? Color.WHITE : Color.BLACK );
             
             boolean drawCircle = true;
@@ -682,11 +758,10 @@ public class Plotter
                 
                 // Draw the point.
                 g.setColor( plot.color );
-                g.setStroke( stroke );
+                g.setStroke( plot.stroke );
                 
                 g.drawLine( (int) p.getX(), (int) p.getY(), (int) x, (int) y );
                 
-                //System.out.println( "SECOND: " + point.getSecond() );
                 if (range.checkRange( point.getFirst(), point.getSecond() )) {
                     if (drawCircle) {
                         Ellipse2D circle = new Ellipse2D.Double( x - pointRadius/2, y - pointRadius/2, pointRadius, pointRadius );
@@ -701,6 +776,8 @@ public class Plotter
                 
                 p.setLocation( x, y );
             }
+            
+            g.setClip( new Rectangle( 0, 0, getWidth(), getHeight() ) );
             
             return !drawCircle;
         }
@@ -806,10 +883,9 @@ public class Plotter
             // Draw the legend.
             int startY = 0;
             int saveStartY = 0;
-            int index = 0;
             final int length = 70;
             for (Plot plot : _plots) {
-                JCheckBox box = legendBox.get( index++ );
+                JCheckBox box = plot.box;
                 Rectangle bounds = box.getBounds();
                 box.setForeground( (theme == Theme.BLACK) ? Color.WHITE : Color.BLACK );
                 box.setBounds( getWidth() - 300, startY, bounds.width, bounds.height );
@@ -833,8 +909,8 @@ public class Plotter
                     saveStartY += size.height;
                 }
                 
-                // FIXME non mostra la linea del plot.
                 g.setColor( plot.color );
+                g.setStroke( plot.stroke );
                 g.drawLine( p.x + size.width, p.y + size.height/2 - 1,
                             p.x + size.width + length, p.y + size.height/2 - 1 );
             }
@@ -910,10 +986,9 @@ public class Plotter
             drawAxis( g2d, range );
             
             // Draw the plots.
-            int index = 0;
             boolean selectedPoint = false;
             for (Plot plot : _plots) {
-                if (legendBox.get( index++ ).isSelected()) {
+                if (plot.box.isSelected()) {
                     selectedPoint |= drawPlot( g2d, range, plot );
                 }
             }
