@@ -7,8 +7,8 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Rectangle;
 
-import simulator.elements.Node;
-import simulator.elements.Packet;
+import simulator.graphics.elements.Node;
+import simulator.graphics.elements.Packet;
 
 public class NetworkDisplay
 {

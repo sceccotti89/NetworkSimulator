@@ -1,4 +1,4 @@
-package simulator.elements;
+package simulator.graphics.elements;
 
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Font;

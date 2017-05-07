@@ -17,8 +17,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import simulator.elements.Node;
-import simulator.elements.Packet;
+import simulator.graphics.elements.Node;
+import simulator.graphics.elements.Packet;
 import simulator.graphics.interfaces.AnimationManager;
 import simulator.graphics.interfaces.NetworkDisplay;
 import simulator.graphics.interfaces.OptionBar;
