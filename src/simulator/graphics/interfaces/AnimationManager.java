@@ -81,40 +81,38 @@ public class AnimationManager implements AnimationInterface
 	                }
 	            }
             }
-		} else {
-			if (mouseDown) {
-                mouseDown = false;
-                
-                for (ImageButton button: buttons) {
-                	// se e' stato premuto il tasto
-            		if (checkButton( button, input, button.getIndex() ) > 0) {
-                        for (ImageButton bottone: buttons) {
-                        	if (bottone.isPressed()) {
-                        		bottone.setPressed();
-                        	}
-                        }
-                        // pressed tramite mouse
-                        if (button.checkClick( mouseX, mouseY, input )) {
-                        	if (button.getName().equals( PLUS )) {
-        						frame = Math.min( limit, frame + 5 );
-        					} else if (button.getName().equals( MINUS )) {
-        						frame = Math.max( 1, frame - 5 );
-        					} else if (button.getName().equals( START )) {
-        						nd.startAnimation();
-        						ob.resetAllButtons();
-        					} else if (button.getName().equals( PAUSE )) {
-        						nd.pauseAnimation();
-        						ob.resetAllButtons();
-        					} else if (button.getName().equals( STOP )) {
-        						nd.stopAnimation( gc );
-        						ob.resetAllButtons();
-        					}
-                        }
-        			}
-            	}
-            }
-		}
-    }
+		} else if (mouseDown) {
+            mouseDown = false;
+            
+            for (ImageButton button: buttons) {
+            	// se e' stato premuto il tasto
+        		if (checkButton( button, input, button.getIndex() ) > 0) {
+                    for (ImageButton bottone: buttons) {
+                    	if (bottone.isPressed()) {
+                    		bottone.setPressed();
+                    	}
+                    }
+                    // pressed tramite mouse
+                    if (button.checkClick( mouseX, mouseY, input )) {
+                    	if (button.getName().equals( PLUS )) {
+    						frame = Math.min( limit, frame + 5 );
+    					} else if (button.getName().equals( MINUS )) {
+    						frame = Math.max( 1, frame - 5 );
+    					} else if (button.getName().equals( START )) {
+    						nd.startAnimation();
+    						ob.resetAllButtons();
+    					} else if (button.getName().equals( PAUSE )) {
+    						nd.pauseAnimation();
+    						ob.resetAllButtons();
+    					} else if (button.getName().equals( STOP )) {
+    						nd.stopAnimation( gc );
+    						ob.resetAllButtons();
+    					}
+                    }
+    			}
+        	}
+        }
+	}
     
     public float getMaxY() {
     	return start.getMaxY();
