@@ -74,7 +74,7 @@ public class AnimationManager implements AnimationInterface
             
             for (ImageButton button : buttons) {
                 if (button.checkClick( mouseX, mouseY, input ) && !button.isPressed()) {
-                		button.setPressed();
+            		button.setPressed();
             	}
             }
 		} else if (!leftMouse && mouseDown) {
