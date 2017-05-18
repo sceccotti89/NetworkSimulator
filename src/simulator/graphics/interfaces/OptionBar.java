@@ -60,42 +60,36 @@ public class OptionBar implements AnimationInterface
     	mouseX = input.getMouseX();
 		mouseY = input.getMouseY();
 		
-		if (leftMouse) {
-			if (!mouseDown) {
-	            mouseDown = true;
-	            
-	            for (SimpleButton button : buttons) {
-	                if (button.checkClick( mouseX, mouseY )) {
-	                	if (!button.isPressed()) {
-	                		button.setPressed();
-	                	}
-	                }
-	            }
-            }
-		} else {
-			if (mouseDown) {
-                mouseDown = false;
-                
-                for (SimpleButton button: buttons) {
-                	// se e' stato premuto il tasto
-            		if (checkButton( button, input, button.getIndex() ) > 0) {
-                        for (SimpleButton bottone: buttons) {
-                        	if (bottone.isPressed()) {
-                        		bottone.setPressed();
-                        	}
-                        }
-                        // pressed tramite mouse
-                        if (button.checkClick( mouseX, mouseY )) {
-                        	if (button.getName().equals( FILE )) {
-        						;
-                        	} else if (button.getName().equals( OPTIONS )) {
-                        		;
-                        	}
-                        }
-        			}
+		if (leftMouse && !mouseDown) {
+            mouseDown = true;
+            
+            for (SimpleButton button : buttons) {
+                if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
+            		button.setPressed();
             	}
             }
-		}
+		} else if (!leftMouse && mouseDown) {
+            mouseDown = false;
+            
+            for (SimpleButton button: buttons) {
+            	// se e' stato premuto il tasto
+        		if (checkButton( button, input, button.getIndex() ) > 0) {
+                    for (SimpleButton bottone: buttons) {
+                    	if (bottone.isPressed()) {
+                    		bottone.setPressed();
+                    	}
+                    }
+                    // pressed tramite mouse
+                    if (button.checkClick( mouseX, mouseY )) {
+                    	if (button.getName().equals( FILE )) {
+    						;
+                    	} else if (button.getName().equals( OPTIONS )) {
+                    		;
+                    	}
+                    }
+    			}
+        	}
+        }
     }
     
     @Override

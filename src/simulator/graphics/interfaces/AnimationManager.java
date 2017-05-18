@@ -69,19 +69,15 @@ public class AnimationManager implements AnimationInterface
     	mouseX = input.getMouseX();
 		mouseY = input.getMouseY();
 		
-		if (leftMouse) {
-			if (!mouseDown) {
-	            mouseDown = true;
-	            
-	            for (ImageButton button : buttons) {
-	                if (button.checkClick( mouseX, mouseY, input )) {
-	                	if (!button.isPressed()) {
-	                		button.setPressed();
-	                	}
-	                }
-	            }
+		if (leftMouse && !mouseDown) {
+            mouseDown = true;
+            
+            for (ImageButton button : buttons) {
+                if (button.checkClick( mouseX, mouseY, input ) && !button.isPressed()) {
+                		button.setPressed();
+            	}
             }
-		} else if (mouseDown) {
+		} else if (!leftMouse && mouseDown) {
             mouseDown = false;
             
             for (ImageButton button: buttons) {
