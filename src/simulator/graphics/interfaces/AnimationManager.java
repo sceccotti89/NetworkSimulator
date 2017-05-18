@@ -69,12 +69,6 @@ public class AnimationManager implements AnimationInterface
     	mouseX = input.getMouseX();
 		mouseY = input.getMouseY();
 		
-		if (plus.isPressed()) {
-			plus.setPressed();
-		} else if (minus.isPressed()) {
-			minus.setPressed();
-		}
-		
 		if (leftMouse) {
 			if (!mouseDown) {
 	            mouseDown = true;
@@ -141,6 +135,7 @@ public class AnimationManager implements AnimationInterface
     	
     	g.setColor( Color.black );
     	g.draw( showFrame );
+    	//System.out.println( "FRAME = " + frame );
     	g.drawString( String.valueOf( frame ), plus.getMaxX() + (minus.getX() - plus.getMaxX())/2 - String.valueOf( frame ).length()/2*gc.getWidth()/80, plus.getY() + (plus.getMaxY() - plus.getY())/4 );
     }
     
