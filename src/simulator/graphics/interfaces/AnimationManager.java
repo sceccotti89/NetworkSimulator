@@ -73,7 +73,7 @@ public class AnimationManager implements AnimationInterface
             mouseDown = true;
             
             for (ImageButton button : buttons) {
-                if (button.checkClick( mouseX, mouseY, input ) && !button.isPressed()) {
+                if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
             		button.setPressed();
             	}
             }
@@ -89,7 +89,7 @@ public class AnimationManager implements AnimationInterface
                     	}
                     }
                     // pressed tramite mouse
-                    if (button.checkClick( mouseX, mouseY, input )) {
+                    if (button.checkClick( mouseX, mouseY )) {
                     	if (button.getName().equals( PLUS )) {
     						frame = Math.min( limit, frame + 5 );
     					} else if (button.getName().equals( MINUS )) {
