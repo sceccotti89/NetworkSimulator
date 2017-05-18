@@ -23,6 +23,8 @@ public class NetworkDisplay
 	
 	private boolean inPause;
 	
+	private boolean end;
+	
 	public NetworkDisplay( final GameContainer gc, final float startY, final float height, final ArrayList<Node> nodes, final ArrayList<Packet> packets )
 	{
 		zone = new Rectangle( 0, startY, gc.getWidth(), height );
@@ -34,38 +36,45 @@ public class NetworkDisplay
 		this.packets = packets;
 		
 		inPause = false;
+		
+		end = false;
 	}
 	
-	public boolean startAnimation() {
-		for (Packet packet: packets) {
-			if (!packet.getFinished()) {
-				if (inPause) {
-					inPause = false;
-				} else {
-					timer = 0;
-				}
-				animate = true;
-				return true;
-			}
+	public void startPositions( GameContainer gc ) {
+		for (Packet packet: packets ) {
+			packet.getArea().setLocation( nodes.get( packet.getIDFrom() ).getCenterX(), nodes.get( packet.getIDFrom() ).getCenterY() + gc.getWidth()/50 );
+			packet.setFinished( false );
+			packet.setActive( true );
 		}
+	}
+	
+	public boolean startAnimation( GameContainer gc ) {
+		if (end) {
+			startPositions( gc );
+			timer = 0;
+		} else {
+			if (inPause) {
+				inPause = false;
+			}		
+		}
+		
+		animate = true;
 		
 		return true;
 	}
 	
 	public boolean pauseAnimation() {
-		animate = false;
-		inPause = true;
+		if (!end) {
+			animate = false;
+			inPause = true;
+		}
 		
 		return true;
 	}
 	
 	public boolean stopAnimation( GameContainer gc )
 	{
-		for (Packet packet: packets ) {
-			packet.getArea().setLocation( nodes.get( packet.getIDFrom() ).getCenterX(), nodes.get( packet.getIDFrom() ).getCenterY() + gc.getWidth()/50 );
-			packet.setFinished( false );
-			packet.setActive( true );
-		}
+		startPositions( gc );
 		
 		animate = false;
 		timer = 0;
@@ -75,10 +84,11 @@ public class NetworkDisplay
 	
 	public void update( GameContainer gc, AnimationManager am )
 	{
-	    // TODO CAMBIARE IL DISCORSO DEL TIMER
-		
+		end = true;
+
+	    // TODO IL TIMER ORA E' CORRETTO?????
 		if (animate) {
-			timer = timer + am.getFrames();	
+			timer = timer + am.getFrames();
 		}
 	
 		for (Packet packet: packets) {
@@ -90,6 +100,18 @@ public class NetworkDisplay
 					}
 				}
 			}
+		}
+		
+		// CONTROL PACKETS ENDING
+		for (Packet packet: packets) {
+			if (packet.isActive()) {
+				end = false;
+				break;
+			}
+		}
+		
+		if (end) {
+			animate = false;
 		}
 		
 		for (Node node: nodes) {
