@@ -99,7 +99,7 @@ public class AnimationManager implements AnimationInterface
                         	if (button.getName().equals( PLUS )) {
         						frame = Math.min( limit, frame + 5 );
         					} else if (button.getName().equals( MINUS )) {
-        						frame = Math.max( 0, frame - 5 );
+        						frame = Math.max( 1, frame - 5 );
         					} else if (button.getName().equals( START )) {
         						nd.startAnimation();
         						ob.resetAllButtons();
@@ -135,7 +135,6 @@ public class AnimationManager implements AnimationInterface
     	
     	g.setColor( Color.black );
     	g.draw( showFrame );
-    	//System.out.println( "FRAME = " + frame );
     	g.drawString( String.valueOf( frame ), plus.getMaxX() + (minus.getX() - plus.getMaxX())/2 - String.valueOf( frame ).length()/2*gc.getWidth()/80, plus.getY() + (plus.getMaxY() - plus.getY())/4 );
     }
     
