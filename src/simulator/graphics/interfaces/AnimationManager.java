@@ -86,9 +86,8 @@ public class AnimationManager implements AnimationInterface
                 mouseDown = false;
                 
                 for (ImageButton button: buttons) {
-            		int value = checkButton( button, input, button.getIndex() );
                 	// se e' stato premuto il tasto
-            		if (value > 0) {
+            		if (checkButton( button, input, button.getIndex() ) > 0) {
                         for (ImageButton bottone: buttons) {
                         	if (bottone.isPressed()) {
                         		bottone.setPressed();

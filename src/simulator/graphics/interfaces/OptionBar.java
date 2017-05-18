@@ -77,9 +77,8 @@ public class OptionBar implements AnimationInterface
                 mouseDown = false;
                 
                 for (SimpleButton button: buttons) {
-            		int value = checkButton( button, input, button.getIndex() );
                 	// se e' stato premuto il tasto
-            		if (value > 0) {
+            		if (checkButton( button, input, button.getIndex() ) > 0) {
                         for (SimpleButton bottone: buttons) {
                         	if (bottone.isPressed()) {
                         		bottone.setPressed();
