@@ -19,7 +19,6 @@ public class NetworkDisplay
 	private ArrayList<Node> nodes;
 	private ArrayList<Packet> packets;
 	
-	private long startTime;
 	private int timer;
 	
 	private boolean inPause;
@@ -40,7 +39,6 @@ public class NetworkDisplay
 	public boolean startAnimation() {
 		for (Packet packet: packets) {
 			if (!packet.getFinished()) {
-				startTime = (int) System.currentTimeMillis();
 				if (inPause) {
 					inPause = false;
 				} else {
@@ -68,6 +66,7 @@ public class NetworkDisplay
 			packet.setFinished( false );
 			packet.setActive( true );
 		}
+		
 		animate = false;
 		timer = 0;
 		
@@ -77,7 +76,10 @@ public class NetworkDisplay
 	public void update( GameContainer gc, AnimationManager am )
 	{
 	    // TODO CAMBIARE IL DISCORSO DEL TIMER
-	    timer = (int) (System.currentTimeMillis() - startTime);
+		
+		if (animate) {
+			timer = timer + am.getFrames();	
+		}
 	
 		for (Packet packet: packets) {
 			if (timer >= packet.getTime()) {

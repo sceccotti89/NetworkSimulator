@@ -95,12 +95,12 @@ public class AnimationNetwork extends BasicGame
 				Element obj = (Element) nodo;
 								
 				node = new Node( 
-						Integer.parseInt( obj.getAttribute( "x" ).substring( 0, obj.getAttribute( "x" ).length() - 2 ) ),
-						Integer.parseInt( obj.getAttribute( "y" ).substring( 0, obj.getAttribute( "x" ).length() - 2 ) ),
-						Integer.parseInt( obj.getAttribute( "from" ) ),
-						Integer.parseInt( obj.getAttribute( "to" ) ),
-						Color.decode( obj.getAttribute( "color" ) ),
-						offset );
+					Integer.parseInt( obj.getAttribute( "x" ).substring( 0, obj.getAttribute( "x" ).length() - 2 ) ),
+					Integer.parseInt( obj.getAttribute( "y" ).substring( 0, obj.getAttribute( "x" ).length() - 2 ) ),
+					Integer.parseInt( obj.getAttribute( "from" ) ),
+					Integer.parseInt( obj.getAttribute( "to" ) ),
+					Color.decode( obj.getAttribute( "color" ) ),
+					offset );
 				
 				nodes.add( node );
 			}
@@ -113,13 +113,13 @@ public class AnimationNetwork extends BasicGame
 				Element obj = (Element) pack;
 				
 				packet = new Packet(
-						gc,
-						nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) ).getCenterX(),
-						nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) ).getCenterY() + gc.getWidth()/50,
-						Integer.parseInt( obj.getAttribute( "from" ) ),
-						Integer.parseInt( obj.getAttribute( "to" ) ),
-						nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) ).getColor(),
-						Integer.parseInt( obj.getAttribute( "time" ) ) );
+					gc,
+					nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) ).getCenterX(),
+					nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) ).getCenterY() + gc.getWidth()/50,
+					Integer.parseInt( obj.getAttribute( "from" ) ),
+					Integer.parseInt( obj.getAttribute( "to" ) ),
+					nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) ).getColor(),
+					Integer.parseInt( obj.getAttribute( "time" ) ) );
 
 		        packets.add( packet );
 			}
