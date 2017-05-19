@@ -3,6 +3,8 @@ package simulator.graphics;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -33,8 +35,8 @@ public class AnimationNetwork extends BasicGame
     
     private boolean leftMouse;
     
-    private ArrayList<Node> nodes;
-    private ArrayList<Packet> packets;
+    private List<Node> nodes;
+    private List<Packet> packets;
     
     private Node node;
     private Packet packet;
@@ -48,25 +50,6 @@ public class AnimationNetwork extends BasicGame
     public AnimationNetwork( final String title )
     {
         super( title );
-    }
-    
-    public void sortPackets() {
-    	Packet tmpi, tmpj;
-    	
-    	for (int i = 0; i < packets.size() - 1; i++) {
-    		for (int j = i + 1; j < packets.size(); j++) {
-    			if (packets.get( j ).getTime() < packets.get( i ).getTime()) {
-    				tmpi = packets.get( i );
-    				tmpj = packets.get( j );
-
-    				packets.remove( j );
-    				packets.remove( i );
-    				
-    				packets.add( i, tmpj );
-    				packets.add( j, tmpi );
-    			}
-    		}
-    	}
     }
 
     @Override
@@ -119,7 +102,7 @@ public class AnimationNetwork extends BasicGame
 					Integer.parseInt( obj.getAttribute( "from" ) ),
 					Integer.parseInt( obj.getAttribute( "to" ) ),
 					nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) ).getColor(),
-					Integer.parseInt( obj.getAttribute( "time" ) ) );
+					Integer.parseInt( obj.getAttribute( "startTime" ) ) );
 
 		        packets.add( packet );
 			}
@@ -135,7 +118,7 @@ public class AnimationNetwork extends BasicGame
             node1.createLink( gc, node1.getArea().getCenterX(), node1.getArea().getCenterY(), node2.getArea().getCenterX(), node2.getArea().getCenterY(), node2.getColor() );
         }
         
-        sortPackets();
+        Collections.sort( packets );
         
         for (Packet packet: packets) {
         	packet.setSpeed( nodes.get( packet.getIndexRotation() ).getAngle() );

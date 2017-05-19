@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
   <!--Objects-->
-  <node x="150.0" y="150.0" from ="0" to="1" name="server" color="#000000" />
-  <node x="300.0" y="300.0" from ="1" to="2" name="server" color="#0000FF" />
-  <node x="450.0" y="300.0" from ="2" to="3" name="server" color="#228B22" />
-  <node x="600.0" y="150.0" from ="3" to="3" name="server" color="#FFD700" />
-  <packet from ="0" to="1" time="1155" />
-  <packet from ="1" to="2" time="1" />
+  <node x="150.0" y="150.0" from ="0" to="1" name="server1" color="#000000" />
+  <node x="300.0" y="300.0" from ="1" to="2" name="server2" color="#0000FF" />
+  <node x="450.0" y="300.0" from ="2" to="3" name="server3" color="#228B22" />
+  <node x="600.0" y="150.0" from ="3" to="3" name="server4" color="#FFD700" />
+  <packet from ="0" to="1" startTime="1155" endTime="" />
+  <packet from ="1" to="2" startTime="1" endTime="" />
 </configuration>

@@ -1,6 +1,6 @@
 package simulator.graphics.interfaces;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
@@ -16,8 +16,8 @@ public class NetworkDisplay
 	
 	private boolean animate;
 	
-	private ArrayList<Node> nodes;
-	private ArrayList<Packet> packets;
+	private List<Node> nodes;
+	private List<Packet> packets;
 	
 	private int timer;
 	
@@ -25,7 +25,7 @@ public class NetworkDisplay
 	
 	private boolean end;
 	
-	public NetworkDisplay( final GameContainer gc, final float startY, final float height, final ArrayList<Node> nodes, final ArrayList<Packet> packets )
+	public NetworkDisplay( final GameContainer gc, final float startY, final float height, final List<Node> nodes, final List<Packet> packets )
 	{
 		zone = new Rectangle( 0, startY, gc.getWidth(), height );
 		

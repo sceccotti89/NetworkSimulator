@@ -6,7 +6,7 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Rectangle;
 
-public class Packet
+public class Packet implements Comparable<Packet>
 {
 	private int ID_from, ID_to;
 	
@@ -192,5 +192,12 @@ public class Packet
 			
 			g.drawString( info, infos.getX(), infos.getY() );
 		}
+	}
+
+	@Override
+	public int compareTo( Packet packet ) {
+		if (time < packet.time) return -1;
+		if (time > packet.time) return 1;
+		return 0;
 	}
 }
