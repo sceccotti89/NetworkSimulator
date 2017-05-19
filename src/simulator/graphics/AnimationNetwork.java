@@ -107,7 +107,7 @@ public class AnimationNetwork extends BasicGame
 		        packets.add( packet );
 			}
 			
-			System.out.println( "nodi " + files[0] + " caricati" );
+			System.out.println( "nodi e pacchetti " + files[0] + " caricati" );
 		}
         catch(Exception e) {
         	e.printStackTrace();
