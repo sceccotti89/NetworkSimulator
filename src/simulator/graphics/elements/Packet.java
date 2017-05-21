@@ -22,7 +22,7 @@ public class Packet implements Comparable<Packet>
 	
 	private int indexRotation;
 	
-	private int time;
+	private int startTime, endTime;
 	
 	private String name;
 	
@@ -36,7 +36,7 @@ public class Packet implements Comparable<Packet>
 	private Rectangle infos;
 	private boolean drawInfo;
 	
-	public Packet( final GameContainer gc, final float x, final float y, final int ID_from, int ID_to, Color color, int time ) {
+	public Packet( final GameContainer gc, final float x, final float y, final int ID_from, int ID_to, Color color, int startTime, int endTime ) {
 		this.ID_from = ID_from;
 		this.ID_to = ID_to;
 		this.color = color;
@@ -51,7 +51,8 @@ public class Packet implements Comparable<Packet>
 		nextNode = ID_from;
 		indexRotation = ID_from;
 		
-		this.time = time;
+		this.startTime = startTime;
+		this.endTime = endTime;
 		
 		active = true;
 		
@@ -88,12 +89,20 @@ public class Packet implements Comparable<Packet>
 		active = val;
 	}
 	
-	public void setTime( int val ) {
-		time = val;
+	public void setStartTime( int val ) {
+		startTime = val;
 	}
 	
-	public int getTime() {
-		return time;
+	public int getStartTime() {
+		return startTime;
+	}
+	
+	public void setEndTime( int val ) {
+		endTime = val;
+	}
+	
+	public int getEndTime() {
+		return endTime;
 	}
 	
 	public void setIndexRotation( int val ) {
@@ -196,8 +205,8 @@ public class Packet implements Comparable<Packet>
 
 	@Override
 	public int compareTo( Packet packet ) {
-		if (time < packet.time) return -1;
-		if (time > packet.time) return 1;
+		if (startTime < packet.startTime) return -1;
+		if (startTime > packet.startTime) return 1;
 		return 0;
 	}
 }

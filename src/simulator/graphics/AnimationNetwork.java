@@ -102,7 +102,8 @@ public class AnimationNetwork extends BasicGame
 					Integer.parseInt( obj.getAttribute( "from" ) ),
 					Integer.parseInt( obj.getAttribute( "to" ) ),
 					nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) ).getColor(),
-					Integer.parseInt( obj.getAttribute( "startTime" ) ) );
+					Integer.parseInt( obj.getAttribute( "startTime" ) ),
+					Integer.parseInt( obj.getAttribute( "endTime" ) ) );
 
 		        packets.add( packet );
 			}
