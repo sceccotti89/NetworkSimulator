@@ -72,8 +72,7 @@ public class NetworkDisplay
 		return true;
 	}
 	
-	public boolean stopAnimation( GameContainer gc )
-	{
+	public boolean stopAnimation( GameContainer gc ) {
 		startPositions( gc );
 		
 		animate = false;
@@ -82,8 +81,7 @@ public class NetworkDisplay
 		return true;
 	}
 	
-	public void update( GameContainer gc, AnimationManager am )
-	{
+	public void update( GameContainer gc, AnimationManager am ) {
 		end = true;
 
 	    // TODO IL TIMER ORA E' CORRETTO?????
