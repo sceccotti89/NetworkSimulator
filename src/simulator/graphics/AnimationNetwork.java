@@ -122,7 +122,8 @@ public class AnimationNetwork extends BasicGame
         Collections.sort( packets );
         
         for (Packet packet: packets) {
-        	packet.setSpeed( nodes.get( packet.getIndexRotation() ).getAngle() );
+        	Node start = nodes.get( packet.getIndexRotation() );
+        	packet.setSpeed( start.getLinkLenght() - 2*start.getRay(), start.getAngle() );
         }
         
         ob = new OptionBar( gc );

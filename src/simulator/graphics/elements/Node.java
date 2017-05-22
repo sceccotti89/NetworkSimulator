@@ -83,6 +83,10 @@ public class Node
 		return lenghtLink;
 	}
 	
+	public float getRay() {
+		return ray;
+	}
+	
 	public void update( GameContainer gc ) {
 		if (link != null) {
 			link.checkMouse( gc );

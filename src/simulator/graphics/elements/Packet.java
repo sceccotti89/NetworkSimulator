@@ -72,11 +72,12 @@ public class Packet implements Comparable<Packet>
 		return speedY;
 	}
 	
-	public void setSpeed( float angle ) {
+	public void setSpeed( final float lenght, final float angle ) {
 		this.angle = angle;
 		
 		float rad = (float) (angle * Math.PI / 180);
 		
+		// TODO SETTARE LA VELOCITA IN RELAZIONE ALLA LUNGHEZZA DEL LINK
 		speedX = (float) Math.sin( rad );
 		speedY = (float) Math.cos( rad );
 	}
