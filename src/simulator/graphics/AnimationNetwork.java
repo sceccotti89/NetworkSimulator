@@ -41,8 +41,6 @@ public class AnimationNetwork extends BasicGame
     private Node node;
     private Packet packet;
     
-    private float offset;
-    
     private DocumentBuilderFactory documentFactory;
 	private DocumentBuilder builder;
 	private Document document;
@@ -57,8 +55,6 @@ public class AnimationNetwork extends BasicGame
     {        
         nodes   = new ArrayList<Node>();
         packets = new ArrayList<Packet>();
-        
-        offset = gc.getWidth()/100;
 
         try {
 			documentFactory = DocumentBuilderFactory.newInstance();
