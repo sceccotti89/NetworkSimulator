@@ -82,8 +82,7 @@ public class AnimationNetwork extends BasicGame
 					Integer.parseInt( obj.getAttribute( "y" ).substring( 0, obj.getAttribute( "x" ).length() - 2 ) ),
 					Integer.parseInt( obj.getAttribute( "from" ) ),
 					Integer.parseInt( obj.getAttribute( "to" ) ),
-					Color.decode( obj.getAttribute( "color" ) ),
-					offset );
+					Color.decode( obj.getAttribute( "color" ) ) );
 				
 				nodes.add( node );
 			}

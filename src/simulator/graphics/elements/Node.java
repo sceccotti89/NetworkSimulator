@@ -18,15 +18,12 @@ public class Node
 	
 	private Link link = null;
 	
-	private float offset;
-	
 	private float lenghtLink;
 	
-	public Node( final float x, final float y, final int ID_from, final int ID_to, final Color color, float offset ) {
+	public Node( final float x, final float y, final int ID_from, final int ID_to, final Color color ) {
 		this.ID_from = ID_from;
 		this.ID_to = ID_to;
 		this.color = color;
-		this.offset = offset;
 		
 		node = new Circle( x, y, ray );
 	}
@@ -95,7 +92,7 @@ public class Node
 	
 	public void drawNode( Graphics g ) {
 	    if (link != null) {
-	        link.drawLink( g, offset );
+	        link.drawLink( g );
 	    }
 		
 		g.setColor( color );

@@ -24,6 +24,8 @@ public class Link
 	
 	private final float offset;
 	
+	float x2, y2;
+	
 	public Link( GameContainer gc, float x1, float y1, float x2, float y2, float angle ) {
 		
 		this.angle = angle;
@@ -44,6 +46,9 @@ public class Link
 		
 		area = new Polygon( new float[] {x1 + offset, y1 + offset, x2 + offset, y2 + offset, x2 - offset, y2 - offset, x1 - offset, y1 - offset} );
 		infos = new Rectangle( 0, 0, 0, 0 );
+		
+		this.x2 = x2;
+		this.y2 = y2;
 	}
 	
 	public float calculateLenght( float x1, float y1, float x2, float y2 ) {
@@ -73,7 +78,7 @@ public class Link
 		return showInfos;
 	}
 	
-	public void drawLink( Graphics g, float offset ) {
+	public void drawLink( Graphics g ) {
 		g.setColor( color );
 		g.draw( area );
 	}
