@@ -24,7 +24,7 @@ public class Link
 	
 	private final float offset;
 	
-	float x2, y2;
+	private float lenght;
 	
 	public Link( GameContainer gc, float x1, float y1, float x2, float y2, float angle ) {
 		
@@ -32,27 +32,22 @@ public class Link
 		
 		offset = gc.getWidth()/80;
 		
-		//System.out.println( "ID = " + ID_from );
+		lenght = calculateLenght( x1, y1, x2, y2 );
 		
-		System.out.println( "X1 + off = " + (x1 + offset) );
-		System.out.println( "X1 - off = " + (x1 - offset) );
-		System.out.println( "X2 + off = " + (x2 + offset) );
-		System.out.println( "X2 - off = " + (x2 - offset) );
-		
-		System.out.println( "Y1 + off = " + (y1 + offset) );
-		System.out.println( "Y1 - off = " + (y1 - offset) );
-		System.out.println( "Y2 + off = " + (y2 + offset) );
-		System.out.println( "Y2 - off = " + (y2 - offset) );
-		
-		area = new Polygon( new float[] {x1 + offset, y1 + offset, x2 + offset, y2 + offset, x2 - offset, y2 - offset, x1 - offset, y1 - offset} );
+		if (y1 == y2) {
+			area = new Polygon( new float[] {x1, y1 + offset, x2, y2 + offset, x2, y2 - offset, x1, y1 - offset} );
+		} else {
+			area = new Polygon( new float[] {x1 + offset, y1, x2 + offset, y2, x2 - offset, y2, x1 - offset, y1} );
+		}
 		infos = new Rectangle( 0, 0, 0, 0 );
-		
-		this.x2 = x2;
-		this.y2 = y2;
 	}
 	
 	public float calculateLenght( float x1, float y1, float x2, float y2 ) {
 		return (float) Math.sqrt( (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) );
+	}
+	
+	public float getLenght() {
+		return lenght;
 	}
 	
 	public void setAngle( float val ) {

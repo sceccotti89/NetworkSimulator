@@ -15,6 +15,7 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.geom.Circle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -90,13 +91,15 @@ public class AnimationNetwork extends BasicGame
 				org.w3c.dom.Node pack = config.item( i );
 				Element obj = (Element) pack;
 				
+				Node from = nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) );
+				
 				packet = new Packet(
 					gc,
-					nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) ).getCenterX(),
-					nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) ).getCenterY() + gc.getWidth()/50,
+					from.getCenterX(),
+					from.getCenterY() + gc.getWidth()/50,
 					Integer.parseInt( obj.getAttribute( "from" ) ),
 					Integer.parseInt( obj.getAttribute( "to" ) ),
-					nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) ).getColor(),
+					from.getColor(),
 					Integer.parseInt( obj.getAttribute( "startTime" ) ),
 					Integer.parseInt( obj.getAttribute( "endTime" ) ) );
 
@@ -110,8 +113,9 @@ public class AnimationNetwork extends BasicGame
         }
         
         for (int i = 0; i < nodes.size() - 1; i++) {
+        	Circle areaNode1 = nodes.get( i ).getArea(), areaNode2 = nodes.get( i + 1 ).getArea();
             Node node1 = nodes.get( i ), node2 = nodes.get( i + 1 );
-            node1.createLink( gc, node1.getArea().getCenterX(), node1.getArea().getCenterY(), node2.getArea().getCenterX(), node2.getArea().getCenterY(), node2.getColor() );
+            node1.createLink( gc, areaNode1.getCenterX(), areaNode1.getCenterY(), areaNode2.getCenterX(), areaNode2.getCenterY(), node2.getColor() );
         }
         
         Collections.sort( packets );

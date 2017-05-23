@@ -18,8 +18,6 @@ public class Node
 	
 	private Link link = null;
 	
-	private float lenghtLink;
-	
 	public Node( final float x, final float y, final int ID_from, final int ID_to, final Color color ) {
 		this.ID_from = ID_from;
 		this.ID_to = ID_to;
@@ -73,11 +71,10 @@ public class Node
 	
 	public void createLink( GameContainer gc, float x1, float y1, float x2, float y2, Color color ) {
 	    link = new Link( gc, x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ) );
-	    lenghtLink = link.calculateLenght( x1, x2, y1, y2 );
 	}
 	
 	public float getLinkLenght() {
-		return lenghtLink;
+		return link.getLenght();
 	}
 	
 	public float getRay() {
