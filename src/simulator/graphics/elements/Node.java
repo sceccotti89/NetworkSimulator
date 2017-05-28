@@ -1,5 +1,8 @@
 package simulator.graphics.elements;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Font;
 import org.newdawn.slick.GameContainer;
@@ -8,7 +11,7 @@ import org.newdawn.slick.geom.Circle;
 
 public class Node
 {
-	private long ID_from, ID_to;
+	private long nodeID;
 	
 	private Color color;
 	
@@ -16,22 +19,19 @@ public class Node
 	
 	final private float ray = 25;
 	
-	private Link link = null;
+	private List<Link> links;
 	
-	public Node( final float x, final float y, final long ID_from, final long ID_to, final Color color ) {
-		this.ID_from = ID_from;
-		this.ID_to = ID_to;
+	public Node( final float x, final float y, final long nodeID, final Color color ) {
+		this.nodeID = nodeID;
 		this.color = color;
 		
 		node = new Circle( x, y, ray );
+		
+		links = new ArrayList<>();
 	}
 	
-	public long getIDFrom() {
-		return ID_from;
-	}
-	
-	public long getIDTo() {
-		return ID_to;
+	public long getNodeID() {
+		return nodeID;
 	}
 	
 	public Color getColor() {
@@ -58,8 +58,13 @@ public class Node
 		return node;
 	}
 	
-	public float getAngle() {
-	    return link.getAngle();
+	public Float getAngle( final long destID ) {
+		for (Link link: links) {
+			if (link.getDestID() == destID)
+				return link.getAngle();
+		}
+		
+		return null;
 	}
 	
 	private float calculateAngle( float x1, float y1, float x2, float y2 ) {
@@ -69,12 +74,17 @@ public class Node
 	    return (float) ((Math.PI/2 - gamma)*180/Math.PI);
 	}
 	
-	public void createLink( GameContainer gc, float x1, float y1, float x2, float y2, Color color ) {
-	    link = new Link( gc, x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ) );
+	public void addLink( GameContainer gc, long destID, float x1, float y1, float x2, float y2, Color color ) {
+	    links.add( new Link( gc, nodeID, destID, x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ) ) );
 	}
 	
-	public float getLinkLenght() {
-		return link.getLenght();
+	public Float getLinkLenght( final long destID ) {
+		for (Link link: links) {
+			if (link.getDestID() == destID)
+				return link.getLenght();
+		}
+		
+		return null;
 	}
 	
 	public float getRay() {
@@ -82,13 +92,13 @@ public class Node
 	}
 	
 	public void update( GameContainer gc ) {
-		if (link != null) {
+		for (Link link: links) {
 			link.checkMouse( gc );
 		}
 	}
 	
 	public void drawNode( Graphics g ) {
-	    if (link != null) {
+	    for (Link link: links) {
 	        link.drawLink( g );
 	    }
 		
@@ -100,11 +110,11 @@ public class Node
 		
 		Font f = g.getFont();
 		g.setColor( Color.white );
-		g.drawString( ID_from + "", node.getCenterX() - f.getWidth( ID_from + "" )/2, node.getCenterY() - f.getHeight( ID_from + "" )/2 );
+		g.drawString( nodeID + "", node.getCenterX() - f.getWidth( nodeID + "" )/2, node.getCenterY() - f.getHeight( nodeID + "" )/2 );
 	}
 	
 	public void drawInfo( Graphics g ) {
-		if (link != null) {
+		for (Link link: links) {
 	        link.drawInfo( g );
 	    }
 	}

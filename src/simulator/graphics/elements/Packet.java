@@ -130,10 +130,6 @@ public class Packet implements Comparable<Packet>
 		return isInNode;
 	}
 	
-	public void incNextNode() {
-		nextNode++;
-	}
-	
 	public long getNextNode() {
 		return nextNode;
 	}
@@ -162,7 +158,7 @@ public class Packet implements Comparable<Packet>
 		return ID_from;
 	}
 	
-	public long getIDTo(){
+	public long getDestID(){
 		return ID_to;
 	}
 	

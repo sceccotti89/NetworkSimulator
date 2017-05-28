@@ -26,7 +26,12 @@ public class Link
 	
 	private float lenght;
 	
-	public Link( GameContainer gc, float x1, float y1, float x2, float y2, float angle ) {
+	private long fromID, destID;
+	
+	public Link( GameContainer gc, long fromID, long destID, float x1, float y1, float x2, float y2, float angle ) {
+		
+		this.fromID = fromID;
+		this.destID = destID;
 		
 		this.angle = angle;
 		
@@ -40,6 +45,14 @@ public class Link
 			area = new Polygon( new float[] {x1 + offset, y1, x2 + offset, y2, x2 - offset, y2, x1 - offset, y1} );
 		}
 		infos = new Rectangle( 0, 0, 0, 0 );
+	}
+	
+	public long getFromID() {
+		return fromID;
+	}
+	
+	public long getDestID() {
+		return destID;
 	}
 	
 	public float calculateLenght( float x1, float y1, float x2, float y2 ) {

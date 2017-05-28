@@ -73,10 +73,10 @@ public class AnimationNetwork extends BasicGame
 				final int x = Integer.parseInt( obj.getAttribute( "x" ) );
 				final int y = Integer.parseInt( obj.getAttribute( "y" ) );
 				final long from_ID = Long.parseLong( obj.getAttribute( "from" ) );
-				final long dest_ID = Long.parseLong( obj.getAttribute( "to" ) );
 				final Color color = Color.decode( obj.getAttribute( "color" ) );
 				
-				addNode( x, y, from_ID, dest_ID, color );
+				// TODO CAMBIARE LA QUESTIONE DEI NODI DESTINAZIONE E DEI RELATIVI LINK
+				addNode( x, y, from_ID, color );
 			}
 			
 			/* PACKETS CONFIGURATION */
@@ -92,7 +92,7 @@ public class AnimationNetwork extends BasicGame
 				final int y = from.getCenterY() + gc.getWidth()/50;
 				final long from_ID = Long.parseLong( obj.getAttribute( "from" ) );
 				final long dest_ID = Long.parseLong( obj.getAttribute( "to" ) );
-				Color color = from.getColor();
+				final Color color = from.getColor();
 				final int startTime = Integer.parseInt( obj.getAttribute( "startTime" ) );
 				final int endTime = Integer.parseInt( obj.getAttribute( "endTime" ) );
 
@@ -116,7 +116,7 @@ public class AnimationNetwork extends BasicGame
         
         for (Packet packet: packets) {
         	Node start = nodes.get( (int) packet.getIndexRotation() );
-        	packet.setSpeed( start.getLinkLenght() - 2*start.getRay(), start.getAngle() );
+        	packet.setSpeed( start.getLinkLenght( packet.getDestID() ) - 2*start.getRay(), start.getAngle( packet.getDestID() ) );
         }
         
         ob = new OptionBar( gc );
@@ -125,8 +125,8 @@ public class AnimationNetwork extends BasicGame
         nd = new NetworkDisplay( gc, am.getMaxY(), ta.getY() - am.getMaxY(), nodes, packets );
     }
     
-    public void addNode( int x, int y, long from_ID, long dest_ID, Color color ) {
-    	Node node = new Node( x, y, from_ID, dest_ID, color );
+    public void addNode( int x, int y, long nodeID, Color color ) {
+    	Node node = new Node( x, y, nodeID, color );
     	nodes.add( node );
     }
     
