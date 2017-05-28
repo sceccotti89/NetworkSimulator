@@ -39,7 +39,6 @@ public class AnimationNetwork extends BasicGame
     private List<Node> nodes;
     private List<Packet> packets;
     
-    private Node node;
     private Packet packet;
     
     private DocumentBuilderFactory documentFactory;
@@ -49,14 +48,14 @@ public class AnimationNetwork extends BasicGame
     public AnimationNetwork( final String title )
     {
         super( title );
+        
+        nodes   = new ArrayList<Node>();
+        packets = new ArrayList<Packet>();
     }
 
     @Override
     public void init( final GameContainer gc ) throws SlickException
-    {        
-        nodes   = new ArrayList<Node>();
-        packets = new ArrayList<Packet>();
-
+    {
         try {
 			documentFactory = DocumentBuilderFactory.newInstance();
  
@@ -64,24 +63,22 @@ public class AnimationNetwork extends BasicGame
 			
 			/* NODES CONFIGURATION */
 			File levels = new File( "data/File/" );
-			String[] files = levels.list();
 				
-			document = builder.parse( new File( "data/File/" + files[0] ) );
+			document = builder.parse( new File( "data/File/" + levels.list()[0] ) );
 
 			NodeList config = document.getElementsByTagName( "node" );
 			
 			for (int i = 0; i < config.getLength(); i++) {
 				org.w3c.dom.Node nodo = config.item( i );
 				Element obj = (Element) nodo;
-								
-				node = new Node( 
-					Integer.parseInt( obj.getAttribute( "x" ).substring( 0, obj.getAttribute( "x" ).length() - 2 ) ),
-					Integer.parseInt( obj.getAttribute( "y" ).substring( 0, obj.getAttribute( "x" ).length() - 2 ) ),
-					Integer.parseInt( obj.getAttribute( "from" ) ),
-					Integer.parseInt( obj.getAttribute( "to" ) ),
-					Color.decode( obj.getAttribute( "color" ) ) );
 				
-				nodes.add( node );
+				final int x = Integer.parseInt( obj.getAttribute( "x" ) );
+				final int y = Integer.parseInt( obj.getAttribute( "y" ) );
+				final long from_ID = Long.parseLong( obj.getAttribute( "from" ) );
+				final long dest_ID = Long.parseLong( obj.getAttribute( "to" ) );
+				final Color color = Color.decode( obj.getAttribute( "color" ) );
+				
+				addNode( x, y, from_ID, dest_ID, color );
 			}
 			
 			/* PACKETS CONFIGURATION */
@@ -106,12 +103,13 @@ public class AnimationNetwork extends BasicGame
 		        packets.add( packet );
 			}
 			
-			System.out.println( "nodi e pacchetti " + files[0] + " caricati" );
+			System.out.println( "nodi e pacchetti " + levels.list()[0] + " caricati" );
 		}
         catch(Exception e) {
         	e.printStackTrace();
         }
         
+        // links creation
         for (int i = 0; i < nodes.size() - 1; i++) {
         	Circle areaNode1 = nodes.get( i ).getArea(), areaNode2 = nodes.get( i + 1 ).getArea();
             Node node1 = nodes.get( i ), node2 = nodes.get( i + 1 );
@@ -129,6 +127,11 @@ public class AnimationNetwork extends BasicGame
         am = new AnimationManager( gc, ob.getMaxY() );
         ta = new TimeAnimation();
         nd = new NetworkDisplay( gc, am.getMaxY(), ta.getY() - am.getMaxY(), nodes, packets );
+    }
+    
+    public void addNode( int x, int y, long from_ID, long dest_ID, Color color ) {
+    	Node node = new Node( x, y, from_ID, dest_ID, color );
+    	nodes.add( node );
     }
 
     @Override

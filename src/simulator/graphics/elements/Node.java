@@ -8,7 +8,7 @@ import org.newdawn.slick.geom.Circle;
 
 public class Node
 {
-	private int ID_from, ID_to;
+	private long ID_from, ID_to;
 	
 	private Color color;
 	
@@ -18,7 +18,7 @@ public class Node
 	
 	private Link link = null;
 	
-	public Node( final float x, final float y, final int ID_from, final int ID_to, final Color color ) {
+	public Node( final float x, final float y, final long ID_from, final long ID_to, final Color color ) {
 		this.ID_from = ID_from;
 		this.ID_to = ID_to;
 		this.color = color;
@@ -26,11 +26,11 @@ public class Node
 		node = new Circle( x, y, ray );
 	}
 	
-	public int getIDFrom() {
+	public long getIDFrom() {
 		return ID_from;
 	}
 	
-	public int getIDTo() {
+	public long getIDTo() {
 		return ID_to;
 	}
 	
