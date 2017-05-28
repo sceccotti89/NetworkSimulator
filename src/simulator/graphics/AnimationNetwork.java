@@ -39,8 +39,6 @@ public class AnimationNetwork extends BasicGame
     private List<Node> nodes;
     private List<Packet> packets;
     
-    private Packet packet;
-    
     private DocumentBuilderFactory documentFactory;
 	private DocumentBuilder builder;
 	private Document document;
@@ -89,18 +87,16 @@ public class AnimationNetwork extends BasicGame
 				Element obj = (Element) pack;
 				
 				Node from = nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) );
-				
-				packet = new Packet(
-					gc,
-					from.getCenterX(),
-					from.getCenterY() + gc.getWidth()/50,
-					Integer.parseInt( obj.getAttribute( "from" ) ),
-					Integer.parseInt( obj.getAttribute( "to" ) ),
-					from.getColor(),
-					Integer.parseInt( obj.getAttribute( "startTime" ) ),
-					Integer.parseInt( obj.getAttribute( "endTime" ) ) );
 
-		        packets.add( packet );
+				final int x = from.getCenterX();
+				final int y = from.getCenterY() + gc.getWidth()/50;
+				final long from_ID = Long.parseLong( obj.getAttribute( "from" ) );
+				final long dest_ID = Long.parseLong( obj.getAttribute( "to" ) );
+				Color color = from.getColor();
+				final int startTime = Integer.parseInt( obj.getAttribute( "startTime" ) );
+				final int endTime = Integer.parseInt( obj.getAttribute( "endTime" ) );
+
+		        addPacket( gc, x, y, from_ID, dest_ID, color, startTime, endTime );
 			}
 			
 			System.out.println( "nodi e pacchetti " + levels.list()[0] + " caricati" );
@@ -119,7 +115,7 @@ public class AnimationNetwork extends BasicGame
         Collections.sort( packets );
         
         for (Packet packet: packets) {
-        	Node start = nodes.get( packet.getIndexRotation() );
+        	Node start = nodes.get( (int) packet.getIndexRotation() );
         	packet.setSpeed( start.getLinkLenght() - 2*start.getRay(), start.getAngle() );
         }
         
@@ -132,6 +128,11 @@ public class AnimationNetwork extends BasicGame
     public void addNode( int x, int y, long from_ID, long dest_ID, Color color ) {
     	Node node = new Node( x, y, from_ID, dest_ID, color );
     	nodes.add( node );
+    }
+    
+    public void addPacket( GameContainer gc, int x, int y, long from_ID, long dest_ID, Color color, int startTime, int endTime ) {
+    	Packet packet = new Packet( gc, x, y, from_ID, dest_ID, color, startTime, endTime );
+    	packets.add( packet );
     }
 
     @Override

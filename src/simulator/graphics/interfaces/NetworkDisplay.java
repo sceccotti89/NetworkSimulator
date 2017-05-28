@@ -42,7 +42,7 @@ public class NetworkDisplay
 	
 	public void startPositions( GameContainer gc ) {
 		for (Packet packet: packets ) {
-			packet.getArea().setLocation( nodes.get( packet.getIDFrom() ).getCenterX(), nodes.get( packet.getIDFrom() ).getCenterY() + gc.getWidth()/50 );
+			packet.getArea().setLocation( nodes.get( (int) packet.getIDFrom() ).getCenterX(), nodes.get( (int) packet.getIDFrom() ).getCenterY() + gc.getWidth()/50 );
 			packet.setFinished( false );
 			packet.setActive( true );
 		}
@@ -93,7 +93,7 @@ public class NetworkDisplay
 			if (timer >= packet.getStartTime()) {
 				packet.update( am.getFrames(), gc, animate );
 				if (packet.isActive()) {
-					if (packet.getArea().intersects( nodes.get( packet.getIDTo() ).getArea() )) {
+					if (packet.getArea().intersects( nodes.get( (int) packet.getIDTo() ).getArea() )) {
 						packet.setActive( false );
 					}
 				}

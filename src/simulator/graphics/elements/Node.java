@@ -46,12 +46,12 @@ public class Node
 		return node.getY();
 	}
 	
-	public float getCenterX() {
-		return node.getCenterX();
+	public int getCenterX() {
+		return (int) node.getCenterX();
 	}
 	
-	public float getCenterY() {
-		return node.getCenterY();
+	public int getCenterY() {
+		return (int) node.getCenterY();
 	}
 	
 	public Circle getArea(){

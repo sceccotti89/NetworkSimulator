@@ -8,7 +8,7 @@ import org.newdawn.slick.geom.Rectangle;
 
 public class Packet implements Comparable<Packet>
 {
-	private int ID_from, ID_to;
+	private long ID_from, ID_to;
 	
 	private Color color;
 	
@@ -18,9 +18,9 @@ public class Packet implements Comparable<Packet>
 	
 	private boolean hasFinished, isInNode;
 	
-	private int nextNode;
+	private long nextNode;
 	
-	private int indexRotation;
+	private long indexRotation;
 	
 	private int startTime, endTime;
 	
@@ -36,7 +36,7 @@ public class Packet implements Comparable<Packet>
 	private Rectangle infos;
 	private boolean drawInfo;
 	
-	public Packet( final GameContainer gc, final float x, final float y, final int ID_from, int ID_to, Color color, int startTime, int endTime ) {
+	public Packet( final GameContainer gc, final int x, final int y, final long ID_from, final long ID_to, final Color color, final int startTime, final int endTime ) {
 		this.ID_from = ID_from;
 		this.ID_to = ID_to;
 		this.color = color;
@@ -110,7 +110,7 @@ public class Packet implements Comparable<Packet>
 		indexRotation = val;
 	}
 	
-	public int getIndexRotation() {
+	public long getIndexRotation() {
 		return indexRotation;
 	}
 	
@@ -134,7 +134,7 @@ public class Packet implements Comparable<Packet>
 		nextNode++;
 	}
 	
-	public int getNextNode() {
+	public long getNextNode() {
 		return nextNode;
 	}
 	
@@ -158,11 +158,11 @@ public class Packet implements Comparable<Packet>
 		this.color = color;
 	}
 	
-	public int getIDFrom(){
+	public long getIDFrom(){
 		return ID_from;
 	}
 	
-	public int getIDTo(){
+	public long getIDTo(){
 		return ID_to;
 	}
 	
