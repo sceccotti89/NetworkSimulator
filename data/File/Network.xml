@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <!--Objects-->
+  <node x="100" y="250" ID="0" name="client" color="#000000" />
+  <node x="250" y="250" ID="1" name="switch" color="#0000FF" />
+  <node x="400" y="150" ID="2" name="server 0" color="#228B22" />
+  <node x="400" y="220" ID="3" name="server 1" color="#FFD700" />
+  <node x="400" y="290" ID="4" name="server 2" color="#FFD700" />
+  <node x="400" y="360" ID="5" name="server 3" color="#FFD700" />
+  <link source="0" dest="1" bandwidth="1000" delay="0" type="duplex" />
+  <link source="1" dest="2" bandwidth="1000" delay="0" type="duplex" />
+  <link source="1" dest="3" bandwidth="1000" delay="0" type="duplex" />
+  <link source="1" dest="4" bandwidth="1000" delay="0" type="duplex" />
+  <link source="1" dest="5" bandwidth="1000" delay="0" type="duplex" />
+  <packet from ="0" to="1" startTime="1155" endTime="1300" />
+  <packet from ="1" to="2" startTime="1" endTime="150" />
+</configuration>

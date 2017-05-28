@@ -14,8 +14,6 @@ public class Packet implements Comparable<Packet>
 	
 	private Rectangle area;
 	
-	private float width;
-	
 	private boolean hasFinished, isInNode;
 	
 	private long nextNode;
@@ -36,14 +34,17 @@ public class Packet implements Comparable<Packet>
 	private Rectangle infos;
 	private boolean drawInfo;
 	
-	public Packet( final GameContainer gc, final int x, final int y, final long ID_from, final long ID_to, final Color color, final int startTime, final int endTime ) {
+	public Packet( final int x, final int y,
+				   final long ID_from, final long ID_to,
+				   final Color color,
+				   final int startTime, final int endTime,
+				   final int width, final int height ) {
+		
 		this.ID_from = ID_from;
 		this.ID_to = ID_to;
 		this.color = color;
 		
-		width = gc.getWidth()/80;
-		
-		area = new Rectangle( x, y + gc.getHeight()/150, width, width );
+		area = new Rectangle( x, y + height/150, width/80, width/80 );
 		
 		hasFinished = false;
 		isInNode = true;
@@ -56,8 +57,8 @@ public class Packet implements Comparable<Packet>
 		
 		active = true;
 		
-		widthInfo  = gc.getWidth()/7;
-		heightInfo = gc.getHeight()/13;
+		widthInfo  = width/7;
+		heightInfo = height/13;
 		
 		infos = new Rectangle( 0, 0, widthInfo, heightInfo );
 		
@@ -154,7 +155,7 @@ public class Packet implements Comparable<Packet>
 		this.color = color;
 	}
 	
-	public long getIDFrom(){
+	public long getSourceID(){
 		return ID_from;
 	}
 	

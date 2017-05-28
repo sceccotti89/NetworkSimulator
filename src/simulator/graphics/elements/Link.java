@@ -28,14 +28,15 @@ public class Link
 	
 	private long fromID, destID;
 	
-	public Link( GameContainer gc, long fromID, long destID, float x1, float y1, float x2, float y2, float angle ) {
+	public Link( long fromID, long destID, float x1, float y1, float x2, float y2, float angle, int width, int height ) {
 		
 		this.fromID = fromID;
 		this.destID = destID;
 		
 		this.angle = angle;
 		
-		offset = gc.getWidth()/80;
+		//offset = gc.getWidth()/80;
+		offset = width/80;
 		
 		lenght = calculateLenght( x1, y1, x2, y2 );
 		

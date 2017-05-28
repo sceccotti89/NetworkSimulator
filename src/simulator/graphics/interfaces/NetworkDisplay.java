@@ -40,9 +40,20 @@ public class NetworkDisplay
 		end = false;
 	}
 	
+	private Node getNode( final long nodeID ) {
+    	for (Node node: nodes) {
+    		if (node.getNodeID() == nodeID) {
+    			return node;
+    		}
+    	}
+    	
+    	return null;
+    }
+	
 	public void startPositions( GameContainer gc ) {
 		for (Packet packet: packets ) {
-			packet.getArea().setLocation( nodes.get( (int) packet.getIDFrom() ).getCenterX(), nodes.get( (int) packet.getIDFrom() ).getCenterY() + gc.getWidth()/50 );
+			Node node = getNode( packet.getSourceID() );
+			packet.getArea().setLocation( node.getCenterX(), node.getCenterY() + gc.getWidth()/50 );
 			packet.setFinished( false );
 			packet.setActive( true );
 		}
@@ -93,7 +104,7 @@ public class NetworkDisplay
 			if (timer >= packet.getStartTime()) {
 				packet.update( am.getFrames(), gc, animate );
 				if (packet.isActive()) {
-					if (packet.getArea().intersects( nodes.get( (int) packet.getIDTo() ).getArea() )) {
+					if (packet.getArea().intersects( nodes.get( (int) packet.getDestID() ).getArea() )) {
 						packet.setActive( false );
 					}
 				}
@@ -128,6 +139,10 @@ public class NetworkDisplay
 		}
 		
 		// TODO PROVVISORIO, POI FARO' COME HA DETTO STEFANO
+		for (Node node: nodes) {
+			node.drawLinks( g );
+		}
+		
 		for (Node node: nodes) {
 			node.drawNode( g );
 		}

@@ -74,8 +74,8 @@ public class Node
 	    return (float) ((Math.PI/2 - gamma)*180/Math.PI);
 	}
 	
-	public void addLink( GameContainer gc, long destID, float x1, float y1, float x2, float y2, Color color ) {
-	    links.add( new Link( gc, nodeID, destID, x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ) ) );
+	public void addLink( long destID, float x1, float y1, float x2, float y2, int width, int height ) {
+	    links.add( new Link( nodeID, destID, x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ), width, height ) );
 	}
 	
 	public Float getLinkLenght( final long destID ) {
@@ -97,12 +97,14 @@ public class Node
 		}
 	}
 	
-	public void drawNode( Graphics g ) {
-	    for (Link link: links) {
+	public void drawLinks( Graphics g ) {
+		for (Link link: links) {
 	        link.drawLink( g );
 	    }
-		
-		g.setColor( color );
+	}
+	
+	public void drawNode( Graphics g ) {
+	    g.setColor( color );
 		g.fill( node );
 		
 		g.setColor( Color.black );

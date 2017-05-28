@@ -15,7 +15,6 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
-import org.newdawn.slick.geom.Circle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -42,27 +41,29 @@ public class AnimationNetwork extends BasicGame
     private DocumentBuilderFactory documentFactory;
 	private DocumentBuilder builder;
 	private Document document;
+	
+	private int width, height;
     
-    public AnimationNetwork( final String title )
+    public AnimationNetwork( final int width, final int height, final String title )
     {
         super( title );
         
         nodes   = new ArrayList<Node>();
         packets = new ArrayList<Packet>();
+        
+        this.width = width;
+        this.height = height;
     }
-
-    @Override
-    public void init( final GameContainer gc ) throws SlickException
-    {
-        try {
+    
+    public void loadSimulation( String file ) {
+    	System.out.println( "Loading from " + file + "..." );
+    	try {
 			documentFactory = DocumentBuilderFactory.newInstance();
  
 			builder = documentFactory.newDocumentBuilder();
 			
 			/* NODES CONFIGURATION */
-			File levels = new File( "data/File/" );
-				
-			document = builder.parse( new File( "data/File/" + levels.list()[0] ) );
+			document = builder.parse( new File( file ) );
 
 			NodeList config = document.getElementsByTagName( "node" );
 			
@@ -72,7 +73,7 @@ public class AnimationNetwork extends BasicGame
 				
 				final int x = Integer.parseInt( obj.getAttribute( "x" ) );
 				final int y = Integer.parseInt( obj.getAttribute( "y" ) );
-				final long from_ID = Long.parseLong( obj.getAttribute( "from" ) );
+				final long from_ID = Long.parseLong( obj.getAttribute( "ID" ) );
 				final Color color = Color.decode( obj.getAttribute( "color" ) );
 				
 				// TODO CAMBIARE LA QUESTIONE DEI NODI DESTINAZIONE E DEI RELATIVI LINK
@@ -89,36 +90,50 @@ public class AnimationNetwork extends BasicGame
 				Node from = nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) );
 
 				final int x = from.getCenterX();
-				final int y = from.getCenterY() + gc.getWidth()/50;
+				final int y = from.getCenterY() + width/50;
 				final long from_ID = Long.parseLong( obj.getAttribute( "from" ) );
 				final long dest_ID = Long.parseLong( obj.getAttribute( "to" ) );
 				final Color color = from.getColor();
 				final int startTime = Integer.parseInt( obj.getAttribute( "startTime" ) );
 				final int endTime = Integer.parseInt( obj.getAttribute( "endTime" ) );
 
-		        addPacket( gc, x, y, from_ID, dest_ID, color, startTime, endTime );
+		        addPacket( x, y, from_ID, dest_ID, color, startTime, endTime );
+			}
+	        
+	        /* LINKS CONFIGURATION */
+			config = document.getElementsByTagName( "link" );
+			
+			for (int i = 0; i < config.getLength(); i++) {
+				org.w3c.dom.Node link = config.item( i );
+				Element obj = (Element) link;
+				
+				final long source = Long.parseLong( obj.getAttribute( "source" ) );
+				final long dest = Long.parseLong( obj.getAttribute( "dest" ) );
+				final double bandwidth = Double.parseDouble( obj.getAttribute( "bandwidth" ) );
+				final long delay = Long.parseLong( obj.getAttribute( "delay" ) );
+				final String type = obj.hasAttribute( "type" ) ? obj.getAttribute( "type" ) : "simplex";
+				
+				addLink( source, dest, bandwidth, delay );
+				if (type.equals( "duplex" )) addLink( dest, source, bandwidth, delay );
 			}
 			
-			System.out.println( "nodi e pacchetti " + levels.list()[0] + " caricati" );
+			System.out.println( "Loading completed." );
 		}
         catch(Exception e) {
         	e.printStackTrace();
         }
         
-        // links creation
-        for (int i = 0; i < nodes.size() - 1; i++) {
-        	Circle areaNode1 = nodes.get( i ).getArea(), areaNode2 = nodes.get( i + 1 ).getArea();
-            Node node1 = nodes.get( i ), node2 = nodes.get( i + 1 );
-            node1.createLink( gc, areaNode1.getCenterX(), areaNode1.getCenterY(), areaNode2.getCenterX(), areaNode2.getCenterY(), node2.getColor() );
-        }
-        
         Collections.sort( packets );
         
         for (Packet packet: packets) {
-        	Node start = nodes.get( (int) packet.getIndexRotation() );
+        	Node start = getNode( packet.getSourceID() );
         	packet.setSpeed( start.getLinkLenght( packet.getDestID() ) - 2*start.getRay(), start.getAngle( packet.getDestID() ) );
         }
-        
+    }
+
+    @Override
+    public void init( final GameContainer gc ) throws SlickException
+    {
         ob = new OptionBar( gc );
         am = new AnimationManager( gc, ob.getMaxY() );
         ta = new TimeAnimation();
@@ -130,9 +145,25 @@ public class AnimationNetwork extends BasicGame
     	nodes.add( node );
     }
     
-    public void addPacket( GameContainer gc, int x, int y, long from_ID, long dest_ID, Color color, int startTime, int endTime ) {
-    	Packet packet = new Packet( gc, x, y, from_ID, dest_ID, color, startTime, endTime );
+    public void addPacket( int x, int y, long from_ID, long dest_ID, Color color, int startTime, int endTime ) {
+    	Packet packet = new Packet( x, y, from_ID, dest_ID, color, startTime, endTime, width, height );
     	packets.add( packet );
+    }
+    
+    private Node getNode( final long nodeID ) {
+    	for (Node node: nodes) {
+    		if (node.getNodeID() == nodeID) {
+    			return node;
+    		}
+    	}
+    	
+    	return null;
+    }
+    
+    public void addLink( final long source, final long dest, final double bandwidth, final long delay ) {
+    	Node node1 = getNode( source );
+    	Node node2 = getNode( dest );
+    	node1.addLink( dest, node1.getCenterX(), node1.getCenterY(), node2.getCenterX(), node2.getCenterY(), width, height );
     }
 
     @Override
