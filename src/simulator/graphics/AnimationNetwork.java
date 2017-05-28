@@ -75,8 +75,7 @@ public class AnimationNetwork extends BasicGame
 				final int y = Integer.parseInt( obj.getAttribute( "y" ) );
 				final long from_ID = Long.parseLong( obj.getAttribute( "ID" ) );
 				final Color color = Color.decode( obj.getAttribute( "color" ) );
-				
-				// TODO CAMBIARE LA QUESTIONE DEI NODI DESTINAZIONE E DEI RELATIVI LINK
+
 				addNode( x, y, from_ID, color );
 			}
 			
