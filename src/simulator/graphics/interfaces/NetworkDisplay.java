@@ -104,7 +104,7 @@ public class NetworkDisplay
 			if (timer >= packet.getStartTime()) {
 				packet.update( am.getFrames(), gc, animate );
 				if (packet.isActive()) {
-					if (packet.getArea().intersects( nodes.get( (int) packet.getDestID() ).getArea() )) {
+					if (packet.getArea().intersects( getNode( packet.getDestID() ).getArea() )) {
 						packet.setActive( false );
 					}
 				}

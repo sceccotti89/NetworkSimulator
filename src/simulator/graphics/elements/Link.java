@@ -34,8 +34,7 @@ public class Link
 		this.destID = destID;
 		
 		this.angle = angle;
-		
-		//offset = gc.getWidth()/80;
+
 		offset = width/80;
 		
 		lenght = calculateLenght( x1, y1, x2, y2 );
