@@ -25,7 +25,7 @@ public class NetworkDisplay
 	
 	private boolean end;
 	
-	public NetworkDisplay( final float startY, final float width, final float height, final List<Node> nodes, final List<Packet> packets )
+	public NetworkDisplay( final float width, final float height, final float startY, final List<Node> nodes, final List<Packet> packets )
 	{
 		zone = new Rectangle( 0, startY, width, height );
 		

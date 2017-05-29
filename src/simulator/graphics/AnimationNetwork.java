@@ -136,7 +136,7 @@ public class AnimationNetwork extends BasicGame
         ob = new OptionBar( gc );
         am = new AnimationManager( gc, ob.getMaxY() );
         ta = new TimeAnimation();
-        nd = new NetworkDisplay( am.getMaxY(), gc.getWidth(), ta.getY() - am.getMaxY(), nodes, packets );
+        nd = new NetworkDisplay( gc.getWidth(), ta.getY() - am.getMaxY(), am.getMaxY(), nodes, packets );
     }
     
     public void addNode( int x, int y, long nodeID, Color color ) {
@@ -149,6 +149,11 @@ public class AnimationNetwork extends BasicGame
     	packets.add( packet );
     }
     
+    public void addLink( final long source, final long dest, final double bandwidth, final long delay ) {
+    	Node node1 = getNode( source ), node2 = getNode( dest );
+    	node1.addLink( dest, node1.getCenterX(), node1.getCenterY(), node2.getCenterX(), node2.getCenterY(), width, height );
+    }
+    
     private Node getNode( final long nodeID ) {
     	for (Node node: nodes) {
     		if (node.getNodeID() == nodeID) {
@@ -157,12 +162,6 @@ public class AnimationNetwork extends BasicGame
     	}
     	
     	return null;
-    }
-    
-    public void addLink( final long source, final long dest, final double bandwidth, final long delay ) {
-    	Node node1 = getNode( source );
-    	Node node2 = getNode( dest );
-    	node1.addLink( dest, node1.getCenterX(), node1.getCenterY(), node2.getCenterX(), node2.getCenterY(), width, height );
     }
 
     @Override
