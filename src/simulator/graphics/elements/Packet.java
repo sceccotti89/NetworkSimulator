@@ -172,9 +172,9 @@ public class Packet implements Comparable<Packet>
 		active = true;
 	}
 	
-	public void update( final int animTime, GameContainer gc, boolean animate ) {		
-		float mouseX = gc.getInput().getMouseX();
-		float mouseY = gc.getInput().getMouseY();
+	public void update( GameContainer gc, final int animTime, boolean animate ) {		
+		int mouseX = gc.getInput().getMouseX();
+		int mouseY = gc.getInput().getMouseY();
 		
 		if (animate && active) {
 			area.setLocation( area.getX() + speedX * animTime, area.getY() + speedY * animTime );

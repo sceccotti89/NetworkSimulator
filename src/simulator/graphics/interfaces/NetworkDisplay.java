@@ -99,7 +99,7 @@ public class NetworkDisplay
 	
 		for (Packet packet: packets) {
 			if (timer >= packet.getStartTime()) {
-				packet.update( am.getFrames(), gc, animate );
+				packet.update( gc, am.getFrames(), animate );
 				if (packet.isActive()) {
 					if (packet.getArea().intersects( getNode( packet.getDestID() ).getArea() )) {
 						packet.setActive( false );
