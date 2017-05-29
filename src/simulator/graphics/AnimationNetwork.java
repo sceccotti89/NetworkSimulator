@@ -89,7 +89,7 @@ public class AnimationNetwork extends BasicGame
 				Node from = nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) );
 
 				final int x = from.getCenterX();
-				final int y = from.getCenterY() + width/50;
+				final int y = from.getCenterY() + height/30;
 				final long from_ID = Long.parseLong( obj.getAttribute( "from" ) );
 				final long dest_ID = Long.parseLong( obj.getAttribute( "to" ) );
 				final Color color = from.getColor();
