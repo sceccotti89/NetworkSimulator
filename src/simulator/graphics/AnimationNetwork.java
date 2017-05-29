@@ -136,7 +136,7 @@ public class AnimationNetwork extends BasicGame
         ob = new OptionBar( gc );
         am = new AnimationManager( gc, ob.getMaxY() );
         ta = new TimeAnimation();
-        nd = new NetworkDisplay( gc, am.getMaxY(), ta.getY() - am.getMaxY(), nodes, packets );
+        nd = new NetworkDisplay( am.getMaxY(), gc.getWidth(), ta.getY() - am.getMaxY(), nodes, packets );
     }
     
     public void addNode( int x, int y, long nodeID, Color color ) {

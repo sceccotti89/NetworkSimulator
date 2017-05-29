@@ -25,9 +25,9 @@ public class NetworkDisplay
 	
 	private boolean end;
 	
-	public NetworkDisplay( final GameContainer gc, final float startY, final float height, final List<Node> nodes, final List<Packet> packets )
+	public NetworkDisplay( final float startY, final float width, final float height, final List<Node> nodes, final List<Packet> packets )
 	{
-		zone = new Rectangle( 0, startY, gc.getWidth(), height );
+		zone = new Rectangle( 0, startY, width, height );
 		
 		animate = false;
 		
