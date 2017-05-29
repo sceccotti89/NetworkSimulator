@@ -55,30 +55,33 @@ public class AnimationNetwork extends BasicGame
         this.height = height;
     }
     
-    private void loadLinks( String file ) {
+    private void loadPackets( String file ) {
     	System.out.println( "Loading from " + file + "..." );
     	try {
 			documentFactory = DocumentBuilderFactory.newInstance();
  
 			builder = documentFactory.newDocumentBuilder();
 			
-			/* NODES CONFIGURATION */
 			document = builder.parse( new File( file ) );
-	    	/* LINKS CONFIGURATION */
-			NodeList config = document.getElementsByTagName( "link" );
+			
+			/* PACKETS CONFIGURATION */
+			NodeList config = document.getElementsByTagName( "packet" );
 			
 			for (int i = 0; i < config.getLength(); i++) {
-				org.w3c.dom.Node link = config.item( i );
-				Element obj = (Element) link;
+				org.w3c.dom.Node pack = config.item( i );
+				Element obj = (Element) pack;
 				
-				final long source = Long.parseLong( obj.getAttribute( "source" ) );
-				final long dest = Long.parseLong( obj.getAttribute( "dest" ) );
-				final double bandwidth = Double.parseDouble( obj.getAttribute( "bandwidth" ) );
-				final long delay = Long.parseLong( obj.getAttribute( "delay" ) );
-				final String type = obj.hasAttribute( "type" ) ? obj.getAttribute( "type" ) : "simplex";
-				
-				addLink( source, dest, bandwidth, delay );
-				if (type.equals( "duplex" )) addLink( dest, source, bandwidth, delay );
+				Node from = nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) );
+
+				final int x = from.getCenterX();
+				final int y = from.getCenterY() + height/30;
+				final long from_ID = Long.parseLong( obj.getAttribute( "from" ) );
+				final long dest_ID = Long.parseLong( obj.getAttribute( "to" ) );
+				final Color color = from.getColor();
+				final int startTime = Integer.parseInt( obj.getAttribute( "startTime" ) );
+				final int endTime = Integer.parseInt( obj.getAttribute( "endTime" ) );
+
+		        addPacket( x, y, from_ID, dest_ID, color, startTime, endTime );
 			}
 			
 			System.out.println( "Loading completed." );
@@ -111,25 +114,22 @@ public class AnimationNetwork extends BasicGame
 
 				addNode( x, y, from_ID, color );
 			}
-			
-			/* PACKETS CONFIGURATION */
-			config = document.getElementsByTagName( "packet" );
+
+	    	/* LINKS CONFIGURATION */
+			config = document.getElementsByTagName( "link" );
 			
 			for (int i = 0; i < config.getLength(); i++) {
-				org.w3c.dom.Node pack = config.item( i );
-				Element obj = (Element) pack;
+				org.w3c.dom.Node link = config.item( i );
+				Element obj = (Element) link;
 				
-				Node from = nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) );
-
-				final int x = from.getCenterX();
-				final int y = from.getCenterY() + height/30;
-				final long from_ID = Long.parseLong( obj.getAttribute( "from" ) );
-				final long dest_ID = Long.parseLong( obj.getAttribute( "to" ) );
-				final Color color = from.getColor();
-				final int startTime = Integer.parseInt( obj.getAttribute( "startTime" ) );
-				final int endTime = Integer.parseInt( obj.getAttribute( "endTime" ) );
-
-		        addPacket( x, y, from_ID, dest_ID, color, startTime, endTime );
+				final long source = Long.parseLong( obj.getAttribute( "source" ) );
+				final long dest = Long.parseLong( obj.getAttribute( "dest" ) );
+				final double bandwidth = Double.parseDouble( obj.getAttribute( "bandwidth" ) );
+				final long delay = Long.parseLong( obj.getAttribute( "delay" ) );
+				final String type = obj.hasAttribute( "type" ) ? obj.getAttribute( "type" ) : "simplex";
+				
+				addLink( source, dest, bandwidth, delay );
+				if (type.equals( "duplex" )) addLink( dest, source, bandwidth, delay );
 			}
 			
 			System.out.println( "Loading completed." );
@@ -141,7 +141,7 @@ public class AnimationNetwork extends BasicGame
     
     public void loadSimulation( String file1, String file2 ) {
     	loadElements( file1 );
-    	loadLinks( file2 );
+    	loadPackets( file2 );
         
         Collections.sort( packets );
         
