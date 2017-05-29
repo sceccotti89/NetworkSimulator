@@ -3,7 +3,7 @@
   <!--Objects-->
   <node x="100" y="250" ID="0" name="client" color="#000000" />
   <node x="250" y="250" ID="1" name="switch" color="#0000FF" />
-  <node x="400" y="150" ID="2" name="server 0" color="#228B22" />
+  <node x="400" y="150" ID="2" name="server 0" color="#FFD700" />
   <node x="400" y="220" ID="3" name="server 1" color="#FFD700" />
   <node x="400" y="290" ID="4" name="server 2" color="#FFD700" />
   <node x="400" y="360" ID="5" name="server 3" color="#FFD700" />
