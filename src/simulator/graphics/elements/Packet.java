@@ -34,6 +34,8 @@ public class Packet implements Comparable<Packet>
 	private Rectangle infos;
 	private boolean drawInfo;
 	
+	private int width;
+	
 	public Packet( final int x, final int y,
 				   final long ID_from, final long ID_to,
 				   final Color color,
@@ -43,6 +45,7 @@ public class Packet implements Comparable<Packet>
 		this.ID_from = ID_from;
 		this.ID_to = ID_to;
 		this.color = color;
+		this.width = width;
 		
 		area = new Rectangle( x, y + height/150, width/80, width/80 );
 		
@@ -161,6 +164,12 @@ public class Packet implements Comparable<Packet>
 	
 	public long getDestID(){
 		return ID_to;
+	}
+	
+	public void setStartConditions( Node node ) {
+		area.setLocation( node.getCenterX(), node.getCenterY() + width/50 );
+		hasFinished = false;
+		active = true;
 	}
 	
 	public void update( final int animTime, GameContainer gc, boolean animate ) {		

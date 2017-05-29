@@ -170,9 +170,9 @@ public class AnimationNetwork extends BasicGame
     {
     	leftMouse = gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
     	
-    	ob.update( gc, delta, gc.getInput(), leftMouse, ob, am, ta, nd );
-    	am.update( gc, delta, gc.getInput(), leftMouse, ob, am, ta, nd );
-    	ta.update( gc, delta, gc.getInput(), leftMouse, ob, am, ta, nd );
+    	ob.update( delta, gc.getInput(), leftMouse, ob, am, ta, nd );
+    	am.update( delta, gc.getInput(), leftMouse, ob, am, ta, nd );
+    	ta.update( delta, gc.getInput(), leftMouse, ob, am, ta, nd );
 		
 		nd.update( gc, am );
     }

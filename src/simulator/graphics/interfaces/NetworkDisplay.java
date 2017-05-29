@@ -50,18 +50,15 @@ public class NetworkDisplay
     	return null;
     }
 	
-	public void startPositions( GameContainer gc ) {
+	public void startPositions() {
 		for (Packet packet: packets ) {
-			Node node = getNode( packet.getSourceID() );
-			packet.getArea().setLocation( node.getCenterX(), node.getCenterY() + gc.getWidth()/50 );
-			packet.setFinished( false );
-			packet.setActive( true );
+			packet.setStartConditions( getNode( packet.getSourceID() ) );
 		}
 	}
 	
-	public boolean startAnimation( GameContainer gc ) {
+	public boolean startAnimation() {
 		if (end) {
-			startPositions( gc );
+			startPositions();
 			timer = 0;
 		} else {
 			if (inPause) {
@@ -83,8 +80,8 @@ public class NetworkDisplay
 		return true;
 	}
 	
-	public boolean stopAnimation( GameContainer gc ) {
-		startPositions( gc );
+	public boolean stopAnimation() {
+		startPositions();
 		
 		animate = false;
 		timer = 0;
