@@ -4,13 +4,11 @@ package simulator.core;
 import java.util.HashMap;
 import java.util.Map;
 
-import simulator.Packet;
+import simulator.events.Packet;
 
 public class Task
 {
     private Map<String,Object> _contents;
-    
-    
     
     public Task() {
         this( null );

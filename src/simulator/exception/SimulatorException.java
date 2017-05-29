@@ -4,7 +4,7 @@
 
 package simulator.exception;
 
-public class SimulatorException extends Exception
+public class SimulatorException extends RuntimeException
 {
 	/** Generated serial ID. */
 	private static final long serialVersionUID = -2698911322390606215L;

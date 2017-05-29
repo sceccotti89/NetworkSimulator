@@ -8,7 +8,6 @@ import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
@@ -23,7 +22,7 @@ import javax.swing.JTextField;
 import simulator.graphics.plotter.Plotter.PlotterSettings;
 import simulator.graphics.plotter.Plotter.Range;
 
-public class SettingsDialog extends JDialog implements ActionListener
+public class SettingsDialog extends JDialog implements ActionListener, KeyListener
 {
     /** Generated serial ID */
     private static final long serialVersionUID = -2779232040438364524L;
@@ -61,24 +60,7 @@ public class SettingsDialog extends JDialog implements ActionListener
         saveButton = new JButton( "Save" );
         saveButton.setActionCommand( "Save" );
         saveButton.addActionListener( this );
-        saveButton.setFocusable( true );
-        saveButton.addKeyListener( new KeyListener() {
-            @Override
-            public void keyTyped( final KeyEvent e ) {}
-            @Override
-            public void keyReleased( final KeyEvent e ) {}
-            
-            @Override
-            public void keyPressed( final KeyEvent e ) {
-                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                    dispose();
-                }
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    saveValues();
-                    dispose();
-                }
-            }
-        } );
+        saveButton.addKeyListener( this );
         panel.add( saveButton);
         
         JButton cancelButton = new JButton( "Cancel" );
@@ -128,14 +110,7 @@ public class SettingsDialog extends JDialog implements ActionListener
         field1.setToolTipText( tooltip1 );
         field1.setHorizontalAlignment( JTextField.CENTER );
         field1.setText( value1 );
-        field1.addKeyListener( new KeyAdapter() {
-            @Override
-            public void keyTyped( final KeyEvent e ) {
-                if (!Character.isDigit( e.getKeyChar() )) {
-                    e.consume(); // ignore event
-                }
-            }
-        });
+        field1.addKeyListener( this );
         panel.add( field1 );
         fields.add( field1 );
         
@@ -143,14 +118,7 @@ public class SettingsDialog extends JDialog implements ActionListener
         field2.setToolTipText( tooltip2 );
         field2.setHorizontalAlignment( JTextField.CENTER );
         field2.setText( value2 );
-        field2.addKeyListener( new KeyAdapter() {
-            @Override
-            public void keyTyped( final KeyEvent e ) {
-                if (!Character.isDigit( e.getKeyChar() )) {
-                    e.consume(); // ignore event
-                }
-            }
-        });
+        field2.addKeyListener( this );
         panel.add( field2 );
         fields.add( field2 );
         
@@ -170,14 +138,7 @@ public class SettingsDialog extends JDialog implements ActionListener
         field1.setToolTipText( "Value" );
         field1.setHorizontalAlignment( JTextField.CENTER );
         field1.setText( value );
-        field1.addKeyListener( new KeyAdapter() {
-            @Override
-            public void keyTyped( final KeyEvent e ) {
-                if (!Character.isDigit( e.getKeyChar() )) {
-                    e.consume(); // ignore event
-                }
-            }
-        });
+        field1.addKeyListener( this );
         panel.add( field1 );
         fields.add( field1 );
         
@@ -218,4 +179,32 @@ public class SettingsDialog extends JDialog implements ActionListener
         dispose();
         setVisible( false );
     }
+
+    @Override
+    public void keyTyped( final KeyEvent e ) {}
+    
+    @Override
+    public void keyPressed( final KeyEvent e )
+    {
+        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            saveValues();
+            dispose();
+        }
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            dispose();
+        }
+        
+        if (!Character.isDigit( e.getKeyChar() ) &&
+            e.getKeyCode() != KeyEvent.VK_BACK_SPACE &&
+            e.getKeyCode() != KeyEvent.VK_DELETE &&
+            e.getKeyCode() != KeyEvent.VK_UP &&
+            e.getKeyCode() != KeyEvent.VK_DOWN &&
+            e.getKeyCode() != KeyEvent.VK_RIGHT &&
+            e.getKeyCode() != KeyEvent.VK_LEFT) {
+            e.consume(); // ignore event
+        }
+    }
+    
+    @Override
+    public void keyReleased( final KeyEvent e ) {}
 }

@@ -7,17 +7,20 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import simulator.Agent;
-import simulator.Packet;
+import simulator.core.Agent;
 import simulator.core.Simulator;
-import simulator.core.Time;
+import simulator.events.Event;
+import simulator.events.EventGenerator;
+import simulator.events.Packet;
+import simulator.events.impl.RequestEvent;
 import simulator.exception.SimulatorException;
-import simulator.manager.Event;
-import simulator.manager.EventGenerator;
-import simulator.manager.Event.RequestEvent;
-import simulator.network.NetworkTopology;
-import simulator.utils.Utils;
+import simulator.network.NetworkLayer;
+import simulator.network.NetworkSettings;
+import simulator.network.protocols.RIP;
+import simulator.topology.NetworkTopology;
 import simulator.utils.SizeUnit;
+import simulator.utils.Time;
+import simulator.utils.Utils;
 
 public class NetworkTest
 {
@@ -185,8 +188,8 @@ public class NetworkTest
     	//example3();
         //example4();
         //example5();
-        example6();
-        //example_test();
+        //example6();
+        example7();
     	
     	System.out.println( "End of simulation." );
     }
@@ -209,14 +212,14 @@ public class NetworkTest
                                                    new Packet( 40, SizeUnit.KILOBYTE ),
                                                    new Packet( 40, SizeUnit.KILOBYTE ) );
         Agent client = new ClientAgent( 0, generator );
-        sim.addAgent( client );
+        net.addAgent( client );
         
         Agent server = new ServerAgent( 1 );
-        sim.addAgent( server );
+        net.addAgent( server );
         
         client.connect( server );
         
-        sim.start();
+        sim.start( new Time( 1, TimeUnit.HOURS ) );
         
         sim.stop();
     }
@@ -239,14 +242,14 @@ public class NetworkTest
                                                    new Packet( 40, SizeUnit.KILOBYTE ),
                                                    new Packet( 40, SizeUnit.KILOBYTE ) );
         Agent client = new ClientAgent( 0, generator );
-        sim.addAgent( client );
+        net.addAgent( client );
         
         Agent server = new ServerAgent( 2 );
-        sim.addAgent( server );
+        net.addAgent( server );
         
         client.connect( server );
         
-        sim.start();
+        sim.start( new Time( 1, TimeUnit.HOURS ) );
         
         sim.stop();
     }
@@ -270,19 +273,19 @@ public class NetworkTest
                                                    new Packet( 40, SizeUnit.KILOBYTE ),
                                                    new Packet( 40, SizeUnit.KILOBYTE ) );
         Agent client1 = new ClientAgent( 0, generator );
-        sim.addAgent( client1 );
+        net.addAgent( client1 );
         
         CBRGenerator generator2 = new CBRGenerator( new Time( 5, TimeUnit.SECONDS ),
                                                     new Time( 1, TimeUnit.SECONDS ),
                                                     new Packet( 20, SizeUnit.KILOBYTE ),
                                                     new Packet( 40, SizeUnit.KILOBYTE ) );
         Agent client2 = new ClientAgent( 2, generator2 );
-        sim.addAgent( client2 );
+        net.addAgent( client2 );
         
         client1.connect( client2 );
         client2.connect( client1 );
         
-        sim.start();
+        sim.start( new Time( 1, TimeUnit.HOURS ) );
         
         sim.stop();
     }
@@ -310,25 +313,25 @@ public class NetworkTest
                                                     new Packet( 40, SizeUnit.KILOBYTE ),
                                                     new Packet( 40, SizeUnit.KILOBYTE ) );
         Agent client1 = new ClientAgent( 0, generator1 );
-        sim.addAgent( client1 );
+        net.addAgent( client1 );
         
         CBRGenerator generator2 = new CBRGenerator( new Time( 5, TimeUnit.SECONDS ),
                                                     new Time( 1, TimeUnit.SECONDS ),
                                                     new Packet( 20, SizeUnit.KILOBYTE ),
                                                     new Packet( 40, SizeUnit.KILOBYTE ) );
         Agent client2 = new ClientAgent( 1, generator2 );
-        sim.addAgent( client2 );
+        net.addAgent( client2 );
         
         Agent server1 = new ServerAgent( 4 );
-        sim.addAgent( server1 );
+        net.addAgent( server1 );
         
         Agent server2 = new ServerAgent( 5 );
-        sim.addAgent( server2 );
+        net.addAgent( server2 );
         
         client1.connect( server1 );
         client2.connect( server2 );
         
-        sim.start();
+        sim.start( new Time( 1, TimeUnit.HOURS ) );
         
         sim.stop();
     }
@@ -351,17 +354,17 @@ public class NetworkTest
                                                    new Packet( 40, SizeUnit.KILOBYTE ),
                                                    new Packet( 20, SizeUnit.KILOBYTE ) );
         Agent client = new ClientAgent( 0, generator );
-        sim.addAgent( client );
+        net.addAgent( client );
         
         SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
                                                       Packet.DYNAMIC,
                                                       Packet.DYNAMIC );
         Agent server = new ResponseServerAgent( 2, generator2 );
-        sim.addAgent( server );
+        net.addAgent( server );
         
         client.connect( server );
         
-        sim.start();
+        sim.start( new Time( 1, TimeUnit.HOURS ) );
         
         sim.stop();
     }
@@ -384,17 +387,17 @@ public class NetworkTest
                                                          new Packet( 40, SizeUnit.KILOBYTE ),
                                                          new Packet( 20, SizeUnit.KILOBYTE ) );
         Agent client = new ClientAgent( 0, generator );
-        sim.addAgent( client );
+        net.addAgent( client );
         
         SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
                                                       Packet.DYNAMIC,
                                                       Packet.DYNAMIC );
         Agent server = new ResponseServerAgent( 2, generator2 );
-        sim.addAgent( server );
+        net.addAgent( server );
         
         client.connect( server );
         
-        sim.start();
+        sim.start( new Time( 1, TimeUnit.HOURS ) );
         
         sim.stop();
     }
@@ -402,7 +405,7 @@ public class NetworkTest
     public static void example6() throws IOException, SimulatorException
     {
         /*
-        In case of multicast node it sends the request to all the possible destination,
+        In case of multicast node it sends the request to all the possible destinations,
         waits for all the answers and replay (in case) with just one message to the input node.
         
                                    / server1
@@ -425,29 +428,84 @@ public class NetworkTest
                                                          new Packet( 40, SizeUnit.KILOBYTE ),
                                                          new Packet( 20, SizeUnit.KILOBYTE ) );
         Agent client = new ClientAgent( 0, generator );
-        sim.addAgent( client );
+        net.addAgent( client );
         
         SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
                                                       Packet.DYNAMIC,
                                                       Packet.DYNAMIC );
         Agent server1 = new ResponseServerAgent( 2, generator2 );
-        sim.addAgent( server1 );
+        net.addAgent( server1 );
         
         Agent server2 = new ResponseServerAgent( 3, generator2 );
-        sim.addAgent( server2 );
+        net.addAgent( server2 );
         
         MulticastGenerator switchGenerator = new MulticastGenerator( new Time( 3, TimeUnit.SECONDS ),
                                                                      1L,
                                                                      new Packet( 40, SizeUnit.KILOBYTE ),
                                                                      new Packet( 20, SizeUnit.KILOBYTE ) );
         Agent Switch = new ClientAgent( 1, switchGenerator );
-        sim.addAgent( Switch );
+        net.addAgent( Switch );
         Switch.connect( server1 );
         Switch.connect( server2 );
         
         client.connect( Switch );
         
-        sim.start();
+        sim.start( new Time( 1, TimeUnit.HOURS ) );
+        
+        sim.stop();
+    }
+    
+    public static void example7() throws IOException, SimulatorException
+    {
+        /*
+        In case of multicast node it sends the request to all the possible destinations,
+        waits for all the answers and replay (in case) with just one message to the input node.
+        
+                                   / server1
+                        100Mb,2ms /  dynamic
+                70Mb,5ms         /
+        client ---------- switch
+         10ms               7ms  \
+                         80Mb,3ms \
+                                   \ server2
+                                       6ms
+        */
+        
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_ex6.json" );
+        System.out.println( net.toString() );
+        
+        Simulator sim = new Simulator( net );
+        
+        ClientGenerator generator = new ClientGenerator( new Time( 2, TimeUnit.SECONDS ),
+                                                         1L,
+                                                         new Packet( 40, SizeUnit.KILOBYTE ),
+                                                         new Packet( 20, SizeUnit.KILOBYTE ) );
+        Agent client = new ClientAgent( 0, generator );
+        net.addAgent( client );
+        NetworkSettings settings = net.getNode( 0 ).getNetworkSettings();
+        settings.setNetworkProtocol( new RIP( net, client ), NetworkLayer.NETWORK );
+        
+        SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
+                                                      Packet.DYNAMIC,
+                                                      Packet.DYNAMIC );
+        Agent server1 = new ResponseServerAgent( 2, generator2 );
+        net.addAgent( server1 );
+        
+        Agent server2 = new ResponseServerAgent( 3, generator2 );
+        net.addAgent( server2 );
+        
+        MulticastGenerator switchGenerator = new MulticastGenerator( new Time( 3, TimeUnit.SECONDS ),
+                                                                     1L,
+                                                                     new Packet( 40, SizeUnit.KILOBYTE ),
+                                                                     new Packet( 20, SizeUnit.KILOBYTE ) );
+        Agent Switch = new ClientAgent( 1, switchGenerator );
+        net.addAgent( Switch );
+        Switch.connect( server1 );
+        Switch.connect( server2 );
+        
+        client.connect( Switch );
+        
+        //sim.start( new Time( 1, TimeUnit.HOURS ) );
         
         sim.stop();
     }

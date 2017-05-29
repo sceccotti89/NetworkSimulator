@@ -2,12 +2,15 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="lib/json-20160212.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
-	<classpathentry kind="lib" path="lib/lwjgl.jar"/>
-	<classpathentry kind="lib" path="lib/slick.jar">
+	<classpathentry kind="lib" path="libs/fastutil-7.1.0.jar"/>
+	<classpathentry kind="lib" path="libs/guava-19.0.jar"/>
+	<classpathentry kind="lib" path="libs/jeval.jar"/>
+	<classpathentry kind="lib" path="libs/json-20160212.jar"/>
+	<classpathentry kind="lib" path="libs/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="libs/lwjgl.jar"/>
+	<classpathentry kind="lib" path="libs/slick.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="Network Simulator/lib/native"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="Network Simulator/libs/native"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="output" path="bin"/>

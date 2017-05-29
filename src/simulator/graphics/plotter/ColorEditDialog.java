@@ -148,8 +148,8 @@ public class ColorEditDialog extends JDialog implements ActionListener
             }
             @Override
             public void keyPressed( final KeyEvent e ) {
-                /*if (e.getKeyCode() != KeyEvent.VK_DELETE &&
-                    e.getKeyCode() != KeyEvent.VK_CANCEL && 
+                /*if (e.getID() != KeyEvent.VK_DELETE &&
+                    e.getID() != KeyEvent.VK_CANCEL && 
                     field.getText().length() >= 3) {
                     System.out.println( "SONO QUI" );
                     e.consume();

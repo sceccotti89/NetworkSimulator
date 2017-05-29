@@ -18,6 +18,8 @@ import java.awt.Stroke;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -32,6 +34,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,7 +42,6 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
-import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -70,6 +72,7 @@ public class Plotter
     private Timer timer;
     
     private GraphicPlotter plotter;
+    private PlotterMenuBar menuBar;
     private boolean creatingImage = false;
     
     private long lastUpdate = 0;
@@ -127,7 +130,6 @@ public class Plotter
         while ((line = reader.readLine()) != null) {
             String[] values = line.split( "\\s+|\\t+" );
             Double x = Double.parseDouble( values[0] );
-            //Double x = new BigDecimal( values[0] ).doubleValue();
             Double y = Double.parseDouble( values[1] );
             points.add( new Pair<>( x, y ) );
         }
@@ -155,7 +157,7 @@ public class Plotter
         plotter.setLayout( null );
         plotter.setBounds( 0, 0, width, height );
         
-        JMenuBar menuBar = new PlotterMenuBar( this );
+        menuBar = new PlotterMenuBar( this );
         frame.setJMenuBar( menuBar );
         
         frame.setLayout( new BorderLayout() );
@@ -222,6 +224,10 @@ public class Plotter
         plotter.addPlot( points, color, line, title );
     }
     
+    public void addPlot( final Plot plot ) {
+        plotter.addPlot( plot.points, plot.color,plot.line , plot.title );
+    }
+    
     /**
      * Set the timer of the animation with a specific action listener.</br>
      * By default the FPS are fixed to 30, just for the animation repainting.
@@ -235,8 +241,10 @@ public class Plotter
     
     public void setVisible( final boolean visible )
     {
+        menuBar.updateSelectedValue();
         plotter.setVisible( visible );
         frame.setVisible( visible );
+        frame.requestFocusInWindow();
         if (visible) {
             timer.restart();
         } else {
@@ -427,35 +435,45 @@ public class Plotter
         protected List<Pair<Double,Double>> points;
         protected Color color;
         protected Line line;
+        protected float lineWidth;
         protected Stroke stroke;
         protected JCheckBox box;
         
         public Plot( final String title,
                      final List<Pair<Double,Double>> points,
                      final Color color, final Line line,
-                     final JCheckBox box )
+                     final float lineWidth, final JCheckBox box )
         {
             this.title = title;
             this.points = points;
             this.color = color;
             this.line = line;
+            this.lineWidth = lineWidth;
             this.box = box;
             
             updateValues();
         }
         
+        public void setCheckBox( final JCheckBox box ) {
+            this.box = box;
+        }
+        
         public void updateValues() {
-            box.setText( title );
+            if (box != null) {
+                box.setText( title );
+            }
+            
             if (line == Line.UNIFORM) {
-                stroke = new BasicStroke( 2f );
+                stroke = new BasicStroke( lineWidth );
             } else { // Dashed.
-                stroke = new BasicStroke( 2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{ 20f, 10f }, 0 );
+                stroke = new BasicStroke( lineWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{ 20f, 10f }, 0 );
             }
         }
         
         @Override
         public Plot clone() {
-            Plot plot = new Plot( title, points, new Color( color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() ), line, box );
+            Color nColor = new Color( color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() );
+            Plot plot = new Plot( title, points, nColor, line, lineWidth, box );
             return plot;
         }
     }
@@ -477,6 +495,8 @@ public class Plotter
         private static final int pointRadius = 10;
         private static final double ROUNDNESS = 0.0001d;
         
+        private GraphicPlotter PLOTTER = this;
+        
         
         
         
@@ -490,6 +510,21 @@ public class Plotter
             description = new JTextArea();
             description.addMouseMotionListener( this );
             add( description );
+            
+            addMouseListener( new MouseListener() {
+                @Override
+                public void mouseClicked( final MouseEvent e ) {}
+                @Override
+                public void mouseEntered( final MouseEvent e ) {}
+                @Override
+                public void mouseExited( final MouseEvent e ) {}
+                @Override
+                public void mouseReleased( final MouseEvent e ) {}
+                @Override
+                public void mousePressed( final MouseEvent e ) {
+                    PLOTTER.requestFocusInWindow();
+                }
+            } );
         }
         
         private String makeBoxTitle( final String title )
@@ -523,20 +558,27 @@ public class Plotter
             String text = makeBoxTitle( title );
             JCheckBox box = new JCheckBox( text, true );
             box.setBackground( new Color( 0,0,0,0 ) );
-            box.setFocusable( false );
             box.setBounds( getWidth() - 200, startY,
                            Math.max( maxWidth, getWidth( text, getGraphics() ) + 40 ),
                            getHeight( text, getGraphics() ) + 10 );
+            box.addFocusListener( new FocusListener() {
+                @Override
+                public void focusLost( final FocusEvent e ) {
+                    box.setBackground( new Color( 0,0,0,0 ) );
+                }
+                
+                @Override
+                public void focusGained( final FocusEvent e ) {
+                    box.setBackground( new Color( 100,100,100,120 ) );
+                }
+            } );
             box.addMouseListener( new MouseListener() {
                 @Override
                 public void mouseReleased( final MouseEvent e ) {}
-                
                 @Override
                 public void mousePressed( final MouseEvent e ) {}
-                
                 @Override
                 public void mouseExited( final MouseEvent e ) {}
-                
                 @Override
                 public void mouseEntered( final MouseEvent e ) {}
                 
@@ -575,10 +617,11 @@ public class Plotter
                         menu.add( remove );
                         
                         menu.show( e.getComponent(), e.getX(), e.getY() );
+                        box.requestFocusInWindow();
                     }
                 }
             } );
-            _plots.add( new Plot( title, points, chooseColor( color ), line, box ) );
+            _plots.add( new Plot( title, points, chooseColor( color ), line, 2f, box ) );
             add( box );
         }
         
@@ -737,10 +780,18 @@ public class Plotter
             Pair<Double,Double> point;
             Point p = new Point( plotLocation.x, plotLocation.y );
             if(plot.points.size() > 0) {
+                point = plot.points.get( 0 );
                 // Get the starting position.
-                double x = plotLocation.getX() + ((plot.points.get( 0 ).getFirst() - range.minX) * (xLength / range.getXRange()));
-                double y = plotLocation.getY() - ((plot.points.get( 0 ).getSecond() - range.minY) * (yLength / range.getYRange()));
+                double x = plotLocation.getX() + ((point.getFirst() - range.minX) * (xLength / range.getXRange()));
+                double y = plotLocation.getY() - ((point.getSecond() - range.minY) * (yLength / range.getYRange()));
                 p.setLocation( x, y );
+                Ellipse2D circle = new Ellipse2D.Double( x - pointRadius/2, y - pointRadius/2, pointRadius, pointRadius );
+                if (circle.contains( mouse.x, mouse.y )) {
+                    drawCircle = false;
+                    g.setColor( (theme == Theme.BLACK) ? Color.WHITE : Color.GRAY );
+                    g.drawOval( (int) circle.getX(), (int) circle.getY(), pointRadius, pointRadius );
+                    addPointInfo( point, circle.getCenterX(), circle.getCenterY(), g );
+                }
             }
             
             // Set the area to draw the points.
@@ -929,15 +980,17 @@ public class Plotter
             boolean getMaxY = maxY == Double.MIN_VALUE;
             
             for (Plot plot : _plots) {
-                List<Pair<Double,Double>> points = plot.points;
-                if (points.size() > 0) {
-                    if (getMinX)  minX = Math.min( minX, points.get( 0 ).getFirst() );
-                    if (getMaxX)  maxX = Math.max( maxX, points.get( points.size() - 1 ).getFirst() );
-                    for (Pair<Double,Double> point : points) {
-                        if (getMinY)  minY = Math.min( minY, point.getSecond() );
-                        if (getMaxY)  maxY = Math.max( maxY, point.getSecond() );
+                try {
+                    List<Pair<Double,Double>> points = plot.points;
+                    if (points.size() > 0) {
+                        if (getMinX)  minX = Math.min( minX, points.get( 0 ).getFirst() );
+                        if (getMaxX)  maxX = Math.max( maxX, points.get( points.size() - 1 ).getFirst() );
+                        for (Pair<Double,Double> point : points) {
+                            if (getMinY)  minY = Math.min( minY, point.getSecond() );
+                            if (getMaxY)  maxY = Math.max( maxY, point.getSecond() );
+                        }
                     }
-                }
+                } catch ( ConcurrentModificationException e ) {}
             }
             
             //System.out.println( "MIN_X: " + minX + ", MAX_X: " + maxX );
@@ -947,13 +1000,15 @@ public class Plotter
             for (Plot plot : _plots) {
                 List<Pair<Double,Double>> points = plot.points;
                 int rangePoints = 0;
-                for (Pair<Double,Double> point : points) {
-                    // Check if the point is inside the range.
-                    if (isInsideRange( point.getFirst(), minX, maxX ) && 
-                        isInsideRange( point.getSecond(), minY, maxY ) ) {
-                        rangePoints++;
+                try {
+                    for (Pair<Double,Double> point : points) {
+                        // Check if the point is inside the range.
+                        if (isInsideRange( point.getFirst(), minX, maxX ) && 
+                            isInsideRange( point.getSecond(), minY, maxY ) ) {
+                            rangePoints++;
+                        }
                     }
-                }
+                } catch ( ConcurrentModificationException e ) {}
                 
                 maxPoints = Math.max( maxPoints, rangePoints );
             }

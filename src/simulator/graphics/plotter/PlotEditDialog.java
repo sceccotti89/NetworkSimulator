@@ -12,6 +12,8 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 
 import javax.swing.BoxLayout;
@@ -34,6 +36,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
     
     private JButton buttonLine;
     private JTextField fieldName;
+    private JTextField lineWidth;
     
     private final PlotEditDialog DIALOG = this;
     
@@ -51,7 +54,8 @@ public class PlotEditDialog extends JDialog implements ActionListener
         boxPanel.setLayout( new BoxLayout( boxPanel, BoxLayout.Y_AXIS ) );
         
         boxPanel.add( createTitlePanel( plot.title ) );
-        boxPanel.add( createLinePanel(   ) );
+        boxPanel.add( createLinePanel() );
+        boxPanel.add( createLineWidthPanel( plot.lineWidth + "" ) );
         boxPanel.add( createColorPanel( frame ) );
         
         JPanel panel = new JPanel();
@@ -103,7 +107,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
         g.fillRect( 0, 0, BI_WIDTH, BI_HEIGHT );
         g.setColor( plotClone.color );
         g.setStroke( plotClone.stroke );
-        g.drawLine( 2, BI_HEIGHT / 2, BI_WIDTH - 2, BI_HEIGHT / 2 );
+        g.drawLine( 2, BI_HEIGHT/2, BI_WIDTH - 2, BI_HEIGHT/2 );
         button.setIcon( new ImageIcon( lineImage ) );
         g.dispose();
     }
@@ -132,14 +136,55 @@ public class PlotEditDialog extends JDialog implements ActionListener
                 BasicStroke stroke = (BasicStroke) plotClone.stroke;
                 if (stroke.getDashArray() != null) {
                     plotClone.line = Line.UNIFORM;
-                    plotClone.stroke = new BasicStroke( 2f );
+                    plotClone.stroke = new BasicStroke( plotClone.lineWidth );
                 } else { // Dashed.
                     plotClone.line = Line.DASHED;
-                    plotClone.stroke = new BasicStroke( 2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{ 20f, 10f }, 0 );
+                    plotClone.stroke = new BasicStroke( plotClone.lineWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
+                                                        0, new float[]{ 20f, 10f }, 0 );
                 }
                 drawLineOnButton( buttonLine );
             }
         } );
+        
+        return panel;
+    }
+    
+    private JPanel createLineWidthPanel( final String value )
+    {
+        JPanel panel = new JPanel();
+        JTextField fieldText = new JTextField( "Line width", 6 );
+        fieldText.setEditable( false );
+        fieldText.setHorizontalAlignment( JTextField.CENTER );
+        fieldText.setBorder( null );
+        panel.add( fieldText );
+        lineWidth = new JTextField( 17 );
+        lineWidth.setToolTipText( "Width" );
+        lineWidth.setHorizontalAlignment( JTextField.CENTER );
+        lineWidth.setText( value );
+        lineWidth.addKeyListener( new KeyAdapter() {
+            @Override
+            public void keyReleased( final KeyEvent e ) {
+                try {
+                    float value = Float.parseFloat( lineWidth.getText() );
+                    plotClone.lineWidth = value;
+                    BasicStroke stroke = (BasicStroke) plotClone.stroke;
+                    if (stroke.getDashArray() == null) {
+                        plotClone.line = Line.UNIFORM;
+                        plotClone.stroke = new BasicStroke( plotClone.lineWidth );
+                    } else { // Dashed.
+                        plotClone.line = Line.DASHED;
+                        plotClone.stroke = new BasicStroke( plotClone.lineWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
+                                                            0, new float[]{ 20f, 10f }, 0 );
+                    }
+                    drawLineOnButton( buttonLine );
+                } catch ( NumberFormatException ex ) {}
+                
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    saveAndExit();
+                }
+            }
+        } );
+        panel.add( lineWidth );
         
         return panel;
     }
@@ -189,16 +234,23 @@ public class PlotEditDialog extends JDialog implements ActionListener
         return panel;
     }
     
+    private void saveAndExit()
+    {
+        // Save the inserted values.
+        plot.title = fieldName.getText();
+        plot.line  = plotClone.line;
+        plot.lineWidth = Float.parseFloat( lineWidth.getText() );
+        plot.color = plotClone.color;
+        
+        plot.updateValues();
+        dispose();
+    }
+    
     @Override
     public void actionPerformed( final ActionEvent e )
     {
         if (e.getActionCommand().equals( "Save" )) {
-            // Save the inserted values.
-            plot.title = fieldName.getText();
-            plot.line  = plotClone.line;
-            plot.color = plotClone.color;
-            
-            plot.updateValues();
+            saveAndExit();
         }
         
         dispose();

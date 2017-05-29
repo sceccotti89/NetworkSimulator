@@ -17,11 +17,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import simulator.Agent;
 import simulator.core.Device.Sampler.Sampling;
-import simulator.manager.EventScheduler;
-import simulator.manager.Model;
+import simulator.events.EventScheduler;
 import simulator.utils.Pair;
+import simulator.utils.Time;
 import simulator.utils.Utils;
 
 /**
@@ -67,21 +66,20 @@ public abstract class Device<E,P>
     /**
      * Create a new Device object.
      * 
-     * @param name           name of the device
+     * @param name           name of the device.
      * @param frequencies    list of frequencies.
     */
     public Device( final String name, final List<Long> frequencies )
     {
+        _name = name;
+        
         // Order the frequencies from lower to higher.
         Collections.sort( _frequencies = frequencies );
         
-        // By default the frequency is setted at the maximum.
+        // By default the frequency is setted as the maximum one.
         _frequency = _frequencies.get( _frequencies.size() - 1 );
-        //_frequency = _frequencies.get( 0 );
         
         samplings = new HashMap<>( 4 );
-        
-        //_time = new Time( 0, TimeUnit.MICROSECONDS );
     }
     
     /**
@@ -136,27 +134,48 @@ public abstract class Device<E,P>
     public abstract void setTime( final Time time );
     
     /**
-     * Returns the current time of this device.</br>
-     * This method is called by the {@link simulator.manager.Event#execute execute}
-     * method to check if the incoming event can be processed immediately or not.
+     * Returns the current time of this device.
     */
     public abstract Time getTime();
     
     /**
-     * Add a new sampler to collect some informations about this device.</br>
+     * Add a new sampler to collect some informations about this device with a default
+     * initial capacity (2^12 elements).</br>
      * By default the sampling interval is 60 seconds.</br>
      * If the given interval is {@code null} or its time is <= 0 the sampling mode is ignored.
      * 
-     * @param sampler     name of the sampler. Must be UNIQUE.
-     * @param interval    the selected time interval
-     * @param mode        type of sampling (see {@linkplain Sampler.Sampling Sampling} enum)
-     * @param logFile     name of the file where to save the results (it can be {@code null})
+     * @param samplerId    name of the sampler. Must be UNIQUE.
+     * @param interval     the selected time interval
+     * @param mode         type of sampling (see {@linkplain Sampler.Sampling Sampling} enum)
+     * @param logFile      name of the file where to save the results (it can be {@code null})
      * 
      * @throws RuntimeException if the sampler name already exists.
      * @throws IOException if the path specified by the logFile parameter is not valid.
     */
-    public void addSampler( final String samplerId, final Time interval, final Sampling mode, final String logFile ) throws IOException {
-        addSampler( samplerId, new Sampler( interval, logFile, mode ) );
+    public void addSampler( final String samplerId, final Time interval,
+                            final Sampling mode, final String logFile ) throws IOException {
+        addSampler( samplerId, interval, mode, logFile, 1 << 12 );
+    }
+    
+    /**
+     * Add a new sampler to collect some informations about this device with a specified
+     * initial capacity.</br>
+     * By default the sampling interval is 60 seconds.</br>
+     * If the given interval is {@code null} or its time is <= 0 the sampling mode is ignored.
+     * 
+     * @param samplerId          name of the sampler. Must be UNIQUE.
+     * @param interval           the selected time interval
+     * @param mode               type of sampling (see {@linkplain Sampler.Sampling Sampling} enum)
+     * @param logFile            name of the file where to save the results (it can be {@code null})
+     * @param initialCapacity    the initial capacity of the sampler.    
+     * 
+     * @throws RuntimeException if the sampler name already exists.
+     * @throws IOException if the path specified by the logFile parameter is not valid.
+    */
+    public void addSampler( final String samplerId, final Time interval,
+                            final Sampling mode, final String logFile,
+                            final int initialCapacity ) throws IOException {
+        addSampler( samplerId, new Sampler( interval, logFile, mode, initialCapacity ) );
     }
     
     /**
@@ -164,13 +183,12 @@ public abstract class Device<E,P>
      * By default the sampling interval is 60 seconds.</br>
      * If interval is {@code null} or its time is <= 0 the sampling mode is ignored.
      * 
-     * @param samplerId     name of the sampler. Must be UNIQUE.
-     * @param sampler       the sampler object
+     * @param samplerId    name of the sampler. Must be UNIQUE.
+     * @param sampler      the sampler object
      * 
      * @throws RuntimeException if the samplerId already exists.
-     * @throws IOException if the path specified by the logFile parameter is not valid.
     */
-    public void addSampler( final String samplerId, final Sampler sampler ) throws IOException
+    public void addSampler( final String samplerId, final Sampler sampler )
     {
         if (samplings.containsKey( samplerId )) {
             throw new RuntimeException( "Selected name \"" + samplerId + "\" already exists." );
@@ -224,7 +242,8 @@ public abstract class Device<E,P>
      * @param value           the value to add
      * @param elements        number of elements in the current bucket
     */
-    private double insertSampledValue( final Sampling mode, final double currentValue, final double value, final long elements )
+    private double insertSampledValue( final Sampling mode, final double currentValue,
+                                       final double value, final long elements )
     {
         switch (mode) {
             case CUMULATIVE: return currentValue + value;
@@ -252,12 +271,10 @@ public abstract class Device<E,P>
                                                final double time, final double valueUnit,
                                                final List<Long> elements, final List<Pair<Double,Double>> values )
     {
-        //System.out.println( "ACTUAL NEXT: " + nextInterval );
         Pair<Double,Double> currentInterval = values.get( values.size() - 1 );
         // Check for the interval position.
         while (nextInterval <= time) {
             elements.add( 1L );
-            //System.out.println( "ADDED: " + nextInterval );
             currentInterval = new Pair<>( nextInterval, valueUnit * interval );
             values.add( currentInterval );
             nextInterval += interval;
@@ -510,10 +527,14 @@ public abstract class Device<E,P>
         */
         public enum Sampling{ CUMULATIVE, AVERAGE, MIN, MAX };
         
-        public Sampler( final Time interval, final String logFile, final Sampling mode ) throws IOException
+        public Sampler( final Time interval, final String logFile, final Sampling mode ) throws IOException {
+            this( interval, logFile, mode, 1 << 12 );
+        }
+        
+        public Sampler( final Time interval, final String logFile, final Sampling mode, final int initialCapacity ) throws IOException
         {
-            values = new ArrayList<>( 2048 );
-            elements = new ArrayList<>( 2048 );
+            values = new ArrayList<>( initialCapacity );
+            elements = new ArrayList<>( initialCapacity );
             if (interval != null && interval.getTimeMicroseconds() > 0) {
                 values.add( new Pair<>( 0d, 0d ) );
                 elements.add( 0L );
