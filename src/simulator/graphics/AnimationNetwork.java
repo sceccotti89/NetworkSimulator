@@ -55,7 +55,40 @@ public class AnimationNetwork extends BasicGame
         this.height = height;
     }
     
-    public void loadSimulation( String file ) {
+    private void loadLinks( String file ) {
+    	System.out.println( "Loading from " + file + "..." );
+    	try {
+			documentFactory = DocumentBuilderFactory.newInstance();
+ 
+			builder = documentFactory.newDocumentBuilder();
+			
+			/* NODES CONFIGURATION */
+			document = builder.parse( new File( file ) );
+	    	/* LINKS CONFIGURATION */
+			NodeList config = document.getElementsByTagName( "link" );
+			
+			for (int i = 0; i < config.getLength(); i++) {
+				org.w3c.dom.Node link = config.item( i );
+				Element obj = (Element) link;
+				
+				final long source = Long.parseLong( obj.getAttribute( "source" ) );
+				final long dest = Long.parseLong( obj.getAttribute( "dest" ) );
+				final double bandwidth = Double.parseDouble( obj.getAttribute( "bandwidth" ) );
+				final long delay = Long.parseLong( obj.getAttribute( "delay" ) );
+				final String type = obj.hasAttribute( "type" ) ? obj.getAttribute( "type" ) : "simplex";
+				
+				addLink( source, dest, bandwidth, delay );
+				if (type.equals( "duplex" )) addLink( dest, source, bandwidth, delay );
+			}
+			
+			System.out.println( "Loading completed." );
+    	}
+        catch(Exception e) {
+        	e.printStackTrace();
+        }
+    }
+    
+    private void loadElements( String file ) {
     	System.out.println( "Loading from " + file + "..." );
     	try {
 			documentFactory = DocumentBuilderFactory.newInstance();
@@ -98,29 +131,17 @@ public class AnimationNetwork extends BasicGame
 
 		        addPacket( x, y, from_ID, dest_ID, color, startTime, endTime );
 			}
-	        
-	        /* LINKS CONFIGURATION */
-			config = document.getElementsByTagName( "link" );
-			
-			for (int i = 0; i < config.getLength(); i++) {
-				org.w3c.dom.Node link = config.item( i );
-				Element obj = (Element) link;
-				
-				final long source = Long.parseLong( obj.getAttribute( "source" ) );
-				final long dest = Long.parseLong( obj.getAttribute( "dest" ) );
-				final double bandwidth = Double.parseDouble( obj.getAttribute( "bandwidth" ) );
-				final long delay = Long.parseLong( obj.getAttribute( "delay" ) );
-				final String type = obj.hasAttribute( "type" ) ? obj.getAttribute( "type" ) : "simplex";
-				
-				addLink( source, dest, bandwidth, delay );
-				if (type.equals( "duplex" )) addLink( dest, source, bandwidth, delay );
-			}
 			
 			System.out.println( "Loading completed." );
 		}
         catch(Exception e) {
         	e.printStackTrace();
         }
+    }
+    
+    public void loadSimulation( String file1, String file2 ) {
+    	loadElements( file1 );
+    	loadLinks( file2 );
         
         Collections.sort( packets );
         

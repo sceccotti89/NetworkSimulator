@@ -13,7 +13,7 @@ public class GraphicTest
         AnimationNetwork an = new AnimationNetwork( 800, 600, "prova" );
         AppGameContainer app = new AppGameContainer( an );
         
-        an.loadSimulation( "data/File/Network.xml" );
+        an.loadSimulation( "data/File/Network.xml", "data/File/Links.xml" );
         
         //an.addNode( 100, 200, 3, Color.red );
         //an.addLink(  );

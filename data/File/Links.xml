@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <!--Objects-->
+  <link source="0" dest="1" bandwidth="1000" delay="0" type="duplex" />
+  <link source="1" dest="2" bandwidth="1000" delay="0" type="duplex" />
+  <link source="1" dest="3" bandwidth="1000" delay="0" type="duplex" />
+  <link source="1" dest="4" bandwidth="1000" delay="0" type="duplex" />
+  <link source="1" dest="5" bandwidth="1000" delay="0" type="duplex" />
+</configuration>
