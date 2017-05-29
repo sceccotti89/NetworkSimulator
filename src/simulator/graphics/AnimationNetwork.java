@@ -45,6 +45,7 @@ public class AnimationNetwork extends BasicGame
 	private int width, height;
 	
 	private Element obj;
+	private NodeList config;
     
     public AnimationNetwork( final int width, final int height, final String title )
     {
@@ -67,7 +68,7 @@ public class AnimationNetwork extends BasicGame
 			document = builder.parse( new File( file ) );
 			
 			/* PACKETS CONFIGURATION */
-			NodeList config = document.getElementsByTagName( "packet" );
+			config = document.getElementsByTagName( "packet" );
 			
 			for (int i = 0; i < config.getLength(); i++) {
 				org.w3c.dom.Node pack = config.item( i );
@@ -103,7 +104,7 @@ public class AnimationNetwork extends BasicGame
 			/* NODES CONFIGURATION */
 			document = builder.parse( new File( file ) );
 
-			NodeList config = document.getElementsByTagName( "node" );
+			config = document.getElementsByTagName( "node" );
 			
 			for (int i = 0; i < config.getLength(); i++) {
 				org.w3c.dom.Node nodo = config.item( i );
