@@ -67,6 +67,7 @@ public class Node
 		return null;
 	}
 	
+	// TODO DA RIVEDERE QUESTA PARTE
 	private float calculateAngle( float x1, float y1, float x2, float y2 ) {
 	    float catetum1 = x2 - x1, catetum2 = y2 - y1;
 	    //float ipo = (float) Math.sqrt( catetum1 * catetum1 + catetum2*catetum2 );

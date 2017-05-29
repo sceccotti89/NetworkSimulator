@@ -17,7 +17,7 @@ public class Link
 	
 	private int delay;
 	
-	private Polygon area;
+	private Rectangle area;
 	
 	private Rectangle infos;
 	private boolean showInfos = false;
@@ -39,11 +39,14 @@ public class Link
 		
 		lenght = calculateLenght( x1, y1, x2, y2 );
 		
-		if (y1 == y2) {
+		area = new Rectangle( x1, y1 - offset, calculateLenght( x1, y1, x2, y2 ), offset * 2 );
+		
+		/*if (y1 == y2) {
 			area = new Polygon( new float[] {x1, y1 + offset, x2, y2 + offset, x2, y2 - offset, x1, y1 - offset} );
 		} else {
 			area = new Polygon( new float[] {x1 + offset, y1, x2 + offset, y2, x2 - offset, y2, x1 - offset, y1} );
-		}
+		}*/
+		
 		infos = new Rectangle( 0, 0, 0, 0 );
 	}
 	
@@ -87,8 +90,10 @@ public class Link
 	}
 	
 	public void drawLink( Graphics g ) {
+		g.rotate( area.getX(), area.getY() + offset, angle );
 		g.setColor( color );
 		g.draw( area );
+		g.resetTransform();
 	}
 	
 	public void drawInfo( Graphics g ) {
