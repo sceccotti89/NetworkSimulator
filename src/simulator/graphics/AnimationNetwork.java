@@ -43,6 +43,8 @@ public class AnimationNetwork extends BasicGame
 	private Document document;
 	
 	private int width, height;
+	
+	private Element obj;
     
     public AnimationNetwork( final int width, final int height, final String title )
     {
@@ -69,7 +71,7 @@ public class AnimationNetwork extends BasicGame
 			
 			for (int i = 0; i < config.getLength(); i++) {
 				org.w3c.dom.Node pack = config.item( i );
-				Element obj = (Element) pack;
+				obj = (Element) pack;
 				
 				Node from = nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) );
 
@@ -105,7 +107,7 @@ public class AnimationNetwork extends BasicGame
 			
 			for (int i = 0; i < config.getLength(); i++) {
 				org.w3c.dom.Node nodo = config.item( i );
-				Element obj = (Element) nodo;
+				obj = (Element) nodo;
 				
 				final int x = Integer.parseInt( obj.getAttribute( "x" ) );
 				final int y = Integer.parseInt( obj.getAttribute( "y" ) );
@@ -120,7 +122,7 @@ public class AnimationNetwork extends BasicGame
 			
 			for (int i = 0; i < config.getLength(); i++) {
 				org.w3c.dom.Node link = config.item( i );
-				Element obj = (Element) link;
+				obj = (Element) link;
 				
 				final long source = Long.parseLong( obj.getAttribute( "source" ) );
 				final long dest = Long.parseLong( obj.getAttribute( "dest" ) );
