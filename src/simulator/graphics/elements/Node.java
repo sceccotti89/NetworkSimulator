@@ -106,12 +106,43 @@ public class Node
 		return 0;
 	}
 	
+	private float angleValutation2( float x1, float y1, float x2, float y2 )
+	{
+	    float m = (y2 - y1)/(x2 - x1);
+	    
+	    //System.out.println( "X1: " + x1 + ", Y1: " + y1 + ", X2: " + x2 + ", Y2: " + y2 );
+        //System.out.println( "ANLGE: " + ((Math.PI/2 - Math.atan( m ))*180/Math.PI) );
+	    
+	    if (y1 == y2) {
+	        if (x1 <= x2) return  0;
+	        else return  -180;
+	    }
+	    
+	    if (y1 > y2) {
+            if (x1 < x2) {
+                return  (float) (90 - (Math.PI/2 - Math.atan( m ))*180/Math.PI);
+            } else if (x1 > x2) {
+                return (float) (270 - (Math.PI/2 - Math.atan( m ))*180/Math.PI);
+            }
+        } else {
+            if (x1 < x2) {
+                return (float) (90 - (Math.PI/2 - Math.atan( m ))*180/Math.PI);
+            } else if (x1 > x2) {
+                return (float) (270 - (Math.PI/2 - Math.atan( m ))*180/Math.PI);
+            }
+        }
+        
+        return 0;
+    }
+	
 	// TODO DA RIVEDERE QUESTA PARTE
 	private float calculateAngle( float x1, float y1, float x2, float y2 ) {
-		float cateto1 = Math.abs( x2 - x1 ), cateto2 = Math.abs( y2 - y1 );
+		/*float cateto1 = Math.abs( x2 - x1 ), cateto2 = Math.abs( y2 - y1 );
 	    float ipo = (float) Math.sqrt( cateto1 * cateto1 + cateto2 * cateto2 );
 		
-	    return angleValutation( x1, y1, x2, y2, cateto1, cateto2, ipo );
+	    return angleValutation( x1, y1, x2, y2, cateto1, cateto2, ipo );*/
+	    
+	    return angleValutation2( x1, y1, x2, y2 );
 	}
 	
 	public void addLink( long destID, float x1, float y1, float x2, float y2, int width, int height ) {
