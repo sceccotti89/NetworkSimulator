@@ -47,7 +47,7 @@ public class Packet implements Comparable<Packet>
 		this.color = color;
 		this.height = height;
 		
-		area = new Rectangle( x, y, width/80, width/80 );
+		area = new Rectangle( x, y, width/80, height/60 );
 		
 		hasFinished = false;
 		isInNode = true;
@@ -68,6 +68,20 @@ public class Packet implements Comparable<Packet>
 		drawInfo = false;
 	}
 	
+	public void initializingSpeed( final Node from, final Node dest ) {
+		if (from.getCenterX() < dest.getCenterX()) {
+			speedX = 1;
+		} else if (from.getCenterX() > dest.getCenterX()) {
+			speedX = -1;
+		} else speedX = 0;		
+
+		if (from.getCenterY() < dest.getCenterY()) {
+			speedY = 1;
+		} else if (from.getCenterY() > dest.getCenterY()) {
+			speedY = -1;
+		} else speedY = 0;
+	}
+	
 	public float getSpeedX() {
 		return speedX;
 	}
@@ -78,12 +92,18 @@ public class Packet implements Comparable<Packet>
 	
 	public void setSpeed( final float lenght, final float angle ) {
 		this.angle = angle;
-		
+				
 		float rad = (float) (angle * Math.PI / 180);
 		
 		// TODO SETTARE LA VELOCITA IN RELAZIONE ALLA LUNGHEZZA DEL LINK
-		speedX = (float) Math.sin( rad );
-		speedY = (float) Math.cos( rad );
+		if (rad != 0) {
+			speedX = speedX * (float) Math.abs( Math.sin( rad ) );
+			speedY = speedY * (float) Math.abs( Math.cos( rad ) );
+		}
+
+		System.out.println( "SPEEDX = " + speedX );
+		System.out.println( "ANGLE = " + angle );
+		System.out.println( "RAD = " + rad );
 	}
 	
 	public boolean isActive() {

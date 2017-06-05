@@ -41,12 +41,6 @@ public class Link
 		
 		area = new Rectangle( x1, y1 - offset, calculateLenght( x1, y1, x2, y2 ), offset * 2 );
 		
-		/*if (y1 == y2) {
-			area = new Polygon( new float[] {x1, y1 + offset, x2, y2 + offset, x2, y2 - offset, x1, y1 - offset} );
-		} else {
-			area = new Polygon( new float[] {x1 + offset, y1, x2 + offset, y2, x2 - offset, y2, x1 - offset, y1} );
-		}*/
-		
 		infos = new Rectangle( 0, 0, 0, 0 );
 	}
 	
