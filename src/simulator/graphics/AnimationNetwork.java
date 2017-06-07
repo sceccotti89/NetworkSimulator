@@ -150,7 +150,9 @@ public class AnimationNetwork extends BasicGame
         
         for (Packet packet: packets) {
         	Node start = getNode( packet.getSourceID() );
-        	packet.setSpeed( start.getLinkLenght( packet.getDestID() ) - 2*start.getRay(), start.getAngle( packet.getDestID() ) );
+        	packet.setLinkLenght( start.getLinkLenght( packet.getDestID() ) - 2*start.getRay() );
+        	packet.setAngle( start.getAngle( packet.getDestID() ) );
+        	//packet.setSpeed( start.getLinkLenght( packet.getDestID() ) - 2*start.getRay(), start.getAngle( packet.getDestID() ) );
         }
     }
 

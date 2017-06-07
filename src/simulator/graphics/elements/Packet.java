@@ -36,6 +36,10 @@ public class Packet implements Comparable<Packet>
 	
 	private int height;
 	
+	private float linkLenght;
+	
+	private float distance;
+	
 	public Packet( final int x, final int y,
 				   final long ID_from, final long ID_to,
 				   final Color color,
@@ -66,6 +70,10 @@ public class Packet implements Comparable<Packet>
 		infos = new Rectangle( 0, 0, widthInfo, heightInfo );
 		
 		drawInfo = false;
+		
+		speedY = 0;
+		
+		distance = 0;
 	}
 	
 	public void initializingSpeed( final Node from, final Node dest ) {
@@ -73,13 +81,13 @@ public class Packet implements Comparable<Packet>
 			speedX = 1;
 		} else if (from.getCenterX() > dest.getCenterX()) {
 			speedX = -1;
-		} else speedX = 0;		
+		} else speedX = 0;
 
-		if (from.getCenterY() < dest.getCenterY()) {
+		/*if (from.getCenterY() < dest.getCenterY()) {
 			speedY = 1;
 		} else if (from.getCenterY() > dest.getCenterY()) {
 			speedY = -1;
-		} else speedY = 0;
+		} else speedY = 0;*/
 	}
 	
 	public float getSpeedX() {
@@ -90,21 +98,33 @@ public class Packet implements Comparable<Packet>
 		return speedY;
 	}
 	
-	public void setSpeed( final float lenght, final float angle ) {
+	public void setLinkLenght( float val ) {
+		linkLenght = val;
+	}
+	
+	public float getLinkLenght() {
+		return linkLenght;
+	}
+	
+	public void setAngle( float val ) {
+		angle = val;
+	}
+	
+	/*public void setSpeed( final float lenght, final float angle ) {
 		this.angle = angle;
 				
 		float rad = (float) (angle * Math.PI / 180);
 		
 		// TODO SETTARE LA VELOCITA IN RELAZIONE ALLA LUNGHEZZA DEL LINK
 		if (rad != 0) {
-			speedX = speedX * (float) Math.abs( Math.sin( rad ) );
-			speedY = speedY * (float) Math.abs( Math.cos( rad ) );
+			speedX = speedX * (float) Math.abs( Math.sin( angle ) );
+			speedY = speedY * (float) Math.abs( Math.cos( angle ) );
 		}
 
 		System.out.println( "SPEEDX = " + speedX );
 		System.out.println( "ANGLE = " + angle );
 		System.out.println( "RAD = " + rad );
-	}
+	}*/
 	
 	public boolean isActive() {
 		return active;
@@ -192,12 +212,19 @@ public class Packet implements Comparable<Packet>
 		active = true;
 	}
 	
+	public boolean linkCrossed() {
+		return distance > linkLenght;
+	}
+	
 	public void update( GameContainer gc, final int animTime, boolean animate ) {		
 		int mouseX = gc.getInput().getMouseX();
 		int mouseY = gc.getInput().getMouseY();
 		
 		if (animate && active) {
-			area.setLocation( area.getX() + speedX * animTime, area.getY() + speedY * animTime );
+			distance = distance + speedX + animTime;
+			if (distance >= linkLenght) {
+				area.setLocation( area.getX() + distance - linkLenght, area.getY() );
+			} else area.setLocation( area.getX() + speedX + animTime, area.getY() );
 		}
 		
 		if (area.contains( mouseX, mouseY )) {
