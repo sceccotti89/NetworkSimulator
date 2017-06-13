@@ -22,8 +22,6 @@ public class Packet implements Comparable<Packet>
 	
 	private int startTime, endTime;
 	
-	private String name;
-	
 	private boolean active;
 	
 	private float speedX, speedY;
