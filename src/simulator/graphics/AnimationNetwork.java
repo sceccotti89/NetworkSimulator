@@ -46,6 +46,8 @@ public class AnimationNetwork extends BasicGame
 	
 	private Element obj;
 	private NodeList config;
+	
+	private final int ray = 25;
     
     public AnimationNetwork( final int width, final int height, final String title )
     {

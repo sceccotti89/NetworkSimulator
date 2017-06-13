@@ -40,6 +40,8 @@ public class Packet implements Comparable<Packet>
 	
 	private float distance;
 	
+	private float startX, startY;
+	
 	public Packet( final int x, final int y,
 				   final long ID_from, final long ID_to,
 				   final Color color,
@@ -51,7 +53,7 @@ public class Packet implements Comparable<Packet>
 		this.color = color;
 		this.height = height;
 		
-		area = new Rectangle( x, y, width/80, height/60 );
+		area = new Rectangle( x + 25, y, width/80, height/60 );
 		
 		hasFinished = false;
 		isInNode = true;
@@ -74,6 +76,9 @@ public class Packet implements Comparable<Packet>
 		speedY = 0;
 		
 		distance = 0;
+		
+		startX = x;
+		startY = y;
 	}
 	
 	public void initializingSpeed( final Node from, final Node dest ) {
@@ -207,7 +212,8 @@ public class Packet implements Comparable<Packet>
 	}
 	
 	public void setStartConditions( Node node ) {
-		area.setLocation( node.getCenterX(), node.getCenterY() + height/30 );
+		area.setLocation( node.getCenterX() + 25, node.getCenterY() + height/30 );
+		distance = 0;
 		hasFinished = false;
 		active = true;
 	}
@@ -238,7 +244,7 @@ public class Packet implements Comparable<Packet>
 	}
 	
 	public void draw( final Graphics g ) {
-		g.rotate( area.getX() + area.getWidth()/2, area.getY() + area.getHeight()/2, angle );		
+		g.rotate( startX, startY, angle );
 		g.setColor( color );
 		g.fill( area );
 		g.resetTransform();
