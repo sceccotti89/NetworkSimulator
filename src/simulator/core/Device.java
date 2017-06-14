@@ -179,9 +179,7 @@ public abstract class Device<E,P>
     }
     
     /**
-     * Add a new sampler to collect some informations about this device.</br>
-     * By default the sampling interval is 60 seconds.</br>
-     * If interval is {@code null} or its time is <= 0 the sampling mode is ignored.
+     * Add a new sampler to collect some informations about this device.
      * 
      * @param samplerId    name of the sampler. Must be UNIQUE.
      * @param sampler      the sampler object
@@ -225,7 +223,7 @@ public abstract class Device<E,P>
     }
 
     /**
-     * Returns the time spent to compute the input task (can be {@code null}).</br>
+     * Returns the time spent to compute the input task.</br>
      * NOTE: time is expressed in microseconds.
      * 
      * @param task    the input task
@@ -286,7 +284,23 @@ public abstract class Device<E,P>
     /**
      * Add a new value to the specified sampler with the corresponding time intervals.</br>
      * If the starting time is earlier than the ending time, the given value is "distributed" in multiple buckets along the entire interval;
-     * if the associated interval is less or equal than 0 it goes in a single separate bucket,
+     * if the sampler interval is less or equal than 0 it goes in a single separate bucket,
+     * whose insertion is driven by the ending time.</br>
+     * 
+     * @param sampler        the specified sampler in which insert the value
+     * @param startTime      starting time of the event
+     * @param endTime        ending time of the event
+     * @param value          value to add
+    */
+    protected void addSampledValue( final String sampler, final Time startTime, final Time endTime, final double value ) {
+        addSampledValue( sampler, startTime.getTimeMicroseconds(),
+                         endTime.getTimeMicroseconds(), value );
+    }
+    
+    /**
+     * Add a new value to the specified sampler with the corresponding time intervals.</br>
+     * If the starting time is earlier than the ending time, the given value is "distributed" in multiple buckets along the entire interval;
+     * if the sampler interval is less or equal than 0 it goes in a single separate bucket,
      * whose insertion is driven by the ending time.</br>
      * NOTE: all times MUST be expressed in microseconds.
      * 

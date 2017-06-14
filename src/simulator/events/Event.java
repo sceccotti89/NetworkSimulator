@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import simulator.core.Agent;
 import simulator.events.EventHandler.EventType;
+import simulator.events.impl.ResponseEvent;
 import simulator.topology.NetworkLink;
 import simulator.topology.NetworkNode;
 import simulator.topology.NetworkTopology;
@@ -17,7 +18,7 @@ public abstract class Event implements Comparable<Event>
 {
     /** Event time in microseconds. */
     protected Time _time;
-    protected Time _arrivalTime;
+    protected Time _arrivalTime = Time.ZERO;
     
     protected Agent _source;
     protected Agent _dest;
@@ -25,7 +26,6 @@ public abstract class Event implements Comparable<Event>
     protected long _currentNodeId = 0;
     
     protected boolean _processedByAgent = true;
-    private boolean _firstArrive = true;
     
     // Message payload.
     protected Packet _packet;
@@ -62,7 +62,7 @@ public abstract class Event implements Comparable<Event>
         eventID = EventScheduler.nextEventId();
     }
     
-    public long getId() {
+    public Long getId() {
         return eventID;
     }
     
@@ -107,40 +107,26 @@ public abstract class Event implements Comparable<Event>
      * @return {@code true} if the event has been processed,
      *         {@code false} otherwise.
     */
-    public boolean execute( final EventScheduler evtScheduler, final NetworkTopology net )
+    public void execute( final EventScheduler evtScheduler, final NetworkTopology net )
     {
         long nodeId = _currentNodeId;
         NetworkNode node = net.getNode( nodeId );
         if (!node.isActive()) {
-            return true;
+            return;
         }
         
         if (!_processedByAgent) {
             evtScheduler.schedule( _source.fireEvent( null, null ) );
             // Analyze the attached packet.
             evtScheduler.schedule( node.analyzePacket( _packet ) );
-            return true;
+            return;
         }
         
-        //System.out.println( "\nNode: " + node.getName() + ", execute: " + this );
-        
         if (nodeId == _dest.getId()) {
-            //System.out.println( "EV_TIME: " + _time + ", DEST_TIME: " + _dest.getTime() );
-            if (_firstArrive) {
-                setArrivalTime( _time.clone() );
-                //System.out.println( "[" + _arrivalTime + "] Reached destination node: " + node );
-                _firstArrive = false;
-                _dest.addEventOnQueue( this );
-            }
+            //Utils.LOGGER.debug( "[" + _time + "] Reached destination node: " + node );
             
-            if (!_dest.canExecute( _time )) {
-                // TODO vedere se si puo' evitare di reimmettere l'evento:
-                // TODO basterebbe che la CPU generi il prossimo evento nel momento in cui quello attuale termina.
-                // Reinsert the query to the scheduler.
-                //System.out.println( _time + " = REINSERT: " + this );
-                evtScheduler.schedule( this );
-                return false;
-            }
+            setArrivalTime( _time.clone() );
+            _dest.addEventOnQueue( this );
             
             _time.addTime( getTcalc( node, _dest ) );
             _dest.removeEventFromQueue( 0 );
@@ -151,7 +137,7 @@ public abstract class Event implements Comparable<Event>
         } else {
             long delay = 0;
             if (nodeId != _source.getId()) {
-                //System.out.println( "[" + _time + "] Reached intermediate node: " + node );
+                //Utils.LOGGER.debug( "[" + _time + "] Reached intermediate node: " + node );
                 delay = getTcalc( node, node.getAgent() ).getTimeMicroseconds();
             }
             
@@ -159,13 +145,12 @@ public abstract class Event implements Comparable<Event>
             NetworkLink link = net.getLink( nodeId, net.nextNode( nodeId, _dest.getId() ).getId() );
             if (link != null && link.isActive()) {
                 /*if (nodeId == _source.getId()) {
-                    System.out.println( "[" + _time + "] Starting from node: " + node );
+                    Utils.LOGGER.debug( "[" + _time + "] Starting from node: " + node );
                 }*/
                 
                 if (link.checkErrorLink()) {
                     //System.out.println( "[" + _time + "] Packet lost due to an error in the link." );
-                    // TODO in futuro rimuovere questa scritta e utilizzare i vari protocolli
-                    // TODO per la gestione dell'errore (tipo ICMPv6).
+                    // TODO utilizzare i vari protocolli per la gestione dell'errore (tipo ICMPv6).
                 } else {
                     // Assign the current node id.
                     _currentNodeId = link.getDestId();
@@ -204,8 +189,6 @@ public abstract class Event implements Comparable<Event>
             _source.setTime( time );
             evtScheduler.schedule( _source.fireEvent( time, null ) );
         }
-        
-        return true;
     }
     
     private Time getTcalc( final NetworkNode node, final Agent agent )
@@ -222,23 +205,29 @@ public abstract class Event implements Comparable<Event>
     }
     
     @Override
-    public String toString() {
-        return "ID: " + eventID + ", From: " + _source + ", To: " + _dest + ", Time: " +
-               _time + "ns, arrival time: " + ((_arrivalTime == null) ? 0 : _arrivalTime) + "ns";
-    }
-    
-    @Override
     public int compareTo( final Event o )
     {
         int compare = _time.compareTo( o.getTime() );
         if (compare != 0) {
             return compare;
         } else {
-            // If they have the same time, compare their arrival time.
-            if (_arrivalTime == null && o.getArrivalTime() == null) return  0;
-            if (_arrivalTime != null && o.getArrivalTime() == null) return -1;
-            if (_arrivalTime == null && o.getArrivalTime() != null) return  1;
-            return _arrivalTime.compareTo( o.getArrivalTime() );
+            // If they have the same time compare their arrival time.
+            compare = _arrivalTime.compareTo( o.getArrivalTime() );
+            if (compare == 0) {
+                // If they are of the same type compare their ID.
+                if (this.getClass().equals( o.getClass() ))
+                    return getId().compareTo( o.getId() );
+                // Give priority to the outgoing events.
+                if (this instanceof ResponseEvent) return 1;
+                else return -1;
+            }
+            return compare;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "ID: " + eventID + ", From: " + _source + ", To: " + _dest + ", Time: " +
+               _time + "ns, arrival time: " + _arrivalTime + "ns";
     }
 }

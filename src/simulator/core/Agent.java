@@ -116,6 +116,10 @@ public abstract class Agent
         node.setAgent( this );
     }
     
+    public List<Agent> getDestinations() {
+        return _destinations;
+    }
+    
     public void setEventScheduler( final EventScheduler evtScheduler ) {
         _evtScheduler = evtScheduler;
         for (Device<?,?> device : _devices.values()) {
@@ -172,7 +176,7 @@ public abstract class Agent
      * @return {@code true} if the event can be executed immediately,
      *         {@code false} otherwise
     */
-    public boolean canExecute( final Time eventTime)
+    public boolean canExecute( final Time eventTime )
     {
         boolean execute = eventTime.compareTo( _time ) >= 0;
         if (!execute) {

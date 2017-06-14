@@ -1,9 +1,0 @@
-{
-    "nodes": [
-        {"id":0, "name":"client", "delay":10, "xPos":0,  "yPos":0},
-        {"id":1, "name":"server", "delay":5,  "xPos":20, "yPos":0}
-    ],
-    "links": [
-        {"fromId":0, "destId":1, "bandwith":70.0, "delay":5}
- 	]
-}

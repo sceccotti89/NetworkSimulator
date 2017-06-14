@@ -35,7 +35,7 @@ public class ExternalEvent extends Event
     }
     
     @Override
-    public boolean execute( final EventScheduler ev_scheduler, final NetworkTopology net )
+    public void execute( final EventScheduler ev_scheduler, final NetworkTopology net )
     {
         if (destID != -1) { // Link.
             NetworkLink link = net.getLink( fromID, destID );
@@ -44,7 +44,5 @@ public class ExternalEvent extends Event
             NetworkNode node = net.getNode( fromID );
             node.setActive( mode == EventMode.RECOVER );
         }
-        
-        return true;
     }
 }

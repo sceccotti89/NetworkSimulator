@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import simulator.utils.Size;
 import simulator.utils.SizeUnit;
 
+// FIXME DEPRECATED: Utilizzare Message al posto di packet quando implementere' i protocolli di rete.
 public class Packet
 {
     private Size<Long> _size;

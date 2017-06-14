@@ -138,8 +138,8 @@ public abstract class EventGenerator
     /**
      * Update the internal state of the generator.</br>
      * This method is called everytime a new event arrive.</br>
-     * By default it reduces by 1 the number of flying packets, but you can</br>
-     * extend it to properly update the event generator.</br>
+     * By default it reduces by 1 the number of flying packets, but it can</br>
+     * extended to properly update the event generator.</br>
     */
     public void update() {
         _packetsInFly--;
@@ -230,9 +230,6 @@ public abstract class EventGenerator
         
         List<Event> events = null;
         
-        if (e instanceof ResponseEvent)
-            update();
-        
         if (e instanceof RequestEvent) {
             if (_delayResponse) {
                 // Prepare and send the new request packet to the next node.
@@ -244,6 +241,7 @@ public abstract class EventGenerator
                 events = sendResponse( e, e.getDestination(), e.getSource() );
             }
         } else {
+            update();
             // Response message.
             if (e != null && !_toAnswer.isEmpty()) {
                 if (!_isMulticasted) {

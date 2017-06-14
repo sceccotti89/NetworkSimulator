@@ -7,6 +7,7 @@ package simulator.network.protocols;
 import simulator.core.Agent;
 import simulator.events.Event;
 import simulator.events.Packet;
+import simulator.events.impl.ProtocolEvent;
 import simulator.topology.NetworkNode;
 import simulator.topology.NetworkTopology;
 
