@@ -32,7 +32,7 @@ public class Packet implements Comparable<Packet>
 	private Rectangle infos;
 	private boolean drawInfo;
 	
-	private int height;
+	private int width, height;
 	
 	private float linkLenght;
 	
@@ -50,8 +50,9 @@ public class Packet implements Comparable<Packet>
 		this.ID_to = ID_to;
 		this.color = color;
 		this.height = height;
+		this.width = width;
 		
-		area = new Rectangle( x + 25, y, width/80, height/60 );
+		area = new Rectangle( x + width/32, y, width/80, height/60 );
 		
 		hasFinished = false;
 		isInNode = true;
@@ -210,7 +211,7 @@ public class Packet implements Comparable<Packet>
 	}
 	
 	public void setStartConditions( Node node ) {
-		area.setLocation( node.getCenterX() + 25, node.getCenterY() + height/30 );
+		area.setLocation( node.getCenterX() + width/32, node.getCenterY() + height/30 );
 		distance = 0;
 		hasFinished = false;
 		active = true;
