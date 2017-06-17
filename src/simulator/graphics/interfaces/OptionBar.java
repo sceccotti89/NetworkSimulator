@@ -10,7 +10,6 @@ import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
-import simulator.graphics.dataButton.ImageButton;
 import simulator.graphics.dataButton.SimpleButton;
 
 public class OptionBar implements AnimationInterface
@@ -22,7 +21,7 @@ public class OptionBar implements AnimationInterface
     private float width, height;
     
     private ArrayList<SimpleButton> buttons;
-    
+
     private int mouseX, mouseY;
     
     private String FILE = "File", OPTIONS = "Options";
