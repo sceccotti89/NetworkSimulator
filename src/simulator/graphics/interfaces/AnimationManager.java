@@ -32,18 +32,18 @@ public class AnimationManager implements AnimationInterface
     
     private boolean mouseDown;
     
-    public AnimationManager( final GameContainer gc, final float startY ) throws SlickException
+    public AnimationManager( final GameContainer gc, final float startY, final float widthM, final float heightM ) throws SlickException
     {
         height = gc.getHeight()*10/75;
         width  = gc.getWidth()*10/53;
         
         buttons = new ArrayList<ImageButton>();
 
-        start = new ImageButton( 0, startY, width, height, START, Color.gray, 0, gc, new Image( "./data/Image/Start.png" ), gc.getWidth()/20, gc.getHeight()/20 );
-        pause = new ImageButton( start.getMaxX(), startY, width, height, PAUSE, Color.gray, 1, gc, new Image( "./data/Image/Pause.png" ), gc.getWidth()/20, gc.getHeight()/20 );
-        stop  = new ImageButton( pause.getMaxX(), startY, width, height, STOP, Color.gray, 2, gc, new Image( "./data/Image/Stop.png" ), gc.getWidth()/20, gc.getHeight()/20 );
-        minus = new ImageButton( stop.getMaxX() + gc.getWidth()/15, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, MINUS, Color.yellow, 3, gc, new Image( "./data/Image/Minus.png" ), gc.getWidth()/45, gc.getHeight()/70 );
-        plus  = new ImageButton( stop.getMaxX() + gc.getWidth()/4, startY + gc.getHeight()/20, gc.getWidth()/20, gc.getHeight()/20, PLUS, Color.yellow, 4, gc, new Image( "./data/Image/Plus.png" ), gc.getWidth()/40, gc.getHeight()/30 );
+        start = new ImageButton( 0, startY, width, height, START, Color.gray, 0, gc, new Image( "./data/Image/Start.png" ), widthM/20, heightM/20 );
+        pause = new ImageButton( start.getMaxX(), startY, width, height, PAUSE, Color.gray, 1, gc, new Image( "./data/Image/Pause.png" ), widthM/20, heightM/20 );
+        stop  = new ImageButton( pause.getMaxX(), startY, width, height, STOP, Color.gray, 2, gc, new Image( "./data/Image/Stop.png" ), widthM/20, heightM/20 );
+        minus = new ImageButton( stop.getMaxX() + widthM/15, startY + heightM/20, widthM/20, heightM/20, MINUS, Color.yellow, 3, gc, new Image( "./data/Image/Minus.png" ), widthM/45, heightM/70 );
+        plus  = new ImageButton( stop.getMaxX() + widthM/4, startY + heightM/20, widthM/20, heightM/20, PLUS, Color.yellow, 4, gc, new Image( "./data/Image/Plus.png" ), widthM/40, heightM/30 );
         
         speed     = new Rectangle( pause.getMaxX(), startY, gc.getWidth() - pause.getMaxX(), height );
         showFrame = new Rectangle( minus.getMaxX() + (plus.getX() - minus.getMaxX())/2 - gc.getWidth()/22, minus.getY() + gc.getHeight()/270, gc.getWidth()/10*String.valueOf( frame ).length()/2 + gc.getWidth()/20, gc.getHeight()/20 );

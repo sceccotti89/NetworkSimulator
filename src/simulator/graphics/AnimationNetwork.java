@@ -160,7 +160,7 @@ public class AnimationNetwork extends BasicGame
     public void init( final GameContainer gc ) throws SlickException
     {
         ob = new OptionBar( gc );
-        am = new AnimationManager( gc, ob.getMaxY() );
+        am = new AnimationManager( gc, ob.getMaxY(), width, height );
         ta = new TimeAnimation();
         nd = new NetworkDisplay( gc.getWidth(), ta.getY() - am.getMaxY(), am.getMaxY(), nodes, packets );
     }
