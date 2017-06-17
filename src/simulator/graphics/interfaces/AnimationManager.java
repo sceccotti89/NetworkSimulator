@@ -73,7 +73,7 @@ public class AnimationManager implements AnimationInterface
             mouseDown = false;
             
             for (ImageButton button: buttons) {
-            	// if pressed a button
+            	// if a button is pressed
         		if (button.isPressed()) {
                     for (ImageButton bottone: buttons) {
                     	if (bottone.isPressed()) {
