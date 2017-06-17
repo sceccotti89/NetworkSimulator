@@ -54,14 +54,6 @@ public class AnimationManager implements AnimationInterface
         buttons.add( plus );
         buttons.add( minus );
     }
-	
-	private int checkButton( ImageButton button, Input input, int i ) {
-		if (button.isPressed()) {
-			return 1;
-		}
-	
-		return 0;
-	}
     
     @Override
     public void update( final int delta, final Input input, final boolean leftMouse, final OptionBar ob, final AnimationManager am, final TimeAnimation ta, final NetworkDisplay nd )
@@ -81,14 +73,14 @@ public class AnimationManager implements AnimationInterface
             mouseDown = false;
             
             for (ImageButton button: buttons) {
-            	// se e' stato premuto il tasto
-        		if (checkButton( button, input, button.getIndex() ) > 0) {
+            	// if pressed a button
+        		if (button.isPressed()) {
                     for (ImageButton bottone: buttons) {
                     	if (bottone.isPressed()) {
                     		bottone.setPressed();
                     	}
                     }
-                    // pressed tramite mouse
+                    // pressed by mouse
                     if (button.checkClick( mouseX, mouseY )) {
                     	if (button.getName().equals( PLUS )) {
     						frame = Math.min( limit, frame + 5 );

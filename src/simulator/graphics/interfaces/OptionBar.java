@@ -10,6 +10,7 @@ import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
+import simulator.graphics.dataButton.ImageButton;
 import simulator.graphics.dataButton.SimpleButton;
 
 public class OptionBar implements AnimationInterface
@@ -45,14 +46,6 @@ public class OptionBar implements AnimationInterface
     public float getMaxY() {
         return barOptions.getMaxY();
     }
-	
-	private int checkButton( SimpleButton button, Input input, int i ) {
-		if (button.isPressed()) {
-			return 1;
-		}
-	
-		return 0;
-	}
     
     @Override
     public void update( final int delta, final Input input, final boolean leftMouse, final OptionBar ob, final AnimationManager am, final TimeAnimation ta, final NetworkDisplay nd )
@@ -73,7 +66,7 @@ public class OptionBar implements AnimationInterface
             
             for (SimpleButton button: buttons) {
             	// se e' stato premuto il tasto
-        		if (checkButton( button, input, button.getIndex() ) > 0) {
+        		if (button.isPressed()) {
                     for (SimpleButton bottone: buttons) {
                     	if (bottone.isPressed()) {
                     		bottone.setPressed();
