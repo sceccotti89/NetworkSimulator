@@ -80,7 +80,7 @@ public class AnimationManager implements AnimationInterface
                     		bottone.setPressed();
                     	}
                     }
-                    // pressed by mouse
+
                     if (button.checkClick( mouseX, mouseY )) {
                     	if (button.getName().equals( PLUS )) {
     						frame = Math.min( limit, frame + 5 );
