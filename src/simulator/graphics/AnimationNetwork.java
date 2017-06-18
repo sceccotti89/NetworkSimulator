@@ -1,7 +1,10 @@
 
 package simulator.graphics;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,40 +61,36 @@ public class AnimationNetwork extends BasicGame
         this.height = height;
     }
     
-    private void loadPackets( String file ) {
-    	System.out.println( "Loading from " + file + "..." );
-    	try {
-			documentFactory = DocumentBuilderFactory.newInstance();
- 
-			builder = documentFactory.newDocumentBuilder();
-			
-			document = builder.parse( new File( file ) );
-			
-			/* PACKETS CONFIGURATION */
-			config = document.getElementsByTagName( "packet" );
-			
-			for (int i = 0; i < config.getLength(); i++) {
-				org.w3c.dom.Node pack = config.item( i );
-				obj = (Element) pack;
-				
-				Node from = nodes.get( Integer.parseInt( obj.getAttribute( "from" ) ) );
-
-				final int x = from.getCenterX();
-				final int y = from.getCenterY() + height/30;
-				final long from_ID = Long.parseLong( obj.getAttribute( "from" ) );
-				final long dest_ID = Long.parseLong( obj.getAttribute( "to" ) );
-				final Color color = from.getColor();
-				final int startTime = Integer.parseInt( obj.getAttribute( "startTime" ) );
-				final int endTime = Integer.parseInt( obj.getAttribute( "endTime" ) );
-
-		        addPacket( x, y, from_ID, dest_ID, color, startTime, endTime );
-			}
-			
-			System.out.println( "Loading completed." );
-    	}
-        catch(Exception e) {
-        	e.printStackTrace();
+    /**
+     * Reads the list of available frequencies for this device.
+     * 
+     * @param frequencies_file    file where the frequencies are taken
+     * 
+     * @return the list of available frequencies
+    */
+    private void loadPackets( final String file ) throws IOException
+    {
+        System.out.println( "Loading from " + file + "..." );
+        
+        BufferedReader reader = new BufferedReader( new FileReader( file ) );
+        
+        String line;
+        while ((line = reader.readLine()) != null) {
+        	String[] words = line.split( "[\\s|\\t]+" );
+        	
+			final long from_ID = Long.parseLong( words[0] );
+			Node from = getNode( from_ID );
+			final int x = from.getCenterX();
+			final int y = from.getCenterY() + height/30;
+			final long dest_ID = Long.parseLong( words[1] );
+			final Color color = from.getColor();
+			final int startTime = Integer.parseInt( words[2] );
+			final int endTime = Integer.parseInt( words[3] );
+        	
+			addPacket( x, y, from_ID, dest_ID, color, startTime, endTime );
         }
+        
+        reader.close();
     }
     
     private void loadElements( String file ) {
@@ -142,7 +141,7 @@ public class AnimationNetwork extends BasicGame
         }
     }
     
-    public void loadSimulation( String file1, String file2 ) {
+    public void loadSimulation( String file1, String file2 ) throws IOException {
     	loadElements( file1 );
     	loadPackets( file2 );
         
