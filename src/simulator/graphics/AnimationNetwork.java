@@ -62,11 +62,9 @@ public class AnimationNetwork extends BasicGame
     }
     
     /**
-     * Reads the list of available frequencies for this device.
+     * Extrapolates infos from file to create packets.
      * 
-     * @param frequencies_file    file where the frequencies are taken
-     * 
-     * @return the list of available frequencies
+     * @param file    file to read
     */
     private void loadPackets( final String file ) throws IOException
     {
