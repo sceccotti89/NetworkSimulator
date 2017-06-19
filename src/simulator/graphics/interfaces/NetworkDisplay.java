@@ -102,13 +102,16 @@ public class NetworkDisplay
 		}
 	
 		for (Packet packet: packets) {
-			if (timer > packet.getEndTime()) {
-				packet.setActive( false );
-			} else if (timer >= packet.getStartTime()) {
-				packet.update( gc, am.getFrames(), start );
-				if (packet.isActive()) {
-					if (packet.linkCrossed()) {
-						packet.setActive( false );
+			if (packet.isActive()) {
+				if (timer > packet.getEndTime()) {
+					packet.setActive( false );
+				} else if (timer >= packet.getStartTime()) {
+					System.out.println( "TIMER > ENDTIME? = " + (timer > packet.getEndTime() ));
+					packet.update( gc, am.getFrames(), start );
+					if (packet.isActive()) {
+						if (packet.linkCrossed()) {
+							packet.setActive( false );
+						}
 					}
 				}
 			}
