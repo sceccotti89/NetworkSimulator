@@ -20,7 +20,7 @@ public class Packet implements Comparable<Packet>
 	
 	private long indexRotation;
 	
-	private int startTime, endTime;
+	private long startTime, endTime;
 	
 	private boolean active;
 	
@@ -43,7 +43,7 @@ public class Packet implements Comparable<Packet>
 	public Packet( final int x, final int y,
 				   final long ID_from, final long ID_to,
 				   final Color color,
-				   final int startTime, final int endTime,
+				   final long startTime, final long endTime,
 				   final int width, final int height ) {
 		
 		this.ID_from = ID_from;
@@ -142,7 +142,7 @@ public class Packet implements Comparable<Packet>
 		startTime = val;
 	}
 	
-	public int getStartTime() {
+	public long getStartTime() {
 		return startTime;
 	}
 	
@@ -150,7 +150,7 @@ public class Packet implements Comparable<Packet>
 		endTime = val;
 	}
 	
-	public int getEndTime() {
+	public long getEndTime() {
 		return endTime;
 	}
 	
