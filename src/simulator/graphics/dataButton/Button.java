@@ -32,9 +32,11 @@ public class Button
 	public boolean isPressed()
 		{ return pressed; }
 
-	/** modifica lo stato (premuto/non premuto) del bottone*/
-	public void setPressed()
-		{ pressed = !pressed; }
+	/** modifica lo stato (premuto/non premuto) del bottone
+	 * @param val - bottone premuto o no
+	*/
+	public void setPressed( boolean val )
+		{ pressed = val; }
 
 	/** assegna una nuova posizione Y
 	 * @param y - la nuova coordinata Y

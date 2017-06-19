@@ -66,39 +66,48 @@ public class AnimationManager implements AnimationInterface
             
             for (ImageButton button : buttons) {
                 if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
-            		button.setPressed();
+            		button.setPressed( true );
             	}
             }
 		} else if (!leftMouse && mouseDown) {
             mouseDown = false;
             
-            for (ImageButton button: buttons) {
-            	// if a button is pressed
-        		if (button.isPressed()) {
-                    for (ImageButton bottone: buttons) {
-                    	if (bottone.isPressed()) {
-                    		bottone.setPressed();
-                    	}
-                    }
-
-                    if (button.checkClick( mouseX, mouseY )) {
-                    	if (button.getName().equals( PLUS )) {
-    						frame = Math.min( limit, frame + 5 );
-    					} else if (button.getName().equals( MINUS )) {
-    						frame = Math.max( 1, frame - 5 );
-    					} else if (button.getName().equals( START )) {
-    						nd.startAnimation();
-    						ob.resetAllButtons();
-    					} else if (button.getName().equals( PAUSE )) {
-    						nd.pauseAnimation();
-    						ob.resetAllButtons();
-    					} else if (button.getName().equals( STOP )) {
-    						nd.stopAnimation();
-    						ob.resetAllButtons();
-    					}
-                    }
-    			}
+            boolean buttonFounded = false;
+			for (ImageButton button: buttons) {
+            	if (button.checkClick( mouseX, mouseY )) {
+            		buttonFounded = true;
+                	if (button.getName().equals( PLUS )) {
+						frame = Math.min( limit, frame + 5 );
+					} else if (button.getName().equals( MINUS )) {
+						frame = Math.max( 1, frame - 5 );
+					} else if (button.getName().equals( START )) {
+						nd.startAnimation();
+						ob.resetAllButtons();
+						button.setPressed( true );
+						resetButtons( button );
+					} else if (button.getName().equals( PAUSE )) {
+						nd.pauseAnimation();
+						ob.resetAllButtons();
+						resetButtons( button );
+					} else if (button.getName().equals( STOP )) {
+						nd.stopAnimation();
+						ob.resetAllButtons();
+						resetButtons( null );
+					}
+                }
         	}
+            
+            if (!buttonFounded){
+            	for (ImageButton bottone: buttons) {
+                	if (bottone.isPressed()) {
+                		if ((bottone.getName().equals( START ) && !nd.isOperating())
+                		 || (bottone.getName().equals( PAUSE ) && !nd.isInPause())
+                		 || (bottone.getName().equals( STOP ))) {
+                			bottone.setPressed( false );
+                		}
+                	}
+                }
+            }
         }
 	}
     
@@ -123,11 +132,19 @@ public class AnimationManager implements AnimationInterface
     	g.drawString( String.valueOf( frame ), plus.getMaxX() + (minus.getX() - plus.getMaxX())/2 - String.valueOf( frame ).length()/2*gc.getWidth()/80, plus.getY() + (plus.getMaxY() - plus.getY())/4 );
     }
     
-    public void resetAllButtons()
-    {
-    	for(ImageButton button: buttons){
-    		if(button.isPressed())
-    			button.setPressed();
+    public void resetAllButtons() {
+    	for (ImageButton button: buttons) {
+    		if (button.isPressed()) {
+    			button.setPressed( false );
+    		}
+    	}
+    }
+    
+    private void resetButtons( ImageButton button ) {
+    	for (ImageButton imButton: buttons) {
+    		if (imButton != button) {
+    			imButton.setPressed( false );
+    		}
     	}
     }
     

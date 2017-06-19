@@ -17,7 +17,7 @@ public class NetworkDisplay
 	private List<Node> nodes;
 	private List<Packet> packets;
 	
-	private long timer = 999999999999999990L;
+	private long timer = 0;
 	
 	private boolean end;
 	
@@ -53,6 +53,14 @@ public class NetworkDisplay
 		}
 	}
 	
+	public boolean isOperating() {
+		return start;
+	}
+	
+	public boolean isInPause() {
+		return pause;
+	}
+	
 	public boolean startAnimation() {
 		if (!start) {
 			start = true;
@@ -63,7 +71,7 @@ public class NetworkDisplay
 		
 		if (end) {
 			startPositions();
-			timer = 999999999999999990L;
+			timer = 0;
 		} else {
 			if (pause) {
 				pause = false;
@@ -88,7 +96,7 @@ public class NetworkDisplay
 		start = false;
 		pause = false;
 		
-		timer = 999999999999999990L;
+		timer = 0;
 		
 		return true;
 	}
@@ -126,6 +134,7 @@ public class NetworkDisplay
 		
 		if (end) {
 			start = false;
+			am.resetAllButtons();
 		}
 		
 		for (Node node: nodes) {
@@ -140,7 +149,7 @@ public class NetworkDisplay
 		g.fill( zone );
 		
 		for (Packet packet: packets) {
-			if (timer >= packet.getStartTime() && start && packet.isActive()) {
+			if (timer >= packet.getStartTime() && (start || pause) && packet.isActive()) {
 				packet.draw( g );
 			}
 		}

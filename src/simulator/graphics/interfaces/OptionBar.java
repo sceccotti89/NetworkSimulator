@@ -57,7 +57,7 @@ public class OptionBar implements AnimationInterface
             
             for (SimpleButton button : buttons) {
                 if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
-            		button.setPressed();
+            		button.setPressed( true );
             	}
             }
 		} else if (!leftMouse && mouseDown) {
@@ -68,7 +68,7 @@ public class OptionBar implements AnimationInterface
         		if (button.isPressed()) {
                     for (SimpleButton bottone: buttons) {
                     	if (bottone.isPressed()) {
-                    		bottone.setPressed();
+                    		bottone.setPressed( false );
                     	}
                     }
 
@@ -85,8 +85,7 @@ public class OptionBar implements AnimationInterface
     }
     
     @Override
-    public void render( final GameContainer gc )
-    {
+    public void render( final GameContainer gc ) {
     	Graphics g = gc.getGraphics();
     	
     	for (SimpleButton button: buttons) {
@@ -94,11 +93,10 @@ public class OptionBar implements AnimationInterface
     	}
     }
     
-    public void resetAllButtons()
-    {
+    public void resetAllButtons() {
     	for (SimpleButton button: buttons) {
     		if (button.isPressed()) {
-    			button.setPressed();
+    			button.setPressed( false );
     		}
     	}
     }
