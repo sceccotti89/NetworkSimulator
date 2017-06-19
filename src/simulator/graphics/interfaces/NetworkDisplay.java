@@ -14,30 +14,27 @@ public class NetworkDisplay
 {
 	private Rectangle zone;
 	
-	private boolean animate;
-	
 	private List<Node> nodes;
 	private List<Packet> packets;
 	
-	private int timer;
-	
-	private boolean inPause;
+	private long timer = 999999999999999990L;
 	
 	private boolean end;
+	
+	private boolean start, pause;
 	
 	public NetworkDisplay( final float width, final float height, final float startY, final List<Node> nodes, final List<Packet> packets )
 	{
 		zone = new Rectangle( 0, startY, width, height );
 		
-		animate = false;
-		
 		this.nodes = nodes;
 		
 		this.packets = packets;
 		
-		inPause = false;
-		
 		end = false;
+		
+		start = false;
+		pause = false;
 	}
 	
 	private Node getNode( final long nodeID ) {
@@ -51,30 +48,35 @@ public class NetworkDisplay
     }
 	
 	public void startPositions() {
-		for (Packet packet: packets ) {
+		for (Packet packet: packets) {
 			packet.setStartConditions( getNode( packet.getSourceID() ) );
 		}
 	}
 	
 	public boolean startAnimation() {
-		if (end) {
-			startPositions();
-			timer = 0;
-		} else {
-			if (inPause) {
-				inPause = false;
-			}		
+		if (!start) {
+			start = true;
+			for (Packet packet: packets) {
+				packet.setActive( true );
+			}
 		}
 		
-		animate = true;
+		if (end) {
+			startPositions();
+			timer = 999999999999999990L;
+		} else {
+			if (pause) {
+				pause = false;
+			}		
+		}
 		
 		return true;
 	}
 	
 	public boolean pauseAnimation() {
 		if (!end) {
-			animate = false;
-			inPause = true;
+			pause = true;
+			start = false;
 		}
 		
 		return true;
@@ -83,8 +85,10 @@ public class NetworkDisplay
 	public boolean stopAnimation() {
 		startPositions();
 		
-		animate = false;
-		timer = 0;
+		start = false;
+		pause = false;
+		
+		timer = 999999999999999990L;
 		
 		return true;
 	}
@@ -93,22 +97,26 @@ public class NetworkDisplay
 		end = true;
 
 	    // TODO IL TIMER ORA E' CORRETTO?????
-		if (animate) {
+		if (start) {
 			timer = timer + am.getFrames();
 		}
 	
 		for (Packet packet: packets) {
-			if (timer >= packet.getStartTime()) {
-				packet.update( gc, am.getFrames(), animate );
-				if (packet.isActive()) {
-					if (packet.linkCrossed()) {
-						packet.setActive( false );
+			if (packet.isActive()) {
+				if (timer > packet.getEndTime()) {
+					packet.setActive( false );
+				} else if (timer >= packet.getStartTime()) {
+					packet.update( gc, am.getFrames(), start );
+					if (packet.isActive()) {
+						if (packet.linkCrossed()) {
+							packet.setActive( false );
+						}
 					}
 				}
 			}
 		}
 		
-		// CONTROL PACKETS ENDING
+		// control packets ending
 		for (Packet packet: packets) {
 			if (packet.isActive()) {
 				end = false;
@@ -117,7 +125,7 @@ public class NetworkDisplay
 		}
 		
 		if (end) {
-			animate = false;
+			start = false;
 		}
 		
 		for (Node node: nodes) {
@@ -132,7 +140,9 @@ public class NetworkDisplay
 		g.fill( zone );
 		
 		for (Packet packet: packets) {
-		    packet.draw( g );
+			if (timer >= packet.getStartTime() && start && packet.isActive()) {
+				packet.draw( g );
+			}
 		}
 		
 		// TODO PROVVISORIO, POI FARO' COME HA DETTO STEFANO

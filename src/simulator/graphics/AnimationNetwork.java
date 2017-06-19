@@ -77,13 +77,13 @@ public class AnimationNetwork extends BasicGame
         	String[] words = line.split( "[\\s|\\t]+" );
         	
 			final long from_ID = Long.parseLong( words[0] );
+			final long startTime = Long.parseLong( words[1] );
 			Node from = getNode( from_ID );
 			final int x = from.getCenterX();
 			final int y = from.getCenterY() + height/30;
-			final long dest_ID = Long.parseLong( words[1] );
+			final long dest_ID = Long.parseLong( words[2] );
 			final Color color = from.getColor();
-			final int startTime = Integer.parseInt( words[2] );
-			final int endTime = Integer.parseInt( words[3] );
+			final long endTime = Long.parseLong( words[3] );
         	
 			addPacket( x, y, from_ID, dest_ID, color, startTime, endTime );
         }
@@ -167,7 +167,7 @@ public class AnimationNetwork extends BasicGame
     	nodes.add( node );
     }
     
-    public void addPacket( int x, int y, long from_ID, long dest_ID, Color color, int startTime, int endTime ) {
+    public void addPacket( int x, int y, long from_ID, long dest_ID, Color color, long startTime, long endTime ) {
     	Packet packet = new Packet( x, y, from_ID, dest_ID, color, startTime, endTime, width, height );
         packet.initializingSpeed( getNode( from_ID ), getNode( dest_ID ) );
     	packets.add( packet );
