@@ -5,8 +5,10 @@
 package simulator.topology;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,6 +31,8 @@ public class NetworkTopology
 	
 	private static long nextID = 0;
 	private long netID;
+	
+	private PrintWriter eventsWriter;
 	
 	private EventScheduler evtScheduler;
 	
@@ -265,6 +269,28 @@ public class NetworkTopology
         evtScheduler.schedule( event );
     }
     
+    /**
+     * Asks the network to track the incoming event in form of message.</br>
+     * The given message will be saved on file only if a previous call to the method
+     * {@linkplain #setTrackEvents(String)} is done.
+     * 
+     * @param message    the input message.
+    */
+    public void trackEvent( final String message ) {
+        if (eventsWriter != null) {
+            eventsWriter.println( message );
+        }
+    }
+    
+    /**
+     * Sets the file use to keep tracks of the generated events.
+     * 
+     * @param eventsFile    name of the file.
+    */
+    public void setTrackEvents( final String eventsFile ) throws FileNotFoundException {
+        eventsWriter = new PrintWriter( eventsFile );
+    }
+
     // TODO questi 2 metodi non serviranno se implemento i protocolli di routing.
     /**
      * Computes the shortest path for every node in the network.
@@ -305,6 +331,7 @@ public class NetworkTopology
             agent.shutdown();
         }
         evtScheduler.shutdown();
+        eventsWriter.close();
     }
     
     private static final long getNextID() {
