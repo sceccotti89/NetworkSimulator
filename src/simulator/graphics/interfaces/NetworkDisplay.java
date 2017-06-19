@@ -63,7 +63,7 @@ public class NetworkDisplay
 		
 		if (end) {
 			startPositions();
-			timer = 99999999990L;
+			timer = 999999999999999990L;
 		} else {
 			if (pause) {
 				pause = false;
@@ -88,7 +88,7 @@ public class NetworkDisplay
 		start = false;
 		pause = false;
 		
-		timer = 99999999990L;
+		timer = 999999999999999990L;
 		
 		return true;
 	}
@@ -102,15 +102,13 @@ public class NetworkDisplay
 		}
 	
 		for (Packet packet: packets) {
-			if (timer >= packet.getStartTime()) {
-				if (timer < packet.getEndTime()) {
-					packet.setActive( false );
-				} else {
-					packet.update( gc, am.getFrames(), start );
-					if (packet.isActive()) {
-						if (packet.linkCrossed()) {
-							packet.setActive( false );
-						}
+			if (timer > packet.getEndTime()) {
+				packet.setActive( false );
+			} else if (timer >= packet.getStartTime()) {
+				packet.update( gc, am.getFrames(), start );
+				if (packet.isActive()) {
+					if (packet.linkCrossed()) {
+						packet.setActive( false );
 					}
 				}
 			}
