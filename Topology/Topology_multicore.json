@@ -1,0 +1,17 @@
+{
+    "nodes": [
+        {"id":0, "name":"client", "delay":0, "xPos":0,  "yPos":0},
+        {"id":1, "name":"switch", "delay":0, "xPos":10, "yPos":0},
+        {"id":2, "name":"core0",  "delay":0, "xPos":20, "yPos":0},
+        {"id":3, "name":"core1",  "delay":0, "xPos":30, "yPos":0},
+        {"id":4, "name":"core2",  "delay":0, "xPos":40, "yPos":0},
+        {"id":5, "name":"core3",  "delay":0, "xPos":50, "yPos":0}
+    ],
+    "links": [
+        {"fromId":0, "destId":1, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId":1, "destId":2, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId":1, "destId":3, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId":1, "destId":4, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId":1, "destId":5, "bandwith":1000.0, "delay":0, "linkType":"duplex"}
+ 	]
+}

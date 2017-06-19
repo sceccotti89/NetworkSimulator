@@ -131,6 +131,26 @@ public class Time implements Comparable<Time>
     }
     
     /**
+     * Returns the maximum time between this and the input one.
+     * @param t
+     * @return
+    */
+    public Time max( final Time t ) {
+        if (t.compareTo( this ) > 0) setTime( t );
+        return this;
+    }
+    
+    /**
+     * Returns the minimum time between this and the input one.
+     * @param t
+     * @return
+    */
+    public Time min( final Time t ) {
+        if (t.compareTo( this ) < 0) setTime( t );
+        return this;
+    }
+    
+    /**
      * Checks if its time is dynamic.
      * 
      * @return {@code true} if the delay is dynamic, {@code false} otherwise

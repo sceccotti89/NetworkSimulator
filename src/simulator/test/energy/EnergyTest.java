@@ -4,6 +4,7 @@ package simulator.test.energy;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -330,11 +331,13 @@ public class EnergyTest
     {
         Utils.VERBOSE = false;
         
+        Global.eventWriter = new PrintWriter( "./Results/packets.txt" );
         execute( Mode.TIME_CONSERVATIVE,  500 );
-        execute( Mode.TIME_CONSERVATIVE, 1000 );
-        execute( Mode.ENERGY_CONSERVATIVE,  500 );
-        execute( Mode.ENERGY_CONSERVATIVE, 1000 );
-        execute( null, 0 );
+        //execute( Mode.TIME_CONSERVATIVE, 1000 );
+        //execute( Mode.ENERGY_CONSERVATIVE,  500 );
+        //execute( Mode.ENERGY_CONSERVATIVE, 1000 );
+        //execute( null, 0 );
+        Global.eventWriter.close();
     }
     
     private static void execute( final Mode mode, final long timeBudget ) throws IOException
@@ -346,9 +349,9 @@ public class EnergyTest
             model = new PESOSmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" );
         model.loadModel();
         
-        //testDistributedSingleNode( model );
+        testDistributedSingleNode( model );
         //testDistributedMultipleNodes( model );
-        testNodeMulticore( model );
+        //testNodeMulticore( model );
         //testDistributedMulticore( model );
     }
     

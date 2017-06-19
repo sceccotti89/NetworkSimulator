@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import simulator.core.Agent;
 import simulator.events.EventHandler.EventType;
 import simulator.events.impl.ResponseEvent;
+import simulator.test.energy.Global;
 import simulator.topology.NetworkLink;
 import simulator.topology.NetworkNode;
 import simulator.topology.NetworkTopology;
@@ -18,11 +19,13 @@ public abstract class Event implements Comparable<Event>
 {
     /** Event time in microseconds. */
     protected Time _time;
+    protected Time _startTime;
     protected Time _arrivalTime = Time.ZERO;
     
     protected Agent _source;
     protected Agent _dest;
     
+    protected long _prevNodeId = 0;
     protected long _currentNodeId = 0;
     
     protected boolean _processedByAgent = true;
@@ -43,6 +46,7 @@ public abstract class Event implements Comparable<Event>
         _time = time.clone();
         _source = source;
         _currentNodeId = source.getId();
+        _prevNodeId = source.getId();
         setId();
     }
     
@@ -55,6 +59,7 @@ public abstract class Event implements Comparable<Event>
         _packet = packet;
         
         _currentNodeId = from.getId();
+        _prevNodeId = from.getId();
         setId();
     }
     
@@ -122,9 +127,12 @@ public abstract class Event implements Comparable<Event>
             return;
         }
         
+        if (nodeId != _source.getId()) {
+            Global.eventWriter.println( _prevNodeId + " " + _startTime + " " + nodeId + " " + _time );
+        }
+        
         if (nodeId == _dest.getId()) {
             //Utils.LOGGER.debug( "[" + _time + "] Reached destination node: " + node );
-            
             setArrivalTime( _time.clone() );
             _dest.addEventOnQueue( this );
             
@@ -147,12 +155,13 @@ public abstract class Event implements Comparable<Event>
                 /*if (nodeId == _source.getId()) {
                     Utils.LOGGER.debug( "[" + _time + "] Starting from node: " + node );
                 }*/
+                _startTime = _time.clone();
                 
                 if (link.checkErrorLink()) {
                     //System.out.println( "[" + _time + "] Packet lost due to an error in the link." );
                     // TODO utilizzare i vari protocolli per la gestione dell'errore (tipo ICMPv6).
                 } else {
-                    // Assign the current node id.
+                    _prevNodeId = _currentNodeId;
                     _currentNodeId = link.getDestId();
                     long Ttrasm = link.getTtrasm( _packet.getSizeInBits() );
                     

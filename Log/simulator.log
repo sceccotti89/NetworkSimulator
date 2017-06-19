@@ -1,0 +1,15 @@
+2017-06-19 09:40:11 [INFO ] Simulator: Simulation start!
+2017-06-19 09:40:12 [INFO ] Simulator: CPU 0, Energy consumed: 3445.1716240094847J
+2017-06-19 09:40:12 [INFO ] Simulator: CPU 1, Energy consumed: 1300.907123266705J
+2017-06-19 09:40:12 [INFO ] Simulator: CPU 2, Energy consumed: 1175.537715475008J
+2017-06-19 09:40:12 [INFO ] Simulator: CPU 3, Energy consumed: 1169.2579447250007J
+2017-06-19 09:40:12 [INFO ] Simulator: PESOS (TC, t = 500ms) - Total energy:      7090.874407476198J
+2017-06-19 09:40:12 [INFO ] Simulator: PESOS (TC, t = 500ms) - Total idle energy: 4475.714536475002J
+2017-06-19 09:44:59 [INFO ] Simulator: Simulation start!
+2017-06-19 09:45:11 [INFO ] Simulator: Simulation start!
+2017-06-19 09:45:12 [INFO ] Simulator: CPU 0, Energy consumed: 3443.5623823428787J
+2017-06-19 09:45:12 [INFO ] Simulator: CPU 1, Energy consumed: 1301.7782116083692J
+2017-06-19 09:45:12 [INFO ] Simulator: CPU 2, Energy consumed: 1175.539666450008J
+2017-06-19 09:45:12 [INFO ] Simulator: CPU 3, Energy consumed: 1169.2598957000007J
+2017-06-19 09:45:12 [INFO ] Simulator: PESOS (TC, t = 500ms) - Total energy:      7090.140156101257J
+2017-06-19 09:45:12 [INFO ] Simulator: PESOS (TC, t = 500ms) - Total idle energy: 4474.980285099895J
