@@ -40,22 +40,17 @@ public class Packet implements Comparable<Packet>
 	
 	private float startX, startY;
 	
-	private int index;
-	
 	public Packet( final int x, final int y,
 				   final long ID_from, final long ID_to,
 				   final Color color,
 				   final long startTime, final long endTime,
-				   final int width, final int height,
-				   final int index) {
+				   final int width, final int height ) {
 		
 		this.ID_from = ID_from;
 		this.ID_to = ID_to;
 		this.color = color;
 		this.height = height;
 		this.width = width;
-		
-		this.index = index;
 		
 		area = new Rectangle( x + width/32, y, width/80, height/60 );
 		
@@ -226,9 +221,7 @@ public class Packet implements Comparable<Packet>
 		return distance > linkLenght;
 	}
 	
-	public void update( GameContainer gc, final int animTime, boolean animate ) {
-		System.out.println( "INDEX = " + index );
-		
+	public void update( GameContainer gc, final int animTime, boolean animate ) {		
 		int mouseX = gc.getInput().getMouseX();
 		int mouseY = gc.getInput().getMouseY();
 		

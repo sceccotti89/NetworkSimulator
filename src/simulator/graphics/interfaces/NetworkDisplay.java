@@ -17,7 +17,7 @@ public class NetworkDisplay
 	private List<Node> nodes;
 	private List<Packet> packets;
 	
-	private long timer = 9999990;
+	private long timer = 999999999999999990L;
 	
 	private boolean end;
 	
@@ -106,7 +106,6 @@ public class NetworkDisplay
 				if (timer > packet.getEndTime()) {
 					packet.setActive( false );
 				} else if (timer >= packet.getStartTime()) {
-					System.out.println( "TIMER > ENDTIME? = " + (timer > packet.getEndTime() ));
 					packet.update( gc, am.getFrames(), start );
 					if (packet.isActive()) {
 						if (packet.linkCrossed()) {

@@ -72,8 +72,6 @@ public class AnimationNetwork extends BasicGame
         
         BufferedReader reader = new BufferedReader( new FileReader( file ) );
         
-        int index = 1;
-        
         String line;
         while ((line = reader.readLine()) != null) {
         	String[] words = line.split( "[\\s|\\t]+" );
@@ -87,9 +85,7 @@ public class AnimationNetwork extends BasicGame
 			final Color color = from.getColor();
 			final long endTime = Long.parseLong( words[3] );
         	
-			addPacket( x, y, from_ID, dest_ID, color, startTime, endTime, index );
-			
-			index++;
+			addPacket( x, y, from_ID, dest_ID, color, startTime, endTime );
         }
         
         reader.close();
@@ -171,8 +167,8 @@ public class AnimationNetwork extends BasicGame
     	nodes.add( node );
     }
     
-    public void addPacket( int x, int y, long from_ID, long dest_ID, Color color, long startTime, long endTime, int index ) {
-    	Packet packet = new Packet( x, y, from_ID, dest_ID, color, startTime, endTime, width, height, index );
+    public void addPacket( int x, int y, long from_ID, long dest_ID, Color color, long startTime, long endTime ) {
+    	Packet packet = new Packet( x, y, from_ID, dest_ID, color, startTime, endTime, width, height );
         packet.initializingSpeed( getNode( from_ID ), getNode( dest_ID ) );
     	packets.add( packet );
     }
