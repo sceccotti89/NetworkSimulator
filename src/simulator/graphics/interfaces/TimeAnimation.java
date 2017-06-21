@@ -8,8 +8,6 @@ import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
-import simulator.graphics.dataButton.ImageButton;
-
 public class TimeAnimation implements AnimationInterface
 {
     private Rectangle barTiming, timing, cursor;
@@ -18,7 +16,7 @@ public class TimeAnimation implements AnimationInterface
     
     private int mouseX, mouseY;
     
-    private boolean mouseDown;
+    private boolean mouseDown, cursorHit = false;
     
     public TimeAnimation( final GameContainer gc, final float startY, final float width, final float height, final long timeDuration ) throws SlickException
     {
@@ -34,15 +32,25 @@ public class TimeAnimation implements AnimationInterface
     {
     	mouseX = input.getMouseX();
 		mouseY = input.getMouseY();
-    	
+		
 		if (leftMouse && !mouseDown) {
             mouseDown = true;
+            
+            if (cursor.contains( mouseX, mouseY )) {
+            	cursorHit = true;
+            }
 		} else if (!leftMouse && mouseDown) {
             mouseDown = false;
             
             if (timing.contains( mouseX, mouseY )) {
             	cursor.setLocation( mouseX - cursor.getWidth()/2, cursor.getY() );
             }
+            
+            cursorHit = false;
+		}
+		
+		if (cursorHit && mouseDown) {
+			cursor.setLocation( mouseX - cursor.getWidth()/2, cursor.getY() );
 		}
     }
     
