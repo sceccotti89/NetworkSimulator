@@ -83,11 +83,12 @@ public class NetworkDisplay
 		return pause;
 	}
 	
-	public boolean startAnimation() {
+	public boolean startAnimation( final int frames ) {
 		if (!start) {
 			start = true;
 			for (Packet packet: packets) {
 				packet.setActive( true );
+				packet.setSpeed( frames );
 			}
 		}
 		
@@ -136,7 +137,7 @@ public class NetworkDisplay
 				if (timer > packet.getEndTime()) {
 					packet.setActive( false );
 				} else if (timer >= packet.getStartTime()) {
-					packet.update( gc, am.getFrames(), start );
+					packet.update( gc, am.getFrames(), start, am.getFrames() );
 					if (packet.isActive()) {
 						if (packet.linkCrossed()) {
 							packet.setActive( false );

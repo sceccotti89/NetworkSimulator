@@ -42,6 +42,8 @@ public class Packet implements Comparable<Packet>
 	
 	private int mouseX, mouseY;
 	
+	private int timer;
+	
 	public Packet( final int x, final int y,
 				   final long ID_from, final long ID_to,
 				   final Color color,
@@ -80,6 +82,8 @@ public class Packet implements Comparable<Packet>
 		
 		startX = x;
 		startY = y;
+		
+		timer = 0;
 	}
 	
 	public void initializingSpeed( final Node from, final Node dest ) {
@@ -88,12 +92,6 @@ public class Packet implements Comparable<Packet>
 		} else if (from.getCenterX() > dest.getCenterX()) {
 			speedX = -1;
 		} else speedX = 0;
-
-		/*if (from.getCenterY() < dest.getCenterY()) {
-			speedY = 1;
-		} else if (from.getCenterY() > dest.getCenterY()) {
-			speedY = -1;
-		} else speedY = 0;*/
 	}
 	
 	public float getSpeedX() {
@@ -116,21 +114,9 @@ public class Packet implements Comparable<Packet>
 		angle = val;
 	}
 	
-	/*public void setSpeed( final float lenght, final float angle ) {
-		this.angle = angle;
-				
-		float rad = (float) (angle * Math.PI / 180);
-		
-		// TODO SETTARE LA VELOCITA IN RELAZIONE ALLA LUNGHEZZA DEL LINK
-		if (rad != 0) {
-			speedX = speedX * (float) Math.abs( Math.sin( angle ) );
-			speedY = speedY * (float) Math.abs( Math.cos( angle ) );
-		}
-
-		System.out.println( "SPEEDX = " + speedX );
-		System.out.println( "ANGLE = " + angle );
-		System.out.println( "RAD = " + rad );
-	}*/
+	public void setSpeed( final int frames ) {
+		speedX = speedX * (linkLenght / ((endTime - startTime) * frames));
+	}
 	
 	public boolean isActive() {
 		return active;
@@ -223,11 +209,13 @@ public class Packet implements Comparable<Packet>
 		return distance > linkLenght;
 	}
 	
-	public void update( GameContainer gc, final int animTime, boolean animate ) {		
+	public void update( final GameContainer gc, final int animTime, final boolean animate, final int frames ) {		
 		mouseX = gc.getInput().getMouseX();
 		mouseY = gc.getInput().getMouseY();
 		
 		//System.out.print( "SPEED = " + (area.getX() + speedX * animTime) + "\n" );
+		
+		timer = timer + frames;
 		
 		if (animate && active) {
 			distance = distance + speedX * animTime;

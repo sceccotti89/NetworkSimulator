@@ -81,7 +81,7 @@ public class AnimationManager implements AnimationInterface
 					} else if (button.getName().equals( MINUS )) {
 						frame = Math.max( 1, frame - 5 );
 					} else if (button.getName().equals( START )) {
-						nd.startAnimation();
+						nd.startAnimation( frame );
 						ob.resetAllButtons();
 						button.setPressed( true );
 						resetButtons( button );
