@@ -225,11 +225,11 @@ public class Packet implements Comparable<Packet>
 		int mouseX = gc.getInput().getMouseX();
 		int mouseY = gc.getInput().getMouseY();
 		
+		System.out.print( "SPEED = " + (area.getX() + speedX * animTime) + "\n" );
+		
 		if (animate && active) {
-			distance = distance + speedX + animTime;
-			if (distance >= linkLenght) {
-				area.setLocation( area.getX() + distance - linkLenght, area.getY() );
-			} else area.setLocation( area.getX() + speedX + animTime, area.getY() );
+			distance = distance + speedX * animTime;
+			area.setLocation( area.getX() + speedX * animTime, area.getY() );
 		}
 		
 		if (area.contains( mouseX, mouseY )) {
@@ -243,7 +243,8 @@ public class Packet implements Comparable<Packet>
 	}
 	
 	public void draw( final Graphics g ) {
-		g.rotate( startX, startY, angle );
+		System.out.print( "ANGLE = " + (Math.abs( speedX )/speedX * angle) + "\n" );
+		g.rotate( startX, startY, Math.abs( speedX )/speedX * angle );
 		g.setColor( color );
 		g.fill( area );
 		g.resetTransform();

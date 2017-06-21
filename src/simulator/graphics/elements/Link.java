@@ -34,7 +34,7 @@ public class Link
 		
 		this.angle = angle;
 
-		offset = width/80;
+		offset = width/100;
 		
 		lenght = calculateLenght( x1, y1, x2, y2 );
 		
