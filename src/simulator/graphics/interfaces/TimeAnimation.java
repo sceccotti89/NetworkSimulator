@@ -2,7 +2,6 @@
 package simulator.graphics.interfaces;
 
 import org.newdawn.slick.Color;
-import org.newdawn.slick.Font;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
@@ -67,6 +66,8 @@ public class TimeAnimation implements AnimationInterface
 		}
 		
 		timer = nd.getTimingSimulation();
+		
+		cursor.setX( timing.getX() + timing.getWidth()/timeDuration*timer );
     }
     
     @Override
