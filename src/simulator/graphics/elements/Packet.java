@@ -40,6 +40,8 @@ public class Packet implements Comparable<Packet>
 	
 	private float startX, startY;
 	
+	private int mouseX, mouseY;
+	
 	public Packet( final int x, final int y,
 				   final long ID_from, final long ID_to,
 				   final Color color,
@@ -222,10 +224,10 @@ public class Packet implements Comparable<Packet>
 	}
 	
 	public void update( GameContainer gc, final int animTime, boolean animate ) {		
-		int mouseX = gc.getInput().getMouseX();
-		int mouseY = gc.getInput().getMouseY();
+		mouseX = gc.getInput().getMouseX();
+		mouseY = gc.getInput().getMouseY();
 		
-		System.out.print( "SPEED = " + (area.getX() + speedX * animTime) + "\n" );
+		//System.out.print( "SPEED = " + (area.getX() + speedX * animTime) + "\n" );
 		
 		if (animate && active) {
 			distance = distance + speedX * animTime;
@@ -243,7 +245,7 @@ public class Packet implements Comparable<Packet>
 	}
 	
 	public void draw( final Graphics g ) {
-		System.out.print( "ANGLE = " + (Math.abs( speedX )/speedX * angle) + "\n" );
+		//System.out.print( "ANGLE = " + (Math.abs( speedX )/speedX * angle) + "\n" );
 		g.rotate( startX, startY, Math.abs( speedX )/speedX * angle );
 		g.setColor( color );
 		g.fill( area );

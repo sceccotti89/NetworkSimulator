@@ -51,6 +51,10 @@ public class NetworkDisplay
 		return zone.getMaxY();
 	}
 	
+	public long getTimingSimulation() {
+		return timer;
+	}
+	
 	public void startPositions() {
 		for (Packet packet: packets) {
 			packet.setStartConditions( getNode( packet.getSourceID() ) );
