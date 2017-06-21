@@ -56,7 +56,7 @@ public class AnimationManager implements AnimationInterface
     }
     
     @Override
-    public void update( final int delta, final Input input, final boolean leftMouse, final OptionBar ob, final AnimationManager am, final TimeAnimation ta, final NetworkDisplay nd )
+    public void update( final int delta, final Input input, final boolean leftMouse, OptionBar ob, AnimationManager am, TimeAnimation ta, NetworkDisplay nd )
     {    	
     	mouseX = input.getMouseX();
 		mouseY = input.getMouseY();

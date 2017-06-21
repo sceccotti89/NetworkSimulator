@@ -34,7 +34,7 @@ public class TimeAnimation implements AnimationInterface
     }
     
     @Override
-    public void update( final int delta, final Input input, boolean leftMouse, OptionBar ob, AnimationManager am, TimeAnimation ta, NetworkDisplay nd )
+    public void update( final int delta, final Input input, final boolean leftMouse, OptionBar ob, AnimationManager am, TimeAnimation ta, NetworkDisplay nd )
     {
     	mouseX = input.getMouseX();
 		mouseY = input.getMouseY();
