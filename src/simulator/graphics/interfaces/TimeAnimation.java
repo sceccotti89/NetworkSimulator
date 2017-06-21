@@ -41,9 +41,7 @@ public class TimeAnimation implements AnimationInterface
             mouseDown = false;
             
             if (timing.contains( mouseX, mouseY )) {
-                // TODO COMPLETARE QUESTA PARTE
-            	
-            	
+            	cursor.setLocation( mouseX - cursor.getWidth()/2, cursor.getY() );
             }
 		}
     }
