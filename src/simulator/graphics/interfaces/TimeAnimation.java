@@ -21,8 +21,8 @@ public class TimeAnimation implements AnimationInterface
     public TimeAnimation( final GameContainer gc, final float startY, final float width, final float height, final long timeDuration ) throws SlickException
     {
     	barTiming = new Rectangle( 0, startY, width, height*10/75 );
-    	timing    = new Rectangle( 0, startY, width, height*10/225 );
-    	cursor    = new Rectangle( 100, timing.getY(), width/150,timing.getHeight()  );
+    	timing    = new Rectangle( width/50, startY, width*24/25, height*10/225 );
+    	cursor    = new Rectangle( 100, timing.getY(), width/150, timing.getHeight() );
     	
     	this.timeDuration = timeDuration;
     }
@@ -44,12 +44,12 @@ public class TimeAnimation implements AnimationInterface
 	            mouseDown = false;
 	            
 	            if (timing.contains( mouseX, mouseY )) {
-	            	cursor.setLocation( mouseX - cursor.getWidth()/2, cursor.getY() );
+	            	cursor.setX( Math.max( Math.min( mouseX - cursor.getWidth()/2, timing.getMaxX() ), timing.getX() ) );
 	            }
 	            
 	            cursorHit = false;
 			} else if (cursorHit && mouseDown) {
-				cursor.setLocation( mouseX - cursor.getWidth()/2, cursor.getY() );
+				cursor.setX( Math.max( Math.min( mouseX - cursor.getWidth()/2, timing.getMaxX() ), timing.getX() ) );
 			}
 		}
     }
