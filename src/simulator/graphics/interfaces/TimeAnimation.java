@@ -22,7 +22,7 @@ public class TimeAnimation implements AnimationInterface
     {
     	barTiming = new Rectangle( 0, startY, width, height*10/75 );
     	timing    = new Rectangle( width/50, startY, width*24/25, height*10/225 );
-    	cursor    = new Rectangle( 100, timing.getY(), width/150, timing.getHeight() );
+    	cursor    = new Rectangle( timing.getX(), timing.getY(), width/150, timing.getHeight() );
     	
     	this.timeDuration = timeDuration;
     }
