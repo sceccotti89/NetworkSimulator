@@ -75,6 +75,12 @@ public class NetworkDisplay
 		}
 	}
 	
+	public void setPacketsSpeed( final int frames ) {
+		for (Packet packet: packets) {
+			packet.setSpeed( frames );
+		}
+	}
+	
 	public boolean isOperating() {
 		return start;
 	}
@@ -137,7 +143,7 @@ public class NetworkDisplay
 				if (timer > packet.getEndTime()) {
 					packet.setActive( false );
 				} else if (timer >= packet.getStartTime()) {
-					packet.update( gc, am.getFrames(), start, am.getFrames() );
+					packet.update( gc, am.getFrames(), start );
 					if (packet.isActive()) {
 						if (packet.linkCrossed()) {
 							packet.setActive( false );

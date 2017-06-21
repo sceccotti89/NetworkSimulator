@@ -115,7 +115,7 @@ public class Packet implements Comparable<Packet>
 	}
 	
 	public void setSpeed( final int frames ) {
-		speedX = speedX * (linkLenght / ((endTime - startTime) * frames));
+		speedX = speedX * ((linkLenght * frames) / (endTime - startTime));
 	}
 	
 	public boolean isActive() {
@@ -209,7 +209,7 @@ public class Packet implements Comparable<Packet>
 		return distance > linkLenght;
 	}
 	
-	public void update( final GameContainer gc, final int animTime, final boolean animate, final int frames ) {		
+	public void update( final GameContainer gc, final int frames, final boolean animate ) {		
 		mouseX = gc.getInput().getMouseX();
 		mouseY = gc.getInput().getMouseY();
 		
@@ -218,8 +218,8 @@ public class Packet implements Comparable<Packet>
 		timer = timer + frames;
 		
 		if (animate && active) {
-			distance = distance + speedX * animTime;
-			area.setLocation( area.getX() + speedX * animTime, area.getY() );
+			distance = distance + speedX;
+			area.setLocation( area.getX() + speedX, area.getY() );
 		}
 		
 		if (area.contains( mouseX, mouseY )) {

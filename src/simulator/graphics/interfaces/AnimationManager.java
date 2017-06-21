@@ -24,7 +24,7 @@ public class AnimationManager implements AnimationInterface
     
     private int mouseX, mouseY;
     
-    private int frame = 1;
+    private int frames = 1;
     
     private static final int limit = Integer.MAX_VALUE;
     
@@ -46,7 +46,7 @@ public class AnimationManager implements AnimationInterface
         plus  = new ImageButton( stop.getMaxX() + widthM/4, startY + heightM/20, widthM/20, heightM/20, PLUS, Color.yellow, 4, gc, new Image( "./data/Image/Plus.png" ), widthM/40, heightM/30 );
         
         speed     = new Rectangle( pause.getMaxX(), startY, gc.getWidth() - pause.getMaxX(), height );
-        showFrame = new Rectangle( minus.getMaxX() + (plus.getX() - minus.getMaxX())/2 - gc.getWidth()/22, minus.getY() + gc.getHeight()/270, gc.getWidth()/10*String.valueOf( frame ).length()/2 + gc.getWidth()/20, gc.getHeight()/20 );
+        showFrame = new Rectangle( minus.getMaxX() + (plus.getX() - minus.getMaxX())/2 - gc.getWidth()/22, minus.getY() + gc.getHeight()/270, gc.getWidth()/10*String.valueOf( frames ).length()/2 + gc.getWidth()/20, gc.getHeight()/20 );
         
         buttons.add( start );
         buttons.add( stop );
@@ -77,11 +77,13 @@ public class AnimationManager implements AnimationInterface
             	if (button.checkClick( mouseX, mouseY )) {
             		buttonFounded = true;
                 	if (button.getName().equals( PLUS )) {
-						frame = Math.min( limit, frame + 5 );
+						frames = Math.min( limit, frames + 1 );
+						nd.setPacketsSpeed( frames );
 					} else if (button.getName().equals( MINUS )) {
-						frame = Math.max( 1, frame - 5 );
+						frames = Math.max( 1, frames - 1 );
+						nd.setPacketsSpeed( frames );
 					} else if (button.getName().equals( START )) {
-						nd.startAnimation( frame );
+						nd.startAnimation( frames );
 						ob.resetAllButtons();
 						button.setPressed( true );
 						resetButtons( button );
@@ -129,7 +131,7 @@ public class AnimationManager implements AnimationInterface
     	
     	g.setColor( Color.black );
     	g.draw( showFrame );
-    	g.drawString( String.valueOf( frame ), plus.getMaxX() + (minus.getX() - plus.getMaxX())/2 - String.valueOf( frame ).length()/2*gc.getWidth()/80, plus.getY() + (plus.getMaxY() - plus.getY())/4 );
+    	g.drawString( String.valueOf( frames ), plus.getMaxX() + (minus.getX() - plus.getMaxX())/2 - String.valueOf( frames ).length()/2*gc.getWidth()/80, plus.getY() + (plus.getMaxY() - plus.getY())/4 );
     }
     
     public void resetAllButtons() {
@@ -149,6 +151,6 @@ public class AnimationManager implements AnimationInterface
     }
     
     public int getFrames() {
-    	return frame;
+    	return frames;
     }
 }
