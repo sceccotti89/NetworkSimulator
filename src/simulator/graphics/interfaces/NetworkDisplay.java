@@ -47,6 +47,10 @@ public class NetworkDisplay
     	return null;
     }
 	
+	public float getMaxY() {
+		return zone.getMaxY();
+	}
+	
 	public void startPositions() {
 		for (Packet packet: packets) {
 			packet.setStartConditions( getNode( packet.getSourceID() ) );

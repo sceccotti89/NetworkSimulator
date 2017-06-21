@@ -158,8 +158,8 @@ public class AnimationNetwork extends BasicGame
     {
         ob = new OptionBar( gc );
         am = new AnimationManager( gc, ob.getMaxY(), width, height );
-        ta = new TimeAnimation();
-        nd = new NetworkDisplay( gc.getWidth(), ta.getY() - am.getMaxY(), am.getMaxY(), nodes, packets );
+        nd = new NetworkDisplay( gc.getWidth(), gc.getHeight()*100/142, am.getMaxY(), nodes, packets );
+        ta = new TimeAnimation( gc, nd.getMaxY(), width, height );
     }
     
     public void addNode( int x, int y, long nodeID, Color color ) {
@@ -205,7 +205,7 @@ public class AnimationNetwork extends BasicGame
     {
         ob.render( gc );
         am.render( gc );
-        ta.render( gc );
         nd.render( gc );
+        ta.render( gc );
     }
 }

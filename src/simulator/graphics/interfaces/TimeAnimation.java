@@ -5,11 +5,18 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
+import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
 public class TimeAnimation implements AnimationInterface
 {
-    private Rectangle barTiming  = new Rectangle( 0, 520, 800, 80 );
+    private Rectangle barTiming, timing;
+    
+    public TimeAnimation( final GameContainer gc, final float startY, final float width, final float height ) throws SlickException
+    {
+    	barTiming = new Rectangle( 0, startY, width, height*10/75 );
+    	timing    = new Rectangle( 0, startY, width, height*10/75 );
+    }
     
     @Override
     public void update( final int delta, final Input input, final boolean leftMouse, final OptionBar ob, final AnimationManager am, final TimeAnimation ta, final NetworkDisplay nd )
@@ -22,8 +29,11 @@ public class TimeAnimation implements AnimationInterface
     {
     	Graphics g = gc.getGraphics();
     	
-    	g.setColor( Color.black );
-        g.draw( barTiming );
+    	/*g.setColor( Color.black );
+        g.draw( barTiming );*/
+        
+        g.setColor( Color.red );
+        g.fill( timing );
     }
     
     public float getY(){
