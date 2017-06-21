@@ -22,13 +22,13 @@ public class TimeAnimation implements AnimationInterface
     {
     	barTiming = new Rectangle( 0, startY, width, height*10/75 );
     	timing    = new Rectangle( 0, startY, width, height*10/225 );
-    	cursor    = new Rectangle( 100, timing.getY(), width/130,timing.getHeight()  );
+    	cursor    = new Rectangle( 100, timing.getY(), width/150,timing.getHeight()  );
     	
     	this.timeDuration = timeDuration;
     }
     
     @Override
-    public void update( final int delta, final Input input, final boolean leftMouse, final OptionBar ob, final AnimationManager am, final TimeAnimation ta, final NetworkDisplay nd )
+    public void update( final int delta, final Input input, boolean leftMouse, OptionBar ob, AnimationManager am, TimeAnimation ta, NetworkDisplay nd )
     {
     	mouseX = input.getMouseX();
 		mouseY = input.getMouseY();
@@ -39,18 +39,18 @@ public class TimeAnimation implements AnimationInterface
             if (cursor.contains( mouseX, mouseY )) {
             	cursorHit = true;
             }
-		} else if (!leftMouse && mouseDown) {
-            mouseDown = false;
-            
-            if (timing.contains( mouseX, mouseY )) {
-            	cursor.setLocation( mouseX - cursor.getWidth()/2, cursor.getY() );
-            }
-            
-            cursorHit = false;
-		}
-		
-		if (cursorHit && mouseDown) {
-			cursor.setLocation( mouseX - cursor.getWidth()/2, cursor.getY() );
+		} else if (mouseDown) {
+			if (!leftMouse) {
+	            mouseDown = false;
+	            
+	            if (timing.contains( mouseX, mouseY )) {
+	            	cursor.setLocation( mouseX - cursor.getWidth()/2, cursor.getY() );
+	            }
+	            
+	            cursorHit = false;
+			} else if (cursorHit && mouseDown) {
+				cursor.setLocation( mouseX - cursor.getWidth()/2, cursor.getY() );
+			}
 		}
     }
     
