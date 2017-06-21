@@ -49,6 +49,8 @@ public class AnimationNetwork extends BasicGame
 	
 	private Element obj;
 	private NodeList config;
+	
+	private long timeDuration = 0;
     
     public AnimationNetwork( final int width, final int height, final String title )
     {
@@ -86,6 +88,10 @@ public class AnimationNetwork extends BasicGame
 			final long endTime = Long.parseLong( words[3] );
         	
 			addPacket( x, y, from_ID, dest_ID, color, startTime, endTime );
+			
+			if (endTime > timeDuration) {
+				timeDuration = endTime;
+			}
         }
         
         reader.close();
@@ -186,6 +192,10 @@ public class AnimationNetwork extends BasicGame
     	}
     	
     	return null;
+    }
+    
+    public long getTimeDuration() {
+    	return timeDuration;
     }
 
     @Override
