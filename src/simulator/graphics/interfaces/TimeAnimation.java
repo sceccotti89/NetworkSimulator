@@ -16,12 +16,16 @@ public class TimeAnimation implements AnimationInterface
     
     private int mouseX, mouseY;
     
-    private boolean mouseDown, cursorHit = false;
+    private boolean mouseDown, cursorHit = false, timingHit = false;
+    
+    private float startTimingX;
     
     public TimeAnimation( final GameContainer gc, final float startY, final float width, final float height, final long timeDuration ) throws SlickException
     {
+    	startTimingX = width/80;
+    	
     	barTiming = new Rectangle( 0, startY, width, height*10/75 );
-    	timing    = new Rectangle( width/50, startY, width*24/25, height*10/225 );
+    	timing    = new Rectangle( startTimingX, startY, width - 2*startTimingX, height*10/225 );
     	cursor    = new Rectangle( timing.getX(), timing.getY(), width/150, timing.getHeight() );
     	
     	this.timeDuration = timeDuration;
@@ -38,13 +42,19 @@ public class TimeAnimation implements AnimationInterface
             
             if (cursor.contains( mouseX, mouseY )) {
             	cursorHit = true;
+            } else if (timing.contains( mouseX, mouseY )) {
+            	timingHit = true;
+            } else {
+            	mouseDown = false;
             }
 		} else if (mouseDown) {
 			if (!leftMouse) {
 	            mouseDown = false;
 	            
-	            if (timing.contains( mouseX, mouseY )) {
-	            	cursor.setX( Math.max( Math.min( mouseX - cursor.getWidth()/2, timing.getMaxX() ), timing.getX() ) );
+	            if (timingHit || cursorHit) {
+		            if (timing.contains( mouseX, mouseY )) {
+		            	cursor.setX( Math.max( Math.min( mouseX - cursor.getWidth()/2, timing.getMaxX() ), timing.getX() ) );
+		            }
 	            }
 	            
 	            cursorHit = false;
