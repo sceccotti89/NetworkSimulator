@@ -8,16 +8,23 @@ import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
+import simulator.graphics.dataButton.ImageButton;
+
 public class TimeAnimation implements AnimationInterface
 {
-    private Rectangle barTiming, timing;
+    private Rectangle barTiming, timing, cursor;
     
     private long timeDuration;
+    
+    private int mouseX, mouseY;
+    
+    private boolean mouseDown;
     
     public TimeAnimation( final GameContainer gc, final float startY, final float width, final float height, final long timeDuration ) throws SlickException
     {
     	barTiming = new Rectangle( 0, startY, width, height*10/75 );
-    	timing    = new Rectangle( 0, startY, width, height*10/75 );
+    	timing    = new Rectangle( 0, startY, width, height*10/225 );
+    	cursor    = new Rectangle( 100, timing.getY(), width/130,timing.getHeight()  );
     	
     	this.timeDuration = timeDuration;
     }
@@ -25,7 +32,20 @@ public class TimeAnimation implements AnimationInterface
     @Override
     public void update( final int delta, final Input input, final boolean leftMouse, final OptionBar ob, final AnimationManager am, final TimeAnimation ta, final NetworkDisplay nd )
     {
-        System.out.println( "TIME = " + timeDuration );
+    	mouseX = input.getMouseX();
+		mouseY = input.getMouseY();
+    	
+		if (leftMouse && !mouseDown) {
+            mouseDown = true;
+		} else if (!leftMouse && mouseDown) {
+            mouseDown = false;
+            
+            if (timing.contains( mouseX, mouseY )) {
+                // TODO COMPLETARE QUESTA PARTE
+            	
+            	
+            }
+		}
     }
     
     @Override
@@ -33,11 +53,14 @@ public class TimeAnimation implements AnimationInterface
     {
     	Graphics g = gc.getGraphics();
     	
-    	/*g.setColor( Color.black );
-        g.draw( barTiming );*/
+    	g.setColor( Color.black );
+        g.draw( barTiming );
         
         g.setColor( Color.red );
         g.fill( timing );
+        
+        g.setColor( Color.white );
+        g.fill( cursor );
     }
     
     public float getY(){

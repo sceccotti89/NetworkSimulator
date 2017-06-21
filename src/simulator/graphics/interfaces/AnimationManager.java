@@ -34,8 +34,8 @@ public class AnimationManager implements AnimationInterface
     
     public AnimationManager( final GameContainer gc, final float startY, final float widthM, final float heightM ) throws SlickException
     {
-        height = gc.getHeight()*10/75;
-        width  = gc.getWidth()*10/53;
+        height = heightM*10/75;
+        width  = widthM*10/53;
         
         buttons = new ArrayList<ImageButton>();
 
