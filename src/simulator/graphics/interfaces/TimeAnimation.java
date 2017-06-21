@@ -12,16 +12,20 @@ public class TimeAnimation implements AnimationInterface
 {
     private Rectangle barTiming, timing;
     
-    public TimeAnimation( final GameContainer gc, final float startY, final float width, final float height ) throws SlickException
+    private long timeDuration;
+    
+    public TimeAnimation( final GameContainer gc, final float startY, final float width, final float height, final long timeDuration ) throws SlickException
     {
     	barTiming = new Rectangle( 0, startY, width, height*10/75 );
     	timing    = new Rectangle( 0, startY, width, height*10/75 );
+    	
+    	this.timeDuration = timeDuration;
     }
     
     @Override
     public void update( final int delta, final Input input, final boolean leftMouse, final OptionBar ob, final AnimationManager am, final TimeAnimation ta, final NetworkDisplay nd )
     {
-        
+        System.out.println( "TIME = " + timeDuration );
     }
     
     @Override
