@@ -55,6 +55,10 @@ public class NetworkDisplay
 		return timer;
 	}
 	
+	public void setTiminigSimulator( long val ) {
+		timer = val;
+	}
+	
 	public void startPositions() {
 		for (Packet packet: packets) {
 			packet.setStartConditions( getNode( packet.getSourceID() ) );
