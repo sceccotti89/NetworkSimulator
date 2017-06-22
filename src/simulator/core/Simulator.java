@@ -5,6 +5,7 @@
 package simulator.core;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -122,6 +123,10 @@ public class Simulator
     
     public Collection<NetworkTopology> getNetworks() {
         return _networks.values();
+    }
+    
+    public void trackEvents( final String eventsFile, final long netID ) throws FileNotFoundException {
+        _networks.get( netID ).setTrackEvents( eventsFile );
     }
     
     public void start() {

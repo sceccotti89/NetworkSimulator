@@ -4,7 +4,6 @@ package simulator.test.energy;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -23,7 +22,8 @@ import simulator.events.impl.ResponseEvent;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
 import simulator.test.energy.CPUEnergyModel.Mode;
-import simulator.test.energy.CPUEnergyModel.*;
+import simulator.test.energy.CPUEnergyModel.PERFmodel;
+import simulator.test.energy.CPUEnergyModel.PESOSmodel;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.topology.NetworkTopology;
 import simulator.utils.SizeUnit;
@@ -331,13 +331,11 @@ public class EnergyTest
     {
         Utils.VERBOSE = false;
         
-        Global.eventWriter = new PrintWriter( "./Results/packets.txt" );
         execute( Mode.TIME_CONSERVATIVE,  500 );
         //execute( Mode.TIME_CONSERVATIVE, 1000 );
         //execute( Mode.ENERGY_CONSERVATIVE,  500 );
         //execute( Mode.ENERGY_CONSERVATIVE, 1000 );
         //execute( null, 0 );
-        Global.eventWriter.close();
     }
     
     private static void execute( final Mode mode, final long timeBudget ) throws IOException
@@ -369,6 +367,7 @@ public class EnergyTest
         */
         
         NetworkTopology net = new NetworkTopology( "Topology/Topology_multicore.json" );
+        net.setTrackEvents( "./Results/packets2.txt" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -417,7 +416,7 @@ public class EnergyTest
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         plotter.setVisible( true );
         
-        sim.start( new Time( 24, TimeUnit.HOURS ) );
+        sim.start( new Time( 1, TimeUnit.HOURS ) );
         
         sim.stop();
         

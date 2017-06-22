@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 import simulator.core.Agent;
 import simulator.events.EventHandler.EventType;
 import simulator.events.impl.ResponseEvent;
-import simulator.test.energy.Global;
 import simulator.topology.NetworkLink;
 import simulator.topology.NetworkNode;
 import simulator.topology.NetworkTopology;
@@ -128,7 +127,7 @@ public abstract class Event implements Comparable<Event>
         }
         
         if (nodeId != _source.getId()) {
-            Global.eventWriter.println( _prevNodeId + " " + _startTime + " " + nodeId + " " + _time );
+            net.trackEvent( _prevNodeId + " " + _startTime + " " + nodeId + " " + _time );
         }
         
         if (nodeId == _dest.getId()) {
