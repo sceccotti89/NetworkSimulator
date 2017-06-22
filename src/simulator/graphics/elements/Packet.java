@@ -78,8 +78,7 @@ public class Packet implements Comparable<Packet>
 		return linkLenght;
 	}
 	
-	/**metodo per riattivare i pacchetti nel caso di click nella barra*/
-	public void setConditions( final long time )
+	public void setPosition( final long time )
 	{
 	    active = true;
 		timer = Math.max( 0, time - startTime );
@@ -94,11 +93,10 @@ public class Packet implements Comparable<Packet>
 	
 	public void setAngle() {
 		angle = source.getAngle( dest.getNodeID() );
-		//System.out.println( "ANGLE = " + angle );
 	}
 	
 	public void setSpeed( final int frames ) {
-		speedX = ((linkLenght - distance) / (endTime - startTime - timer)) * frames;
+		speedX = (linkLenght / (endTime - startTime)) * frames;
 	}
 	
 	public boolean isActive() {
@@ -149,14 +147,13 @@ public class Packet implements Comparable<Packet>
 		return dest;
 	}
 	
-	public void update( final GameContainer gc, final float time, final int frames, final boolean animate )
+	public void update( final GameContainer gc, final float time )
 	{
-	    if (animate && active) {
+	    if (active) {
     	    if (time >= startTime) {
         		int mouseX = gc.getInput().getMouseX();
         		int mouseY = gc.getInput().getMouseY();
         		
-        		timer = timer + frames;
         		if (time >= endTime) {
         		    setActive( false );
         		    return;

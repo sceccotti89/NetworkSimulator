@@ -21,7 +21,9 @@ public class NetworkDisplay
 	
 	private boolean end;
 	
-	private boolean start, pause;
+	private boolean pause;
+	
+	private int index = 0;
 	
 	public NetworkDisplay( final float width, final float height, final float startY, final List<Node> nodes, final List<Packet> packets )
 	{
@@ -31,16 +33,31 @@ public class NetworkDisplay
 		
 		this.packets = packets;
 		
-		end = false;
+		resetAnimation();
+	}
+	
+	/***/
+	private void resetAnimation() {
+		timer = 0;
+		index = 0;
 		
-		start = false;
-		pause = false;
+		pause = true;
+		end = false;
+
+		for (Packet packet: packets) {
+			packet.init();
+			packet.setActive( true );
+		}
 	}
 	
 	public void checkActivityPackets() {
-		for (Packet packet: packets) {
+		index = 0;
+		for (int i = index; i < packets.size(); i++) {
+			Packet packet = packets.get( i );
 			if (timer < packet.getEndTime()) {
-				packet.setConditions( timer );
+				packet.setPosition( timer );
+			} else if (i == index) {
+				index++;
 			}
 		}
 	}
@@ -49,94 +66,53 @@ public class NetworkDisplay
 		return zone.getMaxY();
 	}
 	
-	public long getTimingSimulation() {
+	public long getTimeSimulation() {
 		return timer;
 	}
 	
-	public void setTiminigSimulator( long val ) {
+	public void setTimeSimulation( long val ) {
 		timer = val;
 	}
 	
-	public void startPositions() {
-		for (Packet packet: packets) {
-			packet.init();
-		}
-	}
-	
-	public void setPacketsSpeed( final int frames ) {
+	public void setPacketSpeed( final int frames ) {
 		for (Packet packet: packets) {
 			packet.setSpeed( frames );
 		}
-	}
-	
-	public boolean isOperating() {
-		return start;
 	}
 	
 	public boolean isInPause() {
 		return pause;
 	}
 	
-	public boolean startAnimation( final int frames ) {
-		if (!start) {
-			start = true;
-			for (Packet packet: packets) {
-				packet.setActive( true );
-				packet.setSpeed( frames );
-			}
-		}
-		
-		if (end) {
-			startPositions();
-			timer = 0;
-		} else {
-			if (pause) {
-				pause = false;
-			}		
-		}
-		
-		return true;
-	}
-	
-	public boolean pauseAnimation() {
-		if (!end) {
-			pause = true;
-			start = false;
-		}
-		
-		return true;
-	}
-	
-	public boolean stopAnimation() {
-		startPositions();
-		
-		start = false;
+	public void startAnimation() {
 		pause = false;
-		
-		timer = 0;
-		
-		return true;
+	}
+	
+	public void pauseAnimation() {
+		pause = true;
+	}
+	
+	public void stopAnimation() {
+		pause = true;
+		resetAnimation();
 	}
 	
 	public void update( final GameContainer gc, final AnimationManager am )
 	{
-		end = true;
-
-	    // TODO IL TIMER ORA E' CORRETTO?????
-		if (start) {
-			timer = timer + am.getFrames();
+		if (pause) {
+			return;
 		}
 		
-		for (Packet packet: packets) {
+		timer = timer + am.getFrames();
+		
+		for (int i = index; i < packets.size(); i++) {
+			Packet packet = packets.get( i );
+			System.out.println( "SPEED = " + packet.getSpeedX() );
 		    if (packet.getStartTime() > timer) break;
-			packet.update( gc, timer, am.getFrames(), start );
-		}
-		
-		// control packets ending
-		for (Packet packet: packets) {
-			if (packet.isActive()) {
-				end = false;
-				break;
+			packet.update( gc, timer );
+			if (!packet.isActive() && i == index) {
+				index++;
+				end = index == packets.size();
 			}
 		}
 		
@@ -157,7 +133,7 @@ public class NetworkDisplay
 		g.fill( zone );
 		
 		for (Packet packet: packets) {
-			if (timer >= packet.getStartTime() && (start || pause) && packet.isActive()) {
+			if (timer > 0 && timer >= packet.getStartTime() && packet.isActive()) {
 				packet.draw( g );
 			}
 		}

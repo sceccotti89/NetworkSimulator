@@ -24,7 +24,7 @@ public class AnimationManager implements AnimationInterface
     
     private int mouseX, mouseY;
     
-    private int frames = 1;
+    public static int frames = 1;
     
     private static final int limit = Integer.MAX_VALUE;
     
@@ -78,12 +78,14 @@ public class AnimationManager implements AnimationInterface
             		buttonFounded = true;
                 	if (button.getName().equals( PLUS )) {
 						frames = Math.min( limit, frames + 1 );
-						nd.setPacketsSpeed( frames );
+						nd.setPacketSpeed( frames );
+						button.setPressed( false );
 					} else if (button.getName().equals( MINUS )) {
 						frames = Math.max( 1, frames - 1 );
-						nd.setPacketsSpeed( frames );
+						nd.setPacketSpeed( frames );
+						button.setPressed( false );
 					} else if (button.getName().equals( START )) {
-						nd.startAnimation( frames );
+						nd.startAnimation();
 						ob.resetAllButtons();
 						button.setPressed( true );
 						resetButtons( button );
@@ -102,7 +104,7 @@ public class AnimationManager implements AnimationInterface
             if (!buttonFounded){
             	for (ImageButton bottone: buttons) {
                 	if (bottone.isPressed()) {
-                		if ((bottone.getName().equals( START ) && !nd.isOperating())
+                		if ((bottone.getName().equals( START ) /*&& !isOperating()*/)
                 		 || (bottone.getName().equals( PAUSE ) && !nd.isInPause())
                 		 || (bottone.getName().equals( STOP ))) {
                 			bottone.setPressed( false );
