@@ -54,8 +54,10 @@ public class NetworkDisplay
 		index = 0;
 		for (int i = index; i < packets.size(); i++) {
 			Packet packet = packets.get( i );
-			if (timer < packet.getEndTime()) {
-				packet.setPosition( timer );
+			if (timer >= packet.getStartTime()) {
+				if (timer < packet.getEndTime()) {
+					packet.setPosition( timer );
+				}
 			} else if (i == index) {
 				index++;
 			}
@@ -125,15 +127,16 @@ public class NetworkDisplay
 		}
 	}
 	
-	public void render( GameContainer gc ) {
+	public void render( final GameContainer gc ) {
 		Graphics g = gc.getGraphics();
 		
 		g.setColor( Color.white );
 		g.fill( zone );
 		
-		for (Packet packet: packets) {
-			if (timer > 0 && timer >= packet.getStartTime() && packet.isActive()) {
-				packet.draw( g );
+		if (timer > 0) {
+			for (int i = index; i < packets.size(); i++) {
+				Packet packet = packets.get( i );
+				packet.draw( timer, g );
 			}
 		}
 		

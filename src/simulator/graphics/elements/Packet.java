@@ -171,8 +171,11 @@ public class Packet implements Comparable<Packet>
 	    }
 	}
 	
-	public void draw( final Graphics g )
+	public void draw( final long time, final Graphics g )
 	{
+		if (time < startTime || time > endTime)
+			return;
+		
 		g.rotate( source.getCenterX(), source.getCenterY(), angle );
 		
 		float offset = height/30;
