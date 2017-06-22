@@ -270,7 +270,7 @@ public class NetworkTopology
     }
     
     /**
-     * Asks the network to track the incoming event in form of message.</br>
+     * Asks the network to track the incoming event, as a string message.</br>
      * The given message will be saved on file only if a previous call to the method
      * {@linkplain #setTrackEvents(String)} is done.
      * 
