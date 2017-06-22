@@ -131,6 +131,7 @@ public class AnimationManager implements AnimationInterface
     	
     	g.setColor( Color.black );
     	g.draw( showFrame );
+    	// FIXME messo qui e' bruttissimo (per non parlare della lunghezza della riga..)
     	g.drawString( String.valueOf( frames ), plus.getMaxX() + (minus.getX() - plus.getMaxX())/2 - String.valueOf( frames ).length()/2*gc.getWidth()/80, plus.getY() + (plus.getMaxY() - plus.getY())/4 );
     }
     

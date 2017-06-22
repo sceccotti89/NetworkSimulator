@@ -118,27 +118,18 @@ public class NetworkDisplay
 		return true;
 	}
 	
-	public void update( GameContainer gc, AnimationManager am ) {
+	public void update( final GameContainer gc, final AnimationManager am )
+	{
 		end = true;
 
 	    // TODO IL TIMER ORA E' CORRETTO?????
 		if (start) {
 			timer = timer + am.getFrames();
 		}
-	
+		
 		for (Packet packet: packets) {
-			if (packet.isActive()) {
-				if (timer > packet.getEndTime()) {
-					packet.setActive( false );
-				} else if (timer >= packet.getStartTime()) {
-					packet.update( gc, am.getFrames(), start );
-					if (packet.isActive()) {
-						if (packet.linkCrossed()) {
-							packet.setActive( false );
-						}
-					}
-				}
-			}
+		    if (packet.getStartTime() > timer) break;
+			packet.update( gc, timer, am.getFrames(), start );
 		}
 		
 		// control packets ending
@@ -150,7 +141,7 @@ public class NetworkDisplay
 		}
 		
 		if (end) {
-			start = false;
+			stopAnimation();
 			am.resetAllButtons();
 		}
 		

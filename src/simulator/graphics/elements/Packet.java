@@ -12,8 +12,6 @@ public class Packet implements Comparable<Packet>
 	
 	private Rectangle area;
 	
-	private boolean hasFinished;
-	
 	private long startTime, endTime;
 	
 	private boolean active;
@@ -32,8 +30,6 @@ public class Packet implements Comparable<Packet>
 	
 	private float distance;
 	
-	private int mouseX, mouseY;
-	
 	private long timer;
 	
 	private Node source, dest;
@@ -49,8 +45,6 @@ public class Packet implements Comparable<Packet>
 		this.height = height;
 		this.width = width;
 		
-		//area = new Rectangle( source.getCenterX() + width/32, source.getCenterY(), width/80, height/60 );
-		
 		this.startTime = startTime;
 		this.endTime = endTime;
 		
@@ -64,13 +58,11 @@ public class Packet implements Comparable<Packet>
 		init();
 	}
 	
-	public void init() {
+	public void init()
+	{
 		area = new Rectangle( source.getCenterX() + source.getRay(), source.getCenterY() - height/120, width/80, height/60 );
-		System.out.println( "AREA.X = " + area.getX() + " AREA.Y = " + area.getY() );
-		//area.setLocation( source.getCenterX() + width/32, source.getCenterY() + height/30 );
 		distance = 0;
 		timer = 0;
-		hasFinished = false;
 		active = true;
 	}
 	
@@ -87,21 +79,22 @@ public class Packet implements Comparable<Packet>
 	}
 	
 	/**metodo per riattivare i pacchetti nel caso di click nella barra*/
-	public void setConditions( final long time ) {
-		timer = time - startTime;
-		if (timer <= 0) {
+	public void setConditions( final long time )
+	{
+	    active = true;
+		timer = Math.max( 0, time - startTime );
+		if (timer == 0) {
 			distance = 0;
 		} else {
-			distance = ((time - startTime) / (endTime - startTime)) * linkLenght;
+			distance = (float) ((((double) (time - startTime)) / ((double) (endTime - startTime))) * linkLenght);
 		}
 		
-		area.setLocation( source.getCenterX() + width/32 + distance, source.getCenterY() + height/30 );
-		active = true;
+		area.setX( source.getCenterX() + source.getRay() + distance );
 	}
 	
 	public void setAngle() {
 		angle = source.getAngle( dest.getNodeID() );
-		System.out.println( "ANGLE = " + angle );
+		//System.out.println( "ANGLE = " + angle );
 	}
 	
 	public void setSpeed( final int frames ) {
@@ -132,14 +125,6 @@ public class Packet implements Comparable<Packet>
 		return endTime;
 	}
 	
-	public void setFinished( boolean val ) {
-		hasFinished = val;
-	}
-	
-	public boolean getFinished() {
-		return hasFinished;
-	}
-	
 	public void setSourceNode( final Node source ) {
 		this.source = source;
 	}
@@ -164,44 +149,47 @@ public class Packet implements Comparable<Packet>
 		return dest;
 	}
 	
-	public boolean linkCrossed() {
-		return distance > linkLenght;
+	public void update( final GameContainer gc, final float time, final int frames, final boolean animate )
+	{
+	    if (animate && active) {
+    	    if (time >= startTime) {
+        		int mouseX = gc.getInput().getMouseX();
+        		int mouseY = gc.getInput().getMouseY();
+        		
+        		timer = timer + frames;
+        		if (time >= endTime) {
+        		    setActive( false );
+        		    return;
+        		}
+        		
+    			distance = distance + speedX;
+    			area.setLocation( area.getX() + speedX, area.getY() );
+        		
+    			drawInfo = area.contains( mouseX, mouseY );
+        		if (drawInfo) {
+        			float offset = gc.getWidth()/80;
+        			infos.setLocation( mouseX + offset, mouseY - offset );
+        		}
+    	    }
+	    }
 	}
 	
-	public void update( final GameContainer gc, final int frames, final boolean animate ) {		
-		mouseX = gc.getInput().getMouseX();
-		mouseY = gc.getInput().getMouseY();
-		
-		timer = timer + frames;
-		
-		if (animate && active) {
-			distance = distance + speedX;
-			area.setLocation( area.getX() + speedX, area.getY() );
-		}
-		
-		if (area.contains( mouseX, mouseY )) {
-			drawInfo = true;
-			
-			float offset = gc.getWidth()/80;
-			infos.setLocation( mouseX + offset, mouseY - offset );
-		} else {
-			drawInfo = false;
-		}
-	}
-	
-	public void draw( final Graphics g ) {
+	public void draw( final Graphics g )
+	{
 		g.rotate( source.getCenterX(), source.getCenterY(), angle );
-		if (angle < 0) area.setY( area.getY() - height/30 * Math.abs( angle )/angle ) ;
-		else area.setY( area.getY() + height/30 * Math.abs( angle )/angle );
+		
+		float offset = height/30;
+		if (angle == -180) offset *= -1;
+		
+		area.setY( area.getY() + offset );
 		g.setColor( color );
 		g.fill( area );
 		g.resetTransform();
-		if (angle < 0) area.setY( area.getY() + height/30 * Math.abs( angle )/angle ) ;
-		else area.setY( area.getY() - height/30 * Math.abs( angle )/angle );
+		area.setY( area.getY() - offset );
 		
 		if (drawInfo) {
 			Font f = g.getFont();
-			String info = "ID_From = " + source.getNodeID() + "\n" + "ID_To = " + dest.getNodeID();
+			String info = "Source node = " + source.getNodeID() + "\nDestination node = " + dest.getNodeID();
 			infos.setSize( f.getWidth( info ), f.getHeight( info ) );
 			
 			g.setColor( Color.magenta );
@@ -218,5 +206,10 @@ public class Packet implements Comparable<Packet>
 		if (startTime < packet.startTime) return -1;
 		if (startTime > packet.startTime) return 1;
 		return 0;
+	}
+	
+	@Override
+	public String toString() {
+	    return "Source: " + source.getNodeID() + ", Destination: " + dest.getNodeID();
 	}
 }
