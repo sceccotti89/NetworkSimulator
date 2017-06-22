@@ -191,12 +191,13 @@ public class Packet implements Comparable<Packet>
 	
 	public void draw( final Graphics g ) {
 		g.rotate( source.getCenterX(), source.getCenterY(), angle );
-		if () ;
-		area.setY( area.getY() + height/30 * Math.abs( angle )/angle );
+		if (angle < 0) area.setY( area.getY() - height/30 * Math.abs( angle )/angle ) ;
+		else area.setY( area.getY() + height/30 * Math.abs( angle )/angle );
 		g.setColor( color );
 		g.fill( area );
 		g.resetTransform();
-		area.setY( area.getY() - height/30 * Math.abs( angle )/angle );
+		if (angle < 0) area.setY( area.getY() + height/30 * Math.abs( angle )/angle ) ;
+		else area.setY( area.getY() - height/30 * Math.abs( angle )/angle );
 		
 		if (drawInfo) {
 			Font f = g.getFont();
