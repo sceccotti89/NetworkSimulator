@@ -47,12 +47,15 @@ public class NetworkDisplay
     	return null;
     }
 	
-	public void checkActivityPackets() {
+	public void checkActivityPackets( final int frames ) {
 		for (Packet packet: packets) {
-			if (timer <= packet.getStartTime()) {
+			if (timer < packet.getEndTime()) {
 				// TODO SETTARE LA POSIZIONE DEL PACCHETTO IN RELAZIONE AL TIMER
 				// ORA HO FATTO CHE RIPARTE SEMPRE DA CAPO MA E' SCORRETTO
-				packet.setStartConditions( getNode( packet.getSourceID() ) );
+				
+				packet.setConditions( getNode( packet.getSourceID() ), timer, frames );
+				
+				//packet.setStartConditions( getNode( packet.getSourceID() ) );
 			}
 		}
 	}

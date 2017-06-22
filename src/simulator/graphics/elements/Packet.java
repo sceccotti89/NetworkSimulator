@@ -110,6 +110,22 @@ public class Packet implements Comparable<Packet>
 		return linkLenght;
 	}
 	
+	public void setConditions( final Node node, final long time, final int frames ) {
+		
+
+		long point = time - startTime;
+		if (point <= 0) {
+			distance = 0;
+		} else {
+			// TODO DA QUI IN POI NON TORNA NULLA...C'E DA RAGIONARCI UN PO'
+			distance = speedX * point;
+			System.out.println( "DISTANCE = " + distance );
+		}
+		
+		area.setLocation( node.getCenterX() + width/32 + distance, node.getCenterY() + height/30 );
+		active = true;
+	}
+	
 	public void setAngle( float val ) {
 		angle = val;
 	}

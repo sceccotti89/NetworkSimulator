@@ -57,7 +57,7 @@ public class TimeAnimation implements AnimationInterface
 		            if (timing.contains( mouseX, mouseY )) {
 		            	cursor.setX( Math.max( Math.min( mouseX - cursor.getWidth()/2, timing.getMaxX() ), timing.getX() ) );
 		            	nd.setTiminigSimulator( (long) ((mouseX - startTimingX)/(timing.getWidth()/timeDuration)) );
-		            	nd.checkActivityPackets();
+		            	nd.checkActivityPackets( am.getFrames() );
 		            }
 	            }
 	            
@@ -65,7 +65,7 @@ public class TimeAnimation implements AnimationInterface
 			} else if (cursorHit && mouseDown) {
 				cursor.setX( Math.max( Math.min( mouseX - cursor.getWidth()/2, timing.getMaxX() ), timing.getX() ) );
             	nd.setTiminigSimulator( (long) ((mouseX - startTimingX)/(timing.getWidth()/timeDuration)) );
-            	nd.checkActivityPackets();
+            	nd.checkActivityPackets( am.getFrames() );
 			}
 		}
 		
