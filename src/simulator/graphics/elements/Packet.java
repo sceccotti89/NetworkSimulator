@@ -247,7 +247,7 @@ public class Packet implements Comparable<Packet>
 	}
 	
 	public void draw( final Graphics g ) {
-		g.rotate( startX, startY, Math.abs( speedX )/speedX * angle );
+		g.rotate( startX, startY, angle );
 		g.setColor( color );
 		g.fill( area );
 		g.resetTransform();
