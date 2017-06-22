@@ -37,10 +37,10 @@ public class AnimationNetwork extends BasicGame
     
     private List<Node> nodes;
     private List<Packet> packets;
-	
-	private int width, height;
-	
-	private long timeDuration = 0;
+    
+    private int width, height;
+    
+    private long timeDuration = 0;
     
     public AnimationNetwork( final int width, final int height, final String title )
     {
@@ -66,20 +66,20 @@ public class AnimationNetwork extends BasicGame
         
         String line;
         while ((line = reader.readLine()) != null) {
-        	String[] words = line.split( "[\\s|\\t]+" );
-        	
-			final long from_ID = Long.parseLong( words[0] );
-			final long startTime = Long.parseLong( words[1] );
-			Node from = getNode( from_ID );
-			final long dest_ID = Long.parseLong( words[2] );
-			final Color color = from.getColor();
-			final long endTime = Long.parseLong( words[3] );
-        	
-			addPacket( from_ID, dest_ID, color, startTime, endTime );
-			
-			if (endTime > timeDuration) {
-				timeDuration = endTime;
-			}
+            String[] words = line.split( "[\\s|\\t]+" );
+            
+            final long from_ID = Long.parseLong( words[0] );
+            final long startTime = Long.parseLong( words[1] );
+            Node from = getNode( from_ID );
+            final long dest_ID = Long.parseLong( words[2] );
+            final Color color = from.getColor();
+            final long endTime = Long.parseLong( words[3] );
+            
+            addPacket( from_ID, dest_ID, color, startTime, endTime );
+            
+            if (endTime > timeDuration) {
+                timeDuration = endTime;
+            }
         }
         
         reader.close();
@@ -152,7 +152,7 @@ public class AnimationNetwork extends BasicGame
     public void loadSimulation( final String networkFile, final String packetFile ) throws IOException
     {
         loadNetwork( networkFile );
-    	loadPackets( packetFile );
+        loadPackets( packetFile );
     }
 
     @Override
@@ -165,44 +165,44 @@ public class AnimationNetwork extends BasicGame
     }
     
     public void addNode( final int x, final int y, final long nodeID, final String name, final long delay, final Color color ) {
-    	Node node = new Node( x, y, nodeID, name, delay, color );
-    	nodes.add( node );
+        Node node = new Node( x, y, nodeID, name, delay, color );
+        nodes.add( node );
     }
     
     public void addPacket( long from_ID, long dest_ID, Color color, long startTime, long endTime ) {
-    	Packet packet = new Packet( getNode( from_ID ), getNode( dest_ID ), color, startTime, endTime, width, height );
-    	packet.setLinkLenght();
-    	packet.setAngle();
-		packet.setSpeed( AnimationManager.frames );
-    	packets.add( packet );
+        Packet packet = new Packet( getNode( from_ID ), getNode( dest_ID ), color, startTime, endTime, width, height );
+        packet.setLinkLenght();
+        packet.setAngle();
+        packet.setSpeed( AnimationManager.frames );
+        packets.add( packet );
     }
     
     public void addLink( final long source, final long dest, final double bandwidth, final long delay ) {
-    	Node node1 = getNode( source ), node2 = getNode( dest );
-    	node1.addLink( dest, node1.getCenterX(), node1.getCenterY(), node2.getCenterX(), node2.getCenterY(), width, height );
+        Node node1 = getNode( source ), node2 = getNode( dest );
+        node1.addLink( dest, node1.getCenterX(), node1.getCenterY(), node2.getCenterX(), node2.getCenterY(), width, height );
     }
     
     private Node getNode( final long nodeID )
     {
-    	for (Node node: nodes) {
-    		if (node.getNodeID() == nodeID) {
-    			return node;
-    		}
-    	}
-    	
-    	return null;
+        for (Node node: nodes) {
+            if (node.getNodeID() == nodeID) {
+                return node;
+            }
+        }
+        
+        return null;
     }
 
     @Override
     public void update( final GameContainer gc, final int delta ) throws SlickException
     {
-    	leftMouse = gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
-    	
-    	ob.update( delta, gc.getInput(), leftMouse, ob, am, ta, nd );
-    	am.update( delta, gc.getInput(), leftMouse, ob, am, ta, nd );
-    	ta.update( delta, gc.getInput(), leftMouse, ob, am, ta, nd );
-		
-		nd.update( gc, am );
+        leftMouse = gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
+        
+        ob.update( delta, gc.getInput(), leftMouse, ob, am, ta, nd );
+        am.update( delta, gc.getInput(), leftMouse, ob, am, ta, nd );
+        ta.update( delta, gc.getInput(), leftMouse, ob, am, ta, nd );
+        
+        nd.update( gc, am );
     }
 
     @Override

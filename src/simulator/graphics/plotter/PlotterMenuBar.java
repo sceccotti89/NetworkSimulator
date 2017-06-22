@@ -23,30 +23,30 @@ import simulator.utils.Utils;
 
 public class PlotterMenuBar extends JMenuBar implements ActionListener
 {
-	/** Generated Serial ID. */
-	private static final long serialVersionUID = 8213088039082560260L;
-	
-	private final JCheckBoxMenuItem showFPS;
-	private final JCheckBoxMenuItem showGrid;
-	
-	private final Plotter plotter;
+    /** Generated Serial ID. */
+    private static final long serialVersionUID = 8213088039082560260L;
+    
+    private final JCheckBoxMenuItem showFPS;
+    private final JCheckBoxMenuItem showGrid;
+    
+    private final Plotter plotter;
 
-	public PlotterMenuBar( final Plotter plotter )
-	{
-	    this.plotter = plotter;
-	    
-		JMenu file = new JMenu( "File" );
-		JMenuItem new_project = new JMenuItem( "Save as image.." );
-		file.add( new_project );
-		new_project.setName( "0" );
-		new_project.addActionListener( this );
+    public PlotterMenuBar( final Plotter plotter )
+    {
+        this.plotter = plotter;
+        
+        JMenu file = new JMenu( "File" );
+        JMenuItem new_project = new JMenuItem( "Save as image.." );
+        file.add( new_project );
+        new_project.setName( "0" );
+        new_project.addActionListener( this );
 
-		add( file );
-		file.addSeparator();
-		
-		// Edit section.
-		JMenu edit = new JMenu( "Edit" );
-		showFPS = new JCheckBoxMenuItem( "Show FPS" );
+        add( file );
+        file.addSeparator();
+        
+        // Edit section.
+        JMenu edit = new JMenu( "Edit" );
+        showFPS = new JCheckBoxMenuItem( "Show FPS" );
         edit.add( showFPS );
         showFPS.setName( "1" );
         showFPS.addActionListener( this );
@@ -96,28 +96,28 @@ public class PlotterMenuBar extends JMenuBar implements ActionListener
         
         // TODO Complete...
         
-		
-		add( edit );
-	}
-	
-	public void updateSelectedValue() {
-	    showFPS.setSelected( plotter.isShowingFPS() );
-	    showGrid.setSelected( plotter.isShowingGrid() );
-	}
+        
+        add( edit );
+    }
+    
+    public void updateSelectedValue() {
+        showFPS.setSelected( plotter.isShowingFPS() );
+        showGrid.setSelected( plotter.isShowingGrid() );
+    }
 
-	@Override
-	public void actionPerformed( ActionEvent e )
-	{
-	    JMenuItem item = (JMenuItem) e.getSource();
-		final int ID = Integer.parseInt( item.getName() );
-		switch( ID ){
-			case( 0 ): // Save as image.
-			    JFileChooser f = new JFileChooser( Utils.IMAGES_DIR ) {
-    			    /** Generated Serial ID */
+    @Override
+    public void actionPerformed( ActionEvent e )
+    {
+        JMenuItem item = (JMenuItem) e.getSource();
+        final int ID = Integer.parseInt( item.getName() );
+        switch( ID ){
+            case( 0 ): // Save as image.
+                JFileChooser f = new JFileChooser( Utils.IMAGES_DIR ) {
+                    /** Generated Serial ID */
                     private static final long serialVersionUID = 6328845630088756577L;
                     
                     @Override
-    			    public void approveSelection()
+                    public void approveSelection()
                     {
                         String file = getCurrentDirectory().toString() + "/" + getSelectedFile().getName();
                         boolean save = false;
@@ -148,55 +148,55 @@ public class PlotterMenuBar extends JMenuBar implements ActionListener
                         }
                         
                         super.approveSelection();
-    			    }
-			    };
-			    //FileNameExtensionFilter filter = new FileNameExtensionFilter( "Image Extensions", "jpg", "png", "gif" );
-			    //f.setFileFilter( filter );
-			    f.showSaveDialog( plotter.getFrame() );
-				break;
+                    }
+                };
+                //FileNameExtensionFilter filter = new FileNameExtensionFilter( "Image Extensions", "jpg", "png", "gif" );
+                //f.setFileFilter( filter );
+                f.showSaveDialog( plotter.getFrame() );
+                break;
 
-			case( 1 ): // Show FPS
-			    plotter.showFPS( item.isSelected() );
-				break;
-			
-			case( 2 ): // Show grid
-			    plotter.showGrid( item.isSelected() );
+            case( 1 ): // Show FPS
+                plotter.showFPS( item.isSelected() );
                 break;
             
-			case( 3 ): // Add plot.
-			    f = new JFileChooser( Utils.RESULTS_DIR );
-			    if (f.showOpenDialog( plotter.getFrame() ) == JFileChooser.APPROVE_OPTION) {
-			        String dir  = f.getCurrentDirectory().getName();
-			        String file = f.getSelectedFile().getName();
-			        int index = file.lastIndexOf( '.' );
-			        try {
+            case( 2 ): // Show grid
+                plotter.showGrid( item.isSelected() );
+                break;
+            
+            case( 3 ): // Add plot.
+                f = new JFileChooser( Utils.RESULTS_DIR );
+                if (f.showOpenDialog( plotter.getFrame() ) == JFileChooser.APPROVE_OPTION) {
+                    String dir  = f.getCurrentDirectory().getName();
+                    String file = f.getSelectedFile().getName();
+                    int index = file.lastIndexOf( '.' );
+                    try {
                         plotter.addPlot( dir + "/" + file, null, file.substring( 0, index ) );
                     } catch ( IOException e1 ) {
                         e1.printStackTrace();
                     }
-			    }
-			    break;
-		    
-			case( 4 ): // Make plot.
-			    // Open a dialog to edit the plotter settings.
+                }
+                break;
+            
+            case( 4 ): // Make plot.
+                // Open a dialog to edit the plotter settings.
                 JDialog makePlot = new MakePlotDialog( plotter.getFrame(), plotter );
                 makePlot.setVisible( true );
-			    break;
-			case( 5 ): // Theme
                 break;
-			case( 6 ): // Theme => White
-			    item.setSelected( true );
-			    plotter.setTheme( Theme.WHITE );
+            case( 5 ): // Theme
                 break;
-			case( 7 ): // Theme => Black
-			    item.setSelected( true );
-			    plotter.setTheme( Theme.BLACK );
+            case( 6 ): // Theme => White
+                item.setSelected( true );
+                plotter.setTheme( Theme.WHITE );
                 break;
-			case( 8 ): // Settings.
-			    // Open a dialog to edit the plotter settings.
-			    JDialog settings = new SettingsDialog( plotter.getFrame(), plotter.getsettings() );
-			    settings.setVisible( true );
-			    break;
-		}
-	}
+            case( 7 ): // Theme => Black
+                item.setSelected( true );
+                plotter.setTheme( Theme.BLACK );
+                break;
+            case( 8 ): // Settings.
+                // Open a dialog to edit the plotter settings.
+                JDialog settings = new SettingsDialog( plotter.getFrame(), plotter.getsettings() );
+                settings.setVisible( true );
+                break;
+        }
+    }
 }

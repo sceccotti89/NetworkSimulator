@@ -57,103 +57,103 @@ public class AnimationManager implements AnimationInterface
     
     @Override
     public void update( final int delta, final Input input, final boolean leftMouse, OptionBar ob, AnimationManager am, TimeAnimation ta, NetworkDisplay nd )
-    {    	
-    	mouseX = input.getMouseX();
-		mouseY = input.getMouseY();
-		
-		if (leftMouse && !mouseDown) {
+    {        
+        mouseX = input.getMouseX();
+        mouseY = input.getMouseY();
+        
+        if (leftMouse && !mouseDown) {
             mouseDown = true;
             
             for (ImageButton button : buttons) {
                 if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
-            		button.setPressed( true );
-            	}
+                    button.setPressed( true );
+                }
             }
-		} else if (!leftMouse && mouseDown) {
+        } else if (!leftMouse && mouseDown) {
             mouseDown = false;
             
             boolean buttonFounded = false;
-			for (ImageButton button: buttons) {
-            	if (button.checkClick( mouseX, mouseY )) {
-            		buttonFounded = true;
-                	if (button.getName().equals( PLUS )) {
-						frames = Math.min( limit, frames + 1 );
-						nd.setPacketSpeed( frames );
-						button.setPressed( false );
-					} else if (button.getName().equals( MINUS )) {
-						frames = Math.max( 1, frames - 1 );
-						nd.setPacketSpeed( frames );
-						button.setPressed( false );
-					} else if (button.getName().equals( START )) {
-						nd.startAnimation();
-						ob.resetAllButtons();
-						button.setPressed( true );
-						resetButtons( button );
-					} else if (button.getName().equals( PAUSE )) {
-						nd.pauseAnimation();
-						ob.resetAllButtons();
-						resetButtons( button );
-					} else if (button.getName().equals( STOP )) {
-						nd.stopAnimation();
-						ob.resetAllButtons();
-						resetButtons( null );
-					}
+            for (ImageButton button: buttons) {
+                if (button.checkClick( mouseX, mouseY )) {
+                    buttonFounded = true;
+                    if (button.getName().equals( PLUS )) {
+                        frames = Math.min( limit, frames + 1 );
+                        nd.setPacketSpeed( frames );
+                        button.setPressed( false );
+                    } else if (button.getName().equals( MINUS )) {
+                        frames = Math.max( 1, frames - 1 );
+                        nd.setPacketSpeed( frames );
+                        button.setPressed( false );
+                    } else if (button.getName().equals( START )) {
+                        nd.startAnimation();
+                        ob.resetAllButtons();
+                        button.setPressed( true );
+                        resetButtons( button );
+                    } else if (button.getName().equals( PAUSE )) {
+                        nd.pauseAnimation();
+                        ob.resetAllButtons();
+                        resetButtons( button );
+                    } else if (button.getName().equals( STOP )) {
+                        nd.stopAnimation();
+                        ob.resetAllButtons();
+                        resetButtons( null );
+                    }
                 }
-        	}
+            }
             
             if (!buttonFounded){
-            	for (ImageButton bottone: buttons) {
-                	if (bottone.isPressed()) {
-                		if ((bottone.getName().equals( START ) /*&& !isOperating()*/)
-                		 || (bottone.getName().equals( PAUSE ) && !nd.isInPause())
-                		 || (bottone.getName().equals( STOP ))) {
-                			bottone.setPressed( false );
-                		}
-                	}
+                for (ImageButton bottone: buttons) {
+                    if (bottone.isPressed()) {
+                        if ((bottone.getName().equals( START ) /*&& !isOperating()*/)
+                         || (bottone.getName().equals( PAUSE ) && !nd.isInPause())
+                         || (bottone.getName().equals( STOP ))) {
+                            bottone.setPressed( false );
+                        }
+                    }
                 }
             }
         }
-	}
+    }
     
     public float getMaxY() {
-    	return start.getMaxY();
+        return start.getMaxY();
     }
     
     @Override
     public void render( final GameContainer gc )
-    {    	
-    	Graphics g = gc.getGraphics();
-    	
-    	g.setColor( Color.gray );
-    	g.fill( speed );
-    	
-    	for (ImageButton button: buttons) {
-    		button.draw( g );
-    	}
-    	
-    	g.setColor( Color.black );
-    	g.draw( showFrame );
-    	// FIXME messo qui e' bruttissimo (per non parlare della lunghezza della riga..)
-    	g.drawString( String.valueOf( frames ), plus.getMaxX() + (minus.getX() - plus.getMaxX())/2 - String.valueOf( frames ).length()/2*gc.getWidth()/80, plus.getY() + (plus.getMaxY() - plus.getY())/4 );
+    {        
+        Graphics g = gc.getGraphics();
+        
+        g.setColor( Color.gray );
+        g.fill( speed );
+        
+        for (ImageButton button: buttons) {
+            button.draw( g );
+        }
+        
+        g.setColor( Color.black );
+        g.draw( showFrame );
+        // FIXME messo qui e' bruttissimo (per non parlare della lunghezza della riga..)
+        g.drawString( String.valueOf( frames ), plus.getMaxX() + (minus.getX() - plus.getMaxX())/2 - String.valueOf( frames ).length()/2*gc.getWidth()/80, plus.getY() + (plus.getMaxY() - plus.getY())/4 );
     }
     
     public void resetAllButtons() {
-    	for (ImageButton button: buttons) {
-    		if (button.isPressed()) {
-    			button.setPressed( false );
-    		}
-    	}
+        for (ImageButton button: buttons) {
+            if (button.isPressed()) {
+                button.setPressed( false );
+            }
+        }
     }
     
     private void resetButtons( ImageButton button ) {
-    	for (ImageButton imButton: buttons) {
-    		if (imButton != button) {
-    			imButton.setPressed( false );
-    		}
-    	}
+        for (ImageButton imButton: buttons) {
+            if (imButton != button) {
+                imButton.setPressed( false );
+            }
+        }
     }
     
     public int getFrames() {
-    	return frames;
+        return frames;
     }
 }

@@ -29,18 +29,18 @@ public class OptionBar implements AnimationInterface
     private boolean mouseDown;
     
     public OptionBar( GameContainer gc ) throws SlickException
-	{
-    	width  = gc.getWidth()/10;
-    	height = gc.getHeight()/30;
-    	
-    	buttons = new ArrayList<SimpleButton>();
-    	
-		file    = new SimpleButton( 0, 0, width, height, FILE, Color.gray, 0, gc );
-		options = new SimpleButton( file.getMaxX(), 0, width, height, OPTIONS, Color.gray, 1, gc );
-		
-		buttons.add( file );
-		buttons.add( options );
-	}
+    {
+        width  = gc.getWidth()/10;
+        height = gc.getHeight()/30;
+        
+        buttons = new ArrayList<SimpleButton>();
+        
+        file    = new SimpleButton( 0, 0, width, height, FILE, Color.gray, 0, gc );
+        options = new SimpleButton( file.getMaxX(), 0, width, height, OPTIONS, Color.gray, 1, gc );
+        
+        buttons.add( file );
+        buttons.add( options );
+    }
     
     public float getMaxY() {
         return barOptions.getMaxY();
@@ -49,55 +49,55 @@ public class OptionBar implements AnimationInterface
     @Override
     public void update( final int delta, final Input input, final boolean leftMouse, OptionBar ob, AnimationManager am, TimeAnimation ta, NetworkDisplay nd )
     {
-    	mouseX = input.getMouseX();
-		mouseY = input.getMouseY();
-		
-		if (leftMouse && !mouseDown) {
+        mouseX = input.getMouseX();
+        mouseY = input.getMouseY();
+        
+        if (leftMouse && !mouseDown) {
             mouseDown = true;
             
             for (SimpleButton button : buttons) {
                 if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
-            		button.setPressed( true );
-            	}
+                    button.setPressed( true );
+                }
             }
-		} else if (!leftMouse && mouseDown) {
+        } else if (!leftMouse && mouseDown) {
             mouseDown = false;
             
             for (SimpleButton button: buttons) {
-            	// if a button is pressed
-        		if (button.isPressed()) {
+                // if a button is pressed
+                if (button.isPressed()) {
                     for (SimpleButton bottone: buttons) {
-                    	if (bottone.isPressed()) {
-                    		bottone.setPressed( false );
-                    	}
+                        if (bottone.isPressed()) {
+                            bottone.setPressed( false );
+                        }
                     }
 
                     if (button.checkClick( mouseX, mouseY )) {
-                    	if (button.getName().equals( FILE )) {
-    						;
-                    	} else if (button.getName().equals( OPTIONS )) {
-                    		;
-                    	}
+                        if (button.getName().equals( FILE )) {
+                            ;
+                        } else if (button.getName().equals( OPTIONS )) {
+                            ;
+                        }
                     }
-    			}
-        	}
+                }
+            }
         }
     }
     
     @Override
     public void render( final GameContainer gc ) {
-    	Graphics g = gc.getGraphics();
-    	
-    	for (SimpleButton button: buttons) {
-    		button.draw( g );
-    	}
+        Graphics g = gc.getGraphics();
+        
+        for (SimpleButton button: buttons) {
+            button.draw( g );
+        }
     }
     
     public void resetAllButtons() {
-    	for (SimpleButton button: buttons) {
-    		if (button.isPressed()) {
-    			button.setPressed( false );
-    		}
-    	}
+        for (SimpleButton button: buttons) {
+            if (button.isPressed()) {
+                button.setPressed( false );
+            }
+        }
     }
 }

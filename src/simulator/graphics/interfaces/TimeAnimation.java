@@ -24,62 +24,62 @@ public class TimeAnimation implements AnimationInterface
     
     public TimeAnimation( final GameContainer gc, final float startY, final float width, final float height, final long timeDuration ) throws SlickException
     {
-    	startTimingX = width/80;
-    	
-    	barTiming = new Rectangle( 0, startY, width, height*10/75 );
-    	timing    = new Rectangle( startTimingX, startY, width - 2*startTimingX, height*10/225 );
-    	cursor    = new Rectangle( timing.getX(), timing.getY(), width/150, timing.getHeight() );
-    	
-    	this.timeDuration = timeDuration;
+        startTimingX = width/80;
+        
+        barTiming = new Rectangle( 0, startY, width, height*10/75 );
+        timing    = new Rectangle( startTimingX, startY, width - 2*startTimingX, height*10/225 );
+        cursor    = new Rectangle( timing.getX(), timing.getY(), width/150, timing.getHeight() );
+        
+        this.timeDuration = timeDuration;
     }
     
     @Override
     public void update( final int delta, final Input input, final boolean leftMouse, OptionBar ob, AnimationManager am, TimeAnimation ta, NetworkDisplay nd )
     {
-    	mouseX = input.getMouseX();
-		mouseY = input.getMouseY();
-		
-		if (leftMouse && !mouseDown) {
+        mouseX = input.getMouseX();
+        mouseY = input.getMouseY();
+        
+        if (leftMouse && !mouseDown) {
             mouseDown = true;
             
             if (cursor.contains( mouseX, mouseY )) {
-            	cursorHit = true;
+                cursorHit = true;
             } else if (timing.contains( mouseX, mouseY )) {
-            	timingHit = true;
+                timingHit = true;
             } else {
-            	mouseDown = false;
+                mouseDown = false;
             }
-		} else if (mouseDown) {
-			if (!leftMouse) {
-	            mouseDown = false;
-	            
-	            if (timingHit || cursorHit) {
-		            if (timing.contains( mouseX, mouseY )) {
-		            	cursor.setX( Math.max( Math.min( mouseX - cursor.getWidth()/2, timing.getMaxX() ), timing.getX() ) );
-		            	nd.setTimeSimulation( (long) ((mouseX - startTimingX)/(timing.getWidth()/timeDuration)) );
-		            	nd.checkActivityPackets();
-		            }
-	            }
-	            
-	            cursorHit = false;
-			} else if (cursorHit && mouseDown) {
-				cursor.setX( Math.max( Math.min( mouseX - cursor.getWidth()/2, timing.getMaxX() ), timing.getX() ) );
-            	nd.setTimeSimulation( (long) ((mouseX - startTimingX)/(timing.getWidth()/timeDuration)) );
-            	nd.checkActivityPackets();
-			}
-		}
-		
-		timer = nd.getTimeSimulation();
-		
-		cursor.setX( timing.getX() + timing.getWidth()/timeDuration*timer );
+        } else if (mouseDown) {
+            if (!leftMouse) {
+                mouseDown = false;
+                
+                if (timingHit || cursorHit) {
+                    if (timing.contains( mouseX, mouseY )) {
+                        cursor.setX( Math.max( Math.min( mouseX - cursor.getWidth()/2, timing.getMaxX() ), timing.getX() ) );
+                        nd.setTimeSimulation( (long) ((mouseX - startTimingX)/(timing.getWidth()/timeDuration)) );
+                        nd.checkActivityPackets();
+                    }
+                }
+                
+                cursorHit = false;
+            } else if (cursorHit && mouseDown) {
+                cursor.setX( Math.max( Math.min( mouseX - cursor.getWidth()/2, timing.getMaxX() ), timing.getX() ) );
+                nd.setTimeSimulation( (long) ((mouseX - startTimingX)/(timing.getWidth()/timeDuration)) );
+                nd.checkActivityPackets();
+            }
+        }
+        
+        timer = nd.getTimeSimulation();
+        
+        cursor.setX( timing.getX() + timing.getWidth()/timeDuration*timer );
     }
     
     @Override
     public void render( final GameContainer gc )
     {
-    	Graphics g = gc.getGraphics();
-    	
-    	g.setColor( Color.black );
+        Graphics g = gc.getGraphics();
+        
+        g.setColor( Color.black );
         g.draw( barTiming );
         
         g.setColor( Color.red );
@@ -95,6 +95,6 @@ public class TimeAnimation implements AnimationInterface
     }
     
     public float getY(){
-    	return barTiming.getY();
+        return barTiming.getY();
     }
 }
