@@ -110,9 +110,8 @@ public class Packet implements Comparable<Packet>
 		return linkLenght;
 	}
 	
+	/**metodo per riattivare i pacchetti nel caso di click nella barra*/
 	public void setConditions( final Node node, final long time, final int frames ) {
-		
-
 		long point = time - startTime;
 		if (point <= 0) {
 			distance = 0;
@@ -131,7 +130,7 @@ public class Packet implements Comparable<Packet>
 	}
 	
 	public void setSpeed( final int frames ) {
-		speedX = speedX * ((linkLenght * frames) / (endTime - startTime));
+		speedX = ((linkLenght - distance) / (endTime - startTime - timer)) * frames;
 	}
 	
 	public boolean isActive() {
@@ -217,6 +216,7 @@ public class Packet implements Comparable<Packet>
 	public void setStartConditions( Node node ) {
 		area.setLocation( node.getCenterX() + width/32, node.getCenterY() + height/30 );
 		distance = 0;
+		timer = 0;
 		hasFinished = false;
 		active = true;
 	}
@@ -228,8 +228,6 @@ public class Packet implements Comparable<Packet>
 	public void update( final GameContainer gc, final int frames, final boolean animate ) {		
 		mouseX = gc.getInput().getMouseX();
 		mouseY = gc.getInput().getMouseY();
-		
-		//System.out.print( "SPEED = " + (area.getX() + speedX * animTime) + "\n" );
 		
 		timer = timer + frames;
 		
@@ -249,7 +247,6 @@ public class Packet implements Comparable<Packet>
 	}
 	
 	public void draw( final Graphics g ) {
-		//System.out.print( "ANGLE = " + (Math.abs( speedX )/speedX * angle) + "\n" );
 		g.rotate( startX, startY, Math.abs( speedX )/speedX * angle );
 		g.setColor( color );
 		g.fill( area );
