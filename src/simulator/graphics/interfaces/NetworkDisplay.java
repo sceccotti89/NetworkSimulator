@@ -107,7 +107,6 @@ public class NetworkDisplay
 		
 		for (int i = index; i < packets.size(); i++) {
 			Packet packet = packets.get( i );
-			System.out.println( "SPEED = " + packet.getSpeedX() );
 		    if (packet.getStartTime() > timer) break;
 			packet.update( gc, timer );
 			if (!packet.isActive() && i == index) {
