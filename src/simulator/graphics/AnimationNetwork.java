@@ -2,25 +2,20 @@
 package simulator.graphics;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.newdawn.slick.BasicGame;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 import simulator.graphics.elements.Node;
 import simulator.graphics.elements.Packet;
@@ -28,6 +23,8 @@ import simulator.graphics.interfaces.AnimationManager;
 import simulator.graphics.interfaces.NetworkDisplay;
 import simulator.graphics.interfaces.OptionBar;
 import simulator.graphics.interfaces.TimeAnimation;
+import simulator.topology.NetworkLink;
+import simulator.topology.NetworkNode;
 
 public class AnimationNetwork extends BasicGame
 {
@@ -40,15 +37,8 @@ public class AnimationNetwork extends BasicGame
     
     private List<Node> nodes;
     private List<Packet> packets;
-    
-    private DocumentBuilderFactory documentFactory;
-	private DocumentBuilder builder;
-	private Document document;
 	
 	private int width, height;
-	
-	private Element obj;
-	private NodeList config;
 	
 	private long timeDuration = 0;
     
@@ -68,7 +58,7 @@ public class AnimationNetwork extends BasicGame
      * 
      * @param file    file to read
     */
-    private void loadPackets( final String file ) throws IOException
+    public void loadPackets( final String file ) throws IOException
     {
         System.out.println( "Loading from " + file + "..." );
         
@@ -94,62 +84,75 @@ public class AnimationNetwork extends BasicGame
         
         reader.close();
         
+        Collections.sort( packets );
+        
         System.out.println( "Loading completed." );
     }
     
-    private void loadElements( String file ) {
-    	System.out.println( "Loading from " + file + "..." );
-    	try {
-			documentFactory = DocumentBuilderFactory.newInstance();
- 
-			builder = documentFactory.newDocumentBuilder();
-			
-			/* NODES CONFIGURATION */
-			document = builder.parse( new File( file ) );
-
-			config = document.getElementsByTagName( "node" );
-			
-			for (int i = 0; i < config.getLength(); i++) {
-				org.w3c.dom.Node nodo = config.item( i );
-				obj = (Element) nodo;
-				
-				final int x = Integer.parseInt( obj.getAttribute( "x" ) );
-				final int y = Integer.parseInt( obj.getAttribute( "y" ) );
-				final long from_ID = Long.parseLong( obj.getAttribute( "ID" ) );
-				final Color color = Color.decode( obj.getAttribute( "color" ) );
-
-				addNode( x, y, from_ID, color );
-			}
-
-	    	/* LINKS CONFIGURATION */
-			config = document.getElementsByTagName( "link" );
-			
-			for (int i = 0; i < config.getLength(); i++) {
-				org.w3c.dom.Node link = config.item( i );
-				obj = (Element) link;
-				
-				final long source = Long.parseLong( obj.getAttribute( "source" ) );
-				final long dest = Long.parseLong( obj.getAttribute( "dest" ) );
-				final double bandwidth = Double.parseDouble( obj.getAttribute( "bandwidth" ) );
-				final long delay = Long.parseLong( obj.getAttribute( "delay" ) );
-				final String type = obj.hasAttribute( "type" ) ? obj.getAttribute( "type" ) : "simplex";
-				
-				addLink( source, dest, bandwidth, delay );
-				if (type.equals( "duplex" )) addLink( dest, source, bandwidth, delay );
-			}
-			
-			System.out.println( "Loading completed." );
-		}
-        catch(Exception e) {
-        	e.printStackTrace();
+    public void loadNetwork( final String filename ) throws IOException
+    {
+        /** File structure:
+         * 
+         * nodes => [{id, name, delay, [xPos, yPos]}]
+         * links => [{fromId, destId, bw, delay, [linkType]}]
+        */
+        
+        BufferedReader br = new BufferedReader( new FileReader( filename ) );
+        StringBuilder content = new StringBuilder( 512 );
+        
+        /**
+         * File structure:
+         * 
+         * networks => [{[nodes],[links]}, ...]
+        */
+        
+        String nextLine = null;
+        while((nextLine = br.readLine()) != null)
+            content.append( nextLine.trim() );
+        JSONObject settings = new JSONObject( content.toString() );
+        
+        // Get the list of nodes.
+        JSONArray nodes = settings.getJSONArray( "nodes" );
+        int length = nodes.length();
+        for(int i = 0; i < length; i++) {
+            JSONObject node = nodes.getJSONObject( i );
+            long id     = node.getLong( NetworkNode.ID );
+            String name = node.getString( NetworkNode.NAME );
+            long delay  = node.getLong( NetworkNode.DELAY );
+            int xPos    = (node.has( NetworkNode.X_POS )) ? node.getInt( NetworkNode.X_POS ) : 0;
+            int yPos    = (node.has( NetworkNode.Y_POS )) ? node.getInt( NetworkNode.Y_POS ) : 0;
+            Color color = Color.decode( node.getString( "color" ) );
+            
+            addNode( xPos, yPos, id, name, delay, color );
         }
+        
+        // Get the list of links.
+        JSONArray links = settings.getJSONArray( "links" );
+        length = links.length();
+        for(int i = 0; i < length; i++) {
+            JSONObject link  = links.getJSONObject( i );
+            long fromId      = link.getLong( NetworkLink.FROM_ID );
+            long destId      = link.getLong( NetworkLink.DEST_ID );
+            double bandwidth = link.getDouble( NetworkLink.BANDWITH );
+            long delay       = link.getLong( NetworkLink.DELAY );
+            String linkType  = (link.has( NetworkLink.LINK_TYPE )) ?
+                                 link.getString( NetworkLink.LINK_TYPE ) :
+                                 NetworkLink.UNIDIRECTIONAL;
+            
+            addLink( fromId, destId, bandwidth, delay );
+            
+            if(linkType.equals( NetworkLink.BIDIRECTIONAL )) {
+                addLink( destId, fromId, bandwidth, delay );
+            }
+        }
+        
+        br.close();
     }
     
-    public void loadSimulation( String networkFile, String packetFile ) throws IOException {
-    	loadElements( networkFile );
+    public void loadSimulation( final String networkFile, final String packetFile ) throws IOException
+    {
+        loadNetwork( networkFile );
     	loadPackets( packetFile );
-        
-        Collections.sort( packets );
     }
 
     @Override
@@ -161,8 +164,8 @@ public class AnimationNetwork extends BasicGame
         ta = new TimeAnimation( gc, nd.getMaxY(), width, height, timeDuration );
     }
     
-    public void addNode( int x, int y, long nodeID, Color color ) {
-    	Node node = new Node( x, y, nodeID, color );
+    public void addNode( final int x, final int y, final long nodeID, final String name, final long delay, final Color color ) {
+    	Node node = new Node( x, y, nodeID, name, delay, color );
     	nodes.add( node );
     }
     
@@ -179,7 +182,8 @@ public class AnimationNetwork extends BasicGame
     	node1.addLink( dest, node1.getCenterX(), node1.getCenterY(), node2.getCenterX(), node2.getCenterY(), width, height );
     }
     
-    private Node getNode( final long nodeID ) {
+    private Node getNode( final long nodeID )
+    {
     	for (Node node: nodes) {
     		if (node.getNodeID() == nodeID) {
     			return node;

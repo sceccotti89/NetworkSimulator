@@ -15,7 +15,7 @@ import org.newdawn.slick.AppGameContainer;
          AppGameContainer app = new AppGameContainer( an );
          
          //an.loadSimulation( "data/File/Network.xml", "data/File/Packets.txt" );
-         an.loadSimulation( "data/File/Network.xml", "Results/packets.txt" );
+         an.loadSimulation( "Topology/Topology_multicore.json", "Results/packets.txt" );
         
          //an.addNode( 100, 200, 3, Color.red );
          //an.addLink(  );

@@ -1,11 +1,11 @@
 {
     "nodes": [
-        {"id":0, "name":"client", "delay":0, "xPos":0,  "yPos":0},
-        {"id":1, "name":"switch", "delay":0, "xPos":10, "yPos":0},
-        {"id":2, "name":"core0",  "delay":0, "xPos":20, "yPos":0},
-        {"id":3, "name":"core1",  "delay":0, "xPos":30, "yPos":0},
-        {"id":4, "name":"core2",  "delay":0, "xPos":40, "yPos":0},
-        {"id":5, "name":"core3",  "delay":0, "xPos":50, "yPos":0}
+        {"id":0, "name":"client",  "delay":0, "xPos":100, "yPos":250, "color":"#000000"},
+        {"id":1, "name":"switch",  "delay":0, "xPos":250, "yPos":250, "color":"#0000FF"},
+        {"id":2, "name":"server0", "delay":0, "xPos":400, "yPos":150, "color":"#FFD700"},
+        {"id":3, "name":"server1", "delay":0, "xPos":400, "yPos":220, "color":"#FFD700"},
+        {"id":4, "name":"server2", "delay":0, "xPos":400, "yPos":290, "color":"#FFD700"},
+        {"id":5, "name":"server3", "delay":0, "xPos":400, "yPos":360, "color":"#FFD700"}
     ],
     "links": [
         {"fromId":0, "destId":1, "bandwith":1000.0, "delay":0, "linkType":"duplex"},

@@ -12,18 +12,23 @@ import org.newdawn.slick.geom.Circle;
 public class Node
 {
 	private long nodeID;
-	
 	private Color color;
 	
 	private Circle node;
-	
 	final private float ray = 25;
+	
+	final private long delay;
+	final private String name;
 	
 	private List<Link> links;
 	
-	public Node( final float x, final float y, final long nodeID, final Color color ) {
+	public Node( final float x, final float y, final long nodeID, final String name, final long delay, final Color color )
+	{
 		this.nodeID = nodeID;
 		this.color = color;
+		
+		this.delay = delay;
+		this.name = name;
 		
 		node = new Circle( x, y, ray );
 		
@@ -117,6 +122,14 @@ public class Node
 	
 	public float getRay() {
 		return ray;
+	}
+	
+	public long getDelay() {
+	    return delay;
+	}
+	
+	public String getName() {
+	    return name;
 	}
 	
 	public void update( GameContainer gc ) {
