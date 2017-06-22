@@ -81,8 +81,6 @@ public class AnimationNetwork extends BasicGame
 			final long from_ID = Long.parseLong( words[0] );
 			final long startTime = Long.parseLong( words[1] );
 			Node from = getNode( from_ID );
-			/*final int x = from.getCenterX();
-			final int y = from.getCenterY() + height/30;*/
 			final long dest_ID = Long.parseLong( words[2] );
 			final Color color = from.getColor();
 			final long endTime = Long.parseLong( words[3] );
@@ -95,6 +93,8 @@ public class AnimationNetwork extends BasicGame
         }
         
         reader.close();
+        
+        System.out.println( "Loading completed." );
     }
     
     private void loadElements( String file ) {
