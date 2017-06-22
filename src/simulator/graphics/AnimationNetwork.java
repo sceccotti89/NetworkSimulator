@@ -81,13 +81,13 @@ public class AnimationNetwork extends BasicGame
 			final long from_ID = Long.parseLong( words[0] );
 			final long startTime = Long.parseLong( words[1] );
 			Node from = getNode( from_ID );
-			final int x = from.getCenterX();
-			final int y = from.getCenterY() + height/30;
+			/*final int x = from.getCenterX();
+			final int y = from.getCenterY() + height/30;*/
 			final long dest_ID = Long.parseLong( words[2] );
 			final Color color = from.getColor();
 			final long endTime = Long.parseLong( words[3] );
         	
-			addPacket( x, y, from_ID, dest_ID, color, startTime, endTime );
+			addPacket( from_ID, dest_ID, color, startTime, endTime );
 			
 			if (endTime > timeDuration) {
 				timeDuration = endTime;
@@ -145,18 +145,11 @@ public class AnimationNetwork extends BasicGame
         }
     }
     
-    public void loadSimulation( String file1, String file2 ) throws IOException {
-    	loadElements( file1 );
-    	loadPackets( file2 );
+    public void loadSimulation( String networkFile, String packetFile ) throws IOException {
+    	loadElements( networkFile );
+    	loadPackets( packetFile );
         
         Collections.sort( packets );
-        
-        for (Packet packet: packets) {
-        	Node start = getNode( packet.getSourceID() );
-        	packet.setLinkLenght( start.getLinkLenght( packet.getDestID() ) - 2*start.getRay() );
-        	packet.setAngle( start.getAngle( packet.getDestID() ) );
-        	//packet.setSpeed( start.getLinkLenght( packet.getDestID() ) - 2*start.getRay(), start.getAngle( packet.getDestID() ) );
-        }
     }
 
     @Override
@@ -173,9 +166,10 @@ public class AnimationNetwork extends BasicGame
     	nodes.add( node );
     }
     
-    public void addPacket( int x, int y, long from_ID, long dest_ID, Color color, long startTime, long endTime ) {
-    	Packet packet = new Packet( x, y, from_ID, dest_ID, color, startTime, endTime, width, height );
-        packet.initializingSpeed( getNode( from_ID ), getNode( dest_ID ) );
+    public void addPacket( long from_ID, long dest_ID, Color color, long startTime, long endTime ) {
+    	Packet packet = new Packet( getNode( from_ID ), getNode( dest_ID ), color, startTime, endTime, width, height );
+    	packet.setLinkLenght();
+    	packet.setAngle();
     	packets.add( packet );
     }
     

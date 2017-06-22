@@ -8,23 +8,17 @@ import org.newdawn.slick.geom.Rectangle;
 
 public class Packet implements Comparable<Packet>
 {
-	private long ID_from, ID_to;
-	
 	private Color color;
 	
 	private Rectangle area;
 	
-	private boolean hasFinished, isInNode;
-	
-	private long nextNode;
-	
-	private long indexRotation;
+	private boolean hasFinished;
 	
 	private long startTime, endTime;
 	
 	private boolean active;
 	
-	private float speedX, speedY;
+	private float speedX;
 	
 	private float angle;
 	
@@ -38,36 +32,27 @@ public class Packet implements Comparable<Packet>
 	
 	private float distance;
 	
-	private float startX, startY;
-	
 	private int mouseX, mouseY;
 	
-	private int timer;
+	private long timer;
 	
-	public Packet( final int x, final int y,
-				   final long ID_from, final long ID_to,
+	private Node source, dest;
+	
+	public Packet( final Node source, final Node dest,
 				   final Color color,
 				   final long startTime, final long endTime,
 				   final int width, final int height ) {
 		
-		this.ID_from = ID_from;
-		this.ID_to = ID_to;
+		this.source = source;
+		this.dest = dest;
 		this.color = color;
 		this.height = height;
 		this.width = width;
 		
-		area = new Rectangle( x + width/32, y, width/80, height/60 );
-		
-		hasFinished = false;
-		isInNode = true;
-		
-		nextNode = ID_from;
-		indexRotation = ID_from;
+		//area = new Rectangle( source.getCenterX() + width/32, source.getCenterY(), width/80, height/60 );
 		
 		this.startTime = startTime;
 		this.endTime = endTime;
-		
-		active = true;
 		
 		widthInfo  = width/7;
 		heightInfo = height/13;
@@ -76,34 +61,25 @@ public class Packet implements Comparable<Packet>
 		
 		drawInfo = false;
 		
-		speedY = 0;
-		
-		distance = 0;
-		
-		startX = x;
-		startY = y;
-		
-		timer = 0;
+		init();
 	}
 	
-	public void initializingSpeed( final Node from, final Node dest ) {
-		if (from.getCenterX() < dest.getCenterX()) {
-			speedX = 1;
-		} else if (from.getCenterX() > dest.getCenterX()) {
-			speedX = -1;
-		} else speedX = 0;
+	public void init() {
+		area = new Rectangle( source.getCenterX() + source.getRay(), source.getCenterY() - height/120, width/80, height/60 );
+		System.out.println( "AREA.X = " + area.getX() + " AREA.Y = " + area.getY() );
+		//area.setLocation( source.getCenterX() + width/32, source.getCenterY() + height/30 );
+		distance = 0;
+		timer = 0;
+		hasFinished = false;
+		active = true;
 	}
 	
 	public float getSpeedX() {
 		return speedX;
 	}
 	
-	public float getSpeedY() {
-		return speedY;
-	}
-	
-	public void setLinkLenght( float val ) {
-		linkLenght = val;
+	public void setLinkLenght() {
+		linkLenght = source.getLinkLenght( dest.getNodeID() ) - 2*source.getRay();
 	}
 	
 	public float getLinkLenght() {
@@ -111,22 +87,21 @@ public class Packet implements Comparable<Packet>
 	}
 	
 	/**metodo per riattivare i pacchetti nel caso di click nella barra*/
-	public void setConditions( final Node node, final long time, final int frames ) {
-		long point = time - startTime;
-		if (point <= 0) {
+	public void setConditions( final long time ) {
+		timer = time - startTime;
+		if (timer <= 0) {
 			distance = 0;
 		} else {
-			// TODO DA QUI IN POI NON TORNA NULLA...C'E DA RAGIONARCI UN PO'
-			distance = speedX * point;
-			System.out.println( "DISTANCE = " + distance );
+			distance = ((time - startTime) / (endTime - startTime)) * linkLenght;
 		}
 		
-		area.setLocation( node.getCenterX() + width/32 + distance, node.getCenterY() + height/30 );
+		area.setLocation( source.getCenterX() + width/32 + distance, source.getCenterY() + height/30 );
 		active = true;
 	}
 	
-	public void setAngle( float val ) {
-		angle = val;
+	public void setAngle() {
+		angle = source.getAngle( dest.getNodeID() );
+		System.out.println( "ANGLE = " + angle );
 	}
 	
 	public void setSpeed( final int frames ) {
@@ -157,14 +132,6 @@ public class Packet implements Comparable<Packet>
 		return endTime;
 	}
 	
-	public void setIndexRotation( int val ) {
-		indexRotation = val;
-	}
-	
-	public long getIndexRotation() {
-		return indexRotation;
-	}
-	
 	public void setFinished( boolean val ) {
 		hasFinished = val;
 	}
@@ -173,28 +140,12 @@ public class Packet implements Comparable<Packet>
 		return hasFinished;
 	}
 	
-	public void setIsInNode( boolean val ) {
-		isInNode = val;
+	public void setSourceNode( final Node source ) {
+		this.source = source;
 	}
 	
-	public boolean getIsInNode() {
-		return isInNode;
-	}
-	
-	public long getNextNode() {
-		return nextNode;
-	}
-	
-	public void setNextNode( int val ) {
-		nextNode = val;
-	}
-	
-	public void setIDFrom( final int IDFrom ) {
-		ID_from = IDFrom;
-	}
-	
-	public void setIDTo( final int IDTo ) {
-		ID_to = IDTo;
+	public void setDestNode( final Node dest ) {
+		this.dest = dest;
 	}
 	
 	public Rectangle getArea(){
@@ -205,20 +156,12 @@ public class Packet implements Comparable<Packet>
 		this.color = color;
 	}
 	
-	public long getSourceID(){
-		return ID_from;
+	public Node getSourceNode(){
+		return source;
 	}
 	
-	public long getDestID(){
-		return ID_to;
-	}
-	
-	public void setStartConditions( Node node ) {
-		area.setLocation( node.getCenterX() + width/32, node.getCenterY() + height/30 );
-		distance = 0;
-		timer = 0;
-		hasFinished = false;
-		active = true;
+	public Node getDestNode(){
+		return dest;
 	}
 	
 	public boolean linkCrossed() {
@@ -247,14 +190,17 @@ public class Packet implements Comparable<Packet>
 	}
 	
 	public void draw( final Graphics g ) {
-		g.rotate( startX, startY, angle );
+		g.rotate( source.getCenterX(), source.getCenterY(), angle );
+		if () ;
+		area.setY( area.getY() + height/30 * Math.abs( angle )/angle );
 		g.setColor( color );
 		g.fill( area );
 		g.resetTransform();
+		area.setY( area.getY() - height/30 * Math.abs( angle )/angle );
 		
 		if (drawInfo) {
 			Font f = g.getFont();
-			String info = "ID_From = " + ID_from + "\n" + "ID_To = " + ID_to;
+			String info = "ID_From = " + source.getNodeID() + "\n" + "ID_To = " + dest.getNodeID();
 			infos.setSize( f.getWidth( info ), f.getHeight( info ) );
 			
 			g.setColor( Color.magenta );

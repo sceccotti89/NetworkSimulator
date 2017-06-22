@@ -37,20 +37,10 @@ public class NetworkDisplay
 		pause = false;
 	}
 	
-	private Node getNode( final long nodeID ) {
-    	for (Node node: nodes) {
-    		if (node.getNodeID() == nodeID) {
-    			return node;
-    		}
-    	}
-    	
-    	return null;
-    }
-	
-	public void checkActivityPackets( final int frames ) {
+	public void checkActivityPackets() {
 		for (Packet packet: packets) {
 			if (timer < packet.getEndTime()) {
-				packet.setConditions( getNode( packet.getSourceID() ), timer, frames );
+				packet.setConditions( timer );
 			}
 		}
 	}
@@ -69,7 +59,7 @@ public class NetworkDisplay
 	
 	public void startPositions() {
 		for (Packet packet: packets) {
-			packet.setStartConditions( getNode( packet.getSourceID() ) );
+			packet.init();
 		}
 	}
 	
