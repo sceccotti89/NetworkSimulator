@@ -36,6 +36,12 @@ public class TimeAnimation implements AnimationInterface
         this.timeDuration = timeDuration;
     }
     
+    private void setTime( NetworkDisplay nd ) {
+        cursor.setX( Math.max( Math.min( mouseX - widthCursor/2, timing.getMaxX() - widthCursor/2 ), startTimingX - widthCursor/2 ) );
+        nd.setTimeSimulation( (long) (((double) cursor.getCenterX() - startTimingX) / timing.getWidth() * timeDuration) );
+        nd.checkActivityPackets();
+    }
+    
     @Override
     public void update( final int delta, final Input input, final boolean leftMouse, OptionBar ob, AnimationManager am, TimeAnimation ta, NetworkDisplay nd )
     {
@@ -60,17 +66,13 @@ public class TimeAnimation implements AnimationInterface
                 
                 if (timingHit || cursorHit) {
                     if (timing.contains( mouseX, mouseY )) {
-                        cursor.setX( Math.max( Math.min( mouseX - widthCursor/2, timing.getMaxX() - widthCursor/2 ), startTimingX - widthCursor/2 ) );
-                        nd.setTimeSimulation( (long) ((cursor.getX() + widthCursor/2 - startTimingX) / (timing.getWidth() / timeDuration)) );
-                        nd.checkActivityPackets();
+                        setTime( nd );
                     }
                 }
                 
                 cursorHit = false;
             } else if (cursorHit && mouseDown) {
-                cursor.setX( Math.max( Math.min( mouseX - widthCursor/2, timing.getMaxX() - widthCursor/2 ), startTimingX - widthCursor/2 ) );
-                nd.setTimeSimulation( (long) ((cursor.getX() + widthCursor/2 - startTimingX) / (timing.getWidth() / timeDuration)) );
-                nd.checkActivityPackets();
+            	setTime( nd );
             }
         } else {
         	cursor.setX( startTimingX - widthCursor/2 + timing.getWidth() / timeDuration * timer );
