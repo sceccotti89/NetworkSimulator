@@ -94,7 +94,7 @@ public class TimeAnimation implements AnimationInterface
         g.setColor( Color.white );
         String info = timer + "/" + timeDuration;
         int fWidth = g.getFont().getWidth( info ), fHeight = g.getFont().getHeight( info );
-        g.drawString( info, startTimingX/2 + timing.getWidth()/2 - fWidth/2, barTiming.getMaxY() - (barTiming.getMaxY() - timing.getMaxY())/2 - fHeight/2 );
+        g.drawString( info, timing.getCenterX() - fWidth/2, barTiming.getMaxY() - (barTiming.getMaxY() - timing.getMaxY())/2 - fHeight/2 );
     }
     
     public float getY(){

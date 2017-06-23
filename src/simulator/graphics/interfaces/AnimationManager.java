@@ -32,21 +32,24 @@ public class AnimationManager implements AnimationInterface
     
     private boolean mouseDown;
     
+    private String frameLenght = "" + frames;
+    
     public AnimationManager( final GameContainer gc, final float startY, final float widthM, final float heightM ) throws SlickException
     {
-        height = heightM*10/75;
+        height = heightM*10/95;
         width  = widthM*10/53;
+        float widthFrame = widthM/10;
         
         buttons = new ArrayList<ImageButton>();
 
         start = new ImageButton( 0, startY, width, height, START, Color.gray, 0, gc, new Image( "./data/Image/Start.png" ), widthM/20, heightM/20 );
         pause = new ImageButton( start.getMaxX(), startY, width, height, PAUSE, Color.gray, 1, gc, new Image( "./data/Image/Pause.png" ), widthM/20, heightM/20 );
         stop  = new ImageButton( pause.getMaxX(), startY, width, height, STOP, Color.gray, 2, gc, new Image( "./data/Image/Stop.png" ), widthM/20, heightM/20 );
-        minus = new ImageButton( stop.getMaxX() + widthM/15, startY + heightM/20, widthM/20, heightM/20, MINUS, Color.yellow, 3, gc, new Image( "./data/Image/Minus.png" ), widthM/45, heightM/70 );
-        plus  = new ImageButton( stop.getMaxX() + widthM/4, startY + heightM/20, widthM/20, heightM/20, PLUS, Color.yellow, 4, gc, new Image( "./data/Image/Plus.png" ), widthM/40, heightM/30 );
-        
+        minus = new ImageButton( stop.getMaxX() + widthM/15, startY + height/2 - heightM/40, widthM/20, heightM/20, MINUS, Color.yellow, 3, gc, new Image( "./data/Image/Minus.png" ), widthM/45, heightM/70 );
+        plus  = new ImageButton( stop.getMaxX() + widthM/4, startY + height/2 - heightM/40, widthM/20, heightM/20, PLUS, Color.yellow, 4, gc, new Image( "./data/Image/Plus.png" ), widthM/40, heightM/30 );
+
+        showFrame = new Rectangle( minus.getMaxX() + (plus.getX() - minus.getMaxX())/2 - widthFrame/2, minus.getY(), widthFrame, minus.getAlt());
         speed     = new Rectangle( pause.getMaxX(), startY, gc.getWidth() - pause.getMaxX(), height );
-        showFrame = new Rectangle( minus.getMaxX() + (plus.getX() - minus.getMaxX())/2 - gc.getWidth()/22, minus.getY() + gc.getHeight()/270, gc.getWidth()/10*String.valueOf( frames ).length()/2 + gc.getWidth()/20, gc.getHeight()/20 );
         
         buttons.add( start );
         buttons.add( stop );
@@ -109,9 +112,12 @@ public class AnimationManager implements AnimationInterface
             if (!buttonFounded){
                 for (ImageButton bottone: buttons) {
                     if (bottone.isPressed()) {
+                    	// TODO PROVARE AD OTTIMIZZARE QUESTA PARTE (PER ORA LA LASCIO COSI)
                         if ((bottone.getName().equals( START ) && !nd.isInExecution())
                          || (bottone.getName().equals( PAUSE ) && !nd.isInPause())
-                         || (bottone.getName().equals( STOP ))) {
+                         || (bottone.getName().equals( STOP ))
+                         || (bottone.getName().equals( MINUS ))
+                         || (bottone.getName().equals( PLUS ))) {
                             bottone.setPressed( false );
                         }
                     }
@@ -138,8 +144,10 @@ public class AnimationManager implements AnimationInterface
         
         g.setColor( Color.black );
         g.draw( showFrame );
-        // FIXME messo qui e' bruttissimo (per non parlare della lunghezza della riga..)
-        g.drawString( String.valueOf( frames ), plus.getMaxX() + (minus.getX() - plus.getMaxX())/2 - String.valueOf( frames ).length()/2*gc.getWidth()/80, plus.getY() + (plus.getMaxY() - plus.getY())/4 );
+        
+        frameLenght = "" + frames;
+        int fWidth = g.getFont().getWidth( frameLenght ), fHeight = g.getFont().getHeight( frameLenght );
+        g.drawString( frameLenght, showFrame.getCenterX() - fWidth/2, showFrame.getCenterY() - fHeight/2 );
     }
     
     public void resetAllButtons() {
