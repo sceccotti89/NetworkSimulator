@@ -17,13 +17,13 @@ public class NetworkDisplay
     private List<Node> nodes;
     private List<Packet> packets;
     
-    private long timer = 0;
+    private long timer;
     
     private boolean end;
     
     private boolean pause;
     
-    private int index = 0;
+    private int index;
     
     public NetworkDisplay( final float width, final float height, final float startY, final List<Node> nodes, final List<Packet> packets )
     {
