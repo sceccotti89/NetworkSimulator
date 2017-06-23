@@ -160,7 +160,7 @@ public class AnimationNetwork extends BasicGame
     {
         ob = new OptionBar( gc );
         am = new AnimationManager( gc, ob.getMaxY(), width, height );
-        nd = new NetworkDisplay( gc.getWidth(), gc.getHeight()*100/142, am.getMaxY(), nodes, packets );
+        nd = new NetworkDisplay( gc.getWidth(), gc.getHeight()*100/142, am.getMaxY(), nodes, packets, timeDuration );
         ta = new TimeAnimation( gc, nd.getMaxY(), width, height, timeDuration );
     }
     

@@ -17,21 +17,21 @@ public class NetworkDisplay
     private List<Node> nodes;
     private List<Packet> packets;
     
-    private long timer;
-    
-    private boolean end;
+    private long timer = 0, timeSimulation;
     
     private boolean start, pause;
     
     private int index, packetSize;
     
-    public NetworkDisplay( final float width, final float height, final float startY, final List<Node> nodes, final List<Packet> packets )
+    public NetworkDisplay( final float width, final float height, final float startY, final List<Node> nodes, final List<Packet> packets, long timeSimulation )
     {
         zone = new Rectangle( 0, startY, width, height );
         
         this.nodes = nodes;
         
         this.packets = packets;
+        
+        this.timeSimulation = timeSimulation;
         
         packetSize = packets.size();
         
@@ -45,7 +45,6 @@ public class NetworkDisplay
         
         start = false;
         pause = false;
-        end = false;
 
         for (Packet packet: packets) {
             packet.init();
@@ -119,11 +118,10 @@ public class NetworkDisplay
             packet.update( gc, timer );
             if (!packet.isActive() && i == index) {
                 index++;
-                end = index == packetSize;
             }
         }
         
-        if (end) {
+        if (timer >= timeSimulation) {
             stopAnimation();
             am.resetAllButtons();
         }
