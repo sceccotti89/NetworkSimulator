@@ -39,6 +39,8 @@ public class TimeAnimation implements AnimationInterface
         mouseX = input.getMouseX();
         mouseY = input.getMouseY();
         
+        timer = nd.getTimeSimulation();
+        
         if (leftMouse && !mouseDown) {
             mouseDown = true;
             
@@ -55,7 +57,7 @@ public class TimeAnimation implements AnimationInterface
                 
                 if (timingHit || cursorHit) {
                     if (timing.contains( mouseX, mouseY )) {
-                        cursor.setX( Math.max( Math.min( mouseX - cursor.getWidth()/2, timing.getMaxX() ), timing.getX() ) );
+                        cursor.setX( Math.max( Math.min( mouseX - cursor.getWidth()/2, timing.getMaxX() - cursor.getWidth()/2 ), timing.getX() ) );
                         nd.setTimeSimulation( (long) ((mouseX - startTimingX)/(timing.getWidth()/timeDuration)) );
                         nd.checkActivityPackets();
                     }
@@ -63,15 +65,13 @@ public class TimeAnimation implements AnimationInterface
                 
                 cursorHit = false;
             } else if (cursorHit && mouseDown) {
-                cursor.setX( Math.max( Math.min( mouseX - cursor.getWidth()/2, timing.getMaxX() ), timing.getX() ) );
+                cursor.setX( Math.max( Math.min( mouseX - cursor.getWidth()/2, timing.getMaxX() - cursor.getWidth()/2 ), timing.getX() ) );
                 nd.setTimeSimulation( (long) ((mouseX - startTimingX)/(timing.getWidth()/timeDuration)) );
                 nd.checkActivityPackets();
             }
+        } else {
+        	cursor.setX( timing.getX() - cursor.getWidth()/2 + (timing.getWidth() / timeDuration) * timer );
         }
-        
-        timer = nd.getTimeSimulation();
-        
-        cursor.setX( timing.getX() + timing.getWidth()/timeDuration*timer );
     }
     
     @Override

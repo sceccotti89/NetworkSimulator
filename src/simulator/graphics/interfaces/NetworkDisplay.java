@@ -23,7 +23,7 @@ public class NetworkDisplay
     
     private boolean pause;
     
-    private int index;
+    private int index, packetSize;
     
     public NetworkDisplay( final float width, final float height, final float startY, final List<Node> nodes, final List<Packet> packets )
     {
@@ -32,6 +32,8 @@ public class NetworkDisplay
         this.nodes = nodes;
         
         this.packets = packets;
+        
+        packetSize = packets.size();
         
         resetAnimation();
     }
@@ -46,13 +48,12 @@ public class NetworkDisplay
 
         for (Packet packet: packets) {
             packet.init();
-            packet.setActive( true );
         }
     }
     
     public void checkActivityPackets() {
         index = 0;
-        for (int i = index; i < packets.size(); i++) {
+        for (int i = index; i < packetSize; i++) {
             Packet packet = packets.get( i );
             if (timer >= packet.getStartTime()) {
                 if (timer < packet.getEndTime()) {
@@ -107,13 +108,13 @@ public class NetworkDisplay
         
         timer = timer + am.getFrames();
         
-        for (int i = index; i < packets.size(); i++) {
+        for (int i = index; i < packetSize; i++) {
             Packet packet = packets.get( i );
             if (packet.getStartTime() > timer) break;
             packet.update( gc, timer );
             if (!packet.isActive() && i == index) {
                 index++;
-                end = index == packets.size();
+                end = index == packetSize;
             }
         }
         
@@ -134,7 +135,7 @@ public class NetworkDisplay
         g.fill( zone );
         
         if (timer > 0) {
-            for (int i = index; i < packets.size(); i++) {
+            for (int i = index; i < packetSize; i++) {
                 Packet packet = packets.get( i );
                 packet.draw( timer, g );
             }

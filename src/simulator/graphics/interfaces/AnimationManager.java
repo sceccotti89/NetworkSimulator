@@ -105,6 +105,8 @@ public class AnimationManager implements AnimationInterface
             if (!buttonFounded){
                 for (ImageButton bottone: buttons) {
                     if (bottone.isPressed()) {
+                    	// TODO SISTEMARE QUESTA PARTE
+                    	// MAGARI REINTRIDUCENDO START OLTRE A PAUSE
                         if ((bottone.getName().equals( START ) /*&& !isOperating()*/)
                          || (bottone.getName().equals( PAUSE ) && !nd.isInPause())
                          || (bottone.getName().equals( STOP ))) {
