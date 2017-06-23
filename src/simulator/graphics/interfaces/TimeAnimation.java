@@ -22,13 +22,16 @@ public class TimeAnimation implements AnimationInterface
     
     private long timer;
     
+    private float widthCursor;
+    
     public TimeAnimation( final GameContainer gc, final float startY, final float width, final float height, final long timeDuration ) throws SlickException
     {
         startTimingX = width/80;
+        widthCursor = width/150;
         
         barTiming = new Rectangle( 0, startY, width, height*10/75 );
         timing    = new Rectangle( startTimingX, startY, width - 2*startTimingX, height*10/225 );
-        cursor    = new Rectangle( timing.getX(), timing.getY(), width/150, timing.getHeight() );
+        cursor    = new Rectangle( timing.getX() - widthCursor/2, timing.getY(), widthCursor, timing.getHeight() );
         
         this.timeDuration = timeDuration;
     }
@@ -57,20 +60,21 @@ public class TimeAnimation implements AnimationInterface
                 
                 if (timingHit || cursorHit) {
                     if (timing.contains( mouseX, mouseY )) {
-                        cursor.setX( Math.max( Math.min( mouseX - cursor.getWidth()/2, timing.getMaxX() - cursor.getWidth()/2 ), timing.getX() ) );
-                        nd.setTimeSimulation( (long) ((mouseX - startTimingX)/(timing.getWidth()/timeDuration)) );
+                        cursor.setX( Math.max( Math.min( mouseX - widthCursor/2, timing.getMaxX() - widthCursor/2 ), timing.getX() - widthCursor/2 ) );
+                        nd.setTimeSimulation( (long) ((cursor.getX() + widthCursor/2 - startTimingX)/(timing.getWidth()/timeDuration)) );
                         nd.checkActivityPackets();
                     }
                 }
                 
                 cursorHit = false;
             } else if (cursorHit && mouseDown) {
-                cursor.setX( Math.max( Math.min( mouseX - cursor.getWidth()/2, timing.getMaxX() - cursor.getWidth()/2 ), timing.getX() ) );
-                nd.setTimeSimulation( (long) ((mouseX - startTimingX)/(timing.getWidth()/timeDuration)) );
+                cursor.setX( Math.max( Math.min( mouseX - widthCursor/2, timing.getMaxX() - widthCursor/2 ), timing.getX() - widthCursor/2 ) );
+                System.out.println( "CURSOR.GETX = " + cursor.getCenterX() );
+                nd.setTimeSimulation( (long) ((cursor.getX() + widthCursor/2 - startTimingX)/(timing.getWidth()/timeDuration)) );
                 nd.checkActivityPackets();
             }
         } else {
-        	cursor.setX( timing.getX() - cursor.getWidth()/2 + (timing.getWidth() / timeDuration) * timer );
+        	cursor.setX( timing.getX() - widthCursor/2 + (timing.getWidth() / timeDuration) * timer );
         }
     }
     
