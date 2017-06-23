@@ -92,6 +92,7 @@ public class AnimationManager implements AnimationInterface
                     } else if (button.getName().equals( PAUSE )) {
                         nd.pauseAnimation();
                         ob.resetAllButtons();
+                        button.setPressed( true );
                         resetButtons( button );
                     } else if (button.getName().equals( STOP )) {
                         nd.stopAnimation();
