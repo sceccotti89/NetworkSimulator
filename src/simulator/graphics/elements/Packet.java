@@ -1,9 +1,9 @@
 package simulator.graphics.elements;
 
 import org.newdawn.slick.Color;
-import org.newdawn.slick.Font;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Input;
 import org.newdawn.slick.geom.Rectangle;
 
 public class Packet implements Comparable<Packet>
@@ -20,8 +20,6 @@ public class Packet implements Comparable<Packet>
     
     private float angle;
     
-    private float widthInfo, heightInfo;
-    private Rectangle infos;
     private boolean drawInfo;
     
     private int width, height;
@@ -33,6 +31,10 @@ public class Packet implements Comparable<Packet>
     private long timer;
     
     private Node source, dest;
+    
+    Info info;
+    
+    private String infos;
     
     public Packet( final Node source, final Node dest,
                    final Color color,
@@ -48,10 +50,12 @@ public class Packet implements Comparable<Packet>
         this.startTime = startTime;
         this.endTime = endTime;
         
-        widthInfo  = width/7;
-        heightInfo = height/13;
+        infos =   "startTime = " + startTime + "\n"
+        		+ "endTime = " + endTime + "\n"
+        		+ "source = " + source.getNodeID() + "\n"
+        		+ "dest = " + dest.getNodeID();
         
-        infos = new Rectangle( 0, 0, widthInfo, heightInfo );
+        info = new Info( Color.magenta, infos );
         
         drawInfo = false;
         
@@ -147,13 +151,20 @@ public class Packet implements Comparable<Packet>
         return dest;
     }
     
+    /*
+    // ruota un punto intorno all'origine degli assi di un angolo teta
+    member this.Rotate( x:float32, y:float32, teta:float32 ) =
+        // ottiene i radianti dell'angolo di rotazione espresso in sessagesimali
+        let angle = teta * single System.Math.PI / 180.f
+        // calcola le nuove coordinate
+        let X = x * cos( angle ) - y * sin( angle )
+        let Y = x * sin( angle ) + y * cos( angle )
+    */
+    
     public void update( final GameContainer gc, final float time )
     {
         if (active) {
             if (time >= startTime) {
-                int mouseX = gc.getInput().getMouseX();
-                int mouseY = gc.getInput().getMouseY();
-                
                 if (time >= endTime) {
                     setActive( false );
                     return;
@@ -162,10 +173,10 @@ public class Packet implements Comparable<Packet>
                 distance = distance + speedX;
                 area.setLocation( area.getX() + speedX, area.getY() );
                 
-                drawInfo = area.contains( mouseX, mouseY );
-                if (drawInfo) {
-                    float offset = gc.getWidth()/80;
-                    infos.setLocation( mouseX + offset, mouseY - offset );
+                // TODO DA LAVORARCI
+                if (gc.getInput().isMouseButtonDown( Input.MOUSE_RIGHT_BUTTON )) {
+                	info.setAttributes( gc.getGraphics(), infos );
+                	drawInfo = true;
                 }
             }
         }
@@ -173,12 +184,19 @@ public class Packet implements Comparable<Packet>
     
     public void draw( final long time, final Graphics g )
     {
+    	float offset;
+    	
         if (time < startTime || time > endTime)
             return;
         
         g.rotate( source.getCenterX(), source.getCenterY(), angle );
         
-        float offset = height/30;
+        if (drawInfo) {
+        	offset = width/80;
+        	info.render( g, area.getMaxX() + offset, area.getMaxY() + offset, angle );
+        }
+        
+        offset = height/30;
         if (angle == -180) offset *= -1;
         
         area.setY( area.getY() + offset );
@@ -186,19 +204,6 @@ public class Packet implements Comparable<Packet>
         g.fill( area );
         g.resetTransform();
         area.setY( area.getY() - offset );
-        
-        if (drawInfo) {
-            Font f = g.getFont();
-            String info = "Source node = " + source.getNodeID() + "\nDestination node = " + dest.getNodeID();
-            infos.setSize( f.getWidth( info ), f.getHeight( info ) );
-            
-            g.setColor( Color.magenta );
-            g.fill( infos );
-            g.setColor( Color.black );
-            g.draw( infos );
-            
-            g.drawString( info, infos.getX(), infos.getY() );
-        }
     }
 
     @Override
@@ -206,10 +211,5 @@ public class Packet implements Comparable<Packet>
         if (startTime < packet.startTime) return -1;
         if (startTime > packet.startTime) return 1;
         return 0;
-    }
-    
-    @Override
-    public String toString() {
-        return "Source: " + source.getNodeID() + ", Destination: " + dest.getNodeID();
     }
 }
