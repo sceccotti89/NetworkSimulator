@@ -21,7 +21,7 @@ public class NetworkDisplay
     
     private boolean end;
     
-    private boolean pause;
+    private boolean start, pause;
     
     private int index, packetSize;
     
@@ -43,7 +43,8 @@ public class NetworkDisplay
         timer = 0;
         index = 0;
         
-        pause = true;
+        start = false;
+        pause = false;
         end = false;
 
         for (Packet packet: packets) {
@@ -87,7 +88,12 @@ public class NetworkDisplay
         return pause;
     }
     
+    public boolean isInExecution(){
+    	return start;
+    }
+    
     public void startAnimation() {
+    	start = true;
         pause = false;
     }
     
@@ -96,13 +102,12 @@ public class NetworkDisplay
     }
     
     public void stopAnimation() {
-        pause = true;
         resetAnimation();
     }
     
     public void update( final GameContainer gc, final AnimationManager am )
     {
-        if (pause) {
+        if (!start || pause) {
             return;
         }
         
@@ -134,7 +139,7 @@ public class NetworkDisplay
         g.setColor( Color.white );
         g.fill( zone );
         
-        if (timer > 0) {
+        if (start) {
             for (int i = index; i < packetSize; i++) {
                 Packet packet = packets.get( i );
                 packet.draw( timer, g );

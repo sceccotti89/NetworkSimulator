@@ -90,10 +90,14 @@ public class AnimationManager implements AnimationInterface
                         button.setPressed( true );
                         resetButtons( button );
                     } else if (button.getName().equals( PAUSE )) {
-                        nd.pauseAnimation();
-                        ob.resetAllButtons();
-                        button.setPressed( true );
-                        resetButtons( button );
+                    	if (nd.isInExecution()) {
+                    		nd.pauseAnimation();
+                            ob.resetAllButtons();
+                            button.setPressed( true );
+                            resetButtons( button );
+                    	} else {
+                    		button.setPressed( false );
+                    	}
                     } else if (button.getName().equals( STOP )) {
                         nd.stopAnimation();
                         ob.resetAllButtons();
@@ -105,9 +109,7 @@ public class AnimationManager implements AnimationInterface
             if (!buttonFounded){
                 for (ImageButton bottone: buttons) {
                     if (bottone.isPressed()) {
-                    	// TODO SISTEMARE QUESTA PARTE
-                    	// MAGARI REINTRIDUCENDO START OLTRE A PAUSE
-                        if ((bottone.getName().equals( START ) /*&& !isOperating()*/)
+                        if ((bottone.getName().equals( START ) && !nd.isInExecution())
                          || (bottone.getName().equals( PAUSE ) && !nd.isInPause())
                          || (bottone.getName().equals( STOP ))) {
                             bottone.setPressed( false );
