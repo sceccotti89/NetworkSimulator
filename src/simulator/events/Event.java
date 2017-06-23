@@ -17,15 +17,13 @@ import simulator.utils.Time;
 public abstract class Event implements Comparable<Event>
 {
     /** Event time in microseconds. */
-    protected Time _time;
-    protected Time _startTime;
-    protected Time _arrivalTime = Time.ZERO;
+    private Time _time;
+    private Time _arrivalTime = Time.ZERO;
     
-    protected Agent _source;
-    protected Agent _dest;
+    private Agent _source;
+    private Agent _dest;
     
-    protected long _prevNodeId = 0;
-    protected long _currentNodeId = 0;
+    private long _currentNodeId = 0;
     
     protected boolean _processedByAgent = true;
     
@@ -45,7 +43,6 @@ public abstract class Event implements Comparable<Event>
         _time = time.clone();
         _source = source;
         _currentNodeId = source.getId();
-        _prevNodeId = source.getId();
         setId();
     }
     
@@ -58,7 +55,6 @@ public abstract class Event implements Comparable<Event>
         _packet = packet;
         
         _currentNodeId = from.getId();
-        _prevNodeId = from.getId();
         setId();
     }
     
@@ -126,10 +122,6 @@ public abstract class Event implements Comparable<Event>
             return;
         }
         
-        if (nodeId != _source.getId()) {
-            net.trackEvent( _prevNodeId + " " + _startTime + " " + nodeId + " " + _time );
-        }
-        
         if (nodeId == _dest.getId()) {
             //Utils.LOGGER.debug( "[" + _time + "] Reached destination node: " + node );
             setArrivalTime( _time.clone() );
@@ -142,35 +134,34 @@ public abstract class Event implements Comparable<Event>
             _dest.setTime( _arrivalTime );
             evtScheduler.schedule( _dest.fireEvent( _time, this ) );
         } else {
-            long delay = 0;
-            if (nodeId != _source.getId()) {
-                //Utils.LOGGER.debug( "[" + _time + "] Reached intermediate node: " + node );
-                delay = getTcalc( node, node.getAgent() ).getTimeMicroseconds();
-            }
-            
             Time time = _time.clone();
-            NetworkLink link = net.getLink( nodeId, net.nextNode( nodeId, _dest.getId() ).getId() );
+            long nextNode = net.nextNode( nodeId, _dest.getId() ).getId();
+            NetworkLink link = net.getLink( nodeId, nextNode );
             if (link != null && link.isActive()) {
                 /*if (nodeId == _source.getId()) {
                     Utils.LOGGER.debug( "[" + _time + "] Starting from node: " + node );
                 }*/
-                _startTime = _time.clone();
                 
                 if (link.checkErrorLink()) {
                     //System.out.println( "[" + _time + "] Packet lost due to an error in the link." );
                     // TODO utilizzare i vari protocolli per la gestione dell'errore (tipo ICMPv6).
                 } else {
-                    _prevNodeId = _currentNodeId;
                     _currentNodeId = link.getDestId();
-                    long Ttrasm = link.getTtrasm( _packet.getSizeInBits() );
-                    
+                    long delay = 0;
                     Agent agent = node.getAgent();
                     if (nodeId != _source.getId()) {
+                        //Utils.LOGGER.debug( "[" + _time + "] Reached intermediate node: " + node );
+                        delay = getTcalc( node, node.getAgent() ).getTimeMicroseconds();
                         // Add event on queue only for nodes different from source.
                         agent.addEventOnQueue( this );
                     }
+                    
+                    // Starting time is the current time + Tcalc of the node.
+                    Time startTime = _time.clone().addTime( delay, TimeUnit.MICROSECONDS );
+                    
                     // If the transmission is not in parallel add the corresponding delay.
                     if (!agent.parallelTransmission()) {
+                        long Ttrasm = link.getTtrasm( _packet.getSizeInBits() );
                         time.addTime( Ttrasm, TimeUnit.MICROSECONDS );
                         delay += Ttrasm;
                     }
@@ -189,12 +180,16 @@ public abstract class Event implements Comparable<Event>
                     // The link propagation time is added here.
                     _time.addTime( link.getTprop(), TimeUnit.MICROSECONDS );
                     
+                    // Track the current event.
+                    net.trackEvent( nodeId + " " + startTime + " " + nextNode + " " + _time );
+                    
                     // Push-back the modified event into the queue.
                     evtScheduler.schedule( this );
                 }
+                
+                _source.setTime( time );
             }
             
-            _source.setTime( time );
             evtScheduler.schedule( _source.fireEvent( time, null ) );
         }
     }

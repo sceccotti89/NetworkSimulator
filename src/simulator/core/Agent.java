@@ -244,9 +244,7 @@ public abstract class Agent
      * @param now    set the current time
     */
     public void setTime( final Time now ) {
-        if (_time.compareTo( now ) < 0) {
-            _time = now;
-        }
+        _time.max( now );
     }
     
     /**
