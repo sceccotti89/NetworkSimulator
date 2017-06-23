@@ -31,7 +31,7 @@ public class TimeAnimation implements AnimationInterface
         
         barTiming = new Rectangle( 0, startY, width, height*10/75 );
         timing    = new Rectangle( startTimingX, startY, width - 2*startTimingX, height*10/225 );
-        cursor    = new Rectangle( timing.getX() - widthCursor/2, timing.getY(), widthCursor, timing.getHeight() );
+        cursor    = new Rectangle( startTimingX - widthCursor/2, timing.getY(), widthCursor, timing.getHeight() );
         
         this.timeDuration = timeDuration;
     }
@@ -60,7 +60,7 @@ public class TimeAnimation implements AnimationInterface
                 
                 if (timingHit || cursorHit) {
                     if (timing.contains( mouseX, mouseY )) {
-                        cursor.setX( Math.max( Math.min( mouseX - widthCursor/2, timing.getMaxX() - widthCursor/2 ), timing.getX() - widthCursor/2 ) );
+                        cursor.setX( Math.max( Math.min( mouseX - widthCursor/2, timing.getMaxX() - widthCursor/2 ), startTimingX - widthCursor/2 ) );
                         nd.setTimeSimulation( (long) ((cursor.getX() + widthCursor/2 - startTimingX) / (timing.getWidth() / timeDuration)) );
                         nd.checkActivityPackets();
                     }
@@ -68,12 +68,12 @@ public class TimeAnimation implements AnimationInterface
                 
                 cursorHit = false;
             } else if (cursorHit && mouseDown) {
-                cursor.setX( Math.max( Math.min( mouseX - widthCursor/2, timing.getMaxX() - widthCursor/2 ), timing.getX() - widthCursor/2 ) );
+                cursor.setX( Math.max( Math.min( mouseX - widthCursor/2, timing.getMaxX() - widthCursor/2 ), startTimingX - widthCursor/2 ) );
                 nd.setTimeSimulation( (long) ((cursor.getX() + widthCursor/2 - startTimingX) / (timing.getWidth() / timeDuration)) );
                 nd.checkActivityPackets();
             }
         } else {
-        	cursor.setX( timing.getX() - widthCursor/2 + timing.getWidth() / timeDuration * timer );
+        	cursor.setX( startTimingX - widthCursor/2 + timing.getWidth() / timeDuration * timer );
         }
     }
     
@@ -94,7 +94,7 @@ public class TimeAnimation implements AnimationInterface
         g.setColor( Color.white );
         String info = timer + "/" + timeDuration;
         int fWidth = g.getFont().getWidth( info ), fHeight = g.getFont().getHeight( info );
-        g.drawString( info, timing.getX()/2 + timing.getWidth()/2 - fWidth/2, barTiming.getMaxY() - (barTiming.getMaxY() - timing.getMaxY())/2 - fHeight/2 );
+        g.drawString( info, startTimingX/2 + timing.getWidth()/2 - fWidth/2, barTiming.getMaxY() - (barTiming.getMaxY() - timing.getMaxY())/2 - fHeight/2 );
     }
     
     public float getY(){
