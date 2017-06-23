@@ -112,14 +112,17 @@ public class AnimationManager implements AnimationInterface
             if (!buttonFounded){
                 for (ImageButton button: buttons) {
                     if (button.isPressed()) {
-                    	// TODO PROVARE AD OTTIMIZZARE QUESTA PARTE (PER ORA LA LASCIO COSI)
-                        if ((button.getName().equals( START ) && !nd.isInExecution())
-                         || (button.getName().equals( PAUSE ) && !nd.isInPause())
-                         || (button.getName().equals( STOP ))
-                         || (button.getName().equals( MINUS ))
-                         || (button.getName().equals( PLUS ))) {
-                        	button.setPressed( false );
-                        }
+                    	if (button.getName().equals( START )) {
+                    		if (!nd.isInExecution()) {
+                    			button.setPressed( false );
+                    		}
+                    	} else if (button.getName().equals( PAUSE )) {
+                    		if (!nd.isInPause()) {
+                    			button.setPressed( false );
+                    		}
+                    	} else {
+                    		button.setPressed( false );
+                    	}
                     }
                 }
             }
