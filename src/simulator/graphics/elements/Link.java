@@ -1,9 +1,9 @@
 package simulator.graphics.elements;
 
 import org.newdawn.slick.Color;
-import org.newdawn.slick.Font;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Input;
 import org.newdawn.slick.geom.Rectangle;
 
 public class Link
@@ -18,8 +18,9 @@ public class Link
     
     private Rectangle area;
     
-    private Rectangle infos;
-    private boolean showInfos = false;
+    Info info;
+    private boolean drawInfo;
+    private String infos;
     
     private final float offset;
     
@@ -40,7 +41,17 @@ public class Link
         
         area = new Rectangle( x1, y1 - offset, calculateLenght( x1, y1, x2, y2 ), offset * 2 );
         
-        infos = new Rectangle( 0, 0, 0, 0 );
+        infos =   "bandwidth = " + bandwidth + "Mb/s, "
+        		+ "delay = " + delay + "ms";
+        
+        info = new Info( Color.lightGray, infos );
+    }
+    
+    public void update( final GameContainer gc ) {
+    	if (gc.getInput().isMouseButtonDown( Input.MOUSE_RIGHT_BUTTON )) {
+        	info.setAttributes( gc.getGraphics(), infos );
+        	drawInfo = true;
+        }
     }
     
     public long getFromID() {
@@ -59,48 +70,21 @@ public class Link
         return lenght;
     }
     
-    public void setAngle( float val ) {
-        angle = val;
-    }
-    
     public float getAngle() {
         return angle;
     }
     
-    public boolean checkMouse( GameContainer gc ) {
-        float mouseX = gc.getInput().getMouseX();
-        float mouseY = gc.getInput().getMouseY();
+    public void render( Graphics g ) {
+        g.rotate( area.getX(), area.getY() + offset, angle );
         
-        if (area.contains( mouseX, mouseY )) {
-            showInfos = true;
-            
-            infos.setLocation( mouseX + offset, mouseY - offset );
-        } else {
-            showInfos = false;
+        if (drawInfo) {
+        	info.render( g, area.getCenterX() + offset, area.getCenterY() + offset, angle );
+        	g.resetTransform();
+        	g.rotate( area.getX(), area.getY() + offset, angle );
         }
         
-        return showInfos;
-    }
-    
-    public void drawLink( Graphics g ) {
-        g.rotate( area.getX(), area.getY() + offset, angle );
         g.setColor( color );
         g.draw( area );
         g.resetTransform();
-    }
-    
-    public void drawInfo( Graphics g ) {
-        Font f = g.getFont();
-        String value = bandwidth + "Mb/s, " + delay + "ms";
-        infos.setSize( f.getWidth( value ), f.getHeight( value ) );
-        
-        if (showInfos) {
-            g.setColor( Color.black );
-            g.draw( infos );
-            g.setColor( Color.lightGray );
-            g.fill( infos );
-            g.setColor( Color.black );
-            g.drawString( value, infos.getX(), infos.getY() );
-        }
     }
 }

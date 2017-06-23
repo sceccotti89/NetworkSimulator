@@ -134,13 +134,13 @@ public class Node
     
     public void update( GameContainer gc ) {
         for (Link link: links) {
-            link.checkMouse( gc );
+            link.update( gc );
         }
     }
     
     public void drawLinks( Graphics g ) {
         for (Link link: links) {
-            link.drawLink( g );
+            link.render( g );
         }
     }
     
@@ -154,11 +154,5 @@ public class Node
         Font f = g.getFont();
         g.setColor( Color.white );
         g.drawString( nodeID + "", node.getCenterX() - f.getWidth( nodeID + "" )/2, node.getCenterY() - f.getHeight( nodeID + "" )/2 );
-    }
-    
-    public void drawInfo( Graphics g ) {
-        for (Link link: links) {
-            link.drawInfo( g );
-        }
     }
 }

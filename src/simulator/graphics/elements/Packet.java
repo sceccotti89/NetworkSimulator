@@ -16,24 +16,20 @@ public class Packet implements Comparable<Packet>
     
     private boolean active;
     
-    private float speedX;
+    private float speed;
     
     private float angle;
     
-    private boolean drawInfo;
-    
     private int width, height;
     
-    private float linkLenght;
-    
-    private float distance;
+    private float linkLenght, distance;
     
     private long timer;
     
     private Node source, dest;
     
     Info info;
-    
+    private boolean drawInfo;
     private String infos;
     
     public Packet( final Node source, final Node dest,
@@ -70,16 +66,12 @@ public class Packet implements Comparable<Packet>
         active = true;
     }
     
-    public float getSpeedX() {
-        return speedX;
+    public float getSpeed() {
+        return speed;
     }
     
     public void setLinkLenght() {
         linkLenght = source.getLinkLenght( dest.getNodeID() ) - 2*source.getRay();
-    }
-    
-    public float getLinkLenght() {
-        return linkLenght;
     }
     
     public void setPosition( final long time )
@@ -100,7 +92,7 @@ public class Packet implements Comparable<Packet>
     }
     
     public void setSpeed( final int frames ) {
-        speedX = (linkLenght / (endTime - startTime)) * frames;
+        speed = (linkLenght / (endTime - startTime)) * frames;
     }
     
     public boolean isActive() {
@@ -111,44 +103,16 @@ public class Packet implements Comparable<Packet>
         active = val;
     }
     
-    public void setStartTime( int val ) {
-        startTime = val;
-    }
-    
     public long getStartTime() {
         return startTime;
-    }
-    
-    public void setEndTime( int val ) {
-        endTime = val;
     }
     
     public long getEndTime() {
         return endTime;
     }
     
-    public void setSourceNode( final Node source ) {
-        this.source = source;
-    }
-    
-    public void setDestNode( final Node dest ) {
-        this.dest = dest;
-    }
-    
     public Rectangle getArea(){
         return area;
-    }
-    
-    public void setColor( Color color ){
-        this.color = color;
-    }
-    
-    public Node getSourceNode(){
-        return source;
-    }
-    
-    public Node getDestNode(){
-        return dest;
     }
     
     /*
@@ -170,8 +134,8 @@ public class Packet implements Comparable<Packet>
                     return;
                 }
                 
-                distance = distance + speedX;
-                area.setLocation( area.getX() + speedX, area.getY() );
+                distance = distance + speed;
+                area.setLocation( area.getX() + speed, area.getY() );
                 
                 // TODO DA LAVORARCI
                 if (gc.getInput().isMouseButtonDown( Input.MOUSE_RIGHT_BUTTON )) {
@@ -182,7 +146,7 @@ public class Packet implements Comparable<Packet>
         }
     }
     
-    public void draw( final long time, final Graphics g )
+    public void render( final long time, final Graphics g )
     {
     	float offset;
     	
@@ -194,6 +158,8 @@ public class Packet implements Comparable<Packet>
         if (drawInfo) {
         	offset = width/80;
         	info.render( g, area.getMaxX() + offset, area.getMaxY() + offset, angle );
+        	g.resetTransform();
+            g.rotate( source.getCenterX(), source.getCenterY(), angle );
         }
         
         offset = height/30;

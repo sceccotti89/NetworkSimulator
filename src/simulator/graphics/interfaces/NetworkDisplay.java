@@ -140,7 +140,7 @@ public class NetworkDisplay
         if (start) {
             for (int i = index; i < packetSize; i++) {
                 Packet packet = packets.get( i );
-                packet.draw( timer, g );
+                packet.render( timer, g );
             }
         }
         
@@ -153,8 +153,8 @@ public class NetworkDisplay
             node.drawNode( g );
         }
         
-        for (Node node: nodes) {
+        /*for (Node node: nodes) {
             node.drawInfo( g );
-        }
+        }*/
     }
 }
