@@ -110,7 +110,7 @@ public class NetworkDisplay
             return;
         }
         
-        timer = timer + am.getFrames();
+        timer = timer + AnimationManager.frames;
         
         for (int i = index; i < packetSize; i++) {
             Packet packet = packets.get( i );

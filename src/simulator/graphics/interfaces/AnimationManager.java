@@ -168,8 +168,4 @@ public class AnimationManager implements AnimationInterface
             }
         }
     }
-    
-    public int getFrames() {
-        return frames;
-    }
 }
