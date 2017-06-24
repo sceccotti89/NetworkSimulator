@@ -11,18 +11,14 @@ import org.newdawn.slick.geom.Rectangle;
 public class TimeAnimation implements AnimationInterface
 {
     private Rectangle barTiming, timing, cursor;
-    
-    private long timeDuration;
-    
+    private long timer, timeDuration;
+
+	private boolean mouseDown;
     private int mouseX, mouseY;
     
     private float startTimingX;
     
-    private long timer;
-    
     private float widthCursor;
-
-	private boolean mouseDown;
     
     public TimeAnimation( final GameContainer gc, final float startY, final float width, final float height, final long timeDuration ) throws SlickException
     {
@@ -53,14 +49,10 @@ public class TimeAnimation implements AnimationInterface
         
         timer = nd.getTimeSimulation();
         
-        if (leftMouse && timing.contains( mouseX, mouseY )) {
-            mouseDown = true;
-         }
-        
-        if (mouseDown) {
-	 		setTime( nd );
+        if ((mouseDown) || (leftMouse && timing.contains( mouseX, mouseY ))) {
+        	setTime( nd );
 	     	mouseDown = leftMouse;
-	     }
+         }
         	          
          cursor.setX( startTimingX - widthCursor/2 + timing.getWidth() / timeDuration * timer );
     }
