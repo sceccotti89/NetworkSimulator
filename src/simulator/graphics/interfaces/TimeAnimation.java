@@ -50,10 +50,13 @@ public class TimeAnimation implements AnimationInterface
         
         timer = nd.getTimeSimulation();
         
+        // TODO TROVATO BUG SU ELEVATO NUMERO DI SPOSTAMENTI DEL CURSORE
+        // RIVEDERE MEGLIO DOMANI E CERCARE DI RISOLVERLO
+        
         if (leftMouse && !mouseDown) {
             mouseDown = true;
             
-            if (cursor.contains( mouseX, mouseY ) || timing.contains( mouseX, mouseY )) {
+            if (timing.contains( mouseX, mouseY )) {
             	cursorHit = true;
             } else {
                 mouseDown = false;
@@ -66,9 +69,9 @@ public class TimeAnimation implements AnimationInterface
                 mouseDown = false;
                 cursorHit = false;
         	}
-        } else {
-        	cursor.setX( startTimingX - widthCursor/2 + timing.getWidth() / timeDuration * timer );
         }
+        
+        cursor.setX( startTimingX - widthCursor/2 + timing.getWidth() / timeDuration * timer );
     }
     
     @Override
