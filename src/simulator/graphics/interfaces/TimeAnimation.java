@@ -16,7 +16,7 @@ public class TimeAnimation implements AnimationInterface
     
     private int mouseX, mouseY;
     
-    private boolean mouseDown, cursorHit = false;
+    private boolean mouseDown = false;
     
     private float startTimingX;
     
@@ -52,24 +52,13 @@ public class TimeAnimation implements AnimationInterface
         
         // TODO TROVATO BUG SU ELEVATO NUMERO DI SPOSTAMENTI DEL CURSORE
         // RIVEDERE MEGLIO DOMANI E CERCARE DI RISOLVERLO
-        
-        // TODO CONTROLLARE ANCHE COSA SBAGLIO IN QUESTA VERSIONE DI CODICE
         if (leftMouse && !mouseDown) {
-            mouseDown = true;
-            
             if (timing.contains( mouseX, mouseY )) {
             	mouseDown = true;
-            }/* else {
-                mouseDown = false;
-            }*/
+            }
         } else if (mouseDown) {
-        	//if (cursorHit) {
-        		setTime( nd );
-        	//}
-        	if (!leftMouse) {
-                mouseDown = false;
-                //cursorHit = false;
-        	}
+    		setTime( nd );
+        	mouseDown = leftMouse;
         }
         
         cursor.setX( startTimingX - widthCursor/2 + timing.getWidth() / timeDuration * timer );
