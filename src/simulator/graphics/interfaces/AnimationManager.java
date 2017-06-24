@@ -81,11 +81,11 @@ public class AnimationManager implements AnimationInterface
                     buttonFounded = true;
                     if (button.getName().equals( PLUS )) {
                         frames = Math.min( limit, frames + 1 );
-                        nd.setPacketSpeed( frames );
+                        nd.setPacketSpeed();
                         button.setPressed( false );
                     } else if (button.getName().equals( MINUS )) {
                         frames = Math.max( 1, frames - 1 );
-                        nd.setPacketSpeed( frames );
+                        nd.setPacketSpeed();
                         button.setPressed( false );
                     } else if (button.getName().equals( START )) {
                         nd.startAnimation();

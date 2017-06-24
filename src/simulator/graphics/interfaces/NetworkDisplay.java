@@ -77,9 +77,9 @@ public class NetworkDisplay
         timer = val;
     }
     
-    public void setPacketSpeed( final int frames ) {
+    public void setPacketSpeed() {
         for (Packet packet: packets) {
-            packet.setSpeed( frames );
+            packet.setSpeed( AnimationManager.frames );
         }
     }
     

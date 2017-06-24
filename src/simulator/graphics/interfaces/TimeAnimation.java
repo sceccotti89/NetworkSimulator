@@ -98,8 +98,4 @@ public class TimeAnimation implements AnimationInterface
         int fWidth = g.getFont().getWidth( info ), fHeight = g.getFont().getHeight( info );
         g.drawString( info, timing.getCenterX() - fWidth/2, barTiming.getMaxY() - (barTiming.getMaxY() - timing.getMaxY())/2 - fHeight/2 );
     }
-    
-    public float getY(){
-        return barTiming.getY();
-    }
 }
