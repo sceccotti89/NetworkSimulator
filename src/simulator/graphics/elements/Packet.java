@@ -135,7 +135,7 @@ public class Packet implements Comparable<Packet>
     	float mouseX = gc.getInput().getMouseX();
     	float mouseY = gc.getInput().getMouseY();
     	
-        if (true) {
+        if (/*active*/ true) {
             if (time >= startTime) {
                 if (time >= endTime) {
                     setActive( false );
