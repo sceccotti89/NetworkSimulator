@@ -59,7 +59,7 @@ public class TimeAnimation implements AnimationInterface
         
         if (mouseDown) {
 	 		setTime( nd );
-	     	mouseDown = leftMouse;
+	     	mouseDown = false;
 	     }
         	          
          cursor.setX( startTimingX - widthCursor/2 + timing.getWidth() / timeDuration * timer );
