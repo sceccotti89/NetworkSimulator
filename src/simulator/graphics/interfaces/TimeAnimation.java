@@ -16,7 +16,7 @@ public class TimeAnimation implements AnimationInterface
     
     private int mouseX, mouseY;
     
-    private boolean mouseDown, cursorHit = false, timingHit = false;
+    private boolean mouseDown, cursorHit = false;
     
     private float startTimingX;
     
@@ -53,10 +53,8 @@ public class TimeAnimation implements AnimationInterface
         if (leftMouse && !mouseDown) {
             mouseDown = true;
             
-            if (cursor.contains( mouseX, mouseY )) {
-                cursorHit = true;
-            } else if (timing.contains( mouseX, mouseY )) {
-                timingHit = true;
+            if (cursor.contains( mouseX, mouseY ) || timing.contains( mouseX, mouseY )) {
+            	cursorHit = true;
             } else {
                 mouseDown = false;
             }
@@ -64,10 +62,8 @@ public class TimeAnimation implements AnimationInterface
             if (!leftMouse) {
                 mouseDown = false;
                 
-                if (timingHit || cursorHit) {
-                    if (timing.contains( mouseX, mouseY )) {
-                        setTime( nd );
-                    }
+                if (cursorHit) {
+                    setTime( nd );
                 }
                 
                 cursorHit = false;
