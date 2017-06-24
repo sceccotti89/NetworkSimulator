@@ -37,7 +37,6 @@ public class TimeAnimation implements AnimationInterface
     private void setTime( NetworkDisplay nd ) {
         cursor.setX( Math.max( Math.min( mouseX - widthCursor/2, timing.getMaxX() - widthCursor/2 ), startTimingX - widthCursor/2 ) );
         nd.setTimeSimulation( (long) (((double) cursor.getCenterX() - startTimingX) / timing.getWidth() * timeDuration) );
-        nd.checkActivityPackets();
     }
     
     @Override

@@ -75,6 +75,7 @@ public class NetworkDisplay
     
     public void setTimeSimulation( long val ) {
         timer = val;
+        checkActivityPackets();
     }
     
     public void setPacketSpeed() {
