@@ -23,6 +23,10 @@ public class Info
 		area = new Rectangle( 0, 0, f.getWidth( info ), f.getHeight( info )   );
 	}
 	
+	public void setPosition( final float x, final float y ) {
+		area.setLocation( x, y );
+	}
+	
 	public void render( Graphics g, float x, float y, float angle ) {
 		g.rotate( -angle, area.getCenterX(), area.getCenterY() );
 		g.setColor( color );

@@ -3,14 +3,14 @@ package simulator.graphics.elements;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
-import org.newdawn.slick.Input;
+import org.newdawn.slick.geom.Point;
 import org.newdawn.slick.geom.Rectangle;
 
 public class Packet implements Comparable<Packet>
 {
     private Color color;
     
-    private Rectangle area;
+    private Rectangle area, areaRotated;
     
     private long startTime, endTime;
     
@@ -106,13 +106,12 @@ public class Packet implements Comparable<Packet>
     public long getStartTime() {
         return startTime;
     }
-    
-    public long getEndTime() {
-        return endTime;
-    }
-    
-    public Rectangle getArea(){
-        return area;
+
+    @Override
+    public int compareTo( Packet packet ) {
+        if (startTime < packet.startTime) return -1;
+        if (startTime > packet.startTime) return 1;
+        return 0;
     }
     
     /*
@@ -125,9 +124,18 @@ public class Packet implements Comparable<Packet>
         let Y = x * sin( angle ) + y * cos( angle )
     */
     
+    private Point worldToView( final float x, final float y, float angle ) {
+    	angle = (float) (angle * Math.PI/180.f);
+    	System.out.println( "X = " + x );
+    	return new Point( (float) (x * Math.cos( angle ) - y * Math.sin( angle )), (float) (x * Math.sin( angle ) + y * Math.cos( angle )) );
+    }
+    
     public void update( final GameContainer gc, final float time )
     {
-        if (active) {
+    	float mouseX = gc.getInput().getMouseX();
+    	float mouseY = gc.getInput().getMouseY();
+    	
+        if (true) {
             if (time >= startTime) {
                 if (time >= endTime) {
                     setActive( false );
@@ -137,9 +145,17 @@ public class Packet implements Comparable<Packet>
                 distance = distance + speed;
                 area.setLocation( area.getX() + speed, area.getY() );
                 
-                // TODO DA LAVORARCI
-                if (gc.getInput().isMouseButtonDown( Input.MOUSE_RIGHT_BUTTON )) {
+                Point p = worldToView( area.getX() - source.getCenterX(), (area.getY() - source.getCenterY()), angle );
+            	System.out.println( "X = " + p.getX() );
+                areaRotated = new Rectangle( p.getX() + source.getCenterX(), p.getY() + source.getCenterY(), area.getWidth(), area.getHeight() );
+
+            	System.out.println( "AREA.X = " + area.getX() + ", AREA.Y = " + area.getY() );
+            	System.out.println( "ROT.X = " + areaRotated.getX() + ", ROT.Y = " + areaRotated.getY() );
+            	
+                if (areaRotated.contains( mouseX, mouseY )) {
                 	info.setAttributes( gc.getGraphics(), infos );
+                	float offset = width/80;
+                	info.setPosition( mouseX + offset, mouseY + offset );
                 	drawInfo = true;
                 }
             }
@@ -170,17 +186,7 @@ public class Packet implements Comparable<Packet>
         g.fill( area );
         g.resetTransform();
         area.setY( area.getY() - offset );
-    }
-
-    @Override
-    public int compareTo( Packet packet ) {
-        if (startTime < packet.startTime) return -1;
-        if (startTime > packet.startTime) return 1;
-        return 0;
-    }
-    
-    @Override
-    public String toString() {
-        return "Source: " + source.getNodeID() + ", Destination: " + dest.getNodeID();
+        
+        g.fill( areaRotated );
     }
 }
