@@ -21,10 +21,12 @@ public class TimeAnimation implements AnimationInterface
     private long timer;
     
     private float widthCursor;
+
+	private boolean mouseDown;
     
     public TimeAnimation( final GameContainer gc, final float startY, final float width, final float height, final long timeDuration ) throws SlickException
     {
-        startTimingX = width/80;
+        startTimingX = width/12;
         widthCursor = width/150;
         
         barTiming = new Rectangle( 0, startY, width, height*10/75 );
@@ -34,9 +36,13 @@ public class TimeAnimation implements AnimationInterface
         this.timeDuration = timeDuration;
     }
     
+    private long roundValue( final double value ) {
+        return (long) (Math.round( value * 100.0 ) / 100.0);
+    }
+    
     private void setTime( NetworkDisplay nd ) {
         cursor.setX( Math.max( Math.min( mouseX - widthCursor/2, timing.getMaxX() - widthCursor/2 ), startTimingX - widthCursor/2 ) );
-        nd.setTimeSimulation( (long) (((double) cursor.getCenterX() - startTimingX) / timing.getWidth() * timeDuration) );
+        nd.setTimeSimulation( roundValue( (((double) cursor.getCenterX() - startTimingX) / timing.getWidth() * timeDuration) ) );
     }
     
     @Override
@@ -47,11 +53,16 @@ public class TimeAnimation implements AnimationInterface
         
         timer = nd.getTimeSimulation();
         
-        // TODO TROVATO BUG SU ELEVATO NUMERO DI SPOSTAMENTI DEL CURSORE
-        // RIVEDERE MEGLIO DOMANI E CERCARE DI RISOLVERLO
-        if (leftMouse && timing.contains( mouseX, mouseY )) setTime( nd );
+        if (leftMouse && timing.contains( mouseX, mouseY )) {
+            mouseDown = true;
+         }
         
-        cursor.setX( startTimingX - widthCursor/2 + timing.getWidth() / timeDuration * timer );
+        if (mouseDown) {
+	 		setTime( nd );
+	     	mouseDown = leftMouse;
+	     }
+        	          
+         cursor.setX( startTimingX - widthCursor/2 + timing.getWidth() / timeDuration * timer );
     }
     
     @Override
