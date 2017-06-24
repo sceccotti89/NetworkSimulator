@@ -67,7 +67,7 @@ public class TimeAnimation implements AnimationInterface
                 }
                 
                 cursorHit = false;
-            } else if (cursorHit && mouseDown) {
+            } else if (cursorHit) {
             	setTime( nd );
             }
         } else {
