@@ -53,21 +53,22 @@ public class TimeAnimation implements AnimationInterface
         // TODO TROVATO BUG SU ELEVATO NUMERO DI SPOSTAMENTI DEL CURSORE
         // RIVEDERE MEGLIO DOMANI E CERCARE DI RISOLVERLO
         
+        // TODO CONTROLLARE ANCHE COSA SBAGLIO IN QUESTA VERSIONE DI CODICE
         if (leftMouse && !mouseDown) {
             mouseDown = true;
             
             if (timing.contains( mouseX, mouseY )) {
-            	cursorHit = true;
-            } else {
+            	mouseDown = true;
+            }/* else {
                 mouseDown = false;
-            }
+            }*/
         } else if (mouseDown) {
-        	if (cursorHit) {
+        	//if (cursorHit) {
         		setTime( nd );
-        	}
+        	//}
         	if (!leftMouse) {
                 mouseDown = false;
-                cursorHit = false;
+                //cursorHit = false;
         	}
         }
         
