@@ -55,11 +55,8 @@ public class NetworkDisplay
         index = 0;
         for (int i = index; i < packetSize; i++) {
             Packet packet = packets.get( i );
-            if (timer >= packet.getStartTime()) {
-                if (timer < packet.getEndTime()) {
-                    packet.setPosition( timer );
-                }
-            } else if (i == index) {
+            packet.setPosition( timer );
+            if (timer < packet.getStartTime() && i == index) {
                 index++;
             }
         }

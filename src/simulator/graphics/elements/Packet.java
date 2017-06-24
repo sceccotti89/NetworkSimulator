@@ -28,7 +28,7 @@ public class Packet implements Comparable<Packet>
     
     private Node source, dest;
     
-    Info info;
+    private Info info;
     private boolean drawInfo;
     private String infos;
     
@@ -81,7 +81,7 @@ public class Packet implements Comparable<Packet>
         if (timer == 0) {
             distance = 0;
         } else {
-            distance = (float) ((((double) (time - startTime)) / ((double) (endTime - startTime))) * linkLenght);
+            distance = (float) ((((double) time - startTime) / (endTime - startTime)) * linkLenght);
         }
         
         area.setX( source.getCenterX() + source.getRay() + distance );
@@ -177,5 +177,10 @@ public class Packet implements Comparable<Packet>
         if (startTime < packet.startTime) return -1;
         if (startTime > packet.startTime) return 1;
         return 0;
+    }
+    
+    @Override
+    public String toString() {
+        return "Source: " + source.getNodeID() + ", Destination: " + dest.getNodeID();
     }
 }
