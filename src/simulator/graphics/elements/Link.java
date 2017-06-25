@@ -78,9 +78,7 @@ public class Link
         g.rotate( area.getX(), area.getY() + offset, angle );
         
         if (drawInfo) {
-        	info.render( g, area.getCenterX() + offset, area.getCenterY() + offset, angle );
-        	g.resetTransform();
-        	g.rotate( area.getX(), area.getY() + offset, angle );
+        	info.render( g );
         }
         
         g.setColor( color );

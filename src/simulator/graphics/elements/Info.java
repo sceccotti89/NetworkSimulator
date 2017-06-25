@@ -10,6 +10,7 @@ public class Info
 	private Rectangle area;
 	
 	private String infos;
+	private static final float OFFSET = 10f;
 	
 	private Color color;
 	
@@ -27,15 +28,13 @@ public class Info
 		area.setLocation( x, y );
 	}
 	
-	public void render( Graphics g, float x, float y, float angle ) {
-		g.rotate( -angle, area.getCenterX(), area.getCenterY() );
+	public void render( final Graphics g ) {
 		g.setColor( color );
 		g.fill( area );
 		
 		g.setColor( Color.black );
 		g.draw( area );
 		
-		g.drawString( infos, x, y );
-		g.rotate( angle, area.getCenterX(), area.getCenterY() );
+		g.drawString( infos, area.getX() + OFFSET, area.getY() + OFFSET );
 	}
 }

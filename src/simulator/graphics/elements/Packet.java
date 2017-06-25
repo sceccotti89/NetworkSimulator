@@ -4,13 +4,15 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Point;
+import org.newdawn.slick.geom.Polygon;
 import org.newdawn.slick.geom.Rectangle;
 
 public class Packet implements Comparable<Packet>
 {
     private Color color;
     
-    private Rectangle area, areaRotated;
+    private Rectangle area;
+    private Polygon areaRotated;
     
     private long startTime, endTime;
     
@@ -85,6 +87,7 @@ public class Packet implements Comparable<Packet>
         }
         
         area.setX( source.getCenterX() + source.getRay() + distance );
+        rotatePacket();
     }
     
     public void setAngle() {
@@ -130,12 +133,30 @@ public class Packet implements Comparable<Packet>
     	return new Point( (float) (x * Math.cos( angle ) - y * Math.sin( angle )), (float) (x * Math.sin( angle ) + y * Math.cos( angle )) );
     }
     
+    private void rotatePacket()
+    {
+        float offset = height/30;
+        if (angle == -180) offset *= -1;
+        area.setY( area.getY() + offset );
+        
+        Point p1 = worldToView( area.getX() - source.getCenterX(),    area.getY() - source.getCenterY(), angle );
+        Point p2 = worldToView( area.getMaxX() - source.getCenterX(), area.getY() - source.getCenterY(), angle );
+        Point p3 = worldToView( area.getMaxX() - source.getCenterX(), area.getMaxY() - source.getCenterY(), angle );
+        Point p4 = worldToView( area.getX() - source.getCenterX(),    area.getMaxY() - source.getCenterY(), angle );
+        System.out.println( "X = " + p1.getX() );
+        areaRotated = new Polygon( new float[]{ p1.getX() + source.getCenterX(), p1.getY() + source.getCenterY(),
+                                                p2.getX() + source.getCenterX(), p2.getY() + source.getCenterY(),
+                                                p3.getX() + source.getCenterX(), p3.getY() + source.getCenterY(),
+                                                p4.getX() + source.getCenterX(), p4.getY() + source.getCenterY() } );
+        area.setY( area.getY() - offset );
+    }
+    
     public void update( final GameContainer gc, final float time )
     {
     	float mouseX = gc.getInput().getMouseX();
     	float mouseY = gc.getInput().getMouseY();
     	
-        if (/*active*/ true) {
+        if (/*active*/ true) { // TODO
             if (time >= startTime) {
                 if (time >= endTime) {
                     setActive( false );
@@ -145,18 +166,16 @@ public class Packet implements Comparable<Packet>
                 distance = distance + speed;
                 area.setLocation( area.getX() + speed, area.getY() );
                 
-                Point p = worldToView( area.getX() - source.getCenterX(), (area.getY() - source.getCenterY()), angle );
-            	System.out.println( "X = " + p.getX() );
-                areaRotated = new Rectangle( p.getX() + source.getCenterX(), p.getY() + source.getCenterY(), area.getWidth(), area.getHeight() );
-
+                rotatePacket();
+            	
             	System.out.println( "AREA.X = " + area.getX() + ", AREA.Y = " + area.getY() );
             	System.out.println( "ROT.X = " + areaRotated.getX() + ", ROT.Y = " + areaRotated.getY() );
             	
-                if (areaRotated.contains( mouseX, mouseY )) {
+            	drawInfo = areaRotated.contains( mouseX, mouseY );
+                if (drawInfo) {
                 	info.setAttributes( gc.getGraphics(), infos );
                 	float offset = width/80;
                 	info.setPosition( mouseX + offset, mouseY + offset );
-                	drawInfo = true;
                 }
             }
         }
@@ -164,21 +183,17 @@ public class Packet implements Comparable<Packet>
     
     public void render( final long time, final Graphics g )
     {
-    	float offset;
-    	
-        if (time < startTime || time > endTime)
+    	if (time < startTime || time > endTime)
             return;
+    	
+    	// TODO fare il rendering anche in pausa.
+    	if (drawInfo) {
+            info.render( g );
+        }
         
         g.rotate( source.getCenterX(), source.getCenterY(), angle );
         
-        if (drawInfo) {
-        	offset = width/80;
-        	info.render( g, area.getMaxX() + offset, area.getMaxY() + offset, angle );
-        	g.resetTransform();
-            g.rotate( source.getCenterX(), source.getCenterY(), angle );
-        }
-        
-        offset = height/30;
+        float offset = height/30;
         if (angle == -180) offset *= -1;
         
         area.setY( area.getY() + offset );
@@ -187,6 +202,6 @@ public class Packet implements Comparable<Packet>
         g.resetTransform();
         area.setY( area.getY() - offset );
         
-        g.fill( areaRotated );
+        g.fill( areaRotated ); // TODO Rimuovere dopo i test
     }
 }
