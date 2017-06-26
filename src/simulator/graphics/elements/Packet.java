@@ -7,6 +7,8 @@ import org.newdawn.slick.geom.Point;
 import org.newdawn.slick.geom.Polygon;
 import org.newdawn.slick.geom.Rectangle;
 
+import simulator.graphics.interfaces.NetworkDisplay;
+
 public class Packet implements Comparable<Packet>
 {
     private Color color;
@@ -30,10 +32,6 @@ public class Packet implements Comparable<Packet>
     
     private Node source, dest;
     
-    private Info info;
-    private boolean drawInfo;
-    private String infos;
-    
     public Packet( final Node source, final Node dest,
                    final Color color,
                    final long startTime, final long endTime,
@@ -48,21 +46,13 @@ public class Packet implements Comparable<Packet>
         this.startTime = startTime;
         this.endTime = endTime;
         
-        infos =   "startTime = " + startTime + "\n"
-        		+ "endTime = " + endTime + "\n"
-        		+ "source = " + source.getNodeID() + "\n"
-        		+ "dest = " + dest.getNodeID();
-        
-        info = new Info( Color.magenta, infos );
-        
-        drawInfo = false;
-        
         init();
     }
     
     public void init()
     {
         area = new Rectangle( source.getCenterX() + source.getRay(), source.getCenterY() - height/120, width/80, height/60 );
+        rotatePacket();
         distance = 0;
         timer = 0;
         active = true;
@@ -117,19 +107,9 @@ public class Packet implements Comparable<Packet>
         return 0;
     }
     
-    /*
-    // ruota un punto intorno all'origine degli assi di un angolo teta
-    member this.Rotate( x:float32, y:float32, teta:float32 ) =
-        // ottiene i radianti dell'angolo di rotazione espresso in sessagesimali
-        let angle = teta * single System.Math.PI / 180.f
-        // calcola le nuove coordinate
-        let X = x * cos( angle ) - y * sin( angle )
-        let Y = x * sin( angle ) + y * cos( angle )
-    */
-    
     private Point worldToView( final float x, final float y, float angle ) {
     	angle = (float) (angle * Math.PI/180.f);
-    	System.out.println( "X = " + x );
+    	//System.out.println( "X = " + x );
     	return new Point( (float) (x * Math.cos( angle ) - y * Math.sin( angle )), (float) (x * Math.sin( angle ) + y * Math.cos( angle )) );
     }
     
@@ -143,7 +123,7 @@ public class Packet implements Comparable<Packet>
         Point p2 = worldToView( area.getMaxX() - source.getCenterX(), area.getY() - source.getCenterY(), angle );
         Point p3 = worldToView( area.getMaxX() - source.getCenterX(), area.getMaxY() - source.getCenterY(), angle );
         Point p4 = worldToView( area.getX() - source.getCenterX(),    area.getMaxY() - source.getCenterY(), angle );
-        System.out.println( "X = " + p1.getX() );
+        //System.out.println( "X = " + p1.getX() );
         areaRotated = new Polygon( new float[]{ p1.getX() + source.getCenterX(), p1.getY() + source.getCenterY(),
                                                 p2.getX() + source.getCenterX(), p2.getY() + source.getCenterY(),
                                                 p3.getX() + source.getCenterX(), p3.getY() + source.getCenterY(),
@@ -151,45 +131,42 @@ public class Packet implements Comparable<Packet>
         area.setY( area.getY() - offset );
     }
     
-    public void update( final GameContainer gc, final float time )
+    public void update( final GameContainer gc, final long time )
     {
     	float mouseX = gc.getInput().getMouseX();
     	float mouseY = gc.getInput().getMouseY();
     	
-        if (/*active*/ true) { // TODO
+        //if (active) {
             if (time >= startTime) {
                 if (time >= endTime) {
                     setActive( false );
                     return;
                 }
                 
-                distance = distance + speed;
-                area.setLocation( area.getX() + speed, area.getY() );
-                
-                rotatePacket();
+                if (time > timer) {
+                    timer = time;
+                    distance = distance + speed;
+                    area.setLocation( area.getX() + speed, area.getY() );
+                    
+                    rotatePacket();
+                }
             	
-            	System.out.println( "AREA.X = " + area.getX() + ", AREA.Y = " + area.getY() );
-            	System.out.println( "ROT.X = " + areaRotated.getX() + ", ROT.Y = " + areaRotated.getY() );
+            	//System.out.println( "AREA.X = " + area.getX() + ", AREA.Y = " + area.getY() );
+            	//System.out.println( "ROT.X = " + areaRotated.getX() + ", ROT.Y = " + areaRotated.getY() );
             	
-            	drawInfo = areaRotated.contains( mouseX, mouseY );
-                if (drawInfo) {
-                	info.setAttributes( gc.getGraphics(), infos );
+            	if(areaRotated.contains( mouseX, mouseY )) {
+                	NetworkDisplay.info.setAttributes( gc.getGraphics(), toString() );
                 	float offset = width/80;
-                	info.setPosition( mouseX + offset, mouseY + offset );
+                	NetworkDisplay.info.setPosition( mouseX + offset, mouseY + offset );
                 }
             }
-        }
+        //}
     }
     
     public void render( final long time, final Graphics g )
     {
     	if (time < startTime || time > endTime)
             return;
-    	
-    	// TODO fare il rendering anche in pausa.
-    	if (drawInfo) {
-            info.render( g );
-        }
         
         g.rotate( source.getCenterX(), source.getCenterY(), angle );
         
@@ -202,6 +179,14 @@ public class Packet implements Comparable<Packet>
         g.resetTransform();
         area.setY( area.getY() - offset );
         
-        g.fill( areaRotated ); // TODO Rimuovere dopo i test
+        //g.fill( areaRotated ); // TODO Rimuovere dopo i test
+    }
+    
+    @Override
+    public String toString() {
+        return "startTime = " + startTime + "\n"
+                + "endTime = " + endTime + "\n"
+                + "source = " + source.getNodeID() + "\n"
+                + "dest = " + dest.getNodeID();
     }
 }

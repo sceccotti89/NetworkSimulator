@@ -7,6 +7,7 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Rectangle;
 
+import simulator.graphics.elements.Info;
 import simulator.graphics.elements.Node;
 import simulator.graphics.elements.Packet;
 
@@ -23,6 +24,8 @@ public class NetworkDisplay
     
     private int index, packetSize;
     
+    public static Info info;
+    
     public NetworkDisplay( final float width, final float height, final float startY, final List<Node> nodes, final List<Packet> packets, long timeSimulation )
     {
         zone = new Rectangle( 0, startY, width, height );
@@ -34,6 +37,8 @@ public class NetworkDisplay
         this.timeSimulation = timeSimulation;
         
         packetSize = packets.size();
+        
+        info = new Info();
         
         resetAnimation();
     }
@@ -104,15 +109,22 @@ public class NetworkDisplay
     
     public void update( final GameContainer gc, final AnimationManager am )
     {
-        if (!start || pause) {
+        /*if (!start) {
             return;
+        }*/
+        
+        if (start && !pause) {
+            timer = timer + AnimationManager.frames;
         }
         
-        timer = timer + AnimationManager.frames;
+        // Reset the visibility at the very beginning.
+        info.setVisible( false );
         
         for (int i = index; i < packetSize; i++) {
             Packet packet = packets.get( i );
-            if (packet.getStartTime() > timer) break;
+            if (packet.getStartTime() > timer) 
+                break;
+            
             packet.update( gc, timer );
             if (!packet.isActive() && i == index) {
                 index++;
@@ -129,18 +141,18 @@ public class NetworkDisplay
         }
     }
     
-    public void render( final GameContainer gc ) {
+    public void render( final GameContainer gc )
+    {
         Graphics g = gc.getGraphics();
         
         g.setColor( Color.white );
         g.fill( zone );
         
-        if (start) {
+        //if (start) {
             for (int i = index; i < packetSize; i++) {
-                Packet packet = packets.get( i );
-                packet.render( timer, g );
+                packets.get( i ).render( timer, g );
             }
-        }
+        //}
         
         // TODO PROVVISORIO, POI FARO' COME HA DETTO STEFANO
         for (Node node: nodes) {
@@ -154,5 +166,7 @@ public class NetworkDisplay
         /*for (Node node: nodes) {
             node.drawInfo( g );
         }*/
+        
+        info.render( g );
     }
 }

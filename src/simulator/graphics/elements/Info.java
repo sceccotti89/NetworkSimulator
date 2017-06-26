@@ -8,11 +8,14 @@ import org.newdawn.slick.geom.Rectangle;
 public class Info
 {
 	private Rectangle area;
+	private boolean visible = false;
 	
 	private String infos;
 	private static final float OFFSET = 10f;
 	
 	private Color color;
+	
+	public Info() {}
 	
 	public Info( Color color, String info ) {
 		this.color = color;
@@ -26,15 +29,23 @@ public class Info
 	
 	public void setPosition( final float x, final float y ) {
 		area.setLocation( x, y );
+		visible = true;
 	}
 	
-	public void render( final Graphics g ) {
-		g.setColor( color );
-		g.fill( area );
-		
-		g.setColor( Color.black );
-		g.draw( area );
-		
-		g.drawString( infos, area.getX() + OFFSET, area.getY() + OFFSET );
+	public void setVisible( final boolean flag ) {
+	    visible = flag;
+	}
+	
+	public void render( final Graphics g )
+	{
+	    if (visible) {
+    		g.setColor( color );
+    		g.fill( area );
+    		
+    		g.setColor( Color.black );
+    		g.draw( area );
+    		
+    		g.drawString( infos, area.getX() + OFFSET, area.getY() + OFFSET );
+	    }
 	}
 }
