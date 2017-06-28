@@ -49,6 +49,7 @@ public class Packet implements Comparable<Packet>
         offset = width/80;
         
         angle = source.getAngle( dest.getNodeID() );
+        System.out.println( "ANGLE = " + angle );
         
         linkLenght = source.getLinkLenght( dest.getNodeID() ) - 2 * source.getRay();
         
@@ -107,7 +108,7 @@ public class Packet implements Comparable<Packet>
     private void rotatePacket()
     {
         float offset = height/30;
-        if (angle == -180) offset *= -1;
+        if (angle >= 90 || angle <= -90 || angle == -180) offset *=-1;
         area.setY( area.getY() + offset );
         
         Point p1 = worldToView( area.getX() - source.getCenterX(),    area.getY() - source.getCenterY(), angle );
