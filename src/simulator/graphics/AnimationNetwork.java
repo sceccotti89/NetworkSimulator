@@ -74,8 +74,9 @@ public class AnimationNetwork extends BasicGame
             final long dest_ID = Long.parseLong( words[2] );
             final Color color = from.getColor();
             final long endTime = Long.parseLong( words[3] );
+            final int type = Integer.parseInt( words[4] );
             
-            addPacket( from_ID, dest_ID, color, startTime, endTime );
+            addPacket( from_ID, dest_ID, color, startTime, endTime, type );
             
             if (endTime > timeDuration) {
                 timeDuration = endTime;
@@ -169,8 +170,8 @@ public class AnimationNetwork extends BasicGame
         nodes.add( node );
     }
     
-    public void addPacket( long from_ID, long dest_ID, Color color, long startTime, long endTime ) {
-        Packet packet = new Packet( getNode( from_ID ), getNode( dest_ID ), color, startTime, endTime, width, height );
+    public void addPacket( long from_ID, long dest_ID, Color color, long startTime, long endTime, int type ) {
+        Packet packet = new Packet( getNode( from_ID ), getNode( dest_ID ), color, startTime, endTime, width, height, type );
         packet.setSpeed( AnimationManager.frames );
         packets.add( packet );
     }

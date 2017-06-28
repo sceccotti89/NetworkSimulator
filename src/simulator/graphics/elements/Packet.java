@@ -30,12 +30,13 @@ public class Packet implements Comparable<Packet>
     
     private final Node source, dest;
 
-    private final int offset;
+    private final int offset, type;
     
     public Packet( final Node source, final Node dest,
                    final Color color,
                    final long startTime, final long endTime,
-                   final int width, final int height ) {
+                   final int width, final int height,
+                   final int type) {
         
         this.source = source;
         this.dest = dest;
@@ -46,10 +47,11 @@ public class Packet implements Comparable<Packet>
         this.startTime = startTime;
         this.endTime = endTime;
         
+        this.type = type;
+        
         offset = width/80;
         
         angle = source.getAngle( dest.getNodeID() );
-        System.out.println( "ANGLE = " + angle );
         
         linkLenght = source.getLinkLenght( dest.getNodeID() ) - 2 * source.getRay();
         
@@ -108,7 +110,7 @@ public class Packet implements Comparable<Packet>
     private void rotatePacket()
     {
         float offset = height/30;
-        if (angle >= 90 || angle <= -90 || angle == -180) offset *=-1;
+        if (angle >= 90 || angle <= -90 || angle == -180) offset *= -type;
         area.setY( area.getY() + offset );
         
         Point p1 = worldToView( area.getX() - source.getCenterX(),    area.getY() - source.getCenterY(), angle );
