@@ -20,7 +20,7 @@ public class TimeAnimation implements AnimationInterface
     
     private float widthCursor;
     
-    private float height;
+    private final float height;
     private final float offsetH;
     
     private final GameContainer gc;
