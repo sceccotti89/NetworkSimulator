@@ -11,26 +11,26 @@ import simulator.graphics.interfaces.NetworkDisplay;
 
 public class Packet implements Comparable<Packet>
 {
-    private Color color;
+    private final Color color;
     
     private Rectangle area;
     private Polygon areaRotated;
     
-    private long startTime, endTime;
+    private final long startTime, endTime;
     
     private boolean active;
     
     private float speed;
     
-    private float angle;
+    private final float angle;
     
-    private int width, height;
+    private final int width, height;
     
     private float linkLenght, distance;
     
-    private Node source, dest;
+    private final Node source, dest;
 
-    private int offset;
+    private final int offset;
     
     public Packet( final Node source, final Node dest,
                    final Color color,
