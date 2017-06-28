@@ -112,14 +112,14 @@ public class NetworkDisplay
         if (!pause) {
             timer = timer + AnimationManager.frames;
         }
-        
-        // Reset the visibility at the very beginning.
-        info.setVisible( false );
-        
-        if (timer >= timeSimulation) {
+
+        if (timer > timeSimulation) {
             stopAnimation();
             am.resetAllButtons();
         }
+        
+        // Reset the visibility at the very beginning.
+        info.setVisible( false );
         
         for (Node node: nodes) {
             node.update( gc );
