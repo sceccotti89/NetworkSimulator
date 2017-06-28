@@ -171,8 +171,6 @@ public class AnimationNetwork extends BasicGame
     
     public void addPacket( long from_ID, long dest_ID, Color color, long startTime, long endTime ) {
         Packet packet = new Packet( getNode( from_ID ), getNode( dest_ID ), color, startTime, endTime, width, height );
-        packet.setLinkLenght();
-        packet.setAngle();
         packet.setSpeed( AnimationManager.frames );
         packets.add( packet );
     }

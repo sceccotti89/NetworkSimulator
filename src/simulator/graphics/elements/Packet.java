@@ -48,6 +48,10 @@ public class Packet implements Comparable<Packet>
         
         offset = width/80;
         
+        angle = source.getAngle( dest.getNodeID() );
+        
+        linkLenght = source.getLinkLenght( dest.getNodeID() ) - 2 * source.getRay();
+        
         init();
     }
     
@@ -63,10 +67,6 @@ public class Packet implements Comparable<Packet>
         return speed;
     }
     
-    public void setLinkLenght() {
-        linkLenght = source.getLinkLenght( dest.getNodeID() ) - 2*source.getRay();
-    }
-    
     public void setPosition( final long time )
     {
         active = true;
@@ -74,10 +74,6 @@ public class Packet implements Comparable<Packet>
         
         area.setX( source.getCenterX() + source.getRay() + distance );
         rotatePacket();
-    }
-    
-    public void setAngle() {
-        angle = source.getAngle( dest.getNodeID() );
     }
     
     public void setSpeed( final int frames ) {
