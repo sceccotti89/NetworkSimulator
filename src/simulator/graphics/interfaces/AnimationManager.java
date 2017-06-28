@@ -26,6 +26,8 @@ public class AnimationManager implements AnimationInterface
     
     public static int frames = 1;
     
+    private int timer;
+    
     private static final int limit = Integer.MAX_VALUE;
     
     private final String START = "Start", STOP = "Stop", PAUSE = "Pause", PLUS = "Plus", MINUS = "Minus";
@@ -58,11 +60,30 @@ public class AnimationManager implements AnimationInterface
         buttons.add( minus );
     }
     
+    private void setFrames( final int add, final NetworkDisplay nd ) {
+        frames = Math.min( limit, Math.max( frames + add, 0 ) );
+        nd.setPacketSpeed();
+    }
+    
     @Override
     public void update( final int delta, final Input input, final boolean leftMouse, OptionBar ob, AnimationManager am, TimeAnimation ta, NetworkDisplay nd )
     {        
         mouseX = input.getMouseX();
         mouseY = input.getMouseY();
+        
+        for (ImageButton button : buttons) {
+            if (button.getName().equals( PLUS ) || button.getName().equals( MINUS )) {
+                if (button.isPressed() && button.contains( mouseX, mouseY )) {
+                    if (++timer >= 50) {
+                        if (button.getName().equals( PLUS )) {
+                            setFrames( 1, nd );
+                        } else {
+                            setFrames( -1, nd );
+                        }
+                    }
+                }
+            }
+        }
         
         if (leftMouse && !mouseDown) {
             mouseDown = true;
@@ -74,18 +95,17 @@ public class AnimationManager implements AnimationInterface
             }
         } else if (!leftMouse && mouseDown) {
             mouseDown = false;
+            timer = 0;
             
             boolean buttonFounded = false;
             for (ImageButton button: buttons) {
                 if (button.checkClick( mouseX, mouseY )) {
                     buttonFounded = true;
                     if (button.getName().equals( PLUS )) {
-                        frames = Math.min( limit, frames + 1 );
-                        nd.setPacketSpeed();
+                        setFrames( 1, nd );
                         button.setPressed( false );
                     } else if (button.getName().equals( MINUS )) {
-                        frames = Math.max( 1, frames - 1 );
-                        nd.setPacketSpeed();
+                        setFrames( -1, nd );
                         button.setPressed( false );
                     } else if (button.getName().equals( START )) {
                         nd.startAnimation();
