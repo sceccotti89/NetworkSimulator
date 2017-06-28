@@ -20,10 +20,18 @@ public class TimeAnimation implements AnimationInterface
     
     private float widthCursor;
     
+    private final float offset;
+    
+    private final GameContainer gc;
+    
     public TimeAnimation( final GameContainer gc, final float startY, final float width, final float height, final long timeDuration ) throws SlickException
     {
+        this.gc = gc;
+        
         startTimingX = width/12;
         widthCursor = width/150;
+        
+        offset = width/40;
         
         barTiming = new Rectangle( 0, startY, width, height*10/75 );
         timing    = new Rectangle( startTimingX, startY, width - 2*startTimingX, height*10/225 );
@@ -41,6 +49,10 @@ public class TimeAnimation implements AnimationInterface
         nd.setTimeSimulation( roundValue( (((double) cursor.getCenterX() - startTimingX) / timing.getWidth() * timeDuration) ) );
     }
     
+    public String toString( final float mouseX ) {
+        return roundValue( (((double) mouseX - startTimingX) / timing.getWidth() * timeDuration) ) + "";
+    }
+    
     @Override
     public void update( final int delta, final Input input, final boolean leftMouse, OptionBar ob, AnimationManager am, TimeAnimation ta, NetworkDisplay nd )
     {
@@ -49,8 +61,12 @@ public class TimeAnimation implements AnimationInterface
         
         timer = nd.getTimeSimulation();
         
+        if (timing.contains( mouseX, mouseY )) {
+            NetworkDisplay.info.setAttributes( gc.getGraphics(), toString( mouseX ), mouseX - offset, timing.getY() - offset, Color.yellow );        
+        }
+        
         if (mouseDown || (leftMouse && timing.contains( mouseX, mouseY ))) {
-        	setTime( nd );
+            setTime( nd );
 	     	mouseDown = leftMouse;
         }
         	          
