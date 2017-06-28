@@ -29,6 +29,8 @@ public class Packet implements Comparable<Packet>
     private float linkLenght, distance;
     
     private final Node source, dest;
+    
+    private final float startX, startY;
 
     private final int offset, type;
     
@@ -55,12 +57,15 @@ public class Packet implements Comparable<Packet>
         
         linkLenght = source.getLinkLenght( dest.getNodeID() ) - 2 * source.getRay();
         
+        startX = source.getCenterX() + source.getRay();
+        startY = source.getCenterY() - height/120;
+        
         init();
     }
     
     public void init()
     {
-        area = new Rectangle( source.getCenterX() + source.getRay(), source.getCenterY() - height/120, width/80, height/60 );
+        area = new Rectangle( startX, startY, width/80, height/60 );
         rotatePacket();
         distance = 0;
         active = true;
@@ -75,7 +80,7 @@ public class Packet implements Comparable<Packet>
         active = true;
         distance = (float) ((((double) time - startTime) / (endTime - startTime)) * linkLenght);
         
-        area.setX( source.getCenterX() + source.getRay() + distance );
+        area.setX( startX + distance );
         rotatePacket();
     }
     
