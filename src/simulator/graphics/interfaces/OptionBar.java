@@ -28,7 +28,7 @@ public class OptionBar implements AnimationInterface
     
     private boolean mouseDown;
     
-    public OptionBar( GameContainer gc ) throws SlickException
+    public OptionBar( final GameContainer gc ) throws SlickException
     {
         width  = gc.getWidth()/10;
         height = gc.getHeight()/30;
