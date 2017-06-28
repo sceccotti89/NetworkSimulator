@@ -61,7 +61,7 @@ public class TimeAnimation implements AnimationInterface
         
         timer = nd.getTimeSimulation();
         
-        if (timing.contains( mouseX, mouseY )) {
+        if (mouseDown || timing.contains( mouseX, mouseY )) {
             NetworkDisplay.info.setAttributes( gc.getGraphics(), toString( mouseX ), mouseX - offset, timing.getY() - offset, Color.yellow );        
         }
         
