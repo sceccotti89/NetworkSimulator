@@ -109,13 +109,11 @@ public class NetworkDisplay
     
     public void update( final GameContainer gc, final AnimationManager am )
     {
-        if (!pause) {
-            timer = timer + AnimationManager.frames;
-        }
-
         if (timer > timeSimulation) {
             stopAnimation();
             am.resetAllButtons();
+        } else if (!pause) {
+            timer = timer + AnimationManager.frames;
         }
         
         // Reset the visibility at the very beginning.
