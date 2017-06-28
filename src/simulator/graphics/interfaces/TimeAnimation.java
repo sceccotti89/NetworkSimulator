@@ -21,7 +21,7 @@ public class TimeAnimation implements AnimationInterface
     private float widthCursor;
     
     private float height;
-    private final float offsetW, offsetH;
+    private final float offsetH;
     
     private final GameContainer gc;
     
@@ -33,7 +33,6 @@ public class TimeAnimation implements AnimationInterface
         startTimingX = width/12;
         widthCursor = width/150;
         
-        offsetW = width/100;
         offsetH = height/120;
         
         barTiming = new Rectangle( 0, startY, width, height*10/75 );
@@ -65,7 +64,9 @@ public class TimeAnimation implements AnimationInterface
         timer = nd.getTimeSimulation();
         
         if (mouseDown || timing.contains( mouseX, mouseY )) {
-            NetworkDisplay.info.setAttributes( gc.getGraphics(), toString( mouseX ), Math.max( Math.min( mouseX, timing.getMaxX() ), timing.getX() ) - offsetW, timing.getMaxY()+ offsetH, Color.yellow );
+            String info = toString( mouseX );
+            float fontW = gc.getGraphics().getFont().getWidth( info );
+            NetworkDisplay.info.setAttributes( gc.getGraphics(), info, Math.max( Math.min( mouseX, timing.getMaxX() ), timing.getX() ) - fontW/2, timing.getMaxY() + offsetH, Color.yellow );
         }
         
         if (mouseDown || (leftMouse && timing.contains( mouseX, mouseY ))) {
