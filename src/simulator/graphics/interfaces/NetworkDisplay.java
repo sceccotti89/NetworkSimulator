@@ -145,7 +145,7 @@ public class NetworkDisplay
         g.fill( zone );
         
         for (int i = index; i < packetSize; i++) {
-            packets.get( i ).render( g, timer, start );
+            packets.get( i ).render( g, timer );
         }
         
         // TODO PROVVISORIO, POI FARO' COME HA DETTO STEFANO

@@ -147,9 +147,9 @@ public class Packet implements Comparable<Packet>
         }
     }
     
-    public void render( final Graphics g, final long time, final boolean start )
+    public void render( final Graphics g, final long time )
     {
-    	if (time < startTime || time > endTime || !start)
+    	if (time < startTime || time > endTime)
             return;
         g.setColor( color );
         g.fill( areaRotated );
