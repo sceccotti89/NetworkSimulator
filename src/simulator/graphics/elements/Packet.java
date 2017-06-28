@@ -31,6 +31,8 @@ public class Packet implements Comparable<Packet>
     private long timer;
     
     private Node source, dest;
+
+    private int offset;
     
     public Packet( final Node source, final Node dest,
                    final Color color,
@@ -45,6 +47,8 @@ public class Packet implements Comparable<Packet>
         
         this.startTime = startTime;
         this.endTime = endTime;
+        
+        offset = width/80;
         
         init();
     }
@@ -109,7 +113,6 @@ public class Packet implements Comparable<Packet>
     
     private Point worldToView( final float x, final float y, float angle ) {
     	angle = (float) (angle * Math.PI/180.f);
-    	//System.out.println( "X = " + x );
     	return new Point( (float) (x * Math.cos( angle ) - y * Math.sin( angle )), (float) (x * Math.sin( angle ) + y * Math.cos( angle )) );
     }
     
@@ -123,7 +126,6 @@ public class Packet implements Comparable<Packet>
         Point p2 = worldToView( area.getMaxX() - source.getCenterX(), area.getY() - source.getCenterY(), angle );
         Point p3 = worldToView( area.getMaxX() - source.getCenterX(), area.getMaxY() - source.getCenterY(), angle );
         Point p4 = worldToView( area.getX() - source.getCenterX(),    area.getMaxY() - source.getCenterY(), angle );
-        //System.out.println( "X = " + p1.getX() );
         areaRotated = new Polygon( new float[]{ p1.getX() + source.getCenterX(), p1.getY() + source.getCenterY(),
                                                 p2.getX() + source.getCenterX(), p2.getY() + source.getCenterY(),
                                                 p3.getX() + source.getCenterX(), p3.getY() + source.getCenterY(),
@@ -136,30 +138,22 @@ public class Packet implements Comparable<Packet>
     	int mouseX = gc.getInput().getMouseX();
     	int mouseY = gc.getInput().getMouseY();
     	
-        //if (active) {
-            if (time >= startTime) {
-                if (time >= endTime) {
-                    setActive( false );
-                    return;
-                }
-                
-                if (time > timer) {
-                    timer = time;
-                    distance = distance + speed;
-                    area.setLocation( area.getX() + speed, area.getY() );
-                    
-                    rotatePacket();
-                }
-            	
-            	//System.out.println( "AREA.X = " + area.getX() + ", AREA.Y = " + area.getY() );
-            	//System.out.println( "ROT.X = " + areaRotated.getX() + ", ROT.Y = " + areaRotated.getY() );
-            	
-            	if(areaRotated.contains( mouseX, mouseY )) {
-                    float offset = width/80;
-                	NetworkDisplay.info.setAttributes( gc.getGraphics(), toString(), mouseX + offset, mouseY + offset );
-                }
-            }
-        //}
+        if (time >= endTime) {
+            active = false;
+            return;
+        }
+        
+        if (time > timer) {
+            timer = time;
+            distance = distance + speed;
+            area.setLocation( area.getX() + speed, area.getY() );
+            
+            rotatePacket();
+        }
+        
+    	if(areaRotated.contains( mouseX, mouseY )) {
+        	NetworkDisplay.info.setAttributes( gc.getGraphics(), toString(), mouseX + offset, mouseY + offset );
+        }
     }
     
     public void render( final long time, final Graphics g )

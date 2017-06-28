@@ -118,8 +118,9 @@ public class NetworkDisplay
         
         for (int i = index; i < packetSize; i++) {
             Packet packet = packets.get( i );
-            if (packet.getStartTime() > timer) 
+            if (packet.getStartTime() > timer) {
                 break;
+            }
             
             packet.update( gc, timer );
             if (!packet.isActive() && i == index) {
