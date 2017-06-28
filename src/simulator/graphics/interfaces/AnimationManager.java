@@ -49,7 +49,7 @@ public class AnimationManager implements AnimationInterface
         start = new ImageButton( 0, startY, width, height, START, Color.gray, 0, gc, new Image( "./data/Image/Start.png" ), widthM/20, heightM/20 );
         pause = new ImageButton( start.getMaxX(), startY, width, height, PAUSE, Color.gray, 1, gc, new Image( "./data/Image/Pause.png" ), widthM/20, heightM/20 );
         stop  = new ImageButton( pause.getMaxX(), startY, width, height, STOP, Color.gray, 2, gc, new Image( "./data/Image/Stop.png" ), widthM/20, heightM/20 );
-        minus = new ImageButton( stop.getMaxX() + widthM/15, startY + height/2 - heightM/40, widthM/20, heightM/20, MINUS, Color.yellow, 3, gc, new Image( "./data/Image/Minus.png" ), widthM/45, heightM/70 );
+        minus = new ImageButton( stop.getMaxX() + widthM/15, startY + height/2 - heightM/40, widthM/20, heightM/20, MINUS, Color.yellow, 3, gc, new Image( "./data/Image/Minus.png" ), widthM/45, heightM/90 );
         plus  = new ImageButton( stop.getMaxX() + widthM/4, startY + height/2 - heightM/40, widthM/20, heightM/20, PLUS, Color.yellow, 4, gc, new Image( "./data/Image/Plus.png" ), widthM/40, heightM/30 );
 
         showFrame = new Rectangle( minus.getMaxX() + (plus.getX() - minus.getMaxX())/2 - widthFrame/2, minus.getY(), widthFrame, minus.getAlt());
