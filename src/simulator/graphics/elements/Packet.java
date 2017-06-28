@@ -28,8 +28,6 @@ public class Packet implements Comparable<Packet>
     
     private float linkLenght, distance;
     
-    private long timer;
-    
     private Node source, dest;
 
     private int offset;
@@ -58,7 +56,6 @@ public class Packet implements Comparable<Packet>
         area = new Rectangle( source.getCenterX() + source.getRay(), source.getCenterY() - height/120, width/80, height/60 );
         rotatePacket();
         distance = 0;
-        timer = 0;
         active = true;
     }
     
@@ -73,12 +70,7 @@ public class Packet implements Comparable<Packet>
     public void setPosition( final long time )
     {
         active = true;
-        timer = Math.max( 0, time - startTime );
-        if (timer == 0) {
-            distance = 0;
-        } else {
-            distance = (float) ((((double) time - startTime) / (endTime - startTime)) * linkLenght);
-        }
+        distance = (float) ((((double) time - startTime) / (endTime - startTime)) * linkLenght);
         
         area.setX( source.getCenterX() + source.getRay() + distance );
         rotatePacket();
@@ -133,7 +125,7 @@ public class Packet implements Comparable<Packet>
         area.setY( area.getY() - offset );
     }
     
-    public void update( final GameContainer gc, final long time )
+    public void update( final GameContainer gc, final long time, final boolean update )
     {
     	int mouseX = gc.getInput().getMouseX();
     	int mouseY = gc.getInput().getMouseY();
@@ -143,8 +135,7 @@ public class Packet implements Comparable<Packet>
             return;
         }
         
-        if (time > timer) {
-            timer = time;
+        if (update) {
             distance = distance + speed;
             area.setLocation( area.getX() + speed, area.getY() );
             

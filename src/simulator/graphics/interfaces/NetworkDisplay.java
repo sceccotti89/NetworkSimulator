@@ -121,7 +121,7 @@ public class NetworkDisplay
             if (packet.getStartTime() > timer)
                 break;
             
-            packet.update( gc, timer );
+            packet.update( gc, timer, start && !pause );
             if (!packet.isActive() && i == index) {
                 index++;
             }
