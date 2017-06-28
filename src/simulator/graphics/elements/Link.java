@@ -51,10 +51,10 @@ public class Link
     }
     
     private void rotateLink() {
-        Point p1 = worldToView( area.getX() - source.getCenterX(), area.getY() - source.getCenterY(), angle );
+        Point p1 = worldToView( area.getX() - source.getCenterX(),    area.getY() - source.getCenterY(), angle );
         Point p2 = worldToView( area.getMaxX() - source.getCenterX(), area.getY() - source.getCenterY(), angle );
         Point p3 = worldToView( area.getMaxX() - source.getCenterX(), area.getMaxY() - source.getCenterY(), angle );
-        Point p4 = worldToView( area.getX() - source.getCenterX(), area.getMaxY() - source.getCenterY(), angle );
+        Point p4 = worldToView( area.getX() - source.getCenterX(),    area.getMaxY() - source.getCenterY(), angle );
         areaRotated = new Polygon( new float[]{ p1.getX() + source.getCenterX(), p1.getY() + source.getCenterY(),
                                                 p2.getX() + source.getCenterX(), p2.getY() + source.getCenterY(),
                                                 p3.getX() + source.getCenterX(), p3.getY() + source.getCenterY(),
