@@ -3,8 +3,11 @@ package simulator.graphics.elements;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
-import org.newdawn.slick.Input;
+import org.newdawn.slick.geom.Point;
+import org.newdawn.slick.geom.Polygon;
 import org.newdawn.slick.geom.Rectangle;
+
+import simulator.graphics.interfaces.NetworkDisplay;
 
 public class Link
 {
@@ -17,49 +20,57 @@ public class Link
     private int delay;
     
     private Rectangle area;
-    
-    Info info;
-    private boolean drawInfo;
-    private String infos;
-    
-    private final float offset;
+    private Polygon areaRotated;
+        
+    private float offset;
     
     private float lenght;
     
-    private long fromID, destID;
+    private Node source, dest;
     
-    public Link( long fromID, long destID, float x1, float y1, float x2, float y2, float angle, int width, int height ) {
+    public Link( final Node source, final Node dest,
+                 float x1, float y1, float x2, float y2,
+                 float angle, int width, int height ) {
         
-        this.fromID = fromID;
-        this.destID = destID;
-        
+        this.source = source;
+        this.dest = dest;
         this.angle = angle;
-
-        offset = width/100;
         
         lenght = calculateLenght( x1, y1, x2, y2 );
+
+        offset = width/100;
+        area = new Rectangle( x1, y1 - offset, calculateLenght( x1, y1, x2, y2 ), height*10/375 );
+        offset = width/80;
         
-        area = new Rectangle( x1, y1 - offset, calculateLenght( x1, y1, x2, y2 ), offset * 2 );
-        
-        infos =   "bandwidth = " + bandwidth + "Mb/s, "
-        		+ "delay = " + delay + "ms";
-        
-        info = new Info( Color.lightGray, infos );
+        rotateLink();
+    }
+    
+    private Point worldToView( final float x, final float y, float angle ) {
+        angle = (float) (angle * Math.PI/180.f);
+        return new Point( (float) (x * Math.cos( angle ) - y * Math.sin( angle )), (float) (x * Math.sin( angle ) + y * Math.cos( angle )) );
+    }
+    
+    private void rotateLink() {
+        Point p1 = worldToView( area.getX() - source.getCenterX(), area.getY() - source.getCenterY(), angle );
+        Point p2 = worldToView( area.getMaxX() - source.getCenterX(), area.getY() - source.getCenterY(), angle );
+        Point p3 = worldToView( area.getMaxX() - source.getCenterX(), area.getMaxY() - source.getCenterY(), angle );
+        Point p4 = worldToView( area.getX() - source.getCenterX(), area.getMaxY() - source.getCenterY(), angle );
+        areaRotated = new Polygon( new float[]{ p1.getX() + source.getCenterX(), p1.getY() + source.getCenterY(),
+                                                p2.getX() + source.getCenterX(), p2.getY() + source.getCenterY(),
+                                                p3.getX() + source.getCenterX(), p3.getY() + source.getCenterY(),
+                                                p4.getX() + source.getCenterX(), p4.getY() + source.getCenterY() } );
     }
     
     public void update( final GameContainer gc ) {
-    	if (gc.getInput().isMouseButtonDown( Input.MOUSE_RIGHT_BUTTON )) {
-        	info.setAttributes( gc.getGraphics(), infos );
-        	drawInfo = true;
+        int mouseX = gc.getInput().getMouseX();
+        int mouseY = gc.getInput().getMouseY();
+    	if (areaRotated.contains( mouseX, mouseY )) {
+    	    NetworkDisplay.info.setAttributes( gc.getGraphics(), toString(), mouseX + offset, mouseY + offset );
         }
     }
     
-    public long getFromID() {
-        return fromID;
-    }
-    
-    public long getDestID() {
-        return destID;
+    public Node getDestNode() {
+        return dest;
     }
     
     public float calculateLenght( float x1, float y1, float x2, float y2 ) {
@@ -75,14 +86,13 @@ public class Link
     }
     
     public void render( Graphics g ) {
-        g.rotate( area.getX(), area.getY() + offset, angle );
-        
-        if (drawInfo) {
-        	info.render( g );
-        }
-        
         g.setColor( color );
-        g.draw( area );
-        g.resetTransform();
+        g.draw( areaRotated );
+    }
+    
+    @Override
+    public String toString() {
+        return "bandwidth = " + bandwidth + "Mb/s, "
+                + "delay = " + delay + "ms";
     }
 }

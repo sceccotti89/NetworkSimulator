@@ -49,7 +49,7 @@ public class NetworkDisplay
         index = 0;
         
         start = false;
-        pause = false;
+        pause = true;
 
         for (Packet packet: packets) {
             packet.init();
@@ -109,11 +109,7 @@ public class NetworkDisplay
     
     public void update( final GameContainer gc, final AnimationManager am )
     {
-        /*if (!start) {
-            return;
-        }*/
-        
-        if (start && !pause) {
+        if (!pause) {
             timer = timer + AnimationManager.frames;
         }
         
@@ -162,10 +158,6 @@ public class NetworkDisplay
         for (Node node: nodes) {
             node.drawNode( g );
         }
-        
-        /*for (Node node: nodes) {
-            node.drawInfo( g );
-        }*/
         
         info.render( g );
     }

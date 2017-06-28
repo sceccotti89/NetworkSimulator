@@ -179,7 +179,7 @@ public class AnimationNetwork extends BasicGame
     
     public void addLink( final long source, final long dest, final double bandwidth, final long delay ) {
         Node node1 = getNode( source ), node2 = getNode( dest );
-        node1.addLink( dest, node1.getCenterX(), node1.getCenterY(), node2.getCenterX(), node2.getCenterY(), width, height );
+        node1.addLink( node2, node1.getCenterX(), node1.getCenterY(), node2.getCenterX(), node2.getCenterY(), width, height );
     }
     
     private Node getNode( final long nodeID )
@@ -197,12 +197,11 @@ public class AnimationNetwork extends BasicGame
     public void update( final GameContainer gc, final int delta ) throws SlickException
     {
         leftMouse = gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
-        
+
+        nd.update( gc, am );
         ob.update( delta, gc.getInput(), leftMouse, ob, am, ta, nd );
         am.update( delta, gc.getInput(), leftMouse, ob, am, ta, nd );
         ta.update( delta, gc.getInput(), leftMouse, ob, am, ta, nd );
-        
-        nd.update( gc, am );
     }
 
     @Override

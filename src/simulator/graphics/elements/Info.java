@@ -11,7 +11,7 @@ public class Info
 	private boolean visible = false;
 	
 	private String infos;
-	private static final float OFFSET = 10f;
+	//private static final float OFFSET = 10f;
 	
 	private Color color;
 	
@@ -21,15 +21,11 @@ public class Info
 		this.color = color;
 	}
 	
-	public void setAttributes( Graphics g, String info ) {
+	public void setAttributes( Graphics g, String info, final float x, final float y ) {
 		Font f = g.getFont();
 		infos = info;
-		area = new Rectangle( 0, 0, f.getWidth( info ), f.getHeight( info )   );
-	}
-	
-	public void setPosition( final float x, final float y ) {
-		area.setLocation( x, y );
-		visible = true;
+		area = new Rectangle( x, y, f.getWidth( info ), f.getHeight( info ) );
+        visible = true;
 	}
 	
 	public void setVisible( final boolean flag ) {
@@ -45,7 +41,7 @@ public class Info
     		g.setColor( Color.black );
     		g.draw( area );
     		
-    		g.drawString( infos, area.getX() + OFFSET, area.getY() + OFFSET );
+    		g.drawString( infos, area.getX(), area.getY() );
 	    }
 	}
 }

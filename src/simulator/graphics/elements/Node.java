@@ -43,14 +43,6 @@ public class Node
         return color;
     }
     
-    public float getX() {
-        return node.getX();
-    }
-    
-    public float getY() {
-        return node.getY();
-    }
-    
     public int getCenterX() {
         return (int) node.getCenterX();
     }
@@ -65,7 +57,7 @@ public class Node
     
     public Float getAngle( final long destID ) {
         for (Link link: links) {
-            if (link.getDestID() == destID)
+            if (link.getDestNode().getNodeID() == destID)
                 return link.getAngle();
         }
         
@@ -106,13 +98,13 @@ public class Node
         return angleValutation( x1, y1, x2, y2 );
     }
     
-    public void addLink( long destID, float x1, float y1, float x2, float y2, int width, int height ) {
-        links.add( new Link( nodeID, destID, x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ), width, height ) );
+    public void addLink( Node dest, float x1, float y1, float x2, float y2, int width, int height ) {
+        links.add( new Link( this, dest, x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ), width, height ) );
     }
     
     public Float getLinkLenght( final long destID ) {
         for (Link link: links) {
-            if (link.getDestID() == destID) {
+            if (link.getDestNode().getNodeID() == destID) {
                 return link.getLenght();
             }
         }

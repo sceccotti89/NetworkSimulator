@@ -49,12 +49,12 @@ public class TimeAnimation implements AnimationInterface
         
         timer = nd.getTimeSimulation();
         
-        if ((mouseDown) || (leftMouse && timing.contains( mouseX, mouseY ))) {
+        if (mouseDown || (leftMouse && timing.contains( mouseX, mouseY ))) {
         	setTime( nd );
 	     	mouseDown = leftMouse;
-         }
+        }
         	          
-         cursor.setX( startTimingX - widthCursor/2 + timing.getWidth() / timeDuration * timer );
+        cursor.setX( startTimingX - widthCursor/2 + timing.getWidth() / timeDuration * timer );
     }
     
     @Override

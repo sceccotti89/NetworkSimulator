@@ -133,8 +133,8 @@ public class Packet implements Comparable<Packet>
     
     public void update( final GameContainer gc, final long time )
     {
-    	float mouseX = gc.getInput().getMouseX();
-    	float mouseY = gc.getInput().getMouseY();
+    	int mouseX = gc.getInput().getMouseX();
+    	int mouseY = gc.getInput().getMouseY();
     	
         //if (active) {
             if (time >= startTime) {
@@ -155,9 +155,8 @@ public class Packet implements Comparable<Packet>
             	//System.out.println( "ROT.X = " + areaRotated.getX() + ", ROT.Y = " + areaRotated.getY() );
             	
             	if(areaRotated.contains( mouseX, mouseY )) {
-                	NetworkDisplay.info.setAttributes( gc.getGraphics(), toString() );
-                	float offset = width/80;
-                	NetworkDisplay.info.setPosition( mouseX + offset, mouseY + offset );
+                    float offset = width/80;
+                	NetworkDisplay.info.setAttributes( gc.getGraphics(), toString(), mouseX + offset, mouseY + offset );
                 }
             }
         //}
@@ -167,19 +166,8 @@ public class Packet implements Comparable<Packet>
     {
     	if (time < startTime || time > endTime)
             return;
-        
-        g.rotate( source.getCenterX(), source.getCenterY(), angle );
-        
-        float offset = height/30;
-        if (angle == -180) offset *= -1;
-        
-        area.setY( area.getY() + offset );
         g.setColor( color );
-        g.fill( area );
-        g.resetTransform();
-        area.setY( area.getY() - offset );
-        
-        //g.fill( areaRotated ); // TODO Rimuovere dopo i test
+        g.fill( areaRotated );
     }
     
     @Override
