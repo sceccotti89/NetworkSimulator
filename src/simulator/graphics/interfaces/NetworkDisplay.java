@@ -116,6 +116,15 @@ public class NetworkDisplay
         // Reset the visibility at the very beginning.
         info.setVisible( false );
         
+        if (timer >= timeSimulation) {
+            stopAnimation();
+            am.resetAllButtons();
+        }
+        
+        for (Node node: nodes) {
+            node.update( gc );
+        }
+        
         for (int i = index; i < packetSize; i++) {
             Packet packet = packets.get( i );
             if (packet.getStartTime() > timer)
@@ -125,15 +134,6 @@ public class NetworkDisplay
             if (!packet.isActive() && i == index) {
                 index++;
             }
-        }
-        
-        if (timer >= timeSimulation) {
-            stopAnimation();
-            am.resetAllButtons();
-        }
-        
-        for (Node node: nodes) {
-            node.update( gc );
         }
     }
     
