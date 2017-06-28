@@ -46,7 +46,7 @@ public class TimeAnimation implements AnimationInterface
         return (long) (Math.round( value * 100.0 ) / 100.0);
     }
     
-    private void setTime( NetworkDisplay nd ) {
+    private void setTime( final NetworkDisplay nd ) {
         cursor.setX( Math.max( Math.min( mouseX - widthCursor/2, timing.getMaxX() - widthCursor/2 ), startTimingX - widthCursor/2 ) );
         nd.setTimeSimulation( roundValue( (((double) cursor.getCenterX() - startTimingX) / timing.getWidth() * timeDuration) ) );
     }

@@ -71,10 +71,6 @@ public class Packet implements Comparable<Packet>
         active = true;
     }
     
-    public float getSpeed() {
-        return speed;
-    }
-    
     public void setPosition( final long time )
     {
         active = true;
@@ -92,19 +88,12 @@ public class Packet implements Comparable<Packet>
         return active;
     }
     
-    public void setActive( boolean val ) {
+    public void setActive( final boolean val ) {
         active = val;
     }
     
     public long getStartTime() {
         return startTime;
-    }
-
-    @Override
-    public int compareTo( Packet packet ) {
-        if (startTime < packet.startTime) return -1;
-        if (startTime > packet.startTime) return 1;
-        return 0;
     }
     
     private Point worldToView( final float x, final float y, float angle ) {
@@ -157,6 +146,13 @@ public class Packet implements Comparable<Packet>
             return;
         g.setColor( color );
         g.fill( areaRotated );
+    }
+
+    @Override
+    public int compareTo( final Packet packet ) {
+        if (startTime < packet.startTime) return -1;
+        if (startTime > packet.startTime) return 1;
+        return 0;
     }
     
     @Override

@@ -30,7 +30,7 @@ public class Link
     
     public Link( final Node source, final Node dest,
                  float x1, float y1, float x2, float y2,
-                 float angle, int width, int height ) {
+                 float angle, final int width, final int height ) {
         
         this.source = source;
         this.dest = dest;
@@ -39,7 +39,7 @@ public class Link
         lenght = calculateLenght( x1, y1, x2, y2 );
 
         offset = width/100;
-        area = new Rectangle( x1, y1 - offset, calculateLenght( x1, y1, x2, y2 ), height*10/375 );
+        area = new Rectangle( x1, y1 - offset, lenght, height*10/375 );
         offset = width/80;
         
         rotateLink();
@@ -85,7 +85,7 @@ public class Link
         return angle;
     }
     
-    public void render( Graphics g ) {
+    public void render( final Graphics g ) {
         g.setColor( color );
         g.draw( areaRotated );
     }

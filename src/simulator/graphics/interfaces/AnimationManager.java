@@ -188,7 +188,7 @@ public class AnimationManager implements AnimationInterface
         }
     }
     
-    private void resetButtons( ImageButton button ) {
+    private void resetButtons( final ImageButton button ) {
         for (ImageButton imButton: buttons) {
             if (imButton != button) {
                 imButton.setPressed( false );

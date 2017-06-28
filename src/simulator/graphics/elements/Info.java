@@ -21,7 +21,7 @@ public class Info
 		this.color = color;
 	}
 	
-	public void setAttributes( Graphics g, String info, final float x, final float y, final Color color ) {
+	public void setAttributes( final Graphics g, final String info, final float x, final float y, final Color color ) {
 		Font f = g.getFont();
 		infos = info;
 		area = new Rectangle( x - OFFSET, y - OFFSET, f.getWidth( info ) + 2 * OFFSET, f.getHeight( info ) + 2 * OFFSET );

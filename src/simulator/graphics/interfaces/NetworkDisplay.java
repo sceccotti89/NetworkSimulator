@@ -26,7 +26,7 @@ public class NetworkDisplay
     
     public static Info info;
     
-    public NetworkDisplay( final float width, final float height, final float startY, final List<Node> nodes, final List<Packet> packets, long timeSimulation )
+    public NetworkDisplay( final float width, final float height, final float startY, final List<Node> nodes, final List<Packet> packets, final long timeSimulation )
     {
         zone = new Rectangle( 0, startY, width, height );
         
@@ -75,7 +75,7 @@ public class NetworkDisplay
         return timer;
     }
     
-    public void setTimeSimulation( long val ) {
+    public void setTimeSimulation( final long val ) {
         timer = val;
         checkActivityPackets();
     }

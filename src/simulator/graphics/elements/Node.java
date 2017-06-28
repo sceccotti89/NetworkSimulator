@@ -68,7 +68,7 @@ public class Node
         return links.size();
     }
     
-    private float angleValutation( float x1, float y1, float x2, float y2 )
+    private float angleValutation( final float x1, final float y1, final float x2, final float y2 )
     {
         float m = (y2 - y1)/(x2 - x1);
         
@@ -94,11 +94,11 @@ public class Node
         return 0;
     }
 
-    private float calculateAngle( float x1, float y1, float x2, float y2 ) {
+    private float calculateAngle( final float x1, final float y1, final float x2, final float y2 ) {
         return angleValutation( x1, y1, x2, y2 );
     }
     
-    public void addLink( Node dest, float x1, float y1, float x2, float y2, int width, int height ) {
+    public void addLink( final Node dest, final float x1, final float y1, final float x2, final float y2, final int width, final int height ) {
         links.add( new Link( this, dest, x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ), width, height ) );
     }
     
@@ -124,19 +124,19 @@ public class Node
         return name;
     }
     
-    public void update( GameContainer gc ) {
+    public void update( final GameContainer gc ) {
         for (Link link: links) {
             link.update( gc );
         }
     }
     
-    public void drawLinks( Graphics g ) {
+    public void drawLinks( final Graphics g ) {
         for (Link link: links) {
             link.render( g );
         }
     }
     
-    public void drawNode( Graphics g ) {
+    public void drawNode( final Graphics g ) {
         g.setColor( color );
         g.fill( node );
         
