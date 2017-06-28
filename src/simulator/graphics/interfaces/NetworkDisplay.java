@@ -118,9 +118,8 @@ public class NetworkDisplay
         
         for (int i = index; i < packetSize; i++) {
             Packet packet = packets.get( i );
-            if (packet.getStartTime() > timer) {
+            if (packet.getStartTime() > timer)
                 break;
-            }
             
             packet.update( gc, timer );
             if (!packet.isActive() && i == index) {
@@ -145,11 +144,9 @@ public class NetworkDisplay
         g.setColor( Color.white );
         g.fill( zone );
         
-        //if (start) {
-            for (int i = index; i < packetSize; i++) {
-                packets.get( i ).render( timer, g );
-            }
-        //}
+        for (int i = index; i < packetSize; i++) {
+            packets.get( i ).render( g, timer, start );
+        }
         
         // TODO PROVVISORIO, POI FARO' COME HA DETTO STEFANO
         for (Node node: nodes) {
