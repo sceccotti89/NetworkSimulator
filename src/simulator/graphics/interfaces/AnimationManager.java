@@ -24,6 +24,8 @@ public class AnimationManager implements AnimationInterface
     
     private int mouseX, mouseY;
     
+    private int index = -1;
+    
     public static int frames = 1;
     
     private int timer;
@@ -56,8 +58,8 @@ public class AnimationManager implements AnimationInterface
         buttons.add( start );
         buttons.add( stop );
         buttons.add( pause );
-        buttons.add( plus );
         buttons.add( minus );
+        buttons.add( plus );
     }
     
     private void setFrames( final int add, final NetworkDisplay nd ) {
@@ -71,16 +73,13 @@ public class AnimationManager implements AnimationInterface
         mouseX = input.getMouseX();
         mouseY = input.getMouseY();
         
-        for (ImageButton button : buttons) {
-            if (button.getName().equals( PLUS ) || button.getName().equals( MINUS )) {
-                if (button.isPressed() && button.contains( mouseX, mouseY )) {
-                    if (++timer >= 50) {
-                        if (button.getName().equals( PLUS )) {
-                            setFrames( 1, nd );
-                        } else {
-                            setFrames( -1, nd );
-                        }
-                    }
+        if (index >= 0) {
+            ImageButton button = buttons.get( index );
+            if (button.contains( mouseX, mouseY ) && ++timer >= 50) {
+                if (button.getName().equals( PLUS )) {
+                    setFrames( 1, nd );
+                } else {
+                    setFrames( -1, nd );
                 }
             }
         }
@@ -91,11 +90,15 @@ public class AnimationManager implements AnimationInterface
             for (ImageButton button : buttons) {
                 if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
                     button.setPressed( true );
+                    if (button.getName().equals( PLUS ) || button.getName().equals( MINUS )) {
+                        index = button.getIndex();
+                    }
                 }
             }
         } else if (!leftMouse && mouseDown) {
             mouseDown = false;
             timer = 0;
+            index = -1;
             
             boolean buttonFounded = false;
             for (ImageButton button: buttons) {
