@@ -31,7 +31,7 @@ public class TimeAnimation implements AnimationInterface
         startTimingX = width/12;
         widthCursor = width/150;
         
-        offset = width/40;
+        offset = width/100;
         
         barTiming = new Rectangle( 0, startY, width, height*10/75 );
         timing    = new Rectangle( startTimingX, startY, width - 2*startTimingX, height*10/225 );
@@ -50,7 +50,7 @@ public class TimeAnimation implements AnimationInterface
     }
     
     public String toString( final float mouseX ) {
-        return roundValue( (((double) mouseX - startTimingX) / timing.getWidth() * timeDuration) ) + "";
+        return roundValue( (((double) Math.max( Math.min( mouseX - widthCursor/2, timing.getMaxX() - widthCursor/2 ), startTimingX - widthCursor/2 ) - startTimingX) / timing.getWidth() * timeDuration) ) + "";
     }
     
     @Override
@@ -62,7 +62,7 @@ public class TimeAnimation implements AnimationInterface
         timer = nd.getTimeSimulation();
         
         if (mouseDown || timing.contains( mouseX, mouseY )) {
-            NetworkDisplay.info.setAttributes( gc.getGraphics(), toString( mouseX ), mouseX - offset, timing.getY() - offset, Color.yellow );        
+            NetworkDisplay.info.setAttributes( gc.getGraphics(), toString( mouseX ), Math.max( Math.min( mouseX, timing.getMaxX() ), timing.getX() ) - offset, timing.getMaxY(), Color.yellow );
         }
         
         if (mouseDown || (leftMouse && timing.contains( mouseX, mouseY ))) {

@@ -62,7 +62,14 @@ public class AnimationManager implements AnimationInterface
         buttons.add( plus );
     }
     
-    private void setFrames( final int add, final NetworkDisplay nd ) {
+    private void setFrames( final String name, final NetworkDisplay nd ) {
+        int add;
+        if (name.equals( PLUS )) {
+            add = 1;
+        } else {
+            add = -1;
+        }
+        
         frames = Math.min( limit, Math.max( frames + add, 0 ) );
         nd.setPacketSpeed();
     }
@@ -76,11 +83,7 @@ public class AnimationManager implements AnimationInterface
         if (index >= 0) {
             ImageButton button = buttons.get( index );
             if (button.contains( mouseX, mouseY ) && ++timer >= 50) {
-                if (button.getName().equals( PLUS )) {
-                    setFrames( 1, nd );
-                } else {
-                    setFrames( -1, nd );
-                }
+                setFrames( button.getName(), nd );
             }
         }
         
@@ -92,6 +95,7 @@ public class AnimationManager implements AnimationInterface
                     button.setPressed( true );
                     if (button.getName().equals( PLUS ) || button.getName().equals( MINUS )) {
                         index = button.getIndex();
+                        setFrames( button.getName(), nd );
                     }
                 }
             }
@@ -105,10 +109,10 @@ public class AnimationManager implements AnimationInterface
                 if (button.checkClick( mouseX, mouseY )) {
                     buttonFounded = true;
                     if (button.getName().equals( PLUS )) {
-                        setFrames( 1, nd );
+                        setFrames( PLUS, nd );
                         button.setPressed( false );
                     } else if (button.getName().equals( MINUS )) {
-                        setFrames( -1, nd );
+                        setFrames( MINUS, nd );
                         button.setPressed( false );
                     } else if (button.getName().equals( START )) {
                         nd.startAnimation();
