@@ -20,18 +20,21 @@ public class TimeAnimation implements AnimationInterface
     
     private float widthCursor;
     
-    private final float offset;
+    private float height;
+    private final float offsetW, offsetH;
     
     private final GameContainer gc;
     
     public TimeAnimation( final GameContainer gc, final float startY, final float width, final float height, final long timeDuration ) throws SlickException
     {
         this.gc = gc;
+        this.height = height;
         
         startTimingX = width/12;
         widthCursor = width/150;
         
-        offset = width/100;
+        offsetW = width/100;
+        offsetH = height/120;
         
         barTiming = new Rectangle( 0, startY, width, height*10/75 );
         timing    = new Rectangle( startTimingX, startY, width - 2*startTimingX, height*10/225 );
@@ -50,7 +53,7 @@ public class TimeAnimation implements AnimationInterface
     }
     
     public String toString( final float mouseX ) {
-        return roundValue( (((double) Math.max( Math.min( mouseX - widthCursor/2, timing.getMaxX() - widthCursor/2 ), startTimingX - widthCursor/2 ) - startTimingX) / timing.getWidth() * timeDuration) ) + "";
+        return roundValue( (((double) Math.max( Math.min( mouseX, timing.getMaxX() ), startTimingX ) - startTimingX) / timing.getWidth() * timeDuration) ) + "";
     }
     
     @Override
@@ -62,7 +65,7 @@ public class TimeAnimation implements AnimationInterface
         timer = nd.getTimeSimulation();
         
         if (mouseDown || timing.contains( mouseX, mouseY )) {
-            NetworkDisplay.info.setAttributes( gc.getGraphics(), toString( mouseX ), Math.max( Math.min( mouseX, timing.getMaxX() ), timing.getX() ) - offset, timing.getMaxY(), Color.yellow );
+            NetworkDisplay.info.setAttributes( gc.getGraphics(), toString( mouseX ), Math.max( Math.min( mouseX, timing.getMaxX() ), timing.getX() ) - offsetW, timing.getMaxY()+ offsetH, Color.yellow );
         }
         
         if (mouseDown || (leftMouse && timing.contains( mouseX, mouseY ))) {
@@ -90,6 +93,6 @@ public class TimeAnimation implements AnimationInterface
         g.setColor( Color.white );
         String info = timer + "/" + timeDuration;
         int fWidth = g.getFont().getWidth( info ), fHeight = g.getFont().getHeight( info );
-        g.drawString( info, timing.getCenterX() - fWidth/2, barTiming.getMaxY() - (barTiming.getMaxY() - timing.getMaxY())/2 - fHeight/2 );
+        g.drawString( info, timing.getCenterX() - fWidth/2, timing.getMaxY() + (height - timing.getMaxY() - fHeight)/2 );
     }
 }
