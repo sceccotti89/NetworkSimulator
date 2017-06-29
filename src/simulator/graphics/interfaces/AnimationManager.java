@@ -108,10 +108,8 @@ public class AnimationManager implements AnimationInterface
                 if (button.checkClick( mouseX, mouseY )) {
                     buttonFounded = true;
                     if (button.getName().equals( PLUS )) {
-                        setFrames( PLUS, nd );
                         button.setPressed( false );
                     } else if (button.getName().equals( MINUS )) {
-                        setFrames( MINUS, nd );
                         button.setPressed( false );
                     } else if (button.getName().equals( START )) {
                         nd.startAnimation();
@@ -168,6 +166,8 @@ public class AnimationManager implements AnimationInterface
             button.draw( g );
         }
         
+        g.setColor( Color.white );
+        g.fill( showFrame );
         g.setColor( Color.black );
         g.draw( showFrame );
         
