@@ -56,13 +56,14 @@ public class TimeAnimation implements AnimationInterface
     {
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();
+        Graphics g = gc.getGraphics();
         
         timer = nd.getTimeSimulation();
         
         if (mouseDown || timing.contains( mouseX, mouseY )) {
             String info = toString( mouseX );
-            float fontW = gc.getGraphics().getFont().getWidth( info );
-            NetworkDisplay.info.setAttributes( gc.getGraphics(), info, Math.max( Math.min( mouseX, timing.getMaxX() ), timing.getX() ) - fontW/2, timing.getMaxY() + offsetH, Color.yellow );
+            float fontW = g.getFont().getWidth( info );
+            NetworkDisplay.info.setAttributes( g, info, Math.max( Math.min( mouseX, timing.getMaxX() ), timing.getX() ) - fontW/2, timing.getMaxY() + offsetH, Color.yellow );
         }
         
         if (mouseDown || (leftMouse && timing.contains( mouseX, mouseY ))) {
