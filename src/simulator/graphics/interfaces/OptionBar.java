@@ -46,7 +46,7 @@ public class OptionBar implements AnimationInterface
     }
     
     @Override
-    public void update( final int delta, final GameContainer gc, final boolean leftMouse, final OptionBar ob, final NetworkDisplay nd )
+    public void update( final int delta, final GameContainer gc, final boolean leftMouse, final NetworkDisplay nd )
     {
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();

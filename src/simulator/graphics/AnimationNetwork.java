@@ -198,9 +198,9 @@ public class AnimationNetwork extends BasicGame
         leftMouse = gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
 
         nd.update( gc, am );
-        ob.update( delta, gc, leftMouse, ob, nd );
-        am.update( delta, gc, leftMouse, ob, nd );
-        ta.update( delta, gc, leftMouse, ob, nd );
+        ob.update( delta, gc, leftMouse, nd );
+        am.update( delta, gc, leftMouse, nd );
+        ta.update( delta, gc, leftMouse, nd );
     }
 
     @Override

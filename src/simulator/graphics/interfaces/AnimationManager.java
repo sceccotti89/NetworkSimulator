@@ -74,7 +74,7 @@ public class AnimationManager implements AnimationInterface
     }
     
     @Override
-    public void update( final int delta, final GameContainer gc, final boolean leftMouse, final OptionBar ob, final NetworkDisplay nd )
+    public void update( final int delta, final GameContainer gc, final boolean leftMouse, final NetworkDisplay nd )
     {        
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();
@@ -115,13 +115,11 @@ public class AnimationManager implements AnimationInterface
                         button.setPressed( false );
                     } else if (button.getName().equals( START )) {
                         nd.startAnimation();
-                        ob.resetAllButtons();
                         button.setPressed( true );
                         resetButtons( button );
                     } else if (button.getName().equals( PAUSE )) {
                     	if (nd.isInExecution()) {
                     		nd.pauseAnimation();
-                            ob.resetAllButtons();
                             button.setPressed( true );
                             resetButtons( button );
                     	} else {
@@ -129,7 +127,6 @@ public class AnimationManager implements AnimationInterface
                     	}
                     } else if (button.getName().equals( STOP )) {
                         nd.stopAnimation();
-                        ob.resetAllButtons();
                         resetButtons( null );
                     }
                 }
