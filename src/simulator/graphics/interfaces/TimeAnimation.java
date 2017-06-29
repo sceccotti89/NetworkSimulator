@@ -22,11 +22,13 @@ public class TimeAnimation implements AnimationInterface
     private final float height;
     private final float offsetH;
     
+    private Rectangle mouse;
+    
     public TimeAnimation( final float startY, final float width, final float height, final long timeDuration ) throws SlickException
     {
         this.height = height;
         
-        startTimingX = width/12;
+        startTimingX = width/16;
         widthCursor = width/150;
         
         offsetH = height/120;
@@ -34,6 +36,8 @@ public class TimeAnimation implements AnimationInterface
         barTiming = new Rectangle( 0, startY, width, height*10/75 );
         timing    = new Rectangle( startTimingX, startY, width - 2*startTimingX, height*10/225 );
         cursor    = new Rectangle( startTimingX - widthCursor/2, timing.getY(), widthCursor, timing.getHeight() );
+        
+        mouse = new Rectangle( 0, 0, 1, 1 );
         
         this.timeDuration = timeDuration;
     }
@@ -58,15 +62,17 @@ public class TimeAnimation implements AnimationInterface
         mouseY = gc.getInput().getMouseY();
         Graphics g = gc.getGraphics();
         
+        mouse.setLocation( mouseX, mouseY );
+        
         timer = nd.getTimeSimulation();
         
-        if (mouseDown || timing.contains( mouseX, mouseY )) {
+        if (mouseDown || timing.intersects( mouse )) {
             String info = toString( mouseX );
             float fontW = g.getFont().getWidth( info );
             NetworkDisplay.info.setAttributes( g, info, Math.max( Math.min( mouseX, timing.getMaxX() ), timing.getX() ) - fontW/2, timing.getMaxY() + offsetH, Color.yellow );
         }
         
-        if (mouseDown || (leftMouse && timing.contains( mouseX, mouseY ))) {
+        if (mouseDown || (leftMouse && timing.intersects( mouse ))) {
             setTime( nd );
 	     	mouseDown = leftMouse;
         }
