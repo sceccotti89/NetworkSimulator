@@ -66,15 +66,14 @@ public class Packet implements Comparable<Packet>
     public void init()
     {
         area = new Rectangle( startX, startY, width/80, height/60 );
-        rotatePacket();
-        distance = 0;
-        active = true;
+        setPosition( startTime );
     }
     
     public void setPosition( final long time )
     {
         active = true;
         distance = (float) ((((double) time - startTime) / (endTime - startTime)) * linkLenght);
+        if (distance < 0) distance = 0;
         
         area.setX( startX + distance );
         rotatePacket();

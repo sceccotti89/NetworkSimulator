@@ -7,7 +7,6 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
-import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
@@ -75,10 +74,10 @@ public class AnimationManager implements AnimationInterface
     }
     
     @Override
-    public void update( final int delta, final Input input, final boolean leftMouse, OptionBar ob, AnimationManager am, TimeAnimation ta, NetworkDisplay nd )
+    public void update( final int delta, final GameContainer gc, final boolean leftMouse, final OptionBar ob, final NetworkDisplay nd )
     {        
-        mouseX = input.getMouseX();
-        mouseY = input.getMouseY();
+        mouseX = gc.getInput().getMouseX();
+        mouseY = gc.getInput().getMouseY();
         
         if (index >= 0) {
             ImageButton button = buttons.get( index );

@@ -162,7 +162,7 @@ public class AnimationNetwork extends BasicGame
         ob = new OptionBar( gc );
         am = new AnimationManager( gc, ob.getMaxY(), width, height );
         nd = new NetworkDisplay( width, height*100/142, am.getMaxY(), nodes, packets, timeDuration );
-        ta = new TimeAnimation( gc, nd.getMaxY(), width, height, timeDuration );
+        ta = new TimeAnimation( nd.getMaxY(), width, height, timeDuration );
     }
     
     public void addNode( final int x, final int y, final long nodeID, final String name, final long delay, final Color color ) {
@@ -198,9 +198,9 @@ public class AnimationNetwork extends BasicGame
         leftMouse = gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
 
         nd.update( gc, am );
-        ob.update( delta, gc.getInput(), leftMouse, ob, am, ta, nd );
-        am.update( delta, gc.getInput(), leftMouse, ob, am, ta, nd );
-        ta.update( delta, gc.getInput(), leftMouse, ob, am, ta, nd );
+        ob.update( delta, gc, leftMouse, ob, nd );
+        am.update( delta, gc, leftMouse, ob, nd );
+        ta.update( delta, gc, leftMouse, ob, nd );
     }
 
     @Override
