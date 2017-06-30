@@ -11,12 +11,13 @@ import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
 import simulator.graphics.dataButton.ArrowButton;
-import simulator.graphics.dataButton.ImageButton;
 
 public class TimeAnimation implements AnimationInterface
 {
     private Rectangle barTiming, timing, cursor;
     private long timer, timeDuration;
+    
+    private int tick = 0;
 
 	private boolean mouseDown;
     private int mouseX, mouseY;
@@ -34,7 +35,9 @@ public class TimeAnimation implements AnimationInterface
     private List<ArrowButton> arrows;
     
     private int moving = 1;
-    private int index;
+    private int index = -1;
+    
+    private boolean buttonHit = false;
     
     public TimeAnimation( final float startY, final float width, final float height, final long timeDuration ) throws SlickException
     {
@@ -85,11 +88,14 @@ public class TimeAnimation implements AnimationInterface
         return roundValue( (((double) Math.max( Math.min( mouseX, timing.getMaxX() ), startTimingX ) - startTimingX) / timing.getWidth() * timeDuration) ) + "";
     }
     
-    private void setCursor( final int index ) {
-
+    private void setCursor( final int index, final NetworkDisplay nd ) {
     	if (index == 0) {
-            // TODO COMPLETARE QUESTA PARTE
+    		timer = Math.min( timer + moving, timeDuration );
+    	} else {
+    		timer = Math.max( timer - moving, 0 );
     	}
+    	
+    	nd.setTimeSimulation( timer );
     }
     
     @Override
@@ -105,33 +111,44 @@ public class TimeAnimation implements AnimationInterface
         
         if (index >= 0) {
         	ArrowButton arrow = arrows.get( index );
-            if (arrow.contains( mouseX, mouseY ) && ++timer >= 50) {
-                setCursor( arrow.getIndex() );
+            if (arrow.contains( mouseX, mouseY ) && ++tick >= 50) {
+                setCursor( index, nd );
             }
         }
         
-        if (leftMouse && !mouseDown) {
+        if (leftMouse && !buttonHit) {
             mouseDown = true;
             
             for (ArrowButton arrow: arrows) {
             	if (arrow.contains( mouseX, mouseY ) && !arrow.isPressed()) {
             		arrow.setPressed( true );
-            		if (arrow.getName().equals( "ON" )) {
-            			setCursor( index = arrow.getIndex() );
-            		}
+            		setCursor( index = arrow.getIndex(), nd );
+                    buttonHit = true;
+            		return;
             	}
             }
-        }
-        
-        if (mouseDown || timing.intersects( mouse )) {
-            String info = toString( mouseX );
-            float fontW = g.getFont().getWidth( info );
-            NetworkDisplay.info.setAttributes( g, info, Math.max( Math.min( mouseX, timing.getMaxX() ), timing.getX() ) - fontW/2, timing.getMaxY() + offsetH );
-        }
-        
-        if (mouseDown || (leftMouse && timing.intersects( mouse ))) {
-            setTime( nd );
-	     	mouseDown = leftMouse;
+        } else if (!leftMouse && buttonHit) {
+            mouseDown = false;
+            buttonHit = false;
+            tick = 0;
+            index = -1;
+            
+            for (ArrowButton arrow: arrows) {
+            	arrow.setPressed( false );
+            }
+            
+            return;
+        } else if (!buttonHit) {
+	        if (mouseDown || timing.intersects( mouse )) {
+	            String info = toString( mouseX );
+	            float fontW = g.getFont().getWidth( info );
+	            NetworkDisplay.info.setAttributes( g, info, Math.max( Math.min( mouseX, timing.getMaxX() ), timing.getX() ) - fontW/2, timing.getMaxY() + offsetH );
+	        }
+	        
+	        if (mouseDown || (leftMouse && timing.intersects( mouse ))) {
+	            setTime( nd );
+		     	mouseDown = leftMouse;
+	        }
         }
         	          
         cursor.setX( startTimingX - widthCursor/2 + timing.getWidth() / timeDuration * timer );

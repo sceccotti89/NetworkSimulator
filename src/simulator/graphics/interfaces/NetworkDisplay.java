@@ -71,6 +71,10 @@ public class NetworkDisplay
         return zone.getMaxY();
     }
     
+    public long getTotalTimeSimulation() {
+    	return timeSimulation;
+    }
+    
     public long getTimeSimulation() {
         return timer;
     }
