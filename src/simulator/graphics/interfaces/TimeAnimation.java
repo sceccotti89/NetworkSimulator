@@ -113,7 +113,9 @@ public class TimeAnimation implements AnimationInterface
         }
         
         if (leftMouse) {
-        	if (!buttonHit && !timingHit) {
+        	if (timingHit) {
+        		setTime( nd );
+        	} else if (!buttonHit) {
 	    		if (timing.intersects( mouse )) {
 	    			timingHit = true;
 	        		setTime( nd );
@@ -126,23 +128,15 @@ public class TimeAnimation implements AnimationInterface
 					}
 				}
         	}
-        	
-        	if (timingHit) {
-        		setTime( nd );
-        	}
-        }
-        
-        if (!leftMouse) {
-        	if (buttonHit) {
-        		buttonHit = false;
-        		arrows.get( index ).setPressed( false );
-        		index = -1;
-        		tick = 0;
-        	} else if (timingHit) {
-        		timingHit = false;
-        		setTime( nd );
-        	}
-        }
+        } else if (buttonHit) {
+    		buttonHit = false;
+    		arrows.get( index ).setPressed( false );
+    		index = -1;
+    		tick = 0;
+    	} else if (timingHit) {
+    		timingHit = false;
+    		setTime( nd );
+    	}
         
         if (timing.intersects( mouse ) || timingHit) {
         	String info = toString( mouseX );
