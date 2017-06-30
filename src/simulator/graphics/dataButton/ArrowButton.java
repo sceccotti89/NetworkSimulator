@@ -3,7 +3,6 @@ package simulator.graphics.dataButton;
 
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
-import org.newdawn.slick.Input;
 import org.newdawn.slick.geom.Polygon;
 
 public class ArrowButton
@@ -36,9 +35,9 @@ public class ArrowButton
     }
 
     /** modifica lo stato (premuto/non premuto) della freccia*/
-    public void setPressed()
+    public void setPressed( final boolean val )
     {
-        pressed = !pressed;
+        pressed = val;
     }
     
     /** restituisce l'indice della freccia */
@@ -131,7 +130,7 @@ public class ArrowButton
      * 
      * @return TRUE se sono contenute, FALSE altrimenti
     */
-    public boolean contains( int x, int y, Input input )
+    public boolean contains( int x, int y )
     {
         return row.contains( x, y );
     }

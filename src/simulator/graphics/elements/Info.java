@@ -13,20 +13,13 @@ public class Info
 	private String infos;
 	private final float OFFSET = 5f;
 	
-	private Color color;
-	
 	public Info() {}
 	
-	public Info( Color color, String info ) {
-		this.color = color;
-	}
-	
-	public void setAttributes( final Graphics g, final String info, final float x, final float y, final Color color ) {
+	public void setAttributes( final Graphics g, final String info, final float x, final float y ) {
 		Font f = g.getFont();
 		infos = info;
 		area = new Rectangle( x - OFFSET, y - OFFSET, f.getWidth( info ) + 2 * OFFSET, f.getHeight( info ) + 2 * OFFSET );
         visible = true;
-        this.color = color;
 	}
 	
 	public void setVisible( final boolean flag ) {
@@ -36,7 +29,7 @@ public class Info
 	public void render( final Graphics g )
 	{
 	    if (visible) {
-    		g.setColor( color );
+    		g.setColor( Color.lightGray );
     		g.fill( area );
     		
     		g.setColor( Color.black );

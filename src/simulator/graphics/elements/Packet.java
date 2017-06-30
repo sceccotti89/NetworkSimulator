@@ -135,7 +135,7 @@ public class Packet implements Comparable<Packet>
         }
         
     	if(areaRotated.contains( mouseX, mouseY )) {
-        	NetworkDisplay.info.setAttributes( gc.getGraphics(), toString(), mouseX + offset, mouseY + offset, Color.magenta );
+        	NetworkDisplay.info.setAttributes( gc.getGraphics(), toString(), mouseX + offset, mouseY + offset );
         }
     }
     

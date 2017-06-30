@@ -61,9 +61,9 @@ public class AnimationManager implements AnimationInterface
         buttons.add( plus );
     }
     
-    private void setFrames( final String name, final NetworkDisplay nd ) {
+    private void setFrames( final int index, final NetworkDisplay nd ) {
         int add;
-        if (name.equals( PLUS )) {
+        if (index == 4) {
             add = 1;
         } else {
             add = -1;
@@ -82,7 +82,7 @@ public class AnimationManager implements AnimationInterface
         if (index >= 0) {
             ImageButton button = buttons.get( index );
             if (button.contains( mouseX, mouseY ) && ++timer >= 50) {
-                setFrames( button.getName(), nd );
+                setFrames( index, nd );
             }
         }
         
@@ -93,8 +93,7 @@ public class AnimationManager implements AnimationInterface
                 if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
                     button.setPressed( true );
                     if (button.getName().equals( PLUS ) || button.getName().equals( MINUS )) {
-                        index = button.getIndex();
-                        setFrames( button.getName(), nd );
+                        setFrames( index = button.getIndex(), nd );
                     }
                 }
             }

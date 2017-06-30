@@ -65,7 +65,7 @@ public class Link
         int mouseX = gc.getInput().getMouseX();
         int mouseY = gc.getInput().getMouseY();
     	if (areaRotated.contains( mouseX, mouseY )) {
-    	    NetworkDisplay.info.setAttributes( gc.getGraphics(), toString(), mouseX + offset, mouseY + offset, Color.lightGray );
+    	    NetworkDisplay.info.setAttributes( gc.getGraphics(), toString(), mouseX + offset, mouseY + offset );
         }
     }
     
