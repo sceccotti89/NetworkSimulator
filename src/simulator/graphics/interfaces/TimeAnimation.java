@@ -119,6 +119,7 @@ public class TimeAnimation implements AnimationInterface
 	        		setTime( nd );
 	    		} else for (ArrowButton arrow: arrows) {
 					if (arrow.contains( mouseX, mouseY )) {
+						arrow.setPressed( true );
 						buttonHit = true;
 						index = arrow.getIndex();
 						setCursor( index, nd );
@@ -166,12 +167,14 @@ public class TimeAnimation implements AnimationInterface
         g.setColor( Color.white );
         g.fill( cursor );
         
-        g.setColor( Color.white );
         String info = timer + "/" + timeDuration;
         int fWidth = g.getFont().getWidth( info ), fHeight = g.getFont().getHeight( info );
         g.drawString( info, timing.getCenterX() - fWidth/2, timing.getMaxY() + (height - timing.getMaxY() - fHeight)/2 );
         
         g.fill( timeMoving );
+        g.setColor( Color.black );
+        fWidth = g.getFont().getWidth( moving + "" ); fHeight = g.getFont().getHeight( moving + "" );
+        g.drawString( moving + "", timeMoving.getCenterX() - fWidth/2, timeMoving.getCenterY() - fHeight/2 );
         
         for (ArrowButton arrow: arrows) {
         	arrow.draw( g );

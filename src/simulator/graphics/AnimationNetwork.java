@@ -208,7 +208,7 @@ public class AnimationNetwork extends BasicGame
     {
         ob.render( gc );
         am.render( gc );
-        nd.render( gc );
         ta.render( gc );
+        nd.render( gc );
     }
 }
