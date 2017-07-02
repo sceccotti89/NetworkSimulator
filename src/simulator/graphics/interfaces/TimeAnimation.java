@@ -82,8 +82,8 @@ public class TimeAnimation implements AnimationInterface
         nd.setTimeSimulation( roundValue( (((double) cursor.getCenterX() - startTimingX) / timing.getWidth() * timeDuration) ) );
     }
     
-    public String toString( final float mouseX ) {
-        return roundValue( (((double) Math.max( Math.min( mouseX, timing.getMaxX() ), startTimingX ) - startTimingX) / timing.getWidth() * timeDuration) ) + "";
+    public long toString( final float mouseX ) {
+        return roundValue( (((double) Math.max( Math.min( mouseX, timing.getMaxX() ), startTimingX ) - startTimingX) / timing.getWidth() * timeDuration) );
     }
     
     private void setCursor( final int index, final NetworkDisplay nd ) {
@@ -141,7 +141,13 @@ public class TimeAnimation implements AnimationInterface
     	}
         
         if (timing.intersects( mouse ) || timingHit) {
-        	String info = toString( mouseX );
+        	long time = toString( mouseX );
+        	String info = time + "";
+        	if (timeDuration >= limit) {
+        		time = time / limit;
+        		int h = (int) time/3600, m = ((int) time - h*3600)/60, s = (int) time - h*3600 - m*60;
+        		info = h + "h:" + m + "m:" + s + "s";
+        	}
             float fontW = g.getFont().getWidth( info );
             NetworkDisplay.info.setAttributes( g, info, Math.max( Math.min( mouseX, timing.getMaxX() ), timing.getX() ) - fontW/2, timing.getMaxY() + offsetH );
         }
