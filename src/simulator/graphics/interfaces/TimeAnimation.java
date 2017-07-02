@@ -21,6 +21,8 @@ public class TimeAnimation implements AnimationInterface
 
     private int mouseX, mouseY;
     
+    private final int limit = 1000000;
+    
     private float startTimingX;
     
     private float widthCursor;
@@ -28,7 +30,7 @@ public class TimeAnimation implements AnimationInterface
     private final float height;
     private final float offsetH;
     
-    private Rectangle mouse, timeMoving;
+    private Rectangle mouse;
     
     private ArrowButton timeOn, timeBack;
     private List<ArrowButton> arrows;
@@ -52,23 +54,23 @@ public class TimeAnimation implements AnimationInterface
         
         mouse = new Rectangle( 0, 0, 1, 1 );
         
-        float widthTimeMoving = width/40, heightTimeMoving = height/30;
-        timeMoving = new Rectangle( timing.getCenterX() - widthTimeMoving/2, timing.getMaxY() + height/150, widthTimeMoving, heightTimeMoving );
-        
         float distance = width/40;
-        timeOn   = new ArrowButton( "ON", ArrowButton.RIGHT, new float[]{timeMoving.getMaxX() + distance, timeMoving.getY(),
-				   													   timeMoving.getMaxX() + distance*3, timeMoving.getCenterY(),
-				   													   timeMoving.getMaxX() + distance, timeMoving.getMaxY()},
+        timeOn   = new ArrowButton( "ON", ArrowButton.RIGHT, new float[]{timing.getMaxX() + distance, timing.getY(),
+        																 timing.getMaxX() + distance*3, timing.getCenterY(),
+        																 timing.getMaxX() + distance, timing.getMaxY()},
         							Color.green, 0 );
-        timeBack = new ArrowButton( "BACK", ArrowButton.LEFT, new float[]{timeMoving.getX() - distance*3, timeMoving.getCenterY(),
-				   													  timeMoving.getX() - distance, timeMoving.getY(),
-				   													  timeMoving.getX() - distance, timeMoving.getMaxY()},
+        timeBack = new ArrowButton( "BACK", ArrowButton.LEFT, new float[]{timing.getX() - distance*3, timing.getCenterY(),
+        																  timing.getX() - distance, timing.getY(),
+        																  timing.getX() - distance, timing.getMaxY()},
         						    Color.green, 1 );
         
         arrows.add( timeOn );
         arrows.add( timeBack );
         
         this.timeDuration = timeDuration;
+        if(timeDuration >= limit) {
+        	moving = moving * limit;
+        }
     }
     
     private long roundValue( final double value ) {
@@ -162,13 +164,20 @@ public class TimeAnimation implements AnimationInterface
         g.fill( cursor );
         
         String info = timer + "/" + timeDuration;
+        if (timeDuration >= limit) {
+        	timer = timer / limit;
+        	int h = (int) timer/3600, m = ((int) timer - h*3600)/60, s = (int) timer - h*3600 - m*60;
+        	if (s < 10) {
+        		info = h + "h:" + m + "m:" + "0" + s + "s" + "/";
+        	} else {
+        		info = h + "h:" + m + "m:" + s + "s" + "/";
+        	}
+        	int time = (int) (timeDuration/1000000);
+        	h = time/3600; m = (time - h*3600)/60; s = time - h*3600 - m*60;
+        	info = info + h + "h:" + m + "m:" + s + "s";
+        }
         int fWidth = g.getFont().getWidth( info ), fHeight = g.getFont().getHeight( info );
         g.drawString( info, timing.getCenterX() - fWidth/2, timing.getMaxY() + (height - timing.getMaxY() - fHeight)/2 );
-        
-        g.fill( timeMoving );
-        g.setColor( Color.black );
-        fWidth = g.getFont().getWidth( moving + "" ); fHeight = g.getFont().getHeight( moving + "" );
-        g.drawString( moving + "", timeMoving.getCenterX() - fWidth/2, timeMoving.getCenterY() - fHeight/2 );
         
         for (ArrowButton arrow: arrows) {
         	arrow.draw( g );
