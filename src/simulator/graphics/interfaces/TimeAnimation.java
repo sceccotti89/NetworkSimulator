@@ -97,7 +97,7 @@ public class TimeAnimation implements AnimationInterface
     	nd.setTimeSimulation( timer );
     }
     
-    public String setInfo( String info, int h, int m, int s ) {
+    public String setInfo( String info, long h, long m, long s ) {
     	if (s < 10) {
     		if (m < 10) {
     			info = h + "h:" + "0" + m + "m:" + "0" + s + "s";
@@ -162,7 +162,7 @@ public class TimeAnimation implements AnimationInterface
         	String info = time + "µs";
         	if (timeDuration >= limit) {
         		time = time / limit;
-        		int h = (int) time/3600, m = ((int) time - h*3600)/60, s = (int) time - h*3600 - m*60;
+        		long h = time/3600, m = (time - h*3600)/60, s = time - h*3600 - m*60;
         		info = setInfo( info, h, m, s );
         	}
         	
@@ -190,11 +190,11 @@ public class TimeAnimation implements AnimationInterface
     	String info = timer + "µs / " + timeDuration + "µs";
         if (timeDuration >= limit) {
         	timer = timer / limit;
-        	int h = (int) timer/3600, m = ((int) timer - h*3600)/60, s = (int) timer - h*3600 - m*60;
+        	long h = timer/3600, m = (timer - h*3600)/60, s = timer - h*3600 - m*60;
         	info = setInfo( info, h, m, s );
         	info = info + " / ";
         	
-        	int time = (int) (timeDuration/1000000);
+        	long time = timeDuration/1000000;
         	h = time/3600; m = (time - h*3600)/60; s = time - h*3600 - m*60;
         	info = info + setInfo( info, h, m, s );
         }
