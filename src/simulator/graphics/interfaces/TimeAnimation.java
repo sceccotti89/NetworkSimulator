@@ -54,14 +54,16 @@ public class TimeAnimation implements AnimationInterface
         
         mouse = new Rectangle( 0, 0, 1, 1 );
         
-        float distance = width/40;
-        timeOn   = new ArrowButton( "ON", ArrowButton.RIGHT, new float[]{timing.getMaxX() + distance, timing.getY(),
-        																 timing.getMaxX() + distance*3, timing.getCenterY(),
-        																 timing.getMaxX() + distance, timing.getMaxY()},
+        float distX = width/7, distY = height/70;
+        float centerX = timing.getCenterX(), centerY = timing.getMaxY() + (height - timing.getMaxY())/2;
+        System.out.println( "centerY = " + centerY );
+        timeOn   = new ArrowButton( "ON", ArrowButton.RIGHT, new float[]{centerX + distX, centerY - distY,
+        																 centerX + distX*15/10, centerY,
+        																 centerX + distX, centerY + distY},
         							Color.green, 0 );
-        timeBack = new ArrowButton( "BACK", ArrowButton.LEFT, new float[]{timing.getX() - distance*3, timing.getCenterY(),
-        																  timing.getX() - distance, timing.getY(),
-        																  timing.getX() - distance, timing.getMaxY()},
+        timeBack = new ArrowButton( "BACK", ArrowButton.LEFT, new float[]{centerX - distX*15/10, centerY,
+        																  centerX - distX, centerY - distY,
+        																  centerX - distX, centerY + distY},
         						    Color.green, 1 );
         
         arrows.add( timeOn );
@@ -173,11 +175,19 @@ public class TimeAnimation implements AnimationInterface
         if (timeDuration >= limit) {
         	timer = timer / limit;
         	int h = (int) timer/3600, m = ((int) timer - h*3600)/60, s = (int) timer - h*3600 - m*60;
+        	
         	if (s < 10) {
-        		info = h + "h:" + m + "m:" + "0" + s + "s" + " / ";
+        		if (m < 10) {
+        			info = h + "h:" + "0" + m + "m:" + "0" + s + "s" + " / ";
+        		} else {
+        			info = h + "h:" + m + "m:" + "0" + s + "s" + " / ";
+        		}
+        	} else if (m < 10) {
+        		info = h + "h:" + "0" + m + "m:" + s + "s" + " / ";
         	} else {
         		info = h + "h:" + m + "m:" + s + "s" + " / ";
         	}
+        	
         	int time = (int) (timeDuration/1000000);
         	h = time/3600; m = (time - h*3600)/60; s = time - h*3600 - m*60;
         	info = info + h + "h:" + m + "m:" + s + "s";
