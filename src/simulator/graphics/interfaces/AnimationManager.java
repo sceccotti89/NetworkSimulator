@@ -69,7 +69,7 @@ public class AnimationManager implements AnimationInterface
             add = -1;
         }
         
-        frames = Math.min( limit, Math.max( frames + add, 0 ) );
+        frames = Math.min( limit, Math.max( frames + add, 1 ) );
         nd.setPacketSpeed();
     }
     

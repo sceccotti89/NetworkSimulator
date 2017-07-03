@@ -165,6 +165,7 @@ public class TimeAnimation implements AnimationInterface
         		int h = (int) time/3600, m = ((int) time - h*3600)/60, s = (int) time - h*3600 - m*60;
         		info = setInfo( info, h, m, s );
         	}
+        	
             float fontW = g.getFont().getWidth( info );
             NetworkDisplay.info.setAttributes( g, info, Math.max( Math.min( mouseX, timing.getMaxX() ), timing.getX() ) - fontW/2, timing.getMaxY() + offsetH );
         }
