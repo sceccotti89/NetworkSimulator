@@ -144,13 +144,15 @@ public class TimeAnimation implements AnimationInterface
 	    		if (timing.intersects( mouse )) {
 	    			timingHit = true;
 	        		setTime( nd );
-	    		} else for (ArrowButton arrow: arrows) {
-					if (arrow.contains( mouseX, mouseY )) {
-						arrow.setPressed( true );
-						buttonHit = true;
-						index = arrow.getIndex();
-						setCursor( index, nd );
-					}
+	    		} else if (nd.isInPause()) {
+	    			for (ArrowButton arrow: arrows) {
+						if (arrow.contains( mouseX, mouseY )) {
+							arrow.setPressed( true );
+							buttonHit = true;
+							index = arrow.getIndex();
+							setCursor( index, nd );
+						}
+	    			}
 				}
         	}
         } else if (buttonHit) {
