@@ -34,6 +34,8 @@ public class Packet implements Comparable<Packet>
 
     private final int offset, type;
     
+    private final int limit = 1000000;
+    
     public Packet( final Node source, final Node dest,
                    final Color color,
                    final long startTime, final long endTime,
@@ -117,7 +119,29 @@ public class Packet implements Comparable<Packet>
         area.setY( area.getY() - offset );
     }
     
-    public void update( final GameContainer gc, final long time, final boolean update )
+    private String setInfo( long time, final String measure ) {
+    	if (measure.equals( "TIME" )) {
+    		time = time / limit;
+    	} else {
+    		return time + "µs";
+    	}
+    	
+    	long h = time/3600, m = (time - h*3600)/60, s = time - h*3600 - m*60;
+    	
+    	if (s < 10) {
+    		if (m < 10) {
+    			return h + "h:" + "0" + m + "m:" + "0" + s + "s";
+    		} else {
+    			return h + "h:" + m + "m:" + "0" + s + "s";
+    		}
+    	} else if (m < 10) {
+    		return h + "h:" + "0" + m + "m:" + s + "s";
+    	}
+    	
+    	return h + "h:" + m + "m:" + s + "s";
+    }
+    
+    public void update( final GameContainer gc, final long time, final boolean update, final String measure )
     {
     	int mouseX = gc.getInput().getMouseX();
     	int mouseY = gc.getInput().getMouseY();
@@ -135,7 +159,7 @@ public class Packet implements Comparable<Packet>
         }
         
     	if(areaRotated.contains( mouseX, mouseY )) {
-        	NetworkDisplay.info.setAttributes( gc.getGraphics(), toString(), mouseX + offset, mouseY + offset );
+        	NetworkDisplay.info.setAttributes( gc.getGraphics(), toString( measure ), mouseX + offset, mouseY + offset );
         }
     }
     
@@ -154,10 +178,9 @@ public class Packet implements Comparable<Packet>
         return 0;
     }
     
-    @Override
-    public String toString() {
-        return "startTime = " + startTime + "\n"
-                + "endTime = " + endTime + "\n"
+    public String toString( String measure ) {
+        return "startTime = " + setInfo( startTime, measure ) + "\n"
+                + "endTime = " + setInfo( endTime, measure ) + "\n"
                 + "source = " + source.getNodeID() + "\n"
                 + "dest = " + dest.getNodeID();
     }

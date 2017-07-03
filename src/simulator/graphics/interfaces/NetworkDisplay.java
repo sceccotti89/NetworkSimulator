@@ -26,6 +26,8 @@ public class NetworkDisplay
     
     public static Info info;
     
+    private String measure = "MICRO";
+    
     public NetworkDisplay( final float width, final float height, final float startY, final List<Node> nodes, final List<Packet> packets, final long timeSimulation )
     {
         zone = new Rectangle( 0, startY, width, height );
@@ -111,6 +113,10 @@ public class NetworkDisplay
         resetAnimation();
     }
     
+    public void setUnitMeasure( final String measure ) {
+    	this.measure = measure;
+    }
+    
     public void update( final GameContainer gc, final AnimationManager am )
     {
         if (timer > timeSimulation) {
@@ -132,7 +138,7 @@ public class NetworkDisplay
             if (packet.getStartTime() > timer)
                 break;
             
-            packet.update( gc, timer, start && !pause );
+            packet.update( gc, timer, start && !pause, measure );
             if (!packet.isActive() && i == index) {
                 index++;
             }
