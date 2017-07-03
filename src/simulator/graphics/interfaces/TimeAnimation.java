@@ -97,20 +97,26 @@ public class TimeAnimation implements AnimationInterface
     	nd.setTimeSimulation( timer );
     }
     
-    public String setInfo( String info, long h, long m, long s ) {
-    	if (s < 10) {
-    		if (m < 10) {
-    			info = h + "h:" + "0" + m + "m:" + "0" + s + "s";
-    		} else {
-    			info = h + "h:" + m + "m:" + "0" + s + "s";
-    		}
-    	} else if (m < 10) {
-    		info = h + "h:" + "0" + m + "m:" + s + "s";
+    private String setInfo( long time ) {
+    	if (timeDuration >= limit) {
+    		time = time / limit;
     	} else {
-    		info = h + "h:" + m + "m:" + s + "s";
+    		return timer + "탎 / " + timeDuration + "탎";
     	}
     	
-    	return info;
+    	long h = time/3600, m = (time - h*3600)/60, s = time - h*3600 - m*60;
+    	
+    	if (s < 10) {
+    		if (m < 10) {
+    			return h + "h:" + "0" + m + "m:" + "0" + s + "s";
+    		} else {
+    			return h + "h:" + m + "m:" + "0" + s + "s";
+    		}
+    	} else if (m < 10) {
+    		return h + "h:" + "0" + m + "m:" + s + "s";
+    	}
+    	
+    	return h + "h:" + m + "m:" + s + "s";
     }
     
     @Override
@@ -158,13 +164,7 @@ public class TimeAnimation implements AnimationInterface
     	}
         
         if (timing.intersects( mouse ) || timingHit) {
-        	long time = toString( mouseX );
-        	String info = time + "탎";
-        	if (timeDuration >= limit) {
-        		time = time / limit;
-        		long h = time/3600, m = (time - h*3600)/60, s = time - h*3600 - m*60;
-        		info = setInfo( info, h, m, s );
-        	}
+        	String info = setInfo( toString( mouseX ) );
         	
             float fontW = g.getFont().getWidth( info );
             NetworkDisplay.info.setAttributes( g, info, Math.max( Math.min( mouseX, timing.getMaxX() ), timing.getX() ) - fontW/2, timing.getMaxY() + offsetH );
@@ -187,16 +187,9 @@ public class TimeAnimation implements AnimationInterface
         g.setColor( Color.white );
         g.fill( cursor );
         
-    	String info = timer + "탎 / " + timeDuration + "탎";
+        String info = setInfo( timer );
         if (timeDuration >= limit) {
-        	timer = timer / limit;
-        	long h = timer/3600, m = (timer - h*3600)/60, s = timer - h*3600 - m*60;
-        	info = setInfo( info, h, m, s );
-        	info = info + " / ";
-        	
-        	long time = timeDuration / limit;
-        	h = time/3600; m = (time - h*3600)/60; s = time - h*3600 - m*60;
-        	info = info + setInfo( info, h, m, s );
+        	info = info + " / " + setInfo( timeDuration );
         }
         
         int fWidth = g.getFont().getWidth( info ), fHeight = g.getFont().getHeight( info );
