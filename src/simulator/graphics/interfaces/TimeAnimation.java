@@ -97,6 +97,22 @@ public class TimeAnimation implements AnimationInterface
     	nd.setTimeSimulation( timer );
     }
     
+    public String setInfo( String info, int h, int m, int s ) {
+    	if (s < 10) {
+    		if (m < 10) {
+    			info = h + "h:" + "0" + m + "m:" + "0" + s + "s";
+    		} else {
+    			info = h + "h:" + m + "m:" + "0" + s + "s";
+    		}
+    	} else if (m < 10) {
+    		info = h + "h:" + "0" + m + "m:" + s + "s";
+    	} else {
+    		info = h + "h:" + m + "m:" + s + "s";
+    	}
+    	
+    	return info;
+    }
+    
     @Override
     public void update( final int delta, final GameContainer gc, final boolean leftMouse, final NetworkDisplay nd )
     {
@@ -147,7 +163,7 @@ public class TimeAnimation implements AnimationInterface
         	if (timeDuration >= limit) {
         		time = time / limit;
         		int h = (int) time/3600, m = ((int) time - h*3600)/60, s = (int) time - h*3600 - m*60;
-        		info = h + "h:" + m + "m:" + s + "s";
+        		info = setInfo( info, h, m, s );
         	}
             float fontW = g.getFont().getWidth( info );
             NetworkDisplay.info.setAttributes( g, info, Math.max( Math.min( mouseX, timing.getMaxX() ), timing.getX() ) - fontW/2, timing.getMaxY() + offsetH );
@@ -174,22 +190,12 @@ public class TimeAnimation implements AnimationInterface
         if (timeDuration >= limit) {
         	timer = timer / limit;
         	int h = (int) timer/3600, m = ((int) timer - h*3600)/60, s = (int) timer - h*3600 - m*60;
-        	
-        	if (s < 10) {
-        		if (m < 10) {
-        			info = h + "h:" + "0" + m + "m:" + "0" + s + "s" + " / ";
-        		} else {
-        			info = h + "h:" + m + "m:" + "0" + s + "s" + " / ";
-        		}
-        	} else if (m < 10) {
-        		info = h + "h:" + "0" + m + "m:" + s + "s" + " / ";
-        	} else {
-        		info = h + "h:" + m + "m:" + s + "s" + " / ";
-        	}
+        	info = setInfo( info, h, m, s );
+        	info = info + " / ";
         	
         	int time = (int) (timeDuration/1000000);
         	h = time/3600; m = (time - h*3600)/60; s = time - h*3600 - m*60;
-        	info = info + h + "h:" + m + "m:" + s + "s";
+        	info = info + setInfo( info, h, m, s );
         }
         int fWidth = g.getFont().getWidth( info ), fHeight = g.getFont().getHeight( info );
         g.drawString( info, timing.getCenterX() - fWidth/2, timing.getMaxY() + (height - timing.getMaxY() - fHeight)/2 );
