@@ -106,6 +106,7 @@ public class AnimationManager implements AnimationInterface
             for (ImageButton button: buttons) {
                 if (button.checkClick( mouseX, mouseY )) {
                     buttonFounded = true;
+                    // TODO PLUS E MINUS DA RENDERE ANCHE SCRIVIBILE
                     if (button.getName().equals( PLUS )) {
                         button.setPressed( false );
                     } else if (button.getName().equals( MINUS )) {

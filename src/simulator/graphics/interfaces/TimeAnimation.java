@@ -56,7 +56,6 @@ public class TimeAnimation implements AnimationInterface
         
         float distX = width/7, distY = height/70;
         float centerX = timing.getCenterX(), centerY = timing.getMaxY() + (height - timing.getMaxY())/2;
-        System.out.println( "centerY = " + centerY );
         timeOn   = new ArrowButton( "ON", ArrowButton.RIGHT, new float[]{centerX + distX, centerY - distY,
         																 centerX + distX*15/10, centerY,
         																 centerX + distX, centerY + distY},
