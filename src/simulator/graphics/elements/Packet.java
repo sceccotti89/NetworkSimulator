@@ -35,6 +35,8 @@ public class Packet implements Comparable<Packet>
     private final int offset, type;
     
     private final int limit = 1000000;
+
+	private String measure;
     
     public Packet( final Node source, final Node dest,
                    final Color color,
@@ -119,6 +121,10 @@ public class Packet implements Comparable<Packet>
         area.setY( area.getY() - offset );
     }
     
+    public void setMeasure( String measure ) {
+    	this.measure  = measure;
+    }
+    
     private String setInfo( long time, final String measure ) {
     	if (measure.equals( "TIME" )) {
     		time = time / limit;
@@ -141,7 +147,7 @@ public class Packet implements Comparable<Packet>
     	return h + "h:" + m + "m:" + s + "s";
     }
     
-    public void update( final GameContainer gc, final long time, final boolean update, final String measure )
+    public void update( final GameContainer gc, final long time, final boolean update )
     {
     	int mouseX = gc.getInput().getMouseX();
     	int mouseY = gc.getInput().getMouseY();
@@ -159,7 +165,7 @@ public class Packet implements Comparable<Packet>
         }
         
     	if(areaRotated.contains( mouseX, mouseY )) {
-        	NetworkDisplay.info.setAttributes( gc.getGraphics(), toString( measure ), mouseX + offset, mouseY + offset );
+        	NetworkDisplay.info.setAttributes( gc.getGraphics(), toString(), mouseX + offset, mouseY + offset );
         }
     }
     
@@ -178,7 +184,8 @@ public class Packet implements Comparable<Packet>
         return 0;
     }
     
-    public String toString( String measure ) {
+    @Override
+    public String toString() {
         return "startTime = " + setInfo( startTime, measure ) + "\n"
                 + "endTime = " + setInfo( endTime, measure ) + "\n"
                 + "source = " + source.getNodeID() + "\n"

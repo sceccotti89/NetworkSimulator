@@ -126,10 +126,6 @@ public class TimeAnimation implements AnimationInterface
         mouseY = gc.getInput().getMouseY();
         Graphics g = gc.getGraphics();
         
-        if (timeDuration >= limit) {
-        	nd.setUnitMeasure( "TIME" );
-        }
-        
         mouse.setLocation( mouseX, mouseY );
         
         timer = nd.getTimeSimulation();

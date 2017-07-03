@@ -41,6 +41,7 @@ public class AnimationNetwork extends BasicGame
     private int width, height;
     
     private long timeDuration = 0;
+	private final int limit = 1000000;
     
     public AnimationNetwork( final int width, final int height, final String title )
     {
@@ -86,6 +87,14 @@ public class AnimationNetwork extends BasicGame
         reader.close();
         
         Collections.sort( packets );
+        
+        String measure = "MICRO";
+        if (timeDuration >= limit ) {
+        	measure = "TIME";
+        }
+        for (Packet packet: packets) {
+        	packet.setMeasure( measure );
+        }
         
         System.out.println( "Loading completed." );
     }
