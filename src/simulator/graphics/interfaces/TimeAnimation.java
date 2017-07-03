@@ -194,7 +194,7 @@ public class TimeAnimation implements AnimationInterface
         	info = setInfo( info, h, m, s );
         	info = info + " / ";
         	
-        	long time = timeDuration/1000000;
+        	long time = timeDuration / limit;
         	h = time/3600; m = (time - h*3600)/60; s = time - h*3600 - m*60;
         	info = info + setInfo( info, h, m, s );
         }
