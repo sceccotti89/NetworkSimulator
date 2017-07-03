@@ -142,7 +142,7 @@ public class TimeAnimation implements AnimationInterface
         
         if (timing.intersects( mouse ) || timingHit) {
         	long time = toString( mouseX );
-        	String info = time + "";
+        	String info = time + "µs";
         	if (timeDuration >= limit) {
         		time = time / limit;
         		int h = (int) time/3600, m = ((int) time - h*3600)/60, s = (int) time - h*3600 - m*60;
@@ -169,14 +169,14 @@ public class TimeAnimation implements AnimationInterface
         g.setColor( Color.white );
         g.fill( cursor );
         
-        String info = timer + "/" + timeDuration;
+    	String info = timer + "µs / " + timeDuration + "µs";
         if (timeDuration >= limit) {
         	timer = timer / limit;
         	int h = (int) timer/3600, m = ((int) timer - h*3600)/60, s = (int) timer - h*3600 - m*60;
         	if (s < 10) {
-        		info = h + "h:" + m + "m:" + "0" + s + "s" + "/";
+        		info = h + "h:" + m + "m:" + "0" + s + "s" + " / ";
         	} else {
-        		info = h + "h:" + m + "m:" + s + "s" + "/";
+        		info = h + "h:" + m + "m:" + s + "s" + " / ";
         	}
         	int time = (int) (timeDuration/1000000);
         	h = time/3600; m = (time - h*3600)/60; s = time - h*3600 - m*60;
