@@ -121,7 +121,7 @@ public class Packet implements Comparable<Packet>
         area.setY( area.getY() - offset );
     }
     
-    public void setMeasure( String measure ) {
+    public void setMeasure( final String measure ) {
     	this.measure  = measure;
     }
     
