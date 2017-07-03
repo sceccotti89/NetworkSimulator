@@ -110,14 +110,15 @@ public class Packet implements Comparable<Packet>
         if (angle >= 90 || angle <= -90 || angle == -180) offset *= -type;
         area.setY( area.getY() + offset );
         
-        Point p1 = worldToView( area.getX() - source.getCenterX(),    area.getY() - source.getCenterY(), angle );
-        Point p2 = worldToView( area.getMaxX() - source.getCenterX(), area.getY() - source.getCenterY(), angle );
-        Point p3 = worldToView( area.getMaxX() - source.getCenterX(), area.getMaxY() - source.getCenterY(), angle );
-        Point p4 = worldToView( area.getX() - source.getCenterX(),    area.getMaxY() - source.getCenterY(), angle );
-        areaRotated = new Polygon( new float[]{ p1.getX() + source.getCenterX(), p1.getY() + source.getCenterY(),
-                                                p2.getX() + source.getCenterX(), p2.getY() + source.getCenterY(),
-                                                p3.getX() + source.getCenterX(), p3.getY() + source.getCenterY(),
-                                                p4.getX() + source.getCenterX(), p4.getY() + source.getCenterY() } );
+        final float centerX = source.getCenterX(), centerY = source.getCenterY();
+        Point p1 = worldToView( area.getX() - centerX,    area.getY() - centerY, angle );
+        Point p2 = worldToView( area.getMaxX() - centerX, area.getY() - centerY, angle );
+        Point p3 = worldToView( area.getMaxX() - centerX, area.getMaxY() - centerY, angle );
+        Point p4 = worldToView( area.getX() - centerX,    area.getMaxY() - centerY, angle );
+        areaRotated = new Polygon( new float[]{ p1.getX() + centerX, p1.getY() + centerY,
+                                                p2.getX() + centerX, p2.getY() + centerY,
+                                                p3.getX() + centerX, p3.getY() + centerY,
+                                                p4.getX() + centerX, p4.getY() + centerY } );
         area.setY( area.getY() - offset );
     }
     
