@@ -197,6 +197,7 @@ public class TimeAnimation implements AnimationInterface
         	h = time/3600; m = (time - h*3600)/60; s = time - h*3600 - m*60;
         	info = info + setInfo( info, h, m, s );
         }
+        
         int fWidth = g.getFont().getWidth( info ), fHeight = g.getFont().getHeight( info );
         g.drawString( info, timing.getCenterX() - fWidth/2, timing.getMaxY() + (height - timing.getMaxY() - fHeight)/2 );
         
