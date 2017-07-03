@@ -167,7 +167,7 @@ public class TimeAnimation implements AnimationInterface
         	String info = setInfo( getTime( mouseX ) );
         	
             float fontW = g.getFont().getWidth( info );
-            NetworkDisplay.info.setAttributes( g, info, Math.max( Math.min( mouseX, timing.getMaxX() ), timing.getX() ) - fontW/2, timing.getMaxY() + offsetH );
+            NetworkDisplay.info.setAttributes( g, info, Math.max( Math.min( mouseX, timing.getMaxX() ), startTimingX ) - fontW/2, timing.getMaxY() + offsetH );
         }
         
         cursor.setX( startTimingX - widthCursor/2 + timing.getWidth() / timeDuration * timer );
