@@ -159,11 +159,11 @@ public class Packet implements Comparable<Packet>
     	}
     	
     	if (ns < 10) {
-			info = info + "00" + ns + "탎:";
+			info = info + "00" + ns + "탎";
     	} else if (ns < 100) {
-    		info = info + "0" + ns + "탎:";
+    		info = info + "0" + ns + "탎";
     	} else {
-    		info = info + ns + "탎:";
+    		info = info + ns + "탎";
     	}
     	
     	return info;
