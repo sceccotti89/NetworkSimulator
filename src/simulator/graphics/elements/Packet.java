@@ -127,25 +127,46 @@ public class Packet implements Comparable<Packet>
     }
     
     private String setInfo( long time, final String measure ) {
+    	long decimal = time;
     	if (measure.equals( "TIME" )) {
     		time = time / limit;
     	} else {
     		return time + "탎";
     	}
     	
-    	long h = time/3600, m = (time - h*3600)/60, s = time - h*3600 - m*60;
+    	long h = time/3600, m = (time - h*3600)/60, s = time - h*3600 - m*60,
+    		 ms = (decimal - (h*3600 + m*60 + s) * limit) / 1000, ns = (decimal - (h*3600 + m*60 + s) * limit) - ms * 1000;
     	
-    	if (s < 10) {
-    		if (m < 10) {
-    			return h + "h:" + "0" + m + "m:" + "0" + s + "s";
-    		} else {
-    			return h + "h:" + m + "m:" + "0" + s + "s";
-    		}
-    	} else if (m < 10) {
-    		return h + "h:" + "0" + m + "m:" + s + "s";
+    	String info = h + "h:";
+    	if (m < 10) {
+    		info = info + "0" + m + "m:";
+    	} else {
+    		info = info + m + "m:";
     	}
     	
-    	return h + "h:" + m + "m:" + s + "s";
+    	if (s < 10) {
+    		info = info + "0" + s + "s:";
+    	} else {
+    		info = info + s + "s:";
+    	}
+    	
+    	if (ms < 10) {
+			info = info + "00" + ms + "ms:";
+    	} else if (ms < 100) {
+    		info = info + "0" + ms + "ms:";
+    	} else {
+    		info = info + ms + "ms:";
+    	}
+    	
+    	if (ns < 10) {
+			info = info + "00" + ns + "탎:";
+    	} else if (ns < 100) {
+    		info = info + "0" + ns + "탎:";
+    	} else {
+    		info = info + ns + "탎:";
+    	}
+    	
+    	return info;
     }
     
     public void update( final GameContainer gc, final long time, final boolean update )
@@ -187,8 +208,8 @@ public class Packet implements Comparable<Packet>
     
     @Override
     public String toString() {
-        return "startTime = " + setInfo( startTime, measure ) + "\n"
-                + "endTime = " + setInfo( endTime, measure ) + "\n"
+        return "start = " + setInfo( startTime, measure ) + "\n"
+                + "end = " + setInfo( endTime, measure ) + "\n"
                 + "source = " + source.getNodeID() + "\n"
                 + "dest = " + dest.getNodeID();
     }
