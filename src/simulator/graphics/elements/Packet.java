@@ -208,9 +208,9 @@ public class Packet implements Comparable<Packet>
     
     @Override
     public String toString() {
-        return "start = " + setInfo( startTime, measure ) + "\n"
-                + "end = " + setInfo( endTime, measure ) + "\n"
+        return "start  = " + setInfo( startTime, measure ) + "\n"
+                + "end    = " + setInfo( endTime, measure ) + "\n"
                 + "source = " + source.getNodeID() + "\n"
-                + "dest = " + dest.getNodeID();
+                + "dest   = " + dest.getNodeID();
     }
 }

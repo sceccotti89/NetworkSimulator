@@ -125,8 +125,9 @@ public class Node
     }
     
     public void update( final GameContainer gc ) {
+    	int mouseX = gc.getInput().getMouseX(), mouseY = gc.getInput().getMouseY();
         for (Link link: links) {
-            link.update( gc );
+            link.update( gc, mouseX, mouseY );
         }
     }
     

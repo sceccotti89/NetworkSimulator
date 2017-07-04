@@ -62,9 +62,11 @@ public class Link
                                                 p4.getX() + centerX, p4.getY() + centerY } );
     }
     
-    public void update( final GameContainer gc ) {
-        int mouseX = gc.getInput().getMouseX();
-        int mouseY = gc.getInput().getMouseY();
+    public void update( final GameContainer gc, final int mouseX, final int mouseY ) {
+    	if (source.getArea().contains( mouseX, mouseY ) || dest.getArea().contains( mouseX, mouseY )) {
+    		return;
+    	}
+    	
     	if (areaRotated.contains( mouseX, mouseY )) {
     	    NetworkDisplay.info.setAttributes( gc.getGraphics(), toString(), mouseX + offset, mouseY + offset );
         }
