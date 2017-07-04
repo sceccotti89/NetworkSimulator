@@ -15,7 +15,7 @@ public class OptionBar implements AnimationInterface
 {
     private Rectangle barOptions = new Rectangle( 0, 0, 800, 20 );
     
-    private SimpleButton file, options;
+    private SimpleButton file, options, edit;
     
     private float width, height;
     
@@ -23,7 +23,7 @@ public class OptionBar implements AnimationInterface
 
     private int mouseX, mouseY;
     
-    private String FILE = "File", OPTIONS = "Options";
+    private String FILE = "File", OPTIONS = "Options", EDIT = "edit";
     
     private boolean mouseDown;
     
@@ -36,9 +36,11 @@ public class OptionBar implements AnimationInterface
         
         file    = new SimpleButton( 0, 0, width, height, FILE, Color.gray, 0, gc );
         options = new SimpleButton( file.getMaxX(), 0, width, height, OPTIONS, Color.gray, 1, gc );
+        edit    = new SimpleButton( options.getMaxX(), 0, width, height, EDIT, Color.gray, 1, gc );
         
         buttons.add( file );
         buttons.add( options );
+        buttons.add( edit );
     }
     
     public float getMaxY() {
@@ -76,6 +78,8 @@ public class OptionBar implements AnimationInterface
                             ;
                         } else if (button.getName().equals( OPTIONS )) {
                             ;
+                        } else if (button.getName().equals( EDIT )) {
+                            ; // TODO COMPLETARE QUESTA PARTE (L'UNICA INTERESSANTE PER ORA)
                         }
                     }
                 }

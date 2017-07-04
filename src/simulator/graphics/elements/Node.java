@@ -21,6 +21,7 @@ public class Node
     final private String name;
     
     private List<Link> links;
+	private int mouseX, mouseY;
     
     public Node( final float x, final float y, final long nodeID, final String name, final long delay, final Color color )
     {
@@ -125,8 +126,9 @@ public class Node
     }
     
     public void update( final GameContainer gc ) {
-    	int mouseX = gc.getInput().getMouseX();
-    	int mouseY = gc.getInput().getMouseY();
+    	mouseX = gc.getInput().getMouseX();
+    	mouseY = gc.getInput().getMouseY();
+    	
         for (Link link: links) {
             link.update( gc, mouseX, mouseY );
         }

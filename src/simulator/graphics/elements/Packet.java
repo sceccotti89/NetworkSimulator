@@ -37,6 +37,8 @@ public class Packet implements Comparable<Packet>
     private final int limit = 1000000;
 
 	private String measure;
+
+	private int mouseX, mouseY;
     
     public Packet( final Node source, final Node dest,
                    final Color color,
@@ -171,8 +173,8 @@ public class Packet implements Comparable<Packet>
     
     public void update( final GameContainer gc, final long time, final boolean update )
     {
-    	int mouseX = gc.getInput().getMouseX();
-    	int mouseY = gc.getInput().getMouseY();
+    	mouseX = gc.getInput().getMouseX();
+    	mouseY = gc.getInput().getMouseY();
     	
         if (time >= endTime) {
             active = false;
