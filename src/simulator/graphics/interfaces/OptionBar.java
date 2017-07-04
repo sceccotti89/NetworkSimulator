@@ -79,7 +79,7 @@ public class OptionBar implements AnimationInterface
                         } else if (button.getName().equals( OPTIONS )) {
                             ;
                         } else if (button.getName().equals( EDIT )) {
-                            ; // TODO COMPLETARE QUESTA PARTE (L'UNICA INTERESSANTE PER ORA)
+                            nd.setNodeSelectable(); // TODO COMPLETARE QUESTA PARTE (L'UNICA INTERESSANTE PER ORA)
                         }
                     }
                 }

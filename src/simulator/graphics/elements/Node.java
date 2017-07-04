@@ -22,6 +22,7 @@ public class Node
     
     private List<Link> links;
 	private int mouseX, mouseY;
+	private boolean selectable;
     
     public Node( final float x, final float y, final long nodeID, final String name, final long delay, final Color color )
     {
@@ -123,6 +124,10 @@ public class Node
     
     public String getName() {
         return name;
+    }
+    
+    public void setSelectable( boolean val ) {
+    	selectable = true;
     }
     
     public void update( final GameContainer gc ) {
