@@ -8,6 +8,7 @@ import org.newdawn.slick.Font;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
+import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Circle;
 
@@ -152,6 +153,12 @@ public class Node
         
         if (selectable) {
             circleDashed.setRotation( ++angle % 360 );
+            
+        	if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
+                if (node.contains( mouseX, mouseY )) {
+                	node.setLocation( mouseX - ray, mouseY - ray );
+                }
+        	}
         }
     }
     
