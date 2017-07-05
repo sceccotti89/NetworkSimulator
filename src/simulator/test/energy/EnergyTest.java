@@ -367,7 +367,7 @@ public class EnergyTest
         */
         
         NetworkTopology net = new NetworkTopology( "Topology/Topology_multicore.json" );
-        net.setTrackEvents( "./Results/packets2.txt" );
+        net.setTrackingEvent( "./Results/packets2.txt" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );

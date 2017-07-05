@@ -126,7 +126,7 @@ public class Simulator
     }
     
     public void trackEvents( final String eventsFile, final long netID ) throws FileNotFoundException {
-        _networks.get( netID ).setTrackEvents( eventsFile );
+        _networks.get( netID ).setTrackingEvent( eventsFile );
     }
     
     public void start() {

@@ -272,7 +272,7 @@ public class NetworkTopology
     /**
      * Asks the network to track the incoming event, as a string message.</br>
      * The given message will be saved on file only if a previous call to the method
-     * {@linkplain #setTrackEvents(String)} is done.
+     * {@linkplain #setTrackingEvent(String)} is done.
      * 
      * @param message    the input message.
     */
@@ -287,7 +287,7 @@ public class NetworkTopology
      * 
      * @param eventsFile    name of the file.
     */
-    public void setTrackEvents( final String eventsFile ) throws FileNotFoundException {
+    public void setTrackingEvent( final String eventsFile ) throws FileNotFoundException {
         eventsWriter = new PrintWriter( eventsFile );
     }
 
