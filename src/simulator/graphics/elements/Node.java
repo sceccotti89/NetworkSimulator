@@ -48,7 +48,7 @@ public class Node
     }
     
     public void Init() throws SlickException {
-    	circleDashed = new Image( "./data/Image/Cerchio.png" );
+    	circleDashed = new Image( "./data/Image/Circle.png" );
         circleDashed.setCenterOfRotation( node.getCenterX(), node.getCenterY() );
     }
     
