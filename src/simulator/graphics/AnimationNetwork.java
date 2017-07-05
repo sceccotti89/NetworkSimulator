@@ -149,10 +149,10 @@ public class AnimationNetwork extends BasicGame
                                  link.getString( NetworkLink.LINK_TYPE ) :
                                  NetworkLink.UNIDIRECTIONAL;
             
-            addLink( fromId, destId, bandwidth, delay );
+            addLink( fromId, destId, bandwidth, delay, linkType );
             
             if(linkType.equals( NetworkLink.BIDIRECTIONAL )) {
-                addLink( destId, fromId, bandwidth, delay );
+                addLink( destId, fromId, bandwidth, delay, linkType );
             }
         }
         
@@ -185,9 +185,9 @@ public class AnimationNetwork extends BasicGame
         packets.add( packet );
     }
     
-    public void addLink( final long source, final long dest, final double bandwidth, final long delay ) {
+    public void addLink( final long source, final long dest, final double bandwidth, final long delay, final String type ) {
         Node node1 = getNode( source ), node2 = getNode( dest );
-        node1.addLink( node2, node1.getCenterX(), node1.getCenterY(), node2.getCenterX(), node2.getCenterY(), width, height );
+        node1.addLink( node2, node1.getCenterX(), node1.getCenterY(), node2.getCenterX(), node2.getCenterY(), width, height, type );
     }
     
     private Node getNode( final long nodeID )

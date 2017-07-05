@@ -28,13 +28,17 @@ public class Link
     
     private Node source, dest;
     
+    private String type;
+    
     public Link( final Node source, final Node dest,
                  float x1, float y1, float x2, float y2,
-                 float angle, final int width, final int height ) {
+                 float angle, final int width, final int height,
+                 final String type) {
         
         this.source = source;
         this.dest = dest;
         this.angle = angle;
+        this.type = type;
         
         lenght = calculateLenght( x1, y1, x2, y2 );
 
@@ -52,8 +56,8 @@ public class Link
     
     private void rotateLink() {
     	final float centerX = source.getCenterX(), centerY = source.getCenterY();
-        Point p1 = worldToView( area.getX() - centerX,    area.getY() - centerY, angle );
-        Point p2 = worldToView( area.getMaxX() - centerX, area.getY() - centerY, angle );
+        Point p1 = worldToView( area.getX() - centerX,    area.getY() - centerY,    angle );
+        Point p2 = worldToView( area.getMaxX() - centerX, area.getY() - centerY,    angle );
         Point p3 = worldToView( area.getMaxX() - centerX, area.getMaxY() - centerY, angle );
         Point p4 = worldToView( area.getX() - centerX,    area.getMaxY() - centerY, angle );
         areaRotated = new Polygon( new float[]{ p1.getX() + centerX, p1.getY() + centerY,
@@ -72,6 +76,16 @@ public class Link
         }
     }
     
+    public void setPosition( final Node node, final float angle ) {
+    	this.source = node;
+    	
+    	lenght = calculateLenght( source.getCenterX(), source.getCenterY(), dest.getCenterX(), dest.getCenterY() );
+    	area = new Rectangle( source.getCenterX(), source.getCenterY() - offset, lenght, area.getHeight() );
+    	
+    	this.angle = angle;
+    	rotateLink();
+    }
+    
     public Node getDestNode() {
         return dest;
     }
@@ -86,6 +100,10 @@ public class Link
     
     public float getAngle() {
         return angle;
+    }
+    
+    public String getType() {
+    	return type;
     }
     
     public void render( final Graphics g ) {

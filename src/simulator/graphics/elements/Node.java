@@ -12,6 +12,8 @@ import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Circle;
 
+import simulator.topology.NetworkLink;
+
 public class Node
 {
     private long nodeID;
@@ -113,8 +115,8 @@ public class Node
         return angleValutation( x1, y1, x2, y2 );
     }
     
-    public void addLink( final Node dest, final float x1, final float y1, final float x2, final float y2, final int width, final int height ) {
-        links.add( new Link( this, dest, x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ), width, height ) );
+    public void addLink( final Node dest, final float x1, final float y1, final float x2, final float y2, final int width, final int height, final String type ) {
+        links.add( new Link( this, dest, x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ), width, height, type ) );
     }
     
     public Float getLinkLenght( final long destID ) {
@@ -143,6 +145,15 @@ public class Node
     	selectable = !selectable;
     }
     
+    public void setLinkPosition( Link link, Node source, Node dest ) {
+    	for(Link linked: links) {
+    		if (linked.getDestNode() == source && link.getDestNode() == dest) {
+    			float angle = angleValutation( node.getCenterX(), node.getCenterY(), linked.getDestNode().getCenterX(), linked.getDestNode().getCenterY() );
+        		linked.setPosition( this, angle );
+    		}
+    	}
+    }
+    
     public void update( final GameContainer gc ) {
     	mouseX = gc.getInput().getMouseX();
     	mouseY = gc.getInput().getMouseY();
@@ -156,6 +167,14 @@ public class Node
             
         	if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
                 if (node.contains( mouseX, mouseY )) {
+                	for(Link link: links) {
+                		if (link.getType().equals( NetworkLink.BIDIRECTIONAL )) {
+                			link.getDestNode().setLinkPosition( link, this, link.getDestNode() );
+                		}
+                		
+                		float angle = angleValutation( node.getCenterX(), node.getCenterY(), link.getDestNode().getCenterX(), link.getDestNode().getCenterY() );
+                		link.setPosition( this, angle );
+                	}
                 	node.setLocation( mouseX - ray, mouseY - ray );
                 }
         	}
