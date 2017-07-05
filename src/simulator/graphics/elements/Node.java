@@ -26,7 +26,8 @@ public class Node
     final private String name;
     
     private List<Link> links;
-	private int mouseX, mouseY;
+	private int mouseX = 0, mouseY = 0;
+	private int moveX = 0, moveY = 0;
 	
 	private boolean selectable;
 	
@@ -155,6 +156,7 @@ public class Node
     }
     
     public void update( final GameContainer gc ) {
+    	moveX = mouseX; moveY = mouseY;
     	mouseX = gc.getInput().getMouseX();
     	mouseY = gc.getInput().getMouseY();
     	
@@ -175,10 +177,12 @@ public class Node
                 		float angle = angleValutation( node.getCenterX(), node.getCenterY(), link.getDestNode().getCenterX(), link.getDestNode().getCenterY() );
                 		link.setPosition( this, angle );
                 	}
-                	node.setLocation( mouseX - ray, mouseY - ray );
+                	node.setLocation( getCenterX() + mouseX - moveX - ray, getCenterY() + mouseY - moveY - ray );
                 }
         	}
         }
+        
+        moveX = mouseX; moveY = mouseY;
     }
     
     public void drawLinks( final Graphics g ) {
