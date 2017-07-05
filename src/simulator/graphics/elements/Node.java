@@ -146,9 +146,9 @@ public class Node
     	selectable = !selectable;
     }
     
-    public void setLinkPosition( Link link, Node source, Node dest ) {
+    public void setLinkPosition( Link link, Node source ) {
     	for(Link linked: links) {
-    		if (linked.getDestNode() == source && link.getDestNode() == dest) {
+    		if (linked.getDestNode() == source) {
     			float angle = angleValutation( node.getCenterX(), node.getCenterY(), linked.getDestNode().getCenterX(), linked.getDestNode().getCenterY() );
         		linked.setPosition( this, angle );
     		}
@@ -170,14 +170,14 @@ public class Node
         	if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
                 if (node.contains( mouseX, mouseY )) {
                 	for(Link link: links) {
-                		if (link.getType().equals( NetworkLink.BIDIRECTIONAL )) {
-                			link.getDestNode().setLinkPosition( link, this, link.getDestNode() );
-                		}
+                		setLinkPosition( link, link.getDestNode() );
                 		
-                		float angle = angleValutation( node.getCenterX(), node.getCenterY(), link.getDestNode().getCenterX(), link.getDestNode().getCenterY() );
-                		link.setPosition( this, angle );
+                		if (link.getType().equals( NetworkLink.BIDIRECTIONAL )) {
+                			link.getDestNode().setLinkPosition( link, this );
+                		}
                 	}
-                	node.setLocation( getCenterX() + mouseX - moveX - ray, getCenterY() + mouseY - moveY - ray );
+                	
+                	node.setLocation( getCenterX() - ray + mouseX - moveX, getCenterY() - ray + mouseY - moveY );
                 }
         	}
         }
