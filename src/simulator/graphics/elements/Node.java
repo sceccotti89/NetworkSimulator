@@ -116,8 +116,8 @@ public class Node
         return angleValutation( x1, y1, x2, y2 );
     }
     
-    public void addLink( final Node dest, final float x1, final float y1, final float x2, final float y2, final int width, final int height, final String type ) {
-        links.add( new Link( this, dest, x1, y1, x2, y2, calculateAngle( x1, y1, x2, y2 ), width, height, type ) );
+    public void addLink( final Node dest, final float x2, final float y2, final int width, final int height, final String type ) {
+        links.add( new Link( this, dest, getCenterX(), getCenterY(), x2, y2, calculateAngle( getCenterX(), getCenterY(), x2, y2 ), width, height, type ) );
     }
     
     public Float getLinkLenght( final long destID ) {
