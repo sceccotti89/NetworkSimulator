@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import simulator.core.Agent;
 import simulator.events.EventHandler.EventType;
+import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
 import simulator.topology.NetworkLink;
 import simulator.topology.NetworkNode;
@@ -181,7 +182,7 @@ public abstract class Event implements Comparable<Event>
                     _time.addTime( link.getTprop(), TimeUnit.MICROSECONDS );
                     
                     // Track the current event.
-                    net.trackEvent( nodeId + " " + startTime + " " + nextNode + " " + _time );
+                    net.trackEvent( nodeId + " " + startTime + " " + nextNode + " " + _time + " " + (this instanceof RequestEvent ? 1 : -1) );
                     
                     // Push-back the modified event into the queue.
                     evtScheduler.schedule( this );
