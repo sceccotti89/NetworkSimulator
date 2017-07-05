@@ -24,6 +24,7 @@ public class Link
         
     private float offset;
     
+    private final int width;
     private float lenght;
     
     private Node source, dest;
@@ -31,19 +32,19 @@ public class Link
     private String type;
     
     public Link( final Node source, final Node dest,
-                 float x1, float y1, float x2, float y2,
                  float angle, final int width, final int height,
                  final String type) {
         
+    	this.width = width;
         this.source = source;
         this.dest = dest;
         this.angle = angle;
         this.type = type;
         
-        lenght = calculateLenght( x1, y1, x2, y2 );
+        lenght = calculateLenght( source.getCenterX(), source.getCenterY(), dest.getCenterX(), dest.getCenterY() );
 
         offset = width/100;
-        area = new Rectangle( x1, y1 - offset, lenght, height*10/375 );
+        area = new Rectangle( source.getCenterX(), source.getCenterY() - offset, lenght, height*10/375 );
         offset = width/80;
         
         rotateLink();
@@ -78,9 +79,11 @@ public class Link
     
     public void setPosition( final Node node, final float angle ) {
     	this.source = node;
-    	
+
+        offset = width/100;
     	lenght = calculateLenght( source.getCenterX(), source.getCenterY(), dest.getCenterX(), dest.getCenterY() );
     	area = new Rectangle( source.getCenterX(), source.getCenterY() - offset, lenght, area.getHeight() );
+    	offset = width/80;
     	
     	this.angle = angle;
     	rotateLink();

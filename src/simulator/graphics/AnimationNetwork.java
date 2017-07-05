@@ -186,8 +186,8 @@ public class AnimationNetwork extends BasicGame
     }
     
     public void addLink( final long source, final long dest, final double bandwidth, final long delay, final String type ) {
-        Node node1 = getNode( source ), node2 = getNode( dest );
-        node1.addLink( node2, node2.getCenterX(), node2.getCenterY(), width, height, type );
+        Node node1 = getNode( source );
+        node1.addLink( getNode( dest ), width, height, type );
     }
     
     private Node getNode( final long nodeID )
