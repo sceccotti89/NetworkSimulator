@@ -5,6 +5,7 @@ import java.util.List;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
 import simulator.graphics.elements.Info;
@@ -67,11 +68,17 @@ public class NetworkDisplay
         }
     }
     
+    public void nodeInit() throws SlickException {
+    	for (Node node: nodes) {
+    		node.Init();
+    	}
+    }
+    
     // TODO IMPOSTARE CHE I NODI POSSANO ESSERE SELEZIONATI E SPOSTATI
     // MA SOLO PRIMA DI INIZIARE UNA SIMULAZIONE
     public void setNodeSelectable() {
     	for (Node node: nodes) {
-    		node.setSelectable( true );
+    		node.setSelectable();
     	}
     }
     
@@ -119,7 +126,7 @@ public class NetworkDisplay
         resetAnimation();
     }
     
-    public void update( final GameContainer gc, final AnimationManager am )
+    public void update( final GameContainer gc, final AnimationManager am ) throws SlickException
     {
         if (timer > timeSimulation) {
             stopAnimation();
@@ -147,7 +154,7 @@ public class NetworkDisplay
         }
     }
     
-    public void render( final GameContainer gc )
+    public void render( final GameContainer gc ) throws SlickException
     {
         Graphics g = gc.getGraphics();
         

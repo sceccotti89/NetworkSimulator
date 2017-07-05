@@ -99,7 +99,7 @@ public class AnimationNetwork extends BasicGame
         System.out.println( "Loading completed." );
     }
     
-    public void loadNetwork( final String filename ) throws IOException
+    public void loadNetwork( final String filename ) throws IOException, SlickException
     {
         /** File structure:
          * 
@@ -159,7 +159,7 @@ public class AnimationNetwork extends BasicGame
         br.close();
     }
     
-    public void loadSimulation( final String networkFile, final String packetFile ) throws IOException
+    public void loadSimulation( final String networkFile, final String packetFile ) throws IOException, SlickException
     {
         loadNetwork( networkFile );
         loadPackets( packetFile );
@@ -174,7 +174,7 @@ public class AnimationNetwork extends BasicGame
         ta = new TimeAnimation( nd.getMaxY(), width, height, timeDuration );
     }
     
-    public void addNode( final int x, final int y, final long nodeID, final String name, final long delay, final Color color ) {
+    public void addNode( final int x, final int y, final long nodeID, final String name, final long delay, final Color color ) throws SlickException {
         Node node = new Node( x, y, nodeID, name, delay, color );
         nodes.add( node );
     }
@@ -205,6 +205,8 @@ public class AnimationNetwork extends BasicGame
     public void update( final GameContainer gc, final int delta ) throws SlickException
     {
         leftMouse = gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
+        
+        nd.nodeInit();
 
         nd.update( gc, am );
         ob.update( delta, gc, leftMouse, nd );

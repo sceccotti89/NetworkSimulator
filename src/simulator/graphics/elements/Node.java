@@ -7,6 +7,8 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.Font;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Image;
+import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Circle;
 
 public class Node
@@ -22,9 +24,14 @@ public class Node
     
     private List<Link> links;
 	private int mouseX, mouseY;
+	
 	private boolean selectable;
+	
+	private Image circleDashed;
+	
+	private int angle = 0;
     
-    public Node( final float x, final float y, final long nodeID, final String name, final long delay, final Color color )
+    public Node( final float x, final float y, final long nodeID, final String name, final long delay, final Color color ) throws SlickException
     {
         this.nodeID = nodeID;
         this.color = color;
@@ -35,6 +42,11 @@ public class Node
         node = new Circle( x, y, ray );
         
         links = new ArrayList<>();
+    }
+    
+    public void Init() throws SlickException {
+    	circleDashed = new Image( "./data/Image/Cerchio.png" );
+        circleDashed.setCenterOfRotation( node.getCenterX(), node.getCenterY() );
     }
     
     public long getNodeID() {
@@ -126,8 +138,8 @@ public class Node
         return name;
     }
     
-    public void setSelectable( boolean val ) {
-    	selectable = true;
+    public void setSelectable() {
+    	selectable = !selectable;
     }
     
     public void update( final GameContainer gc ) {
@@ -136,6 +148,10 @@ public class Node
     	
         for (Link link: links) {
             link.update( gc, mouseX, mouseY );
+        }
+        
+        if (selectable) {
+            circleDashed.setRotation( ++angle % 360 );
         }
     }
     
@@ -155,5 +171,9 @@ public class Node
         Font f = g.getFont();
         g.setColor( Color.white );
         g.drawString( nodeID + "", node.getCenterX() - f.getWidth( nodeID + "" )/2, node.getCenterY() - f.getHeight( nodeID + "" )/2 );
+        
+        if (selectable && circleDashed != null) {
+        	g.drawImage( circleDashed, node.getX(), node.getY() );
+        }
     }
 }
