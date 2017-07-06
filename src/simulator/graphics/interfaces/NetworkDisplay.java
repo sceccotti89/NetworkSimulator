@@ -146,14 +146,16 @@ public class NetworkDisplay
             node.update( gc );
         }
         
+        for (Packet packet: packets) {
+            if (nodesChanged) {
+            	packet.setPosition( packet.getNodeSource() );
+            }
+        }
+        
         for (int i = index; i < packetSize; i++) {
             Packet packet = packets.get( i );
             if (packet.getStartTime() > timer)
                 break;
-            
-            if (nodesChanged) {
-            	packet.setPosition( packet.getNodeSource() );
-            }
             
             packet.update( gc, timer, start && !pause );
             if (!packet.isActive() && i == index) {
