@@ -156,7 +156,8 @@ public class Node
     }
     
     public void update( final GameContainer gc ) {
-    	moveX = mouseX; moveY = mouseY;
+    	moveX = mouseX;
+    	moveY = mouseY;
     	mouseX = gc.getInput().getMouseX();
     	mouseY = gc.getInput().getMouseY();
     	
@@ -182,7 +183,8 @@ public class Node
         	}
         }
         
-        moveX = mouseX; moveY = mouseY;
+        moveX = mouseX;
+        moveY = mouseY;
     }
     
     public void drawLinks( final Graphics g ) {
