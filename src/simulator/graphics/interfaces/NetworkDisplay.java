@@ -80,8 +80,6 @@ public class NetworkDisplay
     	}
     }
     
-    // TODO IMPOSTARE CHE I NODI POSSANO ESSERE SELEZIONATI E SPOSTATI
-    // SOLO PRIMA DI INIZIARE UNA SIMULAZIONE
     public void setNodeSelectable() {
     	nodesChanged = !nodesChanged;
     	
