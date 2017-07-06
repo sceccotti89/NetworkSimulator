@@ -105,7 +105,7 @@ public class NetworkDisplay
     
     public void setPacketSpeed() {
         for (Packet packet: packets) {
-            packet.setSpeed( AnimationManager.frames );
+            packet.setSpeed();
         }
     }
     

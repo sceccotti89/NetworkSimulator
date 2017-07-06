@@ -7,6 +7,7 @@ import org.newdawn.slick.geom.Point;
 import org.newdawn.slick.geom.Polygon;
 import org.newdawn.slick.geom.Rectangle;
 
+import simulator.graphics.interfaces.AnimationManager;
 import simulator.graphics.interfaces.NetworkDisplay;
 
 public class Packet implements Comparable<Packet>
@@ -88,6 +89,8 @@ public class Packet implements Comparable<Packet>
     	this.source = source;
     	
     	init();
+    	
+    	setSpeed( );
     }
     
     public void setPosition( final long time )
@@ -100,8 +103,8 @@ public class Packet implements Comparable<Packet>
         rotatePacket();
     }
     
-    public void setSpeed( final int frames ) {
-        speed = (linkLenght / (endTime - startTime)) * frames;
+    public void setSpeed() {
+        speed = (linkLenght / (endTime - startTime)) * AnimationManager.frames;
     }
     
     public boolean isActive() {
