@@ -14,7 +14,7 @@ import simulator.graphics.dataButton.ArrowButton;
 
 public class TimeAnimation implements AnimationInterface
 {
-    private Rectangle barTiming, timing, cursor;
+    private final Rectangle barTiming, timing, cursor;
     private long timer, timeDuration;
     
     private int tick = 0, moving = 1, index = -1;
@@ -23,17 +23,17 @@ public class TimeAnimation implements AnimationInterface
     
     private final int limit = 1000000;
     
-    private float startTimingX;
+    private final float startTimingX;
     
-    private float widthCursor;
+    private final float widthCursor;
     
     private final float height;
     private final float offsetH;
     
-    private Rectangle mouse;
+    private final Rectangle mouse;
     
-    private ArrowButton timeOn, timeBack;
-    private List<ArrowButton> arrows;
+    private final ArrowButton timeOn, timeBack;
+    private final List<ArrowButton> arrows;
     
     private boolean buttonHit = false, timingHit = false;
     

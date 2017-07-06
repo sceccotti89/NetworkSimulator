@@ -84,7 +84,7 @@ public class Packet implements Comparable<Packet>
     	return dest;
     }
     
-    public void setPosition( Node source ) {
+    public void setPosition( final Node source ) {
     	this.source = source;
     	
     	init();

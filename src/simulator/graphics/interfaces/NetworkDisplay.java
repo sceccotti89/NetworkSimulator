@@ -154,6 +154,7 @@ public class NetworkDisplay
             if (nodesChanged) {
             	packet.setPosition( packet.getNodeSource() );
             }
+            
             packet.update( gc, timer, start && !pause );
             if (!packet.isActive() && i == index) {
                 index++;
