@@ -22,15 +22,17 @@ public class Packet implements Comparable<Packet>
     
     private float speed;
     
-    private final float angle;
+    private float angle;
     
     private final int width, height;
     
     private float linkLenght, distance;
     
-    private final Node source, dest;
+    private Node source;
+
+	private final Node dest;
     
-    private final float startX, startY;
+    private float startX, startY;
 
     private final int offset, type;
     
@@ -59,20 +61,33 @@ public class Packet implements Comparable<Packet>
         
         offset = width/80;
         
+        init();
+    }
+    
+    public void init()
+    {
         angle = source.getAngle( dest.getNodeID() );
         
         linkLenght = source.getLinkLenght( dest.getNodeID() ) - 2 * source.getRay();
         
         startX = source.getCenterX() + source.getRay();
         startY = source.getCenterY() - height/120;
-        
-        init();
-    }
-    
-    public void init()
-    {
         area = new Rectangle( startX, startY, width/80, height/60 );
         setPosition( startTime );
+    }
+    
+    public Node getNodeSource() {
+    	return source;
+    }
+    
+    public Node getNodeDest() {
+    	return dest;
+    }
+    
+    public void setPosition( Node source ) {
+    	this.source = source;
+    	
+    	init();
     }
     
     public void setPosition( final long time )

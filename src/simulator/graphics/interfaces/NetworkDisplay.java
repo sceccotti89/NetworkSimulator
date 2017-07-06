@@ -27,6 +27,8 @@ public class NetworkDisplay
     
     public static Info info;
     
+    private boolean nodesChanged = false;
+    
     public NetworkDisplay( final float width, final float height, final float startY, final List<Node> nodes, final List<Packet> packets, final long timeSimulation )
     {
         zone = new Rectangle( 0, startY, width, height );
@@ -77,6 +79,8 @@ public class NetworkDisplay
     // TODO IMPOSTARE CHE I NODI POSSANO ESSERE SELEZIONATI E SPOSTATI
     // SOLO PRIMA DI INIZIARE UNA SIMULAZIONE
     public void setNodeSelectable() {
+    	nodesChanged = !nodesChanged;
+    	
     	for (Node node: nodes) {
     		node.setSelectable();
     	}
@@ -147,6 +151,9 @@ public class NetworkDisplay
             if (packet.getStartTime() > timer)
                 break;
             
+            if (nodesChanged) {
+            	packet.setPosition( packet.getNodeSource() );
+            }
             packet.update( gc, timer, start && !pause );
             if (!packet.isActive() && i == index) {
                 index++;
