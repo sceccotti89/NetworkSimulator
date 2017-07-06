@@ -97,11 +97,11 @@ public class TimeAnimation implements AnimationInterface
     	nd.setTimeSimulation( timer );
     }
     
-    private String setInfo( long time ) {
+    private String setInfo( long time, final long value ) {
     	if (timeDuration >= limit) {
     		time = time / limit;
     	} else {
-    		return timer + "µs / " + timeDuration + "µs";
+    		return time + "µs";
     	}
     	
     	long h = time/3600, m = (time - h*3600)/60, s = time - h*3600 - m*60;
@@ -166,7 +166,7 @@ public class TimeAnimation implements AnimationInterface
     	}
         
         if (timing.intersects( mouse ) || timingHit) {
-        	String info = setInfo( getTime( mouseX ) );
+        	String info = setInfo( getTime( mouseX ), timer );
         	
             float fontW = g.getFont().getWidth( info );
             NetworkDisplay.info.setAttributes( g, info, Math.max( Math.min( mouseX, timing.getMaxX() ), startTimingX ) - fontW/2, timing.getMaxY() + offsetH );
@@ -189,10 +189,7 @@ public class TimeAnimation implements AnimationInterface
         g.setColor( Color.white );
         g.fill( cursor );
         
-        String info = setInfo( timer );
-        if (timeDuration >= limit) {
-        	info = info + " / " + setInfo( timeDuration );
-        }
+        String info = setInfo( timer, 0 ) + " / " + setInfo( timeDuration, 0 );
         
         int fWidth = g.getFont().getWidth( info ), fHeight = g.getFont().getHeight( info );
         g.drawString( info, timing.getCenterX() - fWidth/2, timing.getMaxY() + (height - timing.getMaxY() - fHeight)/2 );
