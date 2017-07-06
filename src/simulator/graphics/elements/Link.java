@@ -16,8 +16,7 @@ public class Link
     private float angle;
     
     private double bandwidth;
-    
-    private int delay;
+    private long delay;
     
     private Rectangle area;
     private Polygon areaRotated;
@@ -31,6 +30,7 @@ public class Link
     private String type;
     
     public Link( final Node source, final Node dest,
+                 final double bandwidth, final long delay,
                  float angle, final int width, final int height,
                  final String type) {
         
@@ -38,6 +38,9 @@ public class Link
         this.dest = dest;
         this.angle = angle;
         this.type = type;
+        
+        this.bandwidth = bandwidth;
+        this.delay = delay;
         
         lenght = calculateLenght( source.getCenterX(), source.getCenterY(), dest.getCenterX(), dest.getCenterY() );
 
@@ -111,7 +114,7 @@ public class Link
     
     @Override
     public String toString() {
-        return "bandwidth = " + bandwidth + "Mb/s, "
-                + "delay = " + delay + "ms";
+        return "bandwidth = " + bandwidth + "Mb/s, " +
+               "delay = " + delay + "ms";
     }
 }

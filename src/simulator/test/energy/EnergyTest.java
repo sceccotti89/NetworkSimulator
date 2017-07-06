@@ -19,6 +19,7 @@ import simulator.events.EventHandler;
 import simulator.events.Packet;
 import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
+import simulator.graphics.AnimationNetwork;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
 import simulator.test.energy.CPUEnergyModel.Mode;
@@ -327,7 +328,7 @@ public class EnergyTest
     
     
     
-    public static void main( final String[] args ) throws IOException
+    public static void main( final String[] args ) throws Exception
     {
         Utils.VERBOSE = false;
         
@@ -338,7 +339,7 @@ public class EnergyTest
         //execute( null, 0 );
     }
     
-    private static void execute( final Mode mode, final long timeBudget ) throws IOException
+    private static void execute( final Mode mode, final long timeBudget ) throws Exception
     {
         CPUEnergyModel model;
         if (mode == null)
@@ -347,13 +348,92 @@ public class EnergyTest
             model = new PESOSmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" );
         model.loadModel();
         
-        testDistributedSingleNode( model );
+        //testDistributedSingleNode( model );
         //testDistributedMultipleNodes( model );
         //testNodeMulticore( model );
         //testDistributedMulticore( model );
+        testNetworkAnimation( model );
     }
     
-    public static void testDistributedSingleNode( final CPUEnergyModel model ) throws IOException
+    public static void testNetworkAnimation( final CPUEnergyModel model ) throws Exception
+    {
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_test.json" );
+        net.setTrackingEvent( "./Results/packets.txt" );
+        System.out.println( net.toString() );
+        
+        Simulator sim = new Simulator( net );
+        
+        EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.MEGABYTE ),
+                                                        new Packet( 20, SizeUnit.MEGABYTE ),
+                                                        model );
+        Agent client = new ClientAgent( 0, generator );
+        net.addAgent( client );
+        
+        EventGenerator anyGen = new AnycastGenerator( Time.INFINITE,
+                                                      new Packet( 20, SizeUnit.MEGABYTE ),
+                                                      new Packet( 20, SizeUnit.MEGABYTE ) );
+        Agent switchAgent = new SwitchAgent( 1, anyGen );
+        net.addAgent( switchAgent );
+        
+        String modelType = model.getModelType( true );
+        
+        client.connect( switchAgent );
+        List<EnergyCPU> cpus = new ArrayList<>( CPU_CORES );
+        Plotter plotter = new Plotter( model.getModelType( false ), 800, 600 );
+        for (int i = 0; i < CPU_CORES; i++) {
+            EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/PESOS/cpu_frequencies.txt" );
+            cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
+            cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
+            cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
+            cpu.setModel( model );
+            cpus.add( cpu );
+            
+            EventGenerator sink = new SinkGenerator( Time.INFINITE,
+                                                     new Packet( 20, SizeUnit.MEGABYTE ),
+                                                     new Packet( 20, SizeUnit.MEGABYTE ) );
+            Agent agentCore = new CoreAgent( 2 + i, sink );
+            agentCore.addDevice( cpu );
+            net.addAgent( agentCore );
+            
+            switchAgent.connect( agentCore );
+            
+            plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), null, "Node " + i + " " + model.getModelType( true ) );
+        }
+        
+        plotter.setAxisName( "Time (h)", "Energy (J)" );
+        plotter.setTicks( Axis.Y, 10 );
+        plotter.setTicks( Axis.X, 24, 2 );
+        plotter.setRange( Axis.Y, 0, 1800 );
+        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
+        plotter.setVisible( true );
+        
+        sim.start( new Time( 1, TimeUnit.HOURS ) );
+        
+        sim.stop();
+        
+        double totalEnergy = 0;
+        double totalIdleEnergy = 0;
+        int totalQueries = 0;
+        for (int i = 0; i < CPU_CORES; i++) {
+            EnergyCPU cpu = cpus.get( i );
+            totalEnergy += cpu.getResultSampled( Global.ENERGY_SAMPLING );
+            totalIdleEnergy += cpu.getResultSampled( Global.IDLE_ENERGY_SAMPLING );
+            Utils.LOGGER.info( "CPU " + i + ", Energy consumed: " + cpu.getResultSampled( Global.ENERGY_SAMPLING ) + "J" );
+            totalQueries += cpu.getExecutedQueries();
+        }
+        Utils.LOGGER.info( model.getModelType( false ) + " - Total energy:      " + totalEnergy + "J" );
+        Utils.LOGGER.info( model.getModelType( false ) + " - Total idle energy: " + totalIdleEnergy + "J" );
+        System.out.println( "QUERIES: " + totalQueries );
+        
+        // Show the animation.
+        AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );
+        an.loadSimulation( "Topology/Topology_test.json", "./Results/packets2.txt" );
+        an.setFrameRate( 90 );
+        an.setForceExit( false );
+        an.start();
+    }
+    
+    public static void testDistributedSingleNode( final CPUEnergyModel model ) throws Exception
     {
         /*
                                    / core0    / core2
@@ -460,6 +540,11 @@ public class EnergyTest
         // TARGET:     790400.000000000
         // SIMULATOR: 1145401.600324196    992317.15024121070    940141.72685316140
         // IDLE:       247582.811710984     94926.56637327410     94926.56637327410
+        
+        AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );
+        an.loadSimulation( "Topology/Topology_multicore.json", "./Results/packets2.txt" );
+        an.setFrameRate( 90 );
+        an.start();
     }
 
     public static void testDistributedMultipleNodes( final CPUEnergyModel model ) throws IOException

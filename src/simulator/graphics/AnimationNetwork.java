@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.BasicGame;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
@@ -42,16 +43,30 @@ public class AnimationNetwork extends BasicGame
     
     private long timeDuration = 0;
 	private final int limit = 1000000;
+	
+	private final AppGameContainer app;
     
-    public AnimationNetwork( final int width, final int height, final String title )
+    public AnimationNetwork( final int width, final int height, final String title ) throws SlickException
     {
         super( title );
+        
+        app = new AppGameContainer( this );
+        app.setDisplayMode( width, height, false );
+        setFrameRate( 30 );
         
         nodes   = new ArrayList<Node>();
         packets = new ArrayList<Packet>();
         
         this.width = width;
         this.height = height;
+    }
+    
+    public void setFrameRate( final int fps ) {
+        app.setTargetFrameRate( fps );
+    }
+    
+    public void setForceExit( final boolean forceExit ) {
+        app.setForceExit( forceExit );
     }
     
     /**
@@ -164,6 +179,10 @@ public class AnimationNetwork extends BasicGame
         loadNetwork( networkFile );
         loadPackets( packetFile );
     }
+    
+    public void start() throws SlickException{
+        app.start();
+    }
 
     @Override
     public void init( final GameContainer gc ) throws SlickException
@@ -187,7 +206,7 @@ public class AnimationNetwork extends BasicGame
     
     public void addLink( final long source, final long dest, final double bandwidth, final long delay, final String type ) {
         Node node1 = getNode( source );
-        node1.addLink( getNode( dest ), width, height, type );
+        node1.addLink( getNode( dest ), bandwidth, delay, width, height, type );
     }
     
     private Node getNode( final long nodeID )
