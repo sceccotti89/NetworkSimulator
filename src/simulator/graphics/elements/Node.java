@@ -155,7 +155,7 @@ public class Node
     	}
     }
     
-    public void update( final GameContainer gc ) {
+    public void update( final GameContainer gc, final int widthSpace, final float startSpaceY, final int heightSpace ) {
     	moveX = mouseX;
     	moveY = mouseY;
     	mouseX = gc.getInput().getMouseX();
@@ -178,7 +178,11 @@ public class Node
                 		}
                 	}
                 	
-                	node.setLocation( getCenterX() - ray + mouseX - moveX, getCenterY() - ray + mouseY - moveY );
+                	// TODO FACCIAMO PRIMA SETX RISPETTANDO I CONFINI
+                	float x = Math.max( Math.min( getCenterX() - ray + mouseX - moveX, widthSpace - ray*2 ), 0 );
+                	float y = Math.max( Math.min( getCenterY() - ray + mouseY - moveY, heightSpace - ray*2 ), startSpaceY );
+                	
+                	node.setLocation( x, y );
                 }
         	}
         }

@@ -19,6 +19,8 @@ public class NetworkDisplay
     private List<Node> nodes;
     private List<Packet> packets;
     
+    private final int width;
+    
     private long timer = 0, timeSimulation;
     
     private boolean start, pause;
@@ -29,15 +31,17 @@ public class NetworkDisplay
     
     private boolean nodesChanged = false;
     
-    public NetworkDisplay( final float width, final float height, final float startY, final List<Node> nodes, final List<Packet> packets, final long timeSimulation )
+    public NetworkDisplay( final int width, final int height, final float startY, final List<Node> nodes, final List<Packet> packets, final long timeSimulation )
     {
-        zone = new Rectangle( 0, startY, width, height );
+    	this.width = width;
         
         this.nodes = nodes;
         
         this.packets = packets;
         
         this.timeSimulation = timeSimulation;
+    	
+        zone = new Rectangle( 0, startY, width, height );
         
         packetSize = packets.size();
         
@@ -143,7 +147,7 @@ public class NetworkDisplay
         info.setVisible( false );
         
         for (Node node: nodes) {
-            node.update( gc );
+            node.update( gc, width, zone.getY(), (int) zone.getMaxY() );
         }
         
         for (Packet packet: packets) {

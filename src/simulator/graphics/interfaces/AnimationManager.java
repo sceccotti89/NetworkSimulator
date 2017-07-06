@@ -22,6 +22,7 @@ public class AnimationManager implements AnimationInterface
     private ImageButton start, stop, pause, plus, minus;
     
     private int mouseX, mouseY;
+    private float startY;
     
     private int index = -1;
     
@@ -39,6 +40,8 @@ public class AnimationManager implements AnimationInterface
     
     public AnimationManager( final GameContainer gc, final float startY, final float widthM, final float heightM ) throws SlickException
     {
+    	this.startY = startY;
+    	
         height = heightM*10/95;
         width  = widthM*10/53;
         float widthFrame = widthM/10;
@@ -71,6 +74,10 @@ public class AnimationManager implements AnimationInterface
         
         frames = Math.min( limit, Math.max( frames + add, 1 ) );
         nd.setPacketSpeed();
+    }
+    
+    public float getStartY() {
+    	return startY;
     }
     
     @Override
