@@ -170,6 +170,7 @@ public class NetworkDisplay
         // Reset the visibility at the very beginning.
         info.setVisible( false );
         
+        // TODO TRASFORMARLO IN METODO
         if (phaseOneNewNode) {
         	if (gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON )) {
         		phaseOneNewNode = false;
@@ -182,28 +183,36 @@ public class NetworkDisplay
         	}
         } else if (phaseTwoNewNode) {
         	for (Node node: nodes) {
-        		if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) && node.checkCollision( gc, mouseX, mouseY )) {
-        			tmpNode.addLink( node, 0, 0, width, height, NetworkLink.UNIDIRECTIONAL );
+        		if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) && node.checkCollision( mouseX, mouseY )) {
+        			if (nodesChanged) {
+        				tmpNode.setSelectable();
+        			}
+        			tmpNode.addLink( node, 0, 0, width, height, NetworkLink.BIDIRECTIONAL );
+        			node.addLink( tmpNode, 0, 0, width, height, NetworkLink.BIDIRECTIONAL );
+        			tmpNode.Init();
         			nodes.add( tmpNode );
         			tmpNode = null;
         			
         			phaseTwoNewNode = false;
-        			gc.getInput().clearMousePressedRecord();
+        			
         			break;
         		}
         	}
         	
         }
         
+        // TODO TRASFORMARLO IN METODO
     	if (nodesChanged) {
     		if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
 	    		if (nodeMoved == null) {
 		            for (Node node: nodes) {
-		            	if (node.checkCollision( gc, mouseX, mouseY )) {
+		            	if (node.checkCollision( mouseX, mouseY )) {
+		            		node.setMoving( true );
 		            		nodeMoved = node;
 		            	}
 		            }
-	    		} else if (!nodeMoved.checkCollision( gc, mouseX, mouseY )) {
+	    		} else if (!nodeMoved.checkCollision( mouseX, mouseY )) {
+	    			nodeMoved.setMoving( false );
 	    			nodeMoved = null;
 	    		}
     		} else if (nodeMoved != null) {

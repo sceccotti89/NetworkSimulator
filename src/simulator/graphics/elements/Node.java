@@ -166,14 +166,8 @@ public class Node
     	moving = val;
     }
     
-    public boolean checkCollision( final GameContainer gc, final int mouseX, final int mouseY ) {
-    	if (!moving) {
-	    	if (node.contains( mouseX,  mouseY )) {
-	    		moving = true;
-	    	}
-    	}
-    	
-    	return moving;
+    public boolean checkCollision( final int mouseX, final int mouseY ) {
+    	return node.contains( mouseX, mouseY );
     }
     
     public void update( final GameContainer gc, final int widthSpace, final float startSpaceY, final int heightSpace, final boolean choose ) {
