@@ -172,6 +172,7 @@ public class NetworkDisplay
         			if (nodesChanged) {
         				tmpNode.setSelectable();
         			}
+        			
         			tmpNode.addLink( node, 0, 0, width, height, NetworkLink.BIDIRECTIONAL );
         			node.addLink( tmpNode, 0, 0, width, height, NetworkLink.BIDIRECTIONAL );
         			tmpNode.Init();
