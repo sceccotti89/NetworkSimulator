@@ -159,14 +159,6 @@ public class NetworkDisplay
             node.update( gc, width, zone.getY(), (int) zone.getMaxY() );
         }
         
-        /* TODO COSI FUNGE (E NON CAPISCO PERCHE IN QUELL'ALTRO MODO NO)
-         for (Packet packet: packets) {
-            if (nodesChanged) {
-            	packet.setPosition( packet.getNodeSource() );
-            }
-        }
-         * */
-        
         for (Packet packet: packets) {
             if (nodesChanged) {
             	packet.setPosition( getNode( packet.getNodeSource().getNodeID() ), getNode( packet.getNodeDest().getNodeID() ), timer );

@@ -83,23 +83,13 @@ public class Packet implements Comparable<Packet>
     	return dest;
     }
     
-    // TODO PER ORA LO LASCIO STARE, POI VEDO SE ELIMINARLO
-    /*public void setPosition( final Node source ) {
-    	this.source = source;
-    	
-    	init();
-    	
-    	setSpeed( );
-    }*/
-    
     /**set the position of the packet after the moving of the nodes and the links*/
     public void setPosition( final Node source, final Node dest, final long time ) {
     	this.dest = dest;
     	this.source = source;
+    	
     	startX = source.getCenterX() + source.getRay();
     	startY = source.getCenterY() - height/120;
-    	
-    	area = new Rectangle( startX, startY, width/80, height/60 );
     	
     	angle = source.getAngle( dest.getNodeID() );
         
@@ -107,8 +97,9 @@ public class Packet implements Comparable<Packet>
     	
     	distance = (float) ((((double) time - startTime) / (endTime - startTime)) * linkLenght);
         if (distance < 0) distance = 0;
-        
-        area.setX( startX + distance );
+    	
+    	area = new Rectangle( startX + distance, startY, width/80, height/60 );
+    	
         rotatePacket();
     	
     	setSpeed( );
