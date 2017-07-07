@@ -211,12 +211,10 @@ public class NetworkDisplay
 		            		nodeMoved = node;
 		            	}
 		            }
-	    		} else if (!nodeMoved.checkCollision( mouseX, mouseY )) {
-	    			nodeMoved.setMoving( false );
-	    			nodeMoved = null;
 	    		}
     		} else if (nodeMoved != null) {
     			nodeMoved.setMoving( false ) ;
+    			nodeMoved = null;
     		}
     	} else {
     		nodeMoved = null;
