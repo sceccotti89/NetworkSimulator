@@ -189,7 +189,7 @@ public class AnimationNetwork extends BasicGame
     {
         ob = new OptionBar( gc );
         am = new AnimationManager( gc, ob.getMaxY(), width, height );
-        nd = new NetworkDisplay( width, height*100/142, am.getMaxY(), nodes, packets, timeDuration );
+        nd = new NetworkDisplay( width, height, am.getMaxY(), nodes, packets, timeDuration );
         ta = new TimeAnimation( nd.getMaxY(), width, height, timeDuration );
     }
     

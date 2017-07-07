@@ -28,9 +28,9 @@ public class Node
 	private int mouseX = 0, mouseY = 0;
 	private int moveX = 0, moveY = 0;
 	
-	private boolean selectable, moving;
+	private boolean selectable, moving, choose;
 	
-	private Image circleDashed;
+	private Image circleDashed, redCircle;
 	
 	private int angle = 0;
     
@@ -50,6 +50,9 @@ public class Node
     public void Init() throws SlickException {
     	circleDashed = new Image( "./data/Image/Circle.png" );
         circleDashed.setCenterOfRotation( node.getCenterX(), node.getCenterY() );
+        
+        redCircle = new Image( "./data/Image/RedCircle.png" );
+        redCircle.setCenterOfRotation( node.getCenterX(), node.getCenterY() );
     }
     
     public long getNodeID() {
@@ -173,13 +176,19 @@ public class Node
     	return moving;
     }
     
-    public void update( final GameContainer gc, final int widthSpace, final float startSpaceY, final int heightSpace ) {
+    public void update( final GameContainer gc, final int widthSpace, final float startSpaceY, final int heightSpace, final boolean choose ) {
+    	this.choose = choose;
+    	
     	moveX = mouseX; moveY = mouseY;
     	mouseX = gc.getInput().getMouseX();
     	mouseY = gc.getInput().getMouseY();
     	
         for (Link link: links) {
             link.update( gc, mouseX, mouseY );
+        }
+        
+        if (choose) {
+        	redCircle.setRotation( ++angle );
         }
         
         if (selectable) {
@@ -222,8 +231,12 @@ public class Node
         g.setColor( Color.white );
         g.drawString( nodeID + "", node.getCenterX() - f.getWidth( nodeID + "" )/2, node.getCenterY() - f.getHeight( nodeID + "" )/2 );
         
-        if (selectable && circleDashed != null) {
+        if (selectable) {
         	g.drawImage( circleDashed, node.getX(), node.getY() );
+        }
+        
+        if (choose) {
+        	g.drawImage( redCircle, node.getX(), node.getY() );
         }
     }
 }

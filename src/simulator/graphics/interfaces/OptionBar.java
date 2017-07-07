@@ -15,7 +15,7 @@ public class OptionBar implements AnimationInterface
 {
     private Rectangle barOptions = new Rectangle( 0, 0, 800, 20 );
     
-    private SimpleButton file, options, edit;
+    private SimpleButton file, options, edit, node;
     
     private float width, height;
     
@@ -23,7 +23,7 @@ public class OptionBar implements AnimationInterface
 
     private int mouseX, mouseY;
     
-    private String FILE = "File", OPTIONS = "Options", EDIT = "edit";
+    private String FILE = "File", OPTIONS = "Options", EDIT = "Edit", NODE = "New Node";
     
     private boolean mouseDown;
     
@@ -34,13 +34,16 @@ public class OptionBar implements AnimationInterface
         
         buttons = new ArrayList<SimpleButton>();
         
-        file    = new SimpleButton( 0, 0, width, height, FILE, Color.gray, 0, gc );
-        options = new SimpleButton( file.getMaxX(), 0, width, height, OPTIONS, Color.gray, 1, gc );
-        edit    = new SimpleButton( options.getMaxX(), 0, width, height, EDIT, Color.gray, 1, gc );
+        int index = 0;
+        file    = new SimpleButton( 0, 0, width, height, FILE, Color.gray, index++, gc );
+        options = new SimpleButton( file.getMaxX(), 0, width, height, OPTIONS, Color.gray, index++, gc );
+        edit    = new SimpleButton( options.getMaxX(), 0, width, height, EDIT, Color.gray, index++, gc );
+        node    = new SimpleButton( edit.getMaxX(), 0, width, height, NODE, Color.gray, index++, gc );
         
         buttons.add( file );
         buttons.add( options );
         buttons.add( edit );
+        buttons.add( node );
     }
     
     public float getMaxY() {
@@ -48,7 +51,7 @@ public class OptionBar implements AnimationInterface
     }
     
     @Override
-    public void update( final int delta, final GameContainer gc, final boolean leftMouse, final NetworkDisplay nd )
+    public void update( final int delta, final GameContainer gc, final boolean leftMouse, final NetworkDisplay nd ) throws SlickException
     {
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();
@@ -80,6 +83,11 @@ public class OptionBar implements AnimationInterface
                             ;
                         } else if (button.getName().equals( EDIT )) {
                             nd.setNodeSelectable();
+                        } else if (button.getName().equals( NODE )) {
+                        	if (!nd.isInExecution()) {
+                        		nd.addNewNode( mouseX, mouseY );
+                        		gc.getInput().clearKeyPressedRecord();
+                        	}
                         }
                     }
                 }

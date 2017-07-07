@@ -12,6 +12,7 @@ import org.newdawn.slick.geom.Rectangle;
 import simulator.graphics.elements.Info;
 import simulator.graphics.elements.Node;
 import simulator.graphics.elements.Packet;
+import simulator.topology.NetworkLink;
 
 public class NetworkDisplay
 {
@@ -20,7 +21,7 @@ public class NetworkDisplay
     private List<Node> nodes;
     private List<Packet> packets;
     
-    private final int width;
+    private final int width, height;
     
     private long timer = 0, timeSimulation;
     
@@ -35,15 +36,20 @@ public class NetworkDisplay
 	private int mouseX, mouseY;
 	
 	private Node nodeMoved = null;
+	
+	private boolean phaseOneNewNode = false, phaseTwoNewNode = false;
+
+	private Node tmpNode;
     
     public NetworkDisplay( final int width, final int height, final float startY, final List<Node> nodes, final List<Packet> packets, final long timeSimulation )
     {
     	this.width = width;
+    	this.height = height;
         this.nodes = nodes;
         this.packets = packets;
         this.timeSimulation = timeSimulation;
     	
-        zone = new Rectangle( 0, startY, width, height );
+        zone = new Rectangle( 0, startY, width, height*100/142 );
         
         packetSize = packets.size();
         
@@ -74,6 +80,21 @@ public class NetworkDisplay
                 index++;
             }
         }
+    }
+    
+    // TODO COMPLETARE QUESTO METODO
+    /**add a new node in the simulation
+     * @throws SlickException */
+    public void addNewNode( final int mouseX, final int mouseY ) throws SlickException {
+    	if (!phaseOneNewNode && !phaseTwoNewNode) {
+    		phaseOneNewNode = true;
+    		tmpNode = new Node( mouseX, mouseY, 1, "switch", 0, Color.gray );
+
+    		float x = Math.max( Math.min( mouseX - tmpNode.getRay(), width - tmpNode.getRay()*2 ), 0 );
+        	float y = Math.max( Math.min( mouseY - tmpNode.getRay(), zone.getMaxY() - tmpNode.getRay()*2 ), zone.getY() );
+        	
+    		tmpNode.getArea().setLocation( x, y );
+    	}
     }
     
     public void nodeInit() throws SlickException {
@@ -149,6 +170,31 @@ public class NetworkDisplay
         // Reset the visibility at the very beginning.
         info.setVisible( false );
         
+        if (phaseOneNewNode) {
+        	if (gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON )) {
+        		phaseOneNewNode = false;
+        		phaseTwoNewNode = true;
+        	} else {
+        		float x = Math.max( Math.min( mouseX - tmpNode.getRay(), width - tmpNode.getRay()*2 ), 0 );
+            	float y = Math.max( Math.min( mouseY - tmpNode.getRay(), zone.getMaxY() - tmpNode.getRay()*2 ), zone.getY() );
+            	
+        		tmpNode.getArea().setLocation( x, y );
+        	}
+        } else if (phaseTwoNewNode) {
+        	for (Node node: nodes) {
+        		if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) && node.checkCollision( gc, mouseX, mouseY )) {
+        			tmpNode.addLink( node, 0, 0, width, height, NetworkLink.UNIDIRECTIONAL );
+        			nodes.add( tmpNode );
+        			tmpNode = null;
+        			
+        			phaseTwoNewNode = false;
+        			gc.getInput().clearMousePressedRecord();
+        			break;
+        		}
+        	}
+        	
+        }
+        
     	if (nodesChanged) {
     		if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
 	    		if (nodeMoved == null) {
@@ -168,7 +214,7 @@ public class NetworkDisplay
     	}
     	
         for (Node node: nodes) {
-            node.update( gc, width, zone.getY(), (int) zone.getMaxY() );
+            node.update( gc, width, zone.getY(), (int) zone.getMaxY(), phaseTwoNewNode );
         }
         
         for (Packet packet: packets) {
@@ -205,6 +251,10 @@ public class NetworkDisplay
         
         for (Node node: nodes) {
             node.drawNode( g );
+        }
+        
+        if (tmpNode != null) {
+        	tmpNode.drawNode( g );
         }
         
         info.render( g );
