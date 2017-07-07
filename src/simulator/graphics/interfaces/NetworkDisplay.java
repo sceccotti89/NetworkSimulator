@@ -5,6 +5,7 @@ import java.util.List;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
@@ -30,6 +31,8 @@ public class NetworkDisplay
     public static Info info;
     
     private boolean nodesChanged = false;
+
+	private int mouseX, mouseY;
     
     public NetworkDisplay( final int width, final int height, final float startY, final List<Node> nodes, final List<Packet> packets, final long timeSimulation )
     {
@@ -134,6 +137,9 @@ public class NetworkDisplay
     
     public void update( final GameContainer gc, final AnimationManager am ) throws SlickException
     {
+    	mouseX = gc.getInput().getMouseX();
+    	mouseY = gc.getInput().getMouseY();
+    	
         if (timer > timeSimulation) {
             stopAnimation();
             am.resetAllButtons();
@@ -145,6 +151,7 @@ public class NetworkDisplay
         info.setVisible( false );
         
         for (Node node: nodes) {
+        	node.checkCollision( gc, mouseX, mouseY, gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) );
             node.update( gc, width, zone.getY(), (int) zone.getMaxY() );
         }
         

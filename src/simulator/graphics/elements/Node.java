@@ -8,7 +8,6 @@ import org.newdawn.slick.Font;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
-import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Circle;
 
@@ -29,7 +28,7 @@ public class Node
 	private int mouseX = 0, mouseY = 0;
 	private int moveX = 0, moveY = 0;
 	
-	private boolean selectable;
+	private boolean selectable, moving;
 	
 	private Image circleDashed;
 	
@@ -156,9 +155,24 @@ public class Node
     	}
     }
     
+    public boolean isMoving() {
+    	return moving;
+    }
+    
+    public boolean checkCollision( final GameContainer gc, final int mouseX, final int mouseY, final boolean leftMouse ) {
+    	if (!moving) {
+	    	if (leftMouse && node.contains( mouseX,  mouseY )) {
+	    		moving = true;
+	    	}
+    	} else if (!leftMouse) {
+    		moving = false;
+    	}
+    	
+    	return moving;
+    }
+    
     public void update( final GameContainer gc, final int widthSpace, final float startSpaceY, final int heightSpace ) {
-    	moveX = mouseX;
-    	moveY = mouseY;
+    	moveX = mouseX; moveY = mouseY;
     	mouseX = gc.getInput().getMouseX();
     	mouseY = gc.getInput().getMouseY();
     	
@@ -169,23 +183,20 @@ public class Node
         if (selectable) {
             circleDashed.setRotation( ++angle % 360 );
             
-        	if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
-                if (node.contains( mouseX, mouseY )) {
-                	for(Link link: links) {
-                		setLinkPosition( link, link.getDestNode() );
-                		
-                		if (link.getType().equals( NetworkLink.BIDIRECTIONAL )) {
-                			link.getDestNode().setLinkPosition( link, this );
-                		}
-                	}
-                	
-                	// TODO FACCIAMO PRIMA SETX RISPETTANDO I CONFINI
-                	float x = Math.max( Math.min( getCenterX() - ray + mouseX - moveX, widthSpace - ray*2 ), 0 );
-                	float y = Math.max( Math.min( getCenterY() - ray + mouseY - moveY, heightSpace - ray*2 ), startSpaceY );
-                	
-                	node.setLocation( x, y );
-                }
-        	}
+            if (moving) {
+            	float x = Math.max( Math.min( getCenterX() - ray + mouseX - moveX, widthSpace - ray*2 ), 0 );
+            	float y = Math.max( Math.min( getCenterY() - ray + mouseY - moveY, heightSpace - ray*2 ), startSpaceY );
+            	
+            	node.setLocation( x, y );
+            	
+            	for(Link link: links) {
+            		setLinkPosition( link, link.getDestNode() );
+            		
+            		if (link.getType().equals( NetworkLink.BIDIRECTIONAL )) {
+            			link.getDestNode().setLinkPosition( link, this );
+            		}
+            	}
+            }
         }
         
         moveX = mouseX;
