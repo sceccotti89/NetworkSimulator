@@ -29,9 +29,7 @@ public class Packet implements Comparable<Packet>
     
     private float linkLenght, distance;
     
-    private Node source;
-
-	private final Node dest;
+    private Node source, dest;
     
     private float startX, startY;
 
@@ -85,14 +83,38 @@ public class Packet implements Comparable<Packet>
     	return dest;
     }
     
-    public void setPosition( final Node source ) {
+    // TODO PER ORA LO LASCIO STARE, POI VEDO SE ELIMINARLO
+    /*public void setPosition( final Node source ) {
     	this.source = source;
     	
     	init();
     	
     	setSpeed( );
+    }*/
+    
+    /**set the position of the packet after the moving of the nodes and the links*/
+    public void setPosition( final Node source, final Node dest, final long time ) {
+    	this.dest = dest;
+    	this.source = source;
+    	startX = source.getCenterX() + source.getRay();
+    	startY = source.getCenterY() - height/120;
+    	
+    	area = new Rectangle( startX, startY, width/80, height/60 );
+    	
+    	angle = source.getAngle( dest.getNodeID() );
+        
+        linkLenght = source.getLinkLenght( dest.getNodeID() ) - 2 * dest.getRay();
+    	
+    	distance = (float) ((((double) time - startTime) / (endTime - startTime)) * linkLenght);
+        if (distance < 0) distance = 0;
+        
+        area.setX( startX + distance );
+        rotatePacket();
+    	
+    	setSpeed( );
     }
     
+    /**set the position of the packet basing on the time of the simulation*/
     public void setPosition( final long time )
     {
         active = true;
@@ -228,9 +250,9 @@ public class Packet implements Comparable<Packet>
     
     @Override
     public String toString() {
-        return "start  = " + setInfo( startTime, measure ) + "\n" +
-               "end    = " + setInfo( endTime, measure ) + "\n" +
-               "source = " + source.getNodeID() + "\n" +
-               "dest   = " + dest.getNodeID();
+        return "start  = " + setInfo( startTime, measure ) + "\n"
+                + "end    = " + setInfo( endTime, measure ) + "\n"
+                + "source = " + source.getNodeID() + "\n"
+                + "dest   = " + dest.getNodeID();
     }
 }

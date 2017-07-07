@@ -132,6 +132,17 @@ public class NetworkDisplay
         resetAnimation();
     }
     
+    private Node getNode( final long nodeID )
+    {
+        for (Node node: nodes) {
+            if (node.getNodeID() == nodeID) {
+                return node;
+            }
+        }
+        
+        return null;
+    }
+    
     public void update( final GameContainer gc, final AnimationManager am ) throws SlickException
     {
         if (timer > timeSimulation) {
@@ -148,9 +159,17 @@ public class NetworkDisplay
             node.update( gc, width, zone.getY(), (int) zone.getMaxY() );
         }
         
-        for (Packet packet: packets) {
+        /* TODO COSI FUNGE (E NON CAPISCO PERCHE IN QUELL'ALTRO MODO NO)
+         for (Packet packet: packets) {
             if (nodesChanged) {
             	packet.setPosition( packet.getNodeSource() );
+            }
+        }
+         * */
+        
+        for (Packet packet: packets) {
+            if (nodesChanged) {
+            	packet.setPosition( getNode( packet.getNodeSource().getNodeID() ), getNode( packet.getNodeDest().getNodeID() ), timer );
             }
         }
         
