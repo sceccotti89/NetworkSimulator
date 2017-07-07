@@ -159,13 +159,15 @@ public class Node
     	return moving;
     }
     
-    public boolean checkCollision( final GameContainer gc, final int mouseX, final int mouseY, final boolean leftMouse ) {
+    public void setMoving( final boolean val ) {
+    	moving = val;
+    }
+    
+    public boolean checkCollision( final GameContainer gc, final int mouseX, final int mouseY ) {
     	if (!moving) {
-	    	if (leftMouse && node.contains( mouseX,  mouseY )) {
+	    	if (node.contains( mouseX,  mouseY )) {
 	    		moving = true;
 	    	}
-    	} else if (!leftMouse) {
-    		moving = false;
     	}
     	
     	return moving;
@@ -181,7 +183,7 @@ public class Node
         }
         
         if (selectable) {
-            circleDashed.setRotation( ++angle % 360 );
+            circleDashed.setRotation( ++angle );
             
             if (moving) {
             	float x = Math.max( Math.min( getCenterX() - ray + mouseX - moveX, widthSpace - ray*2 ), 0 );

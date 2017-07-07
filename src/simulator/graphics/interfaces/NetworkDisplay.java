@@ -33,15 +33,14 @@ public class NetworkDisplay
     private boolean nodesChanged = false;
 
 	private int mouseX, mouseY;
+	
+	private Node nodeMoved = null;
     
     public NetworkDisplay( final int width, final int height, final float startY, final List<Node> nodes, final List<Packet> packets, final long timeSimulation )
     {
     	this.width = width;
-        
         this.nodes = nodes;
-        
         this.packets = packets;
-        
         this.timeSimulation = timeSimulation;
     	
         zone = new Rectangle( 0, startY, width, height );
@@ -150,15 +149,30 @@ public class NetworkDisplay
         // Reset the visibility at the very beginning.
         info.setVisible( false );
         
+    	if (nodesChanged) {
+    		if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
+	    		if (nodeMoved == null) {
+		            for (Node node: nodes) {
+		            	if (node.checkCollision( gc, mouseX, mouseY )) {
+		            		nodeMoved = node;
+		            	}
+		            }
+	    		} else if (!nodeMoved.checkCollision( gc, mouseX, mouseY )) {
+	    			nodeMoved = null;
+	    		}
+    		} else if (nodeMoved != null) {
+    			nodeMoved.setMoving( false ) ;
+    		}
+    	} else {
+    		nodeMoved = null;
+    	}
+    	
         for (Node node: nodes) {
-        	node.checkCollision( gc, mouseX, mouseY, gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) );
             node.update( gc, width, zone.getY(), (int) zone.getMaxY() );
         }
         
         for (Packet packet: packets) {
-            if (nodesChanged) {
-                packet.init( packet.getNodeSource(), packet.getNodeDest(), timer );
-            }
+            packet.init( packet.getNodeSource(), packet.getNodeDest(), timer );
         }
         
         for (int i = index; i < packetSize; i++) {
