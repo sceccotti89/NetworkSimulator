@@ -60,11 +60,14 @@ public class Packet implements Comparable<Packet>
         
         offset = width/80;
         
-        init();
+        init( source, dest, startTime );
     }
     
-    public void init()
+    public void init( final Node source, final Node dest, final long time )
     {
+    	this.dest = dest;
+    	this.source = source;
+	
         angle = source.getAngle( dest.getNodeID() );
         
         linkLenght = source.getLinkLenght( dest.getNodeID() ) - 2 * source.getRay();
@@ -72,7 +75,8 @@ public class Packet implements Comparable<Packet>
         startX = source.getCenterX() + source.getRay();
         startY = source.getCenterY() - height/120;
         area = new Rectangle( startX, startY, width/80, height/60 );
-        setPosition( startTime );
+        
+        setPosition( time );
     }
     
     public Node getNodeSource() {
@@ -81,28 +85,6 @@ public class Packet implements Comparable<Packet>
     
     public Node getNodeDest() {
     	return dest;
-    }
-    
-    /**set the position of the packet after the moving of the nodes and the links*/
-    public void setPosition( final Node source, final Node dest, final long time ) {
-    	this.dest = dest;
-    	this.source = source;
-    	
-    	startX = source.getCenterX() + source.getRay();
-    	startY = source.getCenterY() - height/120;
-    	
-    	angle = source.getAngle( dest.getNodeID() );
-        
-        linkLenght = source.getLinkLenght( dest.getNodeID() ) - 2 * dest.getRay();
-    	
-    	distance = (float) ((((double) time - startTime) / (endTime - startTime)) * linkLenght);
-        if (distance < 0) distance = 0;
-    	
-    	area = new Rectangle( startX + distance, startY, width/80, height/60 );
-    	
-        rotatePacket();
-    	
-    	setSpeed( );
     }
     
     /**set the position of the packet basing on the time of the simulation*/

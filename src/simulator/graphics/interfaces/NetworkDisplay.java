@@ -59,7 +59,7 @@ public class NetworkDisplay
         pause = true;
 
         for (Packet packet: packets) {
-            packet.init();
+            packet.init( packet.getNodeSource(), packet.getNodeDest(), packet.getStartTime() );
         }
     }
     
@@ -132,17 +132,6 @@ public class NetworkDisplay
         resetAnimation();
     }
     
-    private Node getNode( final long nodeID )
-    {
-        for (Node node: nodes) {
-            if (node.getNodeID() == nodeID) {
-                return node;
-            }
-        }
-        
-        return null;
-    }
-    
     public void update( final GameContainer gc, final AnimationManager am ) throws SlickException
     {
         if (timer > timeSimulation) {
@@ -161,7 +150,7 @@ public class NetworkDisplay
         
         for (Packet packet: packets) {
             if (nodesChanged) {
-            	packet.setPosition( getNode( packet.getNodeSource().getNodeID() ), getNode( packet.getNodeDest().getNodeID() ), timer );
+                packet.init( packet.getNodeSource(), packet.getNodeDest(), timer );
             }
         }
         
