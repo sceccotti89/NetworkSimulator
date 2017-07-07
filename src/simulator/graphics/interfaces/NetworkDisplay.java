@@ -155,23 +155,8 @@ public class NetworkDisplay
         resetAnimation();
     }
     
-    public void update( final GameContainer gc, final AnimationManager am ) throws SlickException
-    {
-    	mouseX = gc.getInput().getMouseX();
-    	mouseY = gc.getInput().getMouseY();
-    	
-        if (timer > timeSimulation) {
-            stopAnimation();
-            am.resetAllButtons();
-        } else if (!pause) {
-            timer = timer + AnimationManager.frames;
-        }
-        
-        // Reset the visibility at the very beginning.
-        info.setVisible( false );
-        
-        // TODO TRASFORMARLO IN METODO
-        if (phaseOneNewNode) {
+    public void manageNewNode( final GameContainer gc, Node tmpNode ) throws SlickException {
+    	if (phaseOneNewNode) {
         	if (gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON )) {
         		phaseOneNewNode = false;
         		phaseTwoNewNode = true;
@@ -198,27 +183,49 @@ public class NetworkDisplay
         			break;
         		}
         	}
-        	
+        }
+    }
+    
+    public void manageMovingNode( final GameContainer gc ) {
+    	if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
+    		if (nodeMoved == null) {
+	            for (Node node: nodes) {
+	            	if (node.checkCollision( mouseX, mouseY )) {
+	            		node.setMoving( true );
+	            		nodeMoved = node;
+	            	}
+	            }
+    		}
+		} else if (nodeMoved != null) {
+			nodeMoved.setMoving( false ) ;
+			nodeMoved = null;
+		}
+    }
+    
+    public void update( final GameContainer gc, final AnimationManager am ) throws SlickException
+    {
+    	mouseX = gc.getInput().getMouseX();
+    	mouseY = gc.getInput().getMouseY();
+    	
+        if (timer > timeSimulation) {
+            stopAnimation();
+            am.resetAllButtons();
+        } else if (!pause) {
+            timer = timer + AnimationManager.frames;
         }
         
-        // TODO TRASFORMARLO IN METODO
-    	if (nodesChanged) {
-    		if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
-	    		if (nodeMoved == null) {
-		            for (Node node: nodes) {
-		            	if (node.checkCollision( mouseX, mouseY )) {
-		            		node.setMoving( true );
-		            		nodeMoved = node;
-		            	}
-		            }
-	    		}
-    		} else if (nodeMoved != null) {
-    			nodeMoved.setMoving( false ) ;
-    			nodeMoved = null;
-    		}
-    	} else {
-    		nodeMoved = null;
-    	}
+        // Reset the visibility at the very beginning.
+        info.setVisible( false );
+        
+        if (phaseOneNewNode || phaseTwoNewNode) {
+        	manageNewNode( gc, tmpNode );
+        }
+        
+        if (nodesChanged) {
+        	manageMovingNode( gc );
+        } else if (nodeMoved != null) {
+        	nodeMoved = null;
+        }
     	
         for (Node node: nodes) {
             node.update( gc, width, zone.getY(), (int) zone.getMaxY(), phaseTwoNewNode );
