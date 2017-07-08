@@ -114,6 +114,10 @@ public class Packet implements Comparable<Packet>
         return startTime;
     }
     
+    public long getEndTime() {
+        return endTime;
+    }
+    
     private Point worldToView( final float x, final float y, float angle ) {
     	angle = (float) (angle * Math.PI/180.f);
     	return new Point( (float) (x * Math.cos( angle ) - y * Math.sin( angle )), (float) (x * Math.sin( angle ) + y * Math.cos( angle )) );

@@ -177,17 +177,26 @@ public class NetworkDisplay
     				
     				packetSize = packets.size();
     				
+    				timeSimulation = 0;
+    				for (Packet packet : packets) {
+    					if (packet.getEndTime() > timeSimulation) {
+    						timeSimulation = packet.getEndTime();
+    					}
+    				}
+    				
     				node.removeLink( null );
     				nodes.remove( node );
     				removing = false;
     				
     				return;
+    				
+    				// TODO BISOGNA ANDARE A RIVEDERE LA DURATA DELLA SIMULAZIONE QUANDO SI ELIMINANO I VARI PACCHETTI
     			}
     		}
     	}
     }
     
-    public void manageNewNode( final GameContainer gc, Node tmpNode ) throws SlickException {
+    public void manageAddNode( final GameContainer gc, Node tmpNode ) throws SlickException {
     	if (phaseOneNewNode) {
         	if (gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON )) {
         		phaseOneNewNode = false;
@@ -251,7 +260,7 @@ public class NetworkDisplay
         info.setVisible( false );
         
         if (phaseOneNewNode || phaseTwoNewNode) {
-        	manageNewNode( gc, tmpNode );
+        	manageAddNode( gc, tmpNode );
         }
         
         if (nodesChanged) {
