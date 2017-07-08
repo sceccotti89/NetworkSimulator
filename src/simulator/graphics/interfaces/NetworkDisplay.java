@@ -168,7 +168,7 @@ public class NetworkDisplay
     					nodo.removeLink( node );
     				}
     				
-    				for (int i  = packets.size() - 1; i >= 0; i--) {
+    				for (int i = packets.size() - 1; i >= 0; i--) {
     					Packet packet = packets.get( i );
     					if (packet.getNodeSource().equals( node ) || packet.getNodeDest().equals( node )) {
     						packets.remove( packet );
