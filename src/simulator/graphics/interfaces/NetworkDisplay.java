@@ -161,9 +161,6 @@ public class NetworkDisplay
     }
     
     public void manageRemoveNode( final GameContainer gc ) {
-    	// TODO DEVO RIMUOVERE TUTTI I PACCHETTI CHE PARTONO DA QUEL LINK O DA QUEL NODO ELIMINATO
-    	// BEL PROBLEMA DEL CAZZO
-    	
     	if (gc.getInput().isMousePressed( Input.MOUSE_RIGHT_BUTTON )) {
     		for (Node node: nodes) {
     			if (node.checkCollision( mouseX, mouseY )) {
@@ -171,8 +168,20 @@ public class NetworkDisplay
     					nodo.removeLink( node );
     				}
     				
+    				for (int i  = packets.size() - 1; i >= 0; i--) {
+    					Packet packet = packets.get( i );
+    					if (packet.getNodeSource().equals( node ) || packet.getNodeDest().equals( node )) {
+    						packets.remove( packet );
+    					}
+    				}
+    				
+    				packetSize = packets.size();
+    				
     				node.removeLink( null );
+    				nodes.remove( node );
     				removing = false;
+    				
+    				return;
     			}
     		}
     	}

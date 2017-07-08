@@ -179,9 +179,7 @@ public class Node
 	            }
 	        }
     	} else {
-    		for (int i = links.size() - 1; i >= 0; i--) {
-    			links.remove( links.get( i ) );
-    		}
+    		links = null;
     	}
     }
     
