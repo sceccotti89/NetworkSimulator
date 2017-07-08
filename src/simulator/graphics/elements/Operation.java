@@ -14,7 +14,7 @@ public class Operation
 	{
 		this.name = name;
 		
-		area = new Rectangle( x, y, width, height );
+		area = new Rectangle( x, y, width + width/4, height );
 	}
 	
 	public boolean checkCollision( final int mouseX, final int mouseY ) {
@@ -42,5 +42,8 @@ public class Operation
 		g.fill( area );
 		g.setColor( Color.black );
 		g.draw( area );
+		
+		int fWidth = g.getFont().getWidth( name ), fHeight = g.getFont().getHeight( name );
+		g.drawString( name, area.getCenterX() - fWidth/2, area.getCenterY() - fHeight/2 );
 	}
 }
