@@ -82,8 +82,7 @@ public class NetworkDisplay
         }
     }
     
-    // TODO COMPLETARE QUESTO METODO
-    /**add a new node in the simulation
+    /**Add a new node in the simulation
      * @throws SlickException */
     public void addNewNode( final int mouseX, final int mouseY ) throws SlickException {
     	if (!phaseOneNewNode && !phaseTwoNewNode) {
@@ -198,7 +197,7 @@ public class NetworkDisplay
 	            }
     		}
 		} else if (nodeMoved != null) {
-			nodeMoved.setMoving( false ) ;
+			nodeMoved.setMoving( false );
 			nodeMoved = null;
 		}
     }

@@ -23,7 +23,7 @@ public class OptionBar implements AnimationInterface
 
     private int mouseX, mouseY;
     
-    private String FILE = "File", OPTIONS = "Options", EDIT = "Edit", NODE = "New Node";
+    private String FILE = "File", OPTIONS = "Options", EDIT = "Edit", NODE = "NewNode";
     
     private boolean mouseDown;
     
