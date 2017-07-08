@@ -41,7 +41,7 @@ public class AnimationNetwork extends BasicGame
     
     private int width, height;
     
-    private long timeDuration = 0;
+    public static long timeSimulation = 0;
 	private final int limit = 1000000;
 	
 	private final AppGameContainer app;
@@ -94,8 +94,8 @@ public class AnimationNetwork extends BasicGame
             
             addPacket( from_ID, dest_ID, color, startTime, endTime, type );
             
-            if (endTime > timeDuration) {
-                timeDuration = endTime;
+            if (endTime > timeSimulation) {
+            	timeSimulation = endTime;
             }
         }
         
@@ -104,7 +104,7 @@ public class AnimationNetwork extends BasicGame
         Collections.sort( packets );
         
         String measure = "MICRO";
-        if (timeDuration >= limit ) {
+        if (timeSimulation >= limit ) {
         	measure = "TIME";
         }
         for (Packet packet: packets) {
@@ -189,8 +189,8 @@ public class AnimationNetwork extends BasicGame
     {
         ob = new OptionBar( gc );
         am = new AnimationManager( gc, ob.getMaxY(), width, height );
-        nd = new NetworkDisplay( width, height, am.getMaxY(), nodes, packets, timeDuration );
-        ta = new TimeAnimation( nd.getMaxY(), width, height, timeDuration );
+        nd = new NetworkDisplay( width, height, am.getMaxY(), nodes, packets );
+        ta = new TimeAnimation( nd.getMaxY(), width, height );
     }
     
     public void addNode( final int x, final int y, final long nodeID, final String name, final long delay, final Color color ) throws SlickException {

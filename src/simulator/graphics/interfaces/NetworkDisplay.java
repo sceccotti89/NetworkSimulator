@@ -9,6 +9,7 @@ import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
+import simulator.graphics.AnimationNetwork;
 import simulator.graphics.elements.Info;
 import simulator.graphics.elements.Node;
 import simulator.graphics.elements.Packet;
@@ -23,7 +24,7 @@ public class NetworkDisplay
     
     private final int width, height;
     
-    private long timer = 0, timeSimulation;
+    private long timer = 0;
     
     private boolean start, pause;
     
@@ -43,13 +44,12 @@ public class NetworkDisplay
 
 	private boolean removing;
     
-    public NetworkDisplay( final int width, final int height, final float startY, final List<Node> nodes, final List<Packet> packets, final long timeSimulation )
+    public NetworkDisplay( final int width, final int height, final float startY, final List<Node> nodes, final List<Packet> packets )
     {
     	this.width = width;
     	this.height = height;
         this.nodes = nodes;
         this.packets = packets;
-        this.timeSimulation = timeSimulation;
     	
         zone = new Rectangle( 0, startY, width, height*100/142 );
         
@@ -116,10 +116,6 @@ public class NetworkDisplay
         return zone.getMaxY();
     }
     
-    public long getTotalTimeSimulation() {
-    	return timeSimulation;
-    }
-    
     public long getTimeSimulation() {
         return timer;
     }
@@ -177,10 +173,10 @@ public class NetworkDisplay
     				
     				packetSize = packets.size();
     				
-    				timeSimulation = 0;
+    				AnimationNetwork.timeSimulation = 0;
     				for (Packet packet : packets) {
-    					if (packet.getEndTime() > timeSimulation) {
-    						timeSimulation = packet.getEndTime();
+    					if (packet.getEndTime() > AnimationNetwork.timeSimulation) {
+    						AnimationNetwork.timeSimulation = packet.getEndTime();
     					}
     				}
     				
@@ -189,8 +185,6 @@ public class NetworkDisplay
     				removing = false;
     				
     				return;
-    				
-    				// TODO BISOGNA ANDARE A RIVEDERE LA DURATA DELLA SIMULAZIONE QUANDO SI ELIMINANO I VARI PACCHETTI
     			}
     		}
     	}
@@ -249,7 +243,7 @@ public class NetworkDisplay
     	mouseX = gc.getInput().getMouseX();
     	mouseY = gc.getInput().getMouseY();
     	
-        if (timer > timeSimulation) {
+        if (timer > AnimationNetwork.timeSimulation) {
             stopAnimation();
             am.resetAllButtons();
         } else if (!pause) {

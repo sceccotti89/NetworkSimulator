@@ -10,12 +10,13 @@ import org.newdawn.slick.Graphics;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
+import simulator.graphics.AnimationNetwork;
 import simulator.graphics.dataButton.ArrowButton;
 
 public class TimeAnimation implements AnimationInterface
 {
     private final Rectangle barTiming, timing, cursor;
-    private long timer, timeDuration;
+    private long timer;
     
     private int tick = 0, moving = 1, index = -1;
 
@@ -37,7 +38,7 @@ public class TimeAnimation implements AnimationInterface
     
     private boolean buttonHit = false, timingHit = false;
     
-    public TimeAnimation( final float startY, final float width, final float height, final long timeDuration ) throws SlickException
+    public TimeAnimation( final float startY, final float width, final float height ) throws SlickException
     {
         this.height = height;
         
@@ -68,8 +69,7 @@ public class TimeAnimation implements AnimationInterface
         arrows.add( timeOn );
         arrows.add( timeBack );
         
-        this.timeDuration = timeDuration;
-        if(timeDuration >= limit) {
+        if(AnimationNetwork.timeSimulation >= limit) {
         	moving = moving * limit;
         }
     }
@@ -80,16 +80,16 @@ public class TimeAnimation implements AnimationInterface
     
     private void setTime( final NetworkDisplay nd ) {
         cursor.setX( Math.max( Math.min( mouseX - widthCursor/2, timing.getMaxX() - widthCursor/2 ), startTimingX - widthCursor/2 ) );
-        nd.setTimeSimulation( roundValue( (((double) cursor.getCenterX() - startTimingX) / timing.getWidth() * timeDuration) ) );
+        nd.setTimeSimulation( roundValue( (((double) cursor.getCenterX() - startTimingX) / timing.getWidth() * AnimationNetwork.timeSimulation) ) );
     }
     
     public long getTime( final float mouseX ) {
-        return roundValue( (((double) Math.max( Math.min( mouseX, timing.getMaxX() ), startTimingX ) - startTimingX) / timing.getWidth() * timeDuration) );
+        return roundValue( (((double) Math.max( Math.min( mouseX, timing.getMaxX() ), startTimingX ) - startTimingX) / timing.getWidth() * AnimationNetwork.timeSimulation) );
     }
     
     private void setCursor( final int index, final NetworkDisplay nd ) {
     	if (index == 0) {
-    		timer = Math.min( timer + moving, timeDuration );
+    		timer = Math.min( timer + moving, AnimationNetwork.timeSimulation );
     	} else {
     		timer = Math.max( timer - moving, 0 );
     	}
@@ -98,7 +98,7 @@ public class TimeAnimation implements AnimationInterface
     }
     
     private String setInfo( long time, final long value ) {
-    	if (timeDuration >= limit) {
+    	if (AnimationNetwork.timeSimulation >= limit) {
     		time = time / limit;
     	} else {
     		return time + "µs";
@@ -172,7 +172,7 @@ public class TimeAnimation implements AnimationInterface
             NetworkDisplay.info.setAttributes( g, info, Math.max( Math.min( mouseX, timing.getMaxX() ), startTimingX ) - fontW/2, timing.getMaxY() + offsetH );
         }
         
-        cursor.setX( startTimingX - widthCursor/2 + timing.getWidth() / timeDuration * timer );
+        cursor.setX( startTimingX - widthCursor/2 + timing.getWidth() / AnimationNetwork.timeSimulation * timer );
     }
     
     @Override
@@ -189,7 +189,7 @@ public class TimeAnimation implements AnimationInterface
         g.setColor( Color.white );
         g.fill( cursor );
         
-        String info = setInfo( timer, 0 ) + " / " + setInfo( timeDuration, 0 );
+        String info = setInfo( timer, 0 ) + " / " + setInfo( AnimationNetwork.timeSimulation, 0 );
         
         int fWidth = g.getFont().getWidth( info ), fHeight = g.getFont().getHeight( info );
         g.drawString( info, timing.getCenterX() - fWidth/2, timing.getMaxY() + (height - timing.getMaxY() - fHeight)/2 );
