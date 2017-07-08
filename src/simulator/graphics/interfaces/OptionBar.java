@@ -11,18 +11,19 @@ import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
 import simulator.graphics.dataButton.SimpleButton;
+import simulator.graphics.elements.Operation;
 
 public class OptionBar implements AnimationInterface
 {
     private Rectangle barOptions = new Rectangle( 0, 0, 800, 20 );
     
-    private SimpleButton file, options, edit, move, node, remove;
-    private Rectangle muovi, adda, rimuovi;
+    private SimpleButton file, options, edit;
+    private Operation move, add, remove;
     
     private float width, height;
     
     private List<SimpleButton> buttons;
-    private List<Rectangle> operation;
+    private List<Operation> operation;
 
     private int mouseX, mouseY;
     
@@ -43,26 +44,20 @@ public class OptionBar implements AnimationInterface
         file    = new SimpleButton( 0, 0, width, height, FILE, Color.gray, index++, gc );
         options = new SimpleButton( file.getMaxX(), 0, width, height, OPTIONS, Color.gray, index++, gc );
         edit    = new SimpleButton( options.getMaxX(), 0, width, height, EDIT, Color.gray, index++, gc );
-        move    = new SimpleButton( edit.getMaxX(), 0, width, height, MOVE, Color.gray, index++, gc );
-        node    = new SimpleButton( move.getMaxX(), 0, width, height, ADD, Color.gray, index++, gc );
-        remove  = new SimpleButton( node.getMaxX(), 0, width, height, REMOVE, Color.gray, index++, gc );
         
         buttons.add( file );
         buttons.add( options );
         buttons.add( edit );
-        buttons.add( move );
-        buttons.add( node );
-        buttons.add( remove );
         
-        operation = new ArrayList<Rectangle>();
+        operation = new ArrayList<Operation>();
         
-        muovi   = new Rectangle( edit.getX(), edit.getMaxY(), width, height );
-        adda    = new Rectangle( muovi.getX(), edit.getMaxY(), width, height );
-        rimuovi = new Rectangle( adda.getX(), edit.getMaxY(), width, height );
+        move   = new Operation( MOVE, edit.getX(), edit.getMaxY(), width, height );
+        add    = new Operation( ADD, move.getX(), move.getMaxY(), width, height );
+        remove = new Operation( REMOVE, add.getX(), add.getMaxY(), width, height );
         
-        operation.add( muovi );
-        operation.add( adda );
-        operation.add( rimuovi );
+        operation.add( move );
+        operation.add( add );
+        operation.add( remove );
     }
     
     public float getMaxY() {
@@ -102,17 +97,27 @@ public class OptionBar implements AnimationInterface
                             ;
                         } else if (button.getName().equals( EDIT )) {
                         	chooseOption = !chooseOption;
-                        } else if (button.getName().equals( MOVE )) {
-                            nd.setNodeSelectable();
-                        } else if (button.getName().equals( ADD )) {
-                        	if (!nd.isInExecution()) {
-                        		nd.addNewNode( mouseX, mouseY );
-                        	}
-                        } else if (button.getName().equals( REMOVE )) {
-                            nd.removeNode();
                         }
                     }
                 }
+            }
+            
+            if (chooseOption) {
+	            for (Operation op : operation) {
+	            	if (op.checkCollision( mouseX, mouseY )) {
+		            	if (op.getName().equals( MOVE )) {
+	                        nd.setNodeSelectable();
+	                    } else if (op.getName().equals( ADD )) {
+	                    	if (!nd.isInExecution()) {
+	                    		nd.addNewNode( mouseX, mouseY );
+	                    	}
+	                    } else if (op.getName().equals( REMOVE )) {
+	                        nd.removeNode();
+	                    }
+		            	
+		            	chooseOption = false;
+	            	}
+	            }
             }
         }
     }
@@ -126,8 +131,8 @@ public class OptionBar implements AnimationInterface
         }
         
         if (chooseOption) {
-        	for (Rectangle rect: operation) {
-        		gc.getGraphics().draw( rect );
+        	for (Operation op: operation) {
+        		op.render( g );
         	}
         }
     }
