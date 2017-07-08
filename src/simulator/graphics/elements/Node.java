@@ -179,17 +179,17 @@ public class Node
 	            }
 	        }
     	} else {
-    		links = null;
+    		links.clear();
     	}
     }
     
-    public Node clone() {
+    public Node clone( final Node dest, final int width, final int height ) {
     	try {
 			Node tmp = new Node( node.getCenterX(), node.getCenterY(), nodeID, name, delay, color );
+			tmp.addLink( dest, 0, 0, width, height, NetworkLink.BIDIRECTIONAL );
 			tmp.Init();
 			return tmp;
 		} catch (SlickException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
     	

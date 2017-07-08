@@ -191,7 +191,7 @@ public class NetworkDisplay
     	}
     }
     
-    public void manageAddNode( final GameContainer gc, Node tmpNode ) throws SlickException {
+    public void manageAddNode( final GameContainer gc ) throws SlickException {
     	if (phaseOneNewNode) {
         	if (gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON )) {
         		phaseOneNewNode = false;
@@ -209,13 +209,11 @@ public class NetworkDisplay
         				tmpNode.setSelectable();
         			}
         			
-        			tmpNode.addLink( node, 0, 0, width, height, NetworkLink.BIDIRECTIONAL );
-        			node.addLink( tmpNode, 0, 0, width, height, NetworkLink.BIDIRECTIONAL );
-        			tmpNode.Init();
-        			nodes.add( tmpNode.clone() );
-        			tmpNode = null;
+        			nodes.add( tmpNode.clone( node, width, height ) );
+        			node.addLink( nodes.get( nodes.size() - 1 ), 0, 0, width, height, NetworkLink.BIDIRECTIONAL );
         			
         			phaseTwoNewNode = false;
+        			tmpNode = null;
         			
         			break;
         		}
@@ -255,7 +253,9 @@ public class NetworkDisplay
         info.setVisible( false );
         
         if (phaseOneNewNode || phaseTwoNewNode) {
-        	manageAddNode( gc, tmpNode );
+        	// TODO mettere tmpNode a NULL.
+        	manageAddNode( gc );
+        	//tmpNode = null;
         }
         
         if (nodesChanged) {
