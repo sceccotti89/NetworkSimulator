@@ -181,7 +181,6 @@ public class NetworkDisplay
     				}
     				
     				node.removeLink( null );
-    				System.out.println( "NODE ID = " + node.getNodeID() );
     				nodes.remove( node );
     				removing = false;
     				
