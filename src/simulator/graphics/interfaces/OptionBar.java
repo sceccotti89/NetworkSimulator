@@ -102,6 +102,7 @@ public class OptionBar implements AnimationInterface
                 }
             }
             
+            // TODO INSERIRE I NOMI DELLE OPERAZIONI SUI BOTTONI
             if (chooseOption) {
 	            for (Operation op : operation) {
 	            	if (op.checkCollision( mouseX, mouseY )) {
