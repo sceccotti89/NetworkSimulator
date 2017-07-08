@@ -15,7 +15,7 @@ public class OptionBar implements AnimationInterface
 {
     private Rectangle barOptions = new Rectangle( 0, 0, 800, 20 );
     
-    private SimpleButton file, options, edit, node;
+    private SimpleButton file, options, edit, node, remove;
     
     private float width, height;
     
@@ -23,7 +23,7 @@ public class OptionBar implements AnimationInterface
 
     private int mouseX, mouseY;
     
-    private String FILE = "File", OPTIONS = "Options", EDIT = "Edit", NODE = "NewNode";
+    private String FILE = "File", OPTIONS = "Options", EDIT = "Edit", NODE = "NewNode", REMOVE = "RemoveNode";
     
     private boolean mouseDown;
     
@@ -39,11 +39,13 @@ public class OptionBar implements AnimationInterface
         options = new SimpleButton( file.getMaxX(), 0, width, height, OPTIONS, Color.gray, index++, gc );
         edit    = new SimpleButton( options.getMaxX(), 0, width, height, EDIT, Color.gray, index++, gc );
         node    = new SimpleButton( edit.getMaxX(), 0, width, height, NODE, Color.gray, index++, gc );
+        remove  = new SimpleButton( node.getMaxX(), 0, width, height, REMOVE, Color.gray, index++, gc );
         
         buttons.add( file );
         buttons.add( options );
         buttons.add( edit );
         buttons.add( node );
+        buttons.add( remove );
     }
     
     public float getMaxY() {
@@ -88,6 +90,8 @@ public class OptionBar implements AnimationInterface
                         		nd.addNewNode( mouseX, mouseY );
                         		gc.getInput().clearKeyPressedRecord();
                         	}
+                        } else if (button.getName().equals( REMOVE )) {
+                            nd.removeNode();
                         }
                     }
                 }

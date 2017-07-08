@@ -170,6 +170,21 @@ public class Node
     	return node.contains( mouseX, mouseY );
     }
     
+    public void removeLink( Node node ) {
+    	if (node != null) {
+	    	for (Link link: links) {
+	            if (link.getDestNode().equals( node )) {
+	            	links.remove( link );
+	            	return;
+	            }
+	        }
+    	} else {
+    		for (int i = links.size() - 1; i >= 0; i--) {
+    			links.remove( links.get( i ) );
+    		}
+    	}
+    }
+    
     public void update( final GameContainer gc, final int widthSpace, final float startSpaceY, final int heightSpace, final boolean choose ) {
     	this.choose = choose;
     	

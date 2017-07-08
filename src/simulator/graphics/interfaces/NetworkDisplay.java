@@ -40,6 +40,8 @@ public class NetworkDisplay
 	private boolean phaseOneNewNode = false, phaseTwoNewNode = false;
 
 	private Node tmpNode;
+
+	private boolean removing;
     
     public NetworkDisplay( final int width, final int height, final float startY, final List<Node> nodes, final List<Packet> packets, final long timeSimulation )
     {
@@ -154,6 +156,28 @@ public class NetworkDisplay
         resetAnimation();
     }
     
+    public void removeNode() {
+    	removing = !removing;
+    }
+    
+    public void manageRemoveNode( final GameContainer gc ) {
+    	// TODO DEVO RIMUOVERE TUTTI I PACCHETTI CHE PARTONO DA QUEL LINK O DA QUEL NODO ELIMINATO
+    	// BEL PROBLEMA DEL CAZZO
+    	
+    	if (gc.getInput().isMousePressed( Input.MOUSE_RIGHT_BUTTON )) {
+    		for (Node node: nodes) {
+    			if (node.checkCollision( mouseX, mouseY )) {
+    				for (Node nodo: nodes) {
+    					nodo.removeLink( node );
+    				}
+    				
+    				node.removeLink( null );
+    				removing = false;
+    			}
+    		}
+    	}
+    }
+    
     public void manageNewNode( final GameContainer gc, Node tmpNode ) throws SlickException {
     	if (phaseOneNewNode) {
         	if (gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON )) {
@@ -223,6 +247,10 @@ public class NetworkDisplay
         
         if (nodesChanged) {
         	manageMovingNode( gc );
+        }
+        
+        if (removing) {
+        	manageRemoveNode( gc );
         }
     	
         for (Node node: nodes) {
