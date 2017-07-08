@@ -223,8 +223,6 @@ public class NetworkDisplay
         
         if (nodesChanged) {
         	manageMovingNode( gc );
-        } else if (nodeMoved != null) {
-        	nodeMoved = null;
         }
     	
         for (Node node: nodes) {
