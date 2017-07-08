@@ -183,6 +183,19 @@ public class Node
     	}
     }
     
+    public Node clone() {
+    	try {
+			Node tmp = new Node( node.getCenterX(), node.getCenterY(), nodeID, name, delay, color );
+			tmp.Init();
+			return tmp;
+		} catch (SlickException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+    	
+    	return null;
+    }
+    
     public void update( final GameContainer gc, final int widthSpace, final float startSpaceY, final int heightSpace, final boolean choose ) {
     	this.choose = choose;
     	

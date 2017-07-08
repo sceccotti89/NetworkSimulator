@@ -88,7 +88,6 @@ public class OptionBar implements AnimationInterface
                         } else if (button.getName().equals( NODE )) {
                         	if (!nd.isInExecution()) {
                         		nd.addNewNode( mouseX, mouseY );
-                        		gc.getInput().clearKeyPressedRecord();
                         	}
                         } else if (button.getName().equals( REMOVE )) {
                             nd.removeNode();

@@ -89,7 +89,7 @@ public class NetworkDisplay
     public void addNewNode( final int mouseX, final int mouseY ) throws SlickException {
     	if (!phaseOneNewNode && !phaseTwoNewNode) {
     		phaseOneNewNode = true;
-    		tmpNode = new Node( mouseX, mouseY, 1, "switch", 0, Color.gray );
+    		tmpNode = new Node( mouseX, mouseY, 10, "switch", 0, Color.gray );
 
     		float x = Math.max( Math.min( mouseX - tmpNode.getRay(), width - tmpNode.getRay()*2 ), 0 );
         	float y = Math.max( Math.min( mouseY - tmpNode.getRay(), zone.getMaxY() - tmpNode.getRay()*2 ), zone.getY() );
@@ -181,6 +181,7 @@ public class NetworkDisplay
     				}
     				
     				node.removeLink( null );
+    				System.out.println( "NODE ID = " + node.getNodeID() );
     				nodes.remove( node );
     				removing = false;
     				
@@ -211,7 +212,7 @@ public class NetworkDisplay
         			tmpNode.addLink( node, 0, 0, width, height, NetworkLink.BIDIRECTIONAL );
         			node.addLink( tmpNode, 0, 0, width, height, NetworkLink.BIDIRECTIONAL );
         			tmpNode.Init();
-        			nodes.add( tmpNode );
+        			nodes.add( tmpNode.clone() );
         			tmpNode = null;
         			
         			phaseTwoNewNode = false;
