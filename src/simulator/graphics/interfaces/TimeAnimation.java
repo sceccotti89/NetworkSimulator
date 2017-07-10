@@ -169,9 +169,6 @@ public class TimeAnimation implements AnimationInterface
 	       		info = info + ns + "µs";
 	       	}
        	}
-       	
-       	// TODO ALLA FINE DI TUTTO, PROVARE A SETTARE LA POSIZIONE DELLE FRECCE
-       	// IN RELAZIONE ALLA LUNGHEZZA DEL TEMPO
     	
     	return info;
     }
@@ -201,6 +198,9 @@ public class TimeAnimation implements AnimationInterface
             
             // TODO FAR SI CHE A SECONDA DEL TEMPO MOSTRATO LE FRECCE VANNO AVANTI E INDIETRO
             // CAMBIANDO TEMPO A SECONDA DEL TEMPO PIU BASSO MOSTRATO
+           	
+           	// TODO ALLA FINE DI TUTTO, PROVARE A SETTARE LA POSIZIONE DELLE FRECCE
+           	// IN RELAZIONE ALLA LUNGHEZZA DEL TEMPO
             if (timeUs.checkClick( mouseX, mouseY )) {
             	if (timeS.isSelected()) {
                 	timeUs.setSelected();
