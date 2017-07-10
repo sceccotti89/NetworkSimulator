@@ -148,6 +148,26 @@ public class TimeAnimation implements AnimationInterface
 	       	if (timeUs.isSelected()) {
 	       		info = info + ":";
 	       	}
+       	} else if (timeUs.isSelected()) {
+       		ms = decimal/1000;
+       		if (ms < 10) {
+	   			info = info + "00" + ms + "ms:";
+	       	} else if (ms < 100) {
+	       		info = info + "0" + ms + "ms:";
+	       	} else {
+	       		info = info + ms + "ms:";
+	       	}
+       		
+       		ns = decimal - ms*1000;
+       		if (ns < 10) {
+	   			info = info + "00" + ns + "µs";
+	       	} else if (ns < 100) {
+	       		info = info + "0" + ns + "µs";
+	       	} else {
+	       		info = info + ns + "µs";
+	       	}
+       		
+       		return info;
        	}
        	
        	if (timeUs.isSelected()) {
@@ -194,8 +214,6 @@ public class TimeAnimation implements AnimationInterface
         } else if (!leftMouse && mouseDown) {
             mouseDown = false;
            	
-           	// TODO ALLA FINE DI TUTTO, PROVARE A SETTARE LA POSIZIONE DELLE FRECCE
-           	// IN RELAZIONE ALLA LUNGHEZZA DEL TEMPO
             if (timeUs.checkClick( mouseX, mouseY )) {
             	if (timeS.isSelected()) {
                 	timeUs.setSelected();
