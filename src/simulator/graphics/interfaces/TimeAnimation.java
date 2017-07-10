@@ -40,6 +40,7 @@ public class TimeAnimation implements AnimationInterface
     private boolean buttonHit = false, timingHit = false;
     
     private final Time timeUs, timeS;
+	private boolean mouseDown;
     
     public TimeAnimation( float startY, final float width, final float height ) throws SlickException
     {
@@ -142,14 +143,31 @@ public class TimeAnimation implements AnimationInterface
         	ArrowButton arrow = arrows.get( index );
             if (arrow.contains( mouseX, mouseY ) && ++tick >= 50) {
                 setCursor( index, nd );
+                return;
             }
         }
         
-        if (leftMouse) {
+        if (leftMouse && !mouseDown) {
+            mouseDown = true;
+        } else if (!leftMouse && mouseDown) {
+            mouseDown = false;
+            
+            if (timeUs.checkClick( mouseX, mouseY )) {
+            	timeUs.setSelected();
+            } else if (timeS.checkClick( mouseX, mouseY )) {
+            	timeS.setSelected();
+            }
+        }
+        
+        
+        
+        else if (leftMouse) {
         	if (timingHit) {
         		setTime( nd );
-        	} if (!buttonHit && !timingHit) {
-	    		if (timing.intersects( mouse )) {
+        	} 
+        	
+        	if (!buttonHit && !timingHit) {
+        		if (timing.intersects( mouse )) {
 	    			timingHit = true;
 	        		setTime( nd );
 	    		} else if (nd.isInPause()) {
@@ -161,9 +179,19 @@ public class TimeAnimation implements AnimationInterface
 							setCursor( index, nd );
 						}
 	    			}
+	    			
+	    			/*if (!buttonHit) {
+	    				if (timeUs.checkClick( mouseX, mouseY )) {
+	    					timeUs.setSelected( true );
+	    					buttonHit = true;
+	    				} else if (timeS.checkClick( mouseX, mouseY )) {
+	    					timeS.setSelected( true );
+	    					buttonHit = true;
+	    				}
+	    			}*/
 				}
         	}
-        } else if (buttonHit) {
+        } else if (buttonHit && index != -1) {
     		buttonHit = false;
     		arrows.get( index ).setPressed( false );
     		index = -1;

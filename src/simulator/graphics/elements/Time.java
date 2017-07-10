@@ -11,7 +11,7 @@ public class Time
 	
 	private final float width;
 	
-	private boolean selected;
+	private boolean selected = true;
 	
 	public Time( final float x, final float y, final float width, final float height, final String time )
 	{
@@ -25,7 +25,7 @@ public class Time
 		return area.contains( mouseX, mouseY );
 	}
 	
-	public void setSelected() {
+	public void setSelected(  ) {
 		selected = !selected;
 	}
 	
@@ -42,6 +42,7 @@ public class Time
 
 		g.fill( area );
 		
+		g.setColor( Color.white );
 		final float heightF = g.getFont().getHeight( time );
 		g.drawString( time, area.getMaxX() + width/2, area.getCenterY() - heightF/2 );
 	}
