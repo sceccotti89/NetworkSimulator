@@ -70,6 +70,15 @@ public class ArrowButton
         return row.getX();
     }
 
+    /** modifica la posizione sull'ascissa della freccia*/
+	public void setX( final float startX, final float lenght ) {
+		if (direction == RIGHT) {
+			row.setX( startX + lenght/2 );
+		} else {
+			row.setX( startX - lenght/2 - row.getWidth() );
+		}
+	}
+
     /** restituisce la coordinata Y dell'area
      * @return y - la coordinata Y
     */

@@ -16,7 +16,8 @@ import simulator.graphics.elements.Time;
 
 public class TimeAnimation implements AnimationInterface
 {
-    private final Rectangle barTiming, timing, cursor;
+    private final float OFFSET;
+	private final Rectangle barTiming, timing, cursor;
     private long timer;
     
     private int tick = 0, moving = 1, index = -1;
@@ -29,7 +30,7 @@ public class TimeAnimation implements AnimationInterface
     
     private final float widthCursor;
     
-    private final float height;
+    private final float width, height;
     private final float offsetH;
     
     private final Rectangle mouse;
@@ -44,7 +45,10 @@ public class TimeAnimation implements AnimationInterface
     
     public TimeAnimation( float startY, final float width, final float height ) throws SlickException
     {
+    	this.width = width;
         this.height = height;
+        
+        OFFSET = width/40;
         
         arrows = new ArrayList<ArrowButton>();
         
@@ -124,7 +128,13 @@ public class TimeAnimation implements AnimationInterface
     	return h + "h:" + m + "m:" + s + "s";
     }
     
-    private String setTimer( long time ) {
+    private void setPositionArrows( final float widthS ) {
+    	for (ArrowButton arrow: arrows) {
+    		arrow.setX( width/2, widthS );
+    	}
+    }
+    
+    private String setTimer( long time, final GameContainer gc ) {
     	long decimal = time;
     	time = time / limit;
     	long h = time/3600, m = (time - h*3600)/60, s = time - h*3600 - m*60,
@@ -166,7 +176,7 @@ public class TimeAnimation implements AnimationInterface
 	       	} else {
 	       		info = info + ns + "µs";
 	       	}
-       		
+           	
        		return info;
        	}
        	
@@ -187,7 +197,7 @@ public class TimeAnimation implements AnimationInterface
 	       		info = info + ns + "µs";
 	       	}
        	}
-    	
+       	
     	return info;
     }
     
@@ -291,10 +301,10 @@ public class TimeAnimation implements AnimationInterface
         g.setColor( Color.white );
         g.fill( cursor );
         
-        //String info = setInfo( timer, 0 ) + " / " + setInfo( AnimationNetwork.timeSimulation, 0 );
-        String info = setTimer( timer ) + "/" + setTimer( AnimationNetwork.timeSimulation );
+        String info = setTimer( timer, gc ) + "/" + setTimer( AnimationNetwork.timeSimulation, gc );
         
         int fWidth = g.getFont().getWidth( info ), fHeight = g.getFont().getHeight( info );
+       	setPositionArrows( fWidth + OFFSET );
         g.drawString( info, timing.getCenterX() - fWidth/2, timing.getMaxY() + (height - timing.getMaxY() - fHeight)/2 );
         
         for (ArrowButton arrow: arrows) {
