@@ -27,46 +27,28 @@ import simulator.graphics.interfaces.TimeAnimation;
 import simulator.topology.NetworkLink;
 import simulator.topology.NetworkNode;
 
-public class AnimationNetwork extends BasicGame
+public class AnimationNetwork extends AppGameContainer
 {
-    private OptionBar ob;
-    private AnimationManager am;
-    private TimeAnimation ta;
-    private NetworkDisplay nd; 
-    
-    private boolean leftMouse;
-    
     private List<Node> nodes;
     private List<Packet> packets;
-    
-    private int width, height;
     
     public static long timeSimulation = 0;
 	private final int limit = 1000000;
 	
-	private final AppGameContainer app;
+	private static Animator anim;
+	
+	
     
     public AnimationNetwork( final int width, final int height, final String title ) throws SlickException
     {
-        super( title );
+        super( anim = new Animator( width, height, title ), width, height, false );
         
-        app = new AppGameContainer( this );
-        app.setDisplayMode( width, height, false );
-        setFrameRate( 30 );
+        setTargetFrameRate( 30 );
         
         nodes   = new ArrayList<Node>();
         packets = new ArrayList<Packet>();
         
-        this.width = width;
-        this.height = height;
-    }
-    
-    public void setFrameRate( final int fps ) {
-        app.setTargetFrameRate( fps );
-    }
-    
-    public void setForceExit( final boolean forceExit ) {
-        app.setForceExit( forceExit );
+        anim.setAnimationElements( nodes, packets );
     }
     
     /**
@@ -174,25 +156,6 @@ public class AnimationNetwork extends BasicGame
         br.close();
     }
     
-    public void loadSimulation( final String networkFile, final String packetFile ) throws IOException, SlickException
-    {
-        loadNetwork( networkFile );
-        loadPackets( packetFile );
-    }
-    
-    public void start() throws SlickException{
-        app.start();
-    }
-
-    @Override
-    public void init( final GameContainer gc ) throws SlickException
-    {
-        ob = new OptionBar( gc );
-        am = new AnimationManager( gc, ob.getMaxY(), width, height );
-        nd = new NetworkDisplay( width, height, am.getMaxY(), nodes, packets );
-        ta = new TimeAnimation( nd.getMaxY(), width, height );
-    }
-    
     public void addNode( final int x, final int y, final long nodeID, final String name, final long delay, final Color color ) throws SlickException {
         Node node = new Node( x, y, nodeID, name, delay, color );
         nodes.add( node );
@@ -219,26 +182,70 @@ public class AnimationNetwork extends BasicGame
         
         return null;
     }
-
-    @Override
-    public void update( final GameContainer gc, final int delta ) throws SlickException
+    
+    public void loadSimulation( final String networkFile, final String packetFile ) throws IOException, SlickException
     {
-        leftMouse = gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
-        
-        nd.nodeInit();
-
-        nd.update( gc, am );
-        ob.update( delta, gc, leftMouse, nd );
-        am.update( delta, gc, leftMouse, nd );
-        ta.update( delta, gc, leftMouse, nd );
+        loadNetwork( networkFile );
+        loadPackets( packetFile );
     }
-
-    @Override
-    public void render( final GameContainer gc, final Graphics g ) throws SlickException
+    
+    private static class Animator extends BasicGame
     {
-        am.render( gc );
-        ob.render( gc );
-        ta.render( gc );
-        nd.render( gc );
+        protected OptionBar ob;
+        protected AnimationManager am;
+        protected TimeAnimation ta;
+        protected NetworkDisplay nd; 
+        
+        protected boolean leftMouse;
+        
+        private List<Node> nodes;
+        private List<Packet> packets;
+        
+        private int width;
+        private int height;
+        
+        public Animator( final int width, final int height, final String title )
+        {
+            super( title );
+            
+            this.width = width;
+            this.height = height;
+        }
+        
+        private void setAnimationElements( final List<Node> nodes, final List<Packet> packets ) {
+            this.nodes = nodes;
+            this.packets = packets;
+        }
+        
+        @Override
+        public void init( final GameContainer gc ) throws SlickException
+        {
+            ob = new OptionBar( gc );
+            am = new AnimationManager( gc, ob.getMaxY(), width, height );
+            nd = new NetworkDisplay( width, height, am.getMaxY(), nodes, packets );
+            ta = new TimeAnimation( nd.getMaxY(), width, height );
+        }
+        
+        @Override
+        public void update( final GameContainer gc, final int delta ) throws SlickException
+        {
+            leftMouse = gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
+            
+            nd.nodeInit();
+    
+            nd.update( gc, am );
+            ob.update( delta, gc, leftMouse, nd );
+            am.update( delta, gc, leftMouse, nd );
+            ta.update( delta, gc, leftMouse, nd );
+        }
+        
+        @Override
+        public void render( final GameContainer gc, final Graphics g ) throws SlickException
+        {
+            am.render( gc );
+            ob.render( gc );
+            ta.render( gc );
+            nd.render( gc );
+        }
     }
 }

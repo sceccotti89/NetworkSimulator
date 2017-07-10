@@ -428,7 +428,7 @@ public class EnergyTest
         // Show the animation.
         AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );
         an.loadSimulation( "Topology/Topology_test.json", "./Results/packets2.txt" );
-        an.setFrameRate( 90 );
+        an.setTargetFrameRate( 90 );
         an.setForceExit( false );
         an.start();
     }
@@ -540,11 +540,6 @@ public class EnergyTest
         // TARGET:     790400.000000000
         // SIMULATOR: 1145401.600324196    992317.15024121070    940141.72685316140
         // IDLE:       247582.811710984     94926.56637327410     94926.56637327410
-        
-        AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );
-        an.loadSimulation( "Topology/Topology_multicore.json", "./Results/packets2.txt" );
-        an.setFrameRate( 90 );
-        an.start();
     }
 
     public static void testDistributedMultipleNodes( final CPUEnergyModel model ) throws IOException

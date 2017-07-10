@@ -18,7 +18,7 @@ import simulator.graphics.AnimationNetwork;
          //an.addNode( 100, 200, 3, Color.red );
          //an.addLink(  );
          
-         an.setFrameRate( 90 );
+         an.setTargetFrameRate( 90 );
          an.start();
      }
  } 
