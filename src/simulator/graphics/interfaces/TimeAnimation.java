@@ -183,12 +183,11 @@ public class TimeAnimation implements AnimationInterface
         mouse.setLocation( mouseX, mouseY );
         
         timer = nd.getTimeSimulation();
-
-        if (index >= 0) {
+        
+        if (buttonHit) {
         	ArrowButton arrow = arrows.get( index );
             if (arrow.contains( mouseX, mouseY ) && ++tick >= 50) {
                 setCursor( index, nd );
-                return;
             }
         }
         
@@ -202,6 +201,16 @@ public class TimeAnimation implements AnimationInterface
             } else if (timeS.checkClick( mouseX, mouseY )) {
             	timeS.setSelected();
             }
+            
+            if (buttonHit && index != -1) {
+        		buttonHit = false;
+        		arrows.get( index ).setPressed( false );
+        		index = -1;
+        		tick = 0;
+        	} else if (timingHit) {
+        		timingHit = false;
+        		setTime( nd );
+        	}
         } else if (leftMouse) {
         	if (timingHit) {
         		setTime( nd );
@@ -222,15 +231,7 @@ public class TimeAnimation implements AnimationInterface
 	    			}
 				}
         	}
-        } else if (buttonHit && index != -1) {
-    		buttonHit = false;
-    		arrows.get( index ).setPressed( false );
-    		index = -1;
-    		tick = 0;
-    	} else if (timingHit) {
-    		timingHit = false;
-    		setTime( nd );
-    	}
+        }
         
         if (timing.intersects( mouse ) || timingHit) {
         	String info = setInfo( getTime( mouseX ), timer );
