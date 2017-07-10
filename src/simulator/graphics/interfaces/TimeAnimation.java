@@ -12,6 +12,7 @@ import org.newdawn.slick.geom.Rectangle;
 
 import simulator.graphics.AnimationNetwork;
 import simulator.graphics.dataButton.ArrowButton;
+import simulator.graphics.elements.Time;
 
 public class TimeAnimation implements AnimationInterface
 {
@@ -38,7 +39,9 @@ public class TimeAnimation implements AnimationInterface
     
     private boolean buttonHit = false, timingHit = false;
     
-    public TimeAnimation( final float startY, final float width, final float height ) throws SlickException
+    private final Time timeUs, timeS;
+    
+    public TimeAnimation( float startY, final float width, final float height ) throws SlickException
     {
         this.height = height;
         
@@ -72,6 +75,11 @@ public class TimeAnimation implements AnimationInterface
         if(AnimationNetwork.timeSimulation >= limit) {
         	moving = moving * limit;
         }
+        
+        final float widthT = width/53, heightT = height/40;
+        startY = timing.getMaxY() + (height - timing.getMaxY())*7/8 - heightT/2;
+        timeUs = new Time( width/2 - widthT/2 - width/16, startY - heightT/2, widthT, heightT, "µs" );
+        timeS  = new Time( width/2 - widthT/2 + width/16, startY - heightT/2 , widthT, heightT, "h:m:s" );
     }
     
     private long roundValue( final double value ) {
@@ -197,5 +205,8 @@ public class TimeAnimation implements AnimationInterface
         for (ArrowButton arrow: arrows) {
         	arrow.draw( g );
         }
+
+        timeUs.render( g );
+        timeS.render( g );
     }
 }
