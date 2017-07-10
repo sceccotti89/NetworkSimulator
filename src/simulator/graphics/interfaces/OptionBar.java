@@ -20,7 +20,7 @@ public class OptionBar implements AnimationInterface
     private SimpleButton file, options, edit;
     private Operation move, add, remove;
     
-    private float width, height;
+    private float widthB, heightB;
     
     private List<SimpleButton> buttons;
     private List<Operation> operation;
@@ -33,17 +33,17 @@ public class OptionBar implements AnimationInterface
     
     private boolean chooseOption = false;
     
-    public OptionBar( final GameContainer gc ) throws SlickException
+    public OptionBar( final GameContainer gc, final int width, final int height ) throws SlickException
     {
-        width  = gc.getWidth()/10;
-        height = gc.getHeight()/30;
+        widthB = width/10;
+        heightB = height/30;
         
         buttons = new ArrayList<SimpleButton>();
         
         int index = 0;
-        file    = new SimpleButton( 0, 0, width, height, FILE, Color.gray, index++, gc );
-        options = new SimpleButton( file.getMaxX(), 0, width, height, OPTIONS, Color.gray, index++, gc );
-        edit    = new SimpleButton( options.getMaxX(), 0, width, height, EDIT, Color.gray, index++, gc );
+        file    = new SimpleButton( 0, 0, widthB, heightB, FILE, Color.gray, index++, gc );
+        options = new SimpleButton( file.getMaxX(), 0, widthB, heightB, OPTIONS, Color.gray, index++, gc );
+        edit    = new SimpleButton( options.getMaxX(), 0, widthB, heightB, EDIT, Color.gray, index++, gc );
         
         buttons.add( file );
         buttons.add( options );
@@ -51,9 +51,10 @@ public class OptionBar implements AnimationInterface
         
         operation = new ArrayList<Operation>();
         
-        move   = new Operation( MOVE, edit.getX(), edit.getMaxY(), width, height );
-        add    = new Operation( ADD, move.getX(), move.getMaxY(), width, height );
-        remove = new Operation( REMOVE, add.getX(), add.getMaxY(), width, height );
+        final float startX = edit.getX() + width/400;
+        move   = new Operation( MOVE, startX, edit.getMaxY(), widthB, heightB );
+        add    = new Operation( ADD, startX, move.getMaxY(), widthB, heightB );
+        remove = new Operation( REMOVE, startX, add.getMaxY(), widthB, heightB );
         
         operation.add( move );
         operation.add( add );

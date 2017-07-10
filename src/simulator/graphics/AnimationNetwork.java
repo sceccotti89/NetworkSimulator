@@ -36,8 +36,6 @@ public class AnimationNetwork extends AppGameContainer
 	private final int limit = 1000000;
 	
 	private static Animator anim;
-	
-	
     
     public AnimationNetwork( final int width, final int height, final String title ) throws SlickException
     {
@@ -220,7 +218,7 @@ public class AnimationNetwork extends AppGameContainer
         @Override
         public void init( final GameContainer gc ) throws SlickException
         {
-            ob = new OptionBar( gc );
+        	ob = new OptionBar( gc, width, height );
             am = new AnimationManager( gc, ob.getMaxY(), width, height );
             nd = new NetworkDisplay( width, height, am.getMaxY(), nodes, packets );
             ta = new TimeAnimation( nd.getMaxY(), width, height );
