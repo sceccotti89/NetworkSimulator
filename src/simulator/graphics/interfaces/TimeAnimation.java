@@ -129,8 +129,6 @@ public class TimeAnimation implements AnimationInterface
     	time = time / limit;
     	long h = time/3600, m = (time - h*3600)/60, s = time - h*3600 - m*60,
        		 ms = (decimal - (h*3600 + m*60 + s) * limit) / 1000, ns = (decimal - (h*3600 + m*60 + s) * limit) - ms * 1000;
-       	
-    	// TODO RIPENSARE IN MODO MIGLIORE AI TEMPI
     	
        	String info = "";
        	
@@ -195,9 +193,6 @@ public class TimeAnimation implements AnimationInterface
             mouseDown = true;
         } else if (!leftMouse && mouseDown) {
             mouseDown = false;
-            
-            // TODO FAR SI CHE A SECONDA DEL TEMPO MOSTRATO LE FRECCE VANNO AVANTI E INDIETRO
-            // CAMBIANDO TEMPO A SECONDA DEL TEMPO PIU BASSO MOSTRATO
            	
            	// TODO ALLA FINE DI TUTTO, PROVARE A SETTARE LA POSIZIONE DELLE FRECCE
            	// IN RELAZIONE ALLA LUNGHEZZA DEL TEMPO
@@ -205,9 +200,21 @@ public class TimeAnimation implements AnimationInterface
             	if (timeS.isSelected()) {
                 	timeUs.setSelected();
             	}
+            	
+            	if (timeUs.isSelected()) {
+            		moving = 1;
+            	} else {
+            		moving = 1 * limit;
+            	}
             } else if (timeS.checkClick( mouseX, mouseY )) {
             	if (timeUs.isSelected()) {
             		timeS.setSelected();
+            	}
+
+            	if (timeUs.isSelected()) {
+            		moving = 1;
+            	} else {
+            		moving = 1 * limit;
             	}
             }
             
