@@ -59,23 +59,19 @@ public class TimeAnimation implements AnimationInterface
         
         mouse = new Rectangle( 0, 0, 1, 1 );
         
-        float distX = width/7, distY = height/70;
+        float distX = width*10/37, distY = height/70, widthA = width/10*(15/10);
         float centerX = timing.getCenterX(), centerY = timing.getMaxY() + (height - timing.getMaxY())/2;
         timeOn   = new ArrowButton( "ON", ArrowButton.RIGHT, new float[]{centerX + distX, centerY - distY,
-        																 centerX + distX*15/10, centerY,
+        																 centerX + distX + widthA, centerY,
         																 centerX + distX, centerY + distY},
         							Color.green, 0 );
-        timeBack = new ArrowButton( "BACK", ArrowButton.LEFT, new float[]{centerX - distX*15/10, centerY,
+        timeBack = new ArrowButton( "BACK", ArrowButton.LEFT, new float[]{centerX - distX - widthA, centerY,
         																  centerX - distX, centerY - distY,
         																  centerX - distX, centerY + distY},
         						    Color.green, 1 );
         
         arrows.add( timeOn );
         arrows.add( timeBack );
-        
-        if(AnimationNetwork.timeSimulation >= limit) {
-        	moving = moving * limit;
-        }
         
         final float widthT = width/53, heightT = height/40;
         startY = timing.getMaxY() + (height - timing.getMaxY())*7/8 - heightT/2;
@@ -126,6 +122,55 @@ public class TimeAnimation implements AnimationInterface
     	}
     	
     	return h + "h:" + m + "m:" + s + "s";
+    }
+    
+    private String setTimer( long time ) {
+    	long decimal = time;
+    	time = time / limit;
+    	long h = time/3600, m = (time - h*3600)/60, s = time - h*3600 - m*60,
+       		 ms = (decimal - (h*3600 + m*60 + s) * limit) / 1000, ns = (decimal - (h*3600 + m*60 + s) * limit) - ms * 1000;
+       	
+       	String info = "";
+       	if (timeS.isSelected()) {
+       		info = h + "h:";
+	       	if (m < 10) {
+	       		info = info + "0" + m + "m:";
+	       	} else {
+	       		info = info + m + "m:";
+	       	}
+	       	
+	       	if (s < 10) {
+	       		info = info + "0" + s + "s";
+	       	} else {
+	       		info = info + s + "s";
+	       	}
+	       	if (timeUs.isSelected()) {
+	       		info = info + ":";
+	       	}
+       	}
+       	
+       	if (timeUs.isSelected()) {
+	       	if (ms < 10) {
+	   			info = info + "00" + ms + "ms:";
+	       	} else if (ms < 100) {
+	       		info = info + "0" + ms + "ms:";
+	       	} else {
+	       		info = info + ms + "ms:";
+	       	}
+	       	
+	       	if (ns < 10) {
+	   			info = info + "00" + ns + "µs";
+	       	} else if (ns < 100) {
+	       		info = info + "0" + ns + "µs";
+	       	} else {
+	       		info = info + ns + "µs";
+	       	}
+       	}
+       	
+       	// TODO ALLA FINE DI TUTTO, PROVARE A RISETTARE LA POSIZIONE DELLE FRECCE
+       	// IN RELAZIONE ALLA LUNGHEZZA DEL TEMPO
+    	
+    	return info;
     }
     
     @Override
@@ -211,7 +256,8 @@ public class TimeAnimation implements AnimationInterface
         g.setColor( Color.white );
         g.fill( cursor );
         
-        String info = setInfo( timer, 0 ) + " / " + setInfo( AnimationNetwork.timeSimulation, 0 );
+        //String info = setInfo( timer, 0 ) + " / " + setInfo( AnimationNetwork.timeSimulation, 0 );
+        String info = setTimer( timer ) + "/" + setTimer( AnimationNetwork.timeSimulation );
         
         int fWidth = g.getFont().getWidth( info ), fHeight = g.getFont().getHeight( info );
         g.drawString( info, timing.getCenterX() - fWidth/2, timing.getMaxY() + (height - timing.getMaxY() - fHeight)/2 );
