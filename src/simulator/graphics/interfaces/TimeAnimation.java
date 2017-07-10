@@ -157,11 +157,7 @@ public class TimeAnimation implements AnimationInterface
             } else if (timeS.checkClick( mouseX, mouseY )) {
             	timeS.setSelected();
             }
-        }
-        
-        
-        
-        else if (leftMouse) {
+        } else if (leftMouse) {
         	if (timingHit) {
         		setTime( nd );
         	} 
@@ -179,16 +175,6 @@ public class TimeAnimation implements AnimationInterface
 							setCursor( index, nd );
 						}
 	    			}
-	    			
-	    			/*if (!buttonHit) {
-	    				if (timeUs.checkClick( mouseX, mouseY )) {
-	    					timeUs.setSelected( true );
-	    					buttonHit = true;
-	    				} else if (timeS.checkClick( mouseX, mouseY )) {
-	    					timeS.setSelected( true );
-	    					buttonHit = true;
-	    				}
-	    			}*/
 				}
         	}
         } else if (buttonHit && index != -1) {
