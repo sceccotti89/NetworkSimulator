@@ -427,7 +427,7 @@ public class EnergyTest
         
         // Show the animation.
         AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );
-        an.loadSimulation( "Topology/Topology_test.json", "./Results/packets2.txt" );
+        an.loadSimulation( "Topology/Topology_test.json", "./Results/packets.txt" );
         an.setTargetFrameRate( 90 );
         an.setForceExit( false );
         an.start();
