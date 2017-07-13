@@ -14,6 +14,7 @@ import simulator.events.EventGenerator;
 import simulator.events.Packet;
 import simulator.events.impl.RequestEvent;
 import simulator.exception.SimulatorException;
+import simulator.graphics.AnimationNetwork;
 import simulator.network.NetworkLayer;
 import simulator.network.NetworkSettings;
 import simulator.network.protocols.RIP;
@@ -24,6 +25,8 @@ import simulator.utils.Utils;
 
 public class NetworkTest
 {
+    private static final int CPU_CORES = 4;
+    
     protected static class CBRGenerator extends EventGenerator
     {
         public CBRGenerator( final Time duration,
@@ -79,6 +82,23 @@ public class NetworkTest
         public Time computeDepartureTime( final Event e ) {
             // Empty method.
             return null;
+        }
+    }
+    
+    private static class SwitchAgent extends Agent
+    {
+        public SwitchAgent( final long id, final EventGenerator evGenerator ) {
+            super( id, evGenerator );
+        }
+        
+        @Override
+        public double getNodeUtilization( final Time time )
+        {
+            double utilization = 0;
+            for (Agent agent : _destinations) {
+                utilization += agent.getNodeUtilization( time );
+            }
+            return utilization;
         }
     }
     
@@ -189,7 +209,8 @@ public class NetworkTest
         //example4();
         //example5();
         //example6();
-        example7();
+        //example7();
+        testNetworkAnimation();
     	
     	System.out.println( "End of simulation." );
     }
@@ -508,5 +529,45 @@ public class NetworkTest
         //sim.start( new Time( 1, TimeUnit.HOURS ) );
         
         sim.stop();
+    }
+    
+    public static void testNetworkAnimation() throws Exception
+    {
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_test.json" );
+        net.setTrackingEvent( "./Results/packets.txt" );
+        System.out.println( net.toString() );
+        
+        Simulator sim = new Simulator( net );
+        
+        EventGenerator generator = new ClientGenerator( Time.INFINITE, 1L,
+                                                        new Packet( 20, SizeUnit.MEGABYTE ),
+                                                        new Packet( 20, SizeUnit.MEGABYTE ) );
+        Agent client = new ClientAgent( 0, generator );
+        net.addAgent( client );
+        
+        EventGenerator anyGen = new MulticastGenerator( Time.INFINITE, 1L,
+                                                        new Packet( 20, SizeUnit.MEGABYTE ),
+                                                        new Packet( 20, SizeUnit.MEGABYTE ) );
+        Agent switchAgent = new SwitchAgent( 1, anyGen );
+        net.addAgent( switchAgent );
+        
+        client.connect( switchAgent );
+        for (int i = 0; i < CPU_CORES; i++) {
+            Agent agentCore = new ServerAgent( 2 + i );
+            net.addAgent( agentCore );
+            
+            switchAgent.connect( agentCore );
+        }
+        
+        sim.start( new Time( 1, TimeUnit.HOURS ) );
+        
+        sim.stop();
+        
+        // Show the animation.
+        AnimationNetwork an = new AnimationNetwork( 800, 600, "Distributed Network" );
+        an.loadSimulation( "Topology/Topology_test.json", "./Results/packets.txt" );
+        an.setTargetFrameRate( 90 );
+        an.setForceExit( false );
+        an.start();
     }
 }
