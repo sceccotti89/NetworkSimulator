@@ -89,7 +89,7 @@ public class NetworkDisplay
     public void addClient( final float mouseX, final float mouseY ) throws SlickException {
         if (!phaseOneNewNode && !phaseTwoNewNode) {
             phaseOneNewNode = true;
-            tmpNode = new Node( mouseX, mouseY, 10, "switch", 0, Color.gray );
+            tmpNode = new Node( mouseX, mouseY, 10, "client", 0, Color.yellow );
 
             float x = Math.max( Math.min( mouseX - tmpNode.getRay(), width - tmpNode.getRay()*2 ), 0 );
             float y = Math.max( Math.min( mouseY - tmpNode.getRay(), zone.getMaxY() - tmpNode.getRay()*2 ), zone.getY() );
@@ -103,7 +103,7 @@ public class NetworkDisplay
     public void addServer( final float mouseX, final float mouseY ) throws SlickException {
         if (!phaseOneNewNode && !phaseTwoNewNode) {
             phaseOneNewNode = true;
-            tmpNode = new Node( mouseX, mouseY, 10, "switch", 0, Color.gray );
+            tmpNode = new Node( mouseX, mouseY, 10, "server", 0, Color.black );
 
             float x = Math.max( Math.min( mouseX - tmpNode.getRay(), width - tmpNode.getRay()*2 ), 0 );
             float y = Math.max( Math.min( mouseY - tmpNode.getRay(), zone.getMaxY() - tmpNode.getRay()*2 ), zone.getY() );
@@ -117,13 +117,18 @@ public class NetworkDisplay
     public void addSwitch( final float mouseX, final float mouseY ) throws SlickException {
         if (!phaseOneNewNode && !phaseTwoNewNode) {
             phaseOneNewNode = true;
-            tmpNode = new Node( mouseX, mouseY, 10, "switch", 0, Color.gray );
+            tmpNode = new Node( mouseX, mouseY, 10, "switch", 0, Color.blue );
 
             float x = Math.max( Math.min( mouseX - tmpNode.getRay(), width - tmpNode.getRay()*2 ), 0 );
             float y = Math.max( Math.min( mouseY - tmpNode.getRay(), zone.getMaxY() - tmpNode.getRay()*2 ), zone.getY() );
             
             tmpNode.getArea().setLocation( x, y );
         }
+    }
+    
+    // TODO COMPLETARE QUESTO METODO
+    public void addPacket( final float mouseX, final float mouseY ) {
+        
     }
     
     public void nodeInit() throws SlickException {
@@ -184,7 +189,7 @@ public class NetworkDisplay
     	removing = !removing;
     }
     
-    public void manageRemoveNode( final GameContainer gc ) {
+    private void manageRemoveNode( final GameContainer gc ) {
     	if (gc.getInput().isMousePressed( Input.MOUSE_RIGHT_BUTTON )) {
     		for (Node node: nodes) {
     			if (node.checkCollision( mouseX, mouseY )) {
@@ -218,7 +223,12 @@ public class NetworkDisplay
     	}
     }
     
-    public void manageAddNode( final GameContainer gc ) throws SlickException {
+    // TODO COMPLETARE QUESTO METODO
+    private void manageAddPacket() {
+        
+    }
+    
+    private void manageAddNode( final GameContainer gc ) throws SlickException {
     	if (phaseOneNewNode) {
         	if (gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON )) {
         		phaseOneNewNode = false;

@@ -20,7 +20,7 @@ public class OptionBar implements AnimationInterface
     
     private SimpleButton file, options, edit;
     private Operation move, add, remove;
-    private Operation client, server, switcher;
+    private Operation client, server, switcher, packet;
     
     private float widthB, heightB;
     
@@ -31,7 +31,7 @@ public class OptionBar implements AnimationInterface
     
     private String FILE = "File", OPTIONS = "Options", EDIT = "Edit",
                    MOVE = "MoveNode", ADD = "AddNode", REMOVE = "RemoveNode",
-                   CLIENT = "Client", SERVER = "Server", SWITCH = "Switch";
+                   CLIENT = "Client", SERVER = "Server", SWITCH = "Switch", PACKET = "AddPacket";
     
     private boolean mouseDown;
     
@@ -72,10 +72,12 @@ public class OptionBar implements AnimationInterface
         client   = new Operation( CLIENT, startX, add.getY(), widthB, heightB );
         server   = new Operation( SERVER, startX, client.getMaxY(), widthB, heightB );
         switcher = new Operation( SWITCH, startX, server.getMaxY(), widthB, heightB );
+        packet   = new Operation( PACKET, startX, switcher.getMaxY(), widthB, heightB );
         
         type.add( client );
         type.add( server );
         type.add( switcher );
+        type.add( packet );
         
         areaType = new Shape[] {add.getArea()};
         for (Operation op: type) {
@@ -153,6 +155,8 @@ public class OptionBar implements AnimationInterface
                                 nd.addServer( mouseX, mouseY );
                             } else if (op.getName().equals( SWITCH )) {
                                 nd.addSwitch( mouseX, mouseY );
+                            } else if (op.getName().equals( PACKET )) {
+                                nd.addPacket( mouseX, mouseY );
                             }
                             
                             chooseOption = false;
