@@ -106,28 +106,6 @@ public class TimeAnimation implements AnimationInterface
     	nd.setTimeSimulation( timer );
     }
     
-    private String setInfo( long time, final long value ) {
-    	if (AnimationNetwork.timeSimulation >= limit) {
-    		time = time / limit;
-    	} else {
-    		return time + "µs";
-    	}
-    	
-    	long h = time/3600, m = (time - h*3600)/60, s = time - h*3600 - m*60;
-    	
-    	if (s < 10) {
-    		if (m < 10) {
-    			return h + "h:" + "0" + m + "m:" + "0" + s + "s";
-    		} else {
-    			return h + "h:" + m + "m:" + "0" + s + "s";
-    		}
-    	} else if (m < 10) {
-    		return h + "h:" + "0" + m + "m:" + s + "s";
-    	}
-    	
-    	return h + "h:" + m + "m:" + s + "s";
-    }
-    
     private void setPositionArrows( final float widthS ) {
     	for (ArrowButton arrow: arrows) {
     		arrow.setX( width/2, widthS );
@@ -278,10 +256,12 @@ public class TimeAnimation implements AnimationInterface
         }
         
         if (timing.intersects( mouse ) || timingHit) {
-        	String info = setInfo( getTime( mouseX ), timer );
+        	String info = setTimer( getTime( mouseX ), gc );
         	
             float fontW = g.getFont().getWidth( info );
-            NetworkDisplay.info.setAttributes( g, info, Math.max( Math.min( mouseX, timing.getMaxX() ), startTimingX ) - fontW/2, timing.getMaxY() + offsetH );
+            float x = Math.max( Math.min( mouseX, timing.getMaxX() ), startTimingX ) - fontW/2;
+            x = Math.max( x, 0 ); x = Math.min( x, width - fontW );
+            NetworkDisplay.info.setAttributes( g, info, x, timing.getMaxY() + offsetH );
         }
         
         cursor.setX( startTimingX - widthCursor/2 + timing.getWidth() / AnimationNetwork.timeSimulation * timer );
