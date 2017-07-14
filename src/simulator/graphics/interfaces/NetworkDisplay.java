@@ -176,6 +176,10 @@ public class NetworkDisplay
         return removing;
     }
     
+    public boolean isAddingElement() {
+        return addingNode || addingPacket;
+    }
+    
     private void manageRemoveNode( final GameContainer gc ) {
     	if (gc.getInput().isMousePressed( Input.MOUSE_RIGHT_BUTTON )) {
     		for (Node node: nodes) {

@@ -130,29 +130,31 @@ public class OptionBar implements AnimationInterface
                     }
                 }
             }
-            
-            // TODO SETTARE DELLE DIPENDENZE (UNA OPERAZIONE ALLA VOLTA E' CONSENTITA)
-            for (Operation op : operation) {
-            	if (op.checkCollision( mouseX, mouseY )) {
-                    if (chooseOption) {
-		            	if (op.getName().equals( MOVE ) && !nd.isRemoving()) {
-	                        nd.setNodeSelectable();
-	                    } else if (op.getName().equals( REMOVE ) && !nd.isMoving()) {
-	                        nd.removeNode();
-	                    } else {
-	                        break;
-	                    }
-                    }
-	            	
-	            	chooseOption = false;
-            	}
+
+            if (!nd.isAddingElement()) {
+                for (Operation op : operation) {
+                	if (op.checkCollision( mouseX, mouseY )) {
+                        if (chooseOption) {
+    		            	if (op.getName().equals( MOVE ) && !nd.isRemoving()) {
+    	                        nd.setNodeSelectable();
+    	                    } else if (op.getName().equals( REMOVE ) && !nd.isMoving()) {
+    	                        nd.removeNode();
+    	                    } else {
+    	                        break;
+    	                    }
+                        }
+    	            	
+                        chooseType = false;
+    	            	chooseOption = false;
+                	}
+                }
             }
             
             if (!nd.isMoving() && !nd.isRemoving() && chooseType) {
                 if (!nd.isInExecution()) {
-                    // TODO SISTEMARE IL FATTO CHE MENTRE INSERISCO NON POSSO FARE ALTRO
                     for (Operation op: type) {
                         if (op.checkCollision( mouseX, mouseY )) {
+                            // TODO MENTRE INSERISCO LA TENDINA DEI NODI DEVE STARE SU
                             if (op.getName().equals( CLIENT )) {
                                 nd.addNode( mouseX, mouseY, "client" );
                                 nd.setAddingNode();
@@ -169,6 +171,8 @@ public class OptionBar implements AnimationInterface
                             
                             chooseOption = false;
                             chooseType = false;
+                            
+                            break;
                         }
                     }
                 }
