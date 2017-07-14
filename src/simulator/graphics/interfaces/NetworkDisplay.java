@@ -44,9 +44,9 @@ public class NetworkDisplay
 	
 	private Node source = null;
 
-    private boolean phaseTwoNewElement;
-
-    private boolean phaseOneNewElement;
+    private boolean phaseTwoNewElement, phaseOneNewElement;
+    
+    private String CLIENT = "client", SERVER = "server", SWITCH = "switch";
     
     public NetworkDisplay( final int width, final int height, final float startY, final List<Node> nodes, final List<Packet> packets )
     {
@@ -87,43 +87,20 @@ public class NetworkDisplay
             }
         }
     }
-    
-    /**Add a new client node in the simulation
+
+    /**Adds a new node in the simulation
      * @throws SlickException */
-    // TODO CREARE UN METODO UNICO PER TUTTE E 3 LE TIPOLOGIE
-    public void addClient( final float mouseX, final float mouseY ) throws SlickException {
+    public void addNode( final float mouseX, final float mouseY, final String type ) throws SlickException {
         if (!phaseOneNewElement && !phaseTwoNewElement) {
             phaseOneNewElement = true;
-            tmpNode = new Node( mouseX, mouseY, 10, "client", 0, Color.yellow );
-
-            float x = Math.max( Math.min( mouseX - tmpNode.getRay(), width - tmpNode.getRay()*2 ), 0 );
-            float y = Math.max( Math.min( mouseY - tmpNode.getRay(), zone.getMaxY() - tmpNode.getRay()*2 ), zone.getY() );
+            if (type.equals( CLIENT )) {
+                tmpNode = new Node( mouseX, mouseY, 10, type, 0, Color.yellow );
+            } else if (type.equals( SERVER )) {
+                tmpNode = new Node( mouseX, mouseY, 10, type, 0, Color.black );
+            } else if (type.equals( SWITCH )) {
+                tmpNode = new Node( mouseX, mouseY, 10, type, 0, Color.blue );
+            }
             
-            tmpNode.getArea().setLocation( x, y );
-        }
-    }
-    
-    /**Add a new server node in the simulation
-     * @throws SlickException */
-    public void addServer( final float mouseX, final float mouseY ) throws SlickException {
-        if (!phaseOneNewElement && !phaseTwoNewElement) {
-            phaseOneNewElement = true;
-            tmpNode = new Node( mouseX, mouseY, 10, "server", 0, Color.black );
-
-            float x = Math.max( Math.min( mouseX - tmpNode.getRay(), width - tmpNode.getRay()*2 ), 0 );
-            float y = Math.max( Math.min( mouseY - tmpNode.getRay(), zone.getMaxY() - tmpNode.getRay()*2 ), zone.getY() );
-            
-            tmpNode.getArea().setLocation( x, y );
-        }
-    }
-    
-    /**Add a new switch node in the simulation
-     * @throws SlickException */
-    public void addSwitch( final float mouseX, final float mouseY ) throws SlickException {
-        if (!phaseOneNewElement && !phaseTwoNewElement) {
-            phaseOneNewElement = true;
-            tmpNode = new Node( mouseX, mouseY, 10, "switch", 0, Color.blue );
-
             float x = Math.max( Math.min( mouseX - tmpNode.getRay(), width - tmpNode.getRay()*2 ), 0 );
             float y = Math.max( Math.min( mouseY - tmpNode.getRay(), zone.getMaxY() - tmpNode.getRay()*2 ), zone.getY() );
             

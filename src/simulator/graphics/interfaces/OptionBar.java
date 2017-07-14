@@ -154,13 +154,13 @@ public class OptionBar implements AnimationInterface
                     for (Operation op: type) {
                         if (op.checkCollision( mouseX, mouseY )) {
                             if (op.getName().equals( CLIENT )) {
-                                nd.addClient( mouseX, mouseY );
+                                nd.addNode( mouseX, mouseY, "client" );
                                 nd.setAddingNode();
                             } else if (op.getName().equals( SERVER )) {
-                                nd.addServer( mouseX, mouseY );
+                                nd.addNode( mouseX, mouseY, "server" );
                                 nd.setAddingNode();
                             } else if (op.getName().equals( SWITCH )) {
-                                nd.addSwitch( mouseX, mouseY );
+                                nd.addNode( mouseX, mouseY, "switch" );
                                 nd.setAddingNode();
                             } else if (op.getName().equals( PACKET )) {
                                 nd.addPacket( mouseX, mouseY );
