@@ -36,13 +36,10 @@ public class NetworkDisplay
 
 	private int mouseX, mouseY;
 	
-	private Node nodeMoved = null;
-
-	private Node tmpNode;
+	// TODO VEDERE SE POSSO USARE TMPNODE PER ENTRAMBI I CASI
+	private Node nodeMoved = null, tmpNode, source = null;
 
 	private boolean removing, addingPacket, addingNode;
-	
-	private Node source = null;
 
     private boolean phaseTwoNewElement, phaseOneNewElement;
     
