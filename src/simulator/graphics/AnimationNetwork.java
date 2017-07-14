@@ -231,7 +231,7 @@ public class AnimationNetwork extends AppGameContainer
             
             nd.nodeInit();
     
-            nd.update( gc, am );
+            nd.update( gc, am, leftMouse );
             ob.update( delta, gc, leftMouse, nd );
             am.update( delta, gc, leftMouse, nd );
             ta.update( delta, gc, leftMouse, nd );

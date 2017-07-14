@@ -170,6 +170,21 @@ public class Node
     	return node.contains( mouseX, mouseY );
     }
     
+    public boolean checkLinks( final Node source ) {
+        for (Link link: links) {
+            if (link.getDestNode().equals( source )) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    // TODO DA TERMINARE
+    public void setLinkAvailable() {
+        
+    }
+    
     public void removeLink( Node node ) {
     	if (node != null) {
 	    	for (Link link: links) {

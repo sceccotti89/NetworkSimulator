@@ -42,7 +42,7 @@ public class NetworkDisplay
     private boolean phaseOneNewPacket = false, phaseTwoNewPacket = false;
 
 	private Node tmpNode;
-	private Packet tmpPacket;
+	//private Packet tmpPacket;
 
 	private boolean removing;
 	
@@ -133,12 +133,7 @@ public class NetworkDisplay
     public void addPacket( final float mouseX, final float mouseY ) {
         if (!phaseOneNewPacket && !phaseTwoNewPacket) {
             phaseOneNewPacket = true;
-            tmpPacket = new Packet( nodes.get( 0 ), nodes.get( 1 ), Color.gray, 0, 100, width, height, 0 );
-
-            float x = Math.max( Math.min( mouseX, width - tmpPacket.getWidth() ), 0 );
-            float y = Math.max( Math.min( mouseY, zone.getMaxY() - tmpPacket.getHeight() ), zone.getY() );
-            
-            tmpPacket.setLocation( x, y );
+            //tmpPacket = new Packet( nodes.get( 0 ), nodes.get( 1 ), Color.gray, 0, 100, width, height, 0 );
         }
     }
     
@@ -235,11 +230,13 @@ public class NetworkDisplay
     }
     
     // TODO COMPLETARE QUESTO METODO
-    private void manageAddPacket( final GameContainer gc  ) {
+    private void manageAddPacket( final boolean leftMouse  ) {
         if (phaseOneNewPacket) {
             for (Node node: nodes) {
-                if (gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON ) && node.checkCollision( mouseX, mouseY )) {
+                if (leftMouse && node.checkCollision( mouseX, mouseY )) {
                     source = node;
+                    // TODO DA TERMINARE QUESTO METODO (PER ORA NON FA NULLA)
+                    node.setLinkAvailable();
                     phaseOneNewPacket = false;
                     phaseTwoNewPacket = true;
                     break;
@@ -247,14 +244,11 @@ public class NetworkDisplay
             }
         } else if (phaseTwoNewPacket) {
             for (Node node: nodes) {
-                if (gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON )
-                 && node.checkCollision( mouseX, mouseY )
-                 && !node.equals( source )) {
+                if (leftMouse && node.checkCollision( mouseX, mouseY ) && !node.equals( source ) && node.checkLinks( source )) {
                     packets.add( new Packet( source, node, source.getColor(), 0, 100, width, height, 0 ) );
                     
                     phaseTwoNewPacket = false;
                     
-                    tmpPacket = null;
                     source = null;
                     
                     System.out.println( "PACCHETTO INSERITO" );
@@ -313,7 +307,7 @@ public class NetworkDisplay
 		}
     }
     
-    public void update( final GameContainer gc, final AnimationManager am ) throws SlickException
+    public void update( final GameContainer gc, final AnimationManager am, final boolean leftMouse ) throws SlickException
     {
     	mouseX = gc.getInput().getMouseX();
     	mouseY = gc.getInput().getMouseY();
@@ -329,13 +323,11 @@ public class NetworkDisplay
         info.setVisible( false );
         
         if (phaseOneNewNode || phaseTwoNewNode) {
-        	// TODO mettere tmpNode a NULL.
         	manageAddNode( gc );
-        	//tmpNode = null;
         }
         
         if (phaseOneNewPacket || phaseTwoNewPacket) {
-            manageAddPacket( gc );
+            manageAddPacket( leftMouse );
         }
         
         if (nodesChanged) {
@@ -388,10 +380,6 @@ public class NetworkDisplay
         
         if (tmpNode != null) {
         	tmpNode.drawNode( g );
-        }
-        
-        if (tmpPacket != null) {
-            tmpPacket.render( g, timer );
         }
         
         info.render( g );

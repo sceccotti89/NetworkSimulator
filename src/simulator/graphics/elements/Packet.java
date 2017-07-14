@@ -65,8 +65,8 @@ public class Packet implements Comparable<Packet>
     
     public void init( final Node source, final Node dest, final long time )
     {
+        this.source = source;
     	this.dest = dest;
-    	this.source = source;
 	
         angle = source.getAngle( dest.getNodeID() );
         
