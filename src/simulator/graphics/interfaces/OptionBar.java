@@ -28,11 +28,15 @@ public class OptionBar implements AnimationInterface
 
     private int mouseX, mouseY;
     
-    private String FILE = "File", OPTIONS = "Options", EDIT = "Edit", MOVE = "MoveNode", ADD = "AddNode", REMOVE = "RemoveNode";
+    private String FILE = "File", OPTIONS = "Options", EDIT = "Edit",
+                   MOVE = "MoveNode", ADD = "AddNode", REMOVE = "RemoveNode",
+                   CLIENT = "Client", SERVER = "Server", SWITCH = "Switch";
     
     private boolean mouseDown;
     
     private boolean chooseOption = false;
+
+    private boolean chooseType = false;
     
     public OptionBar( final GameContainer gc, final int width, final int height ) throws SlickException
     {
@@ -64,9 +68,9 @@ public class OptionBar implements AnimationInterface
         type = new ArrayList<Operation>();
         
         startX = move.getMaxX();
-        client   = new Operation( MOVE, startX, add.getY(), widthB, heightB );
-        server   = new Operation( ADD, startX, client.getMaxY(), widthB, heightB );
-        switcher = new Operation( REMOVE, startX, server.getMaxY(), widthB, heightB );
+        client   = new Operation( CLIENT, startX, add.getY(), widthB, heightB );
+        server   = new Operation( SERVER, startX, client.getMaxY(), widthB, heightB );
+        switcher = new Operation( SWITCH, startX, server.getMaxY(), widthB, heightB );
         
         type.add( client );
         type.add( server );
@@ -82,6 +86,11 @@ public class OptionBar implements AnimationInterface
     {
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();
+        
+        if (chooseOption) {
+            chooseType = add.intersects( mouseX, mouseY );
+            // TODO RAGIONARCI BENE
+        }
         
         if (leftMouse && !mouseDown) {
             mouseDown = true;
@@ -146,6 +155,12 @@ public class OptionBar implements AnimationInterface
         if (chooseOption) {
         	for (Operation op: operation) {
         		op.render( g );
+        	}
+        	
+        	if (chooseType) {
+        	    for(Operation op: type) {
+        	        op.render( g );
+        	    }
         	}
         }
     }

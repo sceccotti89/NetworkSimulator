@@ -241,9 +241,9 @@ public class AnimationNetwork extends AppGameContainer
         public void render( final GameContainer gc, final Graphics g ) throws SlickException
         {
             am.render( gc );
-            ob.render( gc );
             ta.render( gc );
             nd.render( gc );
+            ob.render( gc );
         }
     }
 }

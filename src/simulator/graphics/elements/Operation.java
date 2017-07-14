@@ -21,6 +21,10 @@ public class Operation
 		return area.contains( mouseX, mouseY );
 	}
 	
+	public boolean intersects( final float mouseX, final float mouseY ) {
+	    return area.intersects( new Rectangle( mouseX, mouseY, 1, 1 ) );
+	}
+	
 	public float getX() {
 		return area.getX();
 	}

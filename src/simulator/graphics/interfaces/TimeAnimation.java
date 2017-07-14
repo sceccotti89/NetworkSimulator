@@ -177,9 +177,9 @@ public class TimeAnimation implements AnimationInterface
 	       	}
        	}
        	
-       	if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
+       	/*if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
        	    System.out.println( "NS = " + ns );
-       	}
+       	}*/
        	
     	return info;
     }
