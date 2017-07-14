@@ -180,9 +180,10 @@ public class Node
         return false;
     }
     
-    // TODO DA TERMINARE
     public void setLinkAvailable() {
-        
+        for (Link link: links) {
+            link.setAvailable();
+        }
     }
     
     public void removeLink( Node node ) {

@@ -30,8 +30,8 @@ public class OptionBar implements AnimationInterface
     private int mouseX, mouseY;
     
     private String FILE = "File", OPTIONS = "Options", EDIT = "Edit",
-                   MOVE = "MoveNode", ADD = "AddNode", REMOVE = "RemoveNode",
-                   CLIENT = "Client", SERVER = "Server", SWITCH = "Switch", PACKET = "AddPacket";
+                   MOVE = "MoveNode", ADD = "AddElement", REMOVE = "RemoveNode",
+                   CLIENT = "Client", SERVER = "Server", SWITCH = "Switch", PACKET = "Packet";
     
     private boolean mouseDown;
     

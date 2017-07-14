@@ -235,8 +235,7 @@ public class NetworkDisplay
             for (Node node: nodes) {
                 if (leftMouse && node.checkCollision( mouseX, mouseY )) {
                     source = node;
-                    // TODO DA TERMINARE QUESTO METODO (PER ORA NON FA NULLA)
-                    node.setLinkAvailable();
+                    source.setLinkAvailable();
                     phaseOneNewPacket = false;
                     phaseTwoNewPacket = true;
                     break;
@@ -246,9 +245,8 @@ public class NetworkDisplay
             for (Node node: nodes) {
                 if (leftMouse && node.checkCollision( mouseX, mouseY ) && !node.equals( source ) && node.checkLinks( source )) {
                     packets.add( new Packet( source, node, source.getColor(), 0, 100, width, height, 0 ) );
-                    
                     phaseTwoNewPacket = false;
-                    
+                    source.setLinkAvailable();
                     source = null;
                     
                     System.out.println( "PACCHETTO INSERITO" );

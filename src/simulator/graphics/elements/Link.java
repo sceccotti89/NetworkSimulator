@@ -28,6 +28,8 @@ public class Link
     private Node source, dest;
     
     private String type;
+
+    private boolean available = false;
     
     public Link( final Node source, final Node dest,
                  final double bandwidth, final long delay,
@@ -77,6 +79,10 @@ public class Link
         }
     }
     
+    public void setAvailable() {
+        available  = !available;
+    }
+    
     public void setPosition( final Node node, final float angle ) {
     	this.source = node;
 
@@ -108,7 +114,11 @@ public class Link
     }
     
     public void render( final Graphics g ) {
-        g.setColor( color );
+        if (available) {
+            g.setColor( Color.red );
+        } else {
+            g.setColor( color );
+        }
         g.draw( areaRotated );
     }
     
