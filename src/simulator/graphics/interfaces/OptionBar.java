@@ -129,28 +129,37 @@ public class OptionBar implements AnimationInterface
                 }
             }
             
-            if (chooseOption) {
-	            for (Operation op : operation) {
-	            	if (op.checkCollision( mouseX, mouseY )) {
+            for (Operation op : operation) {
+            	if (op.checkCollision( mouseX, mouseY )) {
+                    if (chooseOption) {
 		            	if (op.getName().equals( MOVE )) {
 	                        nd.setNodeSelectable();
 	                    } else if (op.getName().equals( REMOVE )) {
 	                        nd.removeNode();
-	                    } else if (chooseType) {
-                            if (!nd.isInExecution()) {
-                                if (op.getName().equals( CLIENT )) {
-                                    nd.addClient( mouseX, mouseY );
-                                } else if (op.getName().equals( SERVER )) {
-                                    nd.addServer( mouseX, mouseY );
-                                } else if (op.getName().equals( SWITCH )) {
-                                    nd.addSwitch( mouseX, mouseY );
-                                }
+	                    }
+                    }
+	            	
+	            	chooseOption = false;
+            	}
+            }
+            
+            if (chooseType) {
+                System.out.println( "ECCHIME" );
+                if (!nd.isInExecution()) {
+                    for (Operation op: type) {
+                        if (op.checkCollision( mouseX, mouseY )) {
+                            if (op.getName().equals( CLIENT )) {
+                                nd.addClient( mouseX, mouseY );
+                            } else if (op.getName().equals( SERVER )) {
+                                nd.addServer( mouseX, mouseY );
+                            } else if (op.getName().equals( SWITCH )) {
+                                nd.addSwitch( mouseX, mouseY );
                             }
-                        } 
-		            	
-		            	chooseOption = false;
-	            	}
-	            }
+                            
+                            chooseOption = false;
+                        }
+                    }
+                }
             }
         }
     }
