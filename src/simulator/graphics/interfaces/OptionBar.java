@@ -144,7 +144,6 @@ public class OptionBar implements AnimationInterface
             }
             
             if (chooseType) {
-                System.out.println( "ECCHIME" );
                 if (!nd.isInExecution()) {
                     for (Operation op: type) {
                         if (op.checkCollision( mouseX, mouseY )) {
@@ -157,6 +156,7 @@ public class OptionBar implements AnimationInterface
                             }
                             
                             chooseOption = false;
+                            chooseType = false;
                         }
                     }
                 }
