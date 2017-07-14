@@ -98,6 +98,18 @@ public class Packet implements Comparable<Packet>
         rotatePacket();
     }
     
+    public float getWidth() {
+        return area.getWidth();
+    }
+    
+    public float getHeight() {
+        return area.getHeight();
+    }
+    
+    public void setLocation( final float x, final float y ) {
+        area.setLocation( x, y );
+    }
+    
     public void setSpeed() {
         speed = (linkLenght / (endTime - startTime)) * AnimationManager.frames;
     }

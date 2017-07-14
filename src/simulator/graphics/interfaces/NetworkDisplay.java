@@ -39,8 +39,10 @@ public class NetworkDisplay
 	private Node nodeMoved = null;
 	
 	private boolean phaseOneNewNode = false, phaseTwoNewNode = false;
+    private boolean phaseOneNewPacket = false, phaseTwoNewPacket = false;
 
 	private Node tmpNode;
+	private Packet tmpPacket;
 
 	private boolean removing;
     
@@ -126,9 +128,16 @@ public class NetworkDisplay
         }
     }
     
-    // TODO COMPLETARE QUESTO METODO
     public void addPacket( final float mouseX, final float mouseY ) {
-        
+        if (!phaseOneNewPacket && !phaseTwoNewPacket) {
+            phaseOneNewPacket = true;
+            tmpPacket = new Packet( null, null, Color.gray, 0, 0, width, height, 0 );
+
+            float x = Math.max( Math.min( mouseX, width - tmpPacket.getWidth() ), 0 );
+            float y = Math.max( Math.min( mouseY, zone.getMaxY() - tmpPacket.getHeight() ), zone.getY() );
+            
+            tmpPacket.setLocation( x, y );
+        }
     }
     
     public void nodeInit() throws SlickException {
@@ -224,10 +233,34 @@ public class NetworkDisplay
     }
     
     // TODO COMPLETARE QUESTO METODO
-    private void manageAddPacket() {
-        
+    private void manageAddPacket( final GameContainer gc  ) {
+        if (phaseOneNewPacket) {
+            if (gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON )) {
+                phaseOneNewPacket = false;
+                phaseTwoNewPacket = true;
+            } else {
+                float x = Math.max( Math.min( mouseX, width - tmpPacket.getWidth() ), 0 );
+                float y = Math.max( Math.min( mouseY, zone.getMaxY() - tmpPacket.getHeight() ), zone.getY() );
+                
+                tmpPacket.setLocation( x, y );
+            }
+        } else if (phaseTwoNewPacket) {
+            for (Node node: nodes) {
+                if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) && node.checkCollision( mouseX, mouseY )) {
+                    
+                    packets.add( tmpPacket );
+                    
+                    phaseTwoNewPacket = false;
+                    tmpPacket = null;
+                    
+                    break;
+                }
+            }
+        }
     }
     
+    // TODO PROVARE AD ACCORPARE QUESTO METODO CON ADDPACKET
+    // MAGARI PROVANDO A CHIAMARLO manageAddElement( gc )
     private void manageAddNode( final GameContainer gc ) throws SlickException {
     	if (phaseOneNewNode) {
         	if (gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON )) {
@@ -293,6 +326,10 @@ public class NetworkDisplay
         	// TODO mettere tmpNode a NULL.
         	manageAddNode( gc );
         	//tmpNode = null;
+        }
+        
+        if (phaseOneNewPacket || phaseTwoNewPacket) {
+            manageAddPacket( gc );
         }
         
         if (nodesChanged) {
