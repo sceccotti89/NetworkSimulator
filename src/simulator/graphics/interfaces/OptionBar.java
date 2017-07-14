@@ -99,7 +99,7 @@ public class OptionBar implements AnimationInterface
             chooseType = areaType[0].contains( mouseX, mouseY );
         }
         
-        if (!nd.isAddingElement() && !nd.isMoving() && !nd.isRemoving() && leftMouse && !mouseDown) {
+        if (!nd.isAddingElement() && leftMouse && !mouseDown) {
             mouseDown = true;
             
             for (SimpleButton button : buttons) {
