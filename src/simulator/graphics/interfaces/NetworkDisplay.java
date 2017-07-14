@@ -37,15 +37,16 @@ public class NetworkDisplay
 	private int mouseX, mouseY;
 	
 	private Node nodeMoved = null;
-	
-	private boolean phaseOneNewNode = false, phaseTwoNewNode = false;
-    private boolean phaseOneNewPacket = false, phaseTwoNewPacket = false;
 
 	private Node tmpNode;
 
-	private boolean removing;
+	private boolean removing, addingPacket, addingNode;
 	
 	private Node source = null;
+
+    private boolean phaseTwoNewElement;
+
+    private boolean phaseOneNewElement;
     
     public NetworkDisplay( final int width, final int height, final float startY, final List<Node> nodes, final List<Packet> packets )
     {
@@ -89,9 +90,10 @@ public class NetworkDisplay
     
     /**Add a new client node in the simulation
      * @throws SlickException */
+    // TODO CREARE UN METODO UNICO PER TUTTE E 3 LE TIPOLOGIE
     public void addClient( final float mouseX, final float mouseY ) throws SlickException {
-        if (!phaseOneNewNode && !phaseTwoNewNode) {
-            phaseOneNewNode = true;
+        if (!phaseOneNewElement && !phaseTwoNewElement) {
+            phaseOneNewElement = true;
             tmpNode = new Node( mouseX, mouseY, 10, "client", 0, Color.yellow );
 
             float x = Math.max( Math.min( mouseX - tmpNode.getRay(), width - tmpNode.getRay()*2 ), 0 );
@@ -104,8 +106,8 @@ public class NetworkDisplay
     /**Add a new server node in the simulation
      * @throws SlickException */
     public void addServer( final float mouseX, final float mouseY ) throws SlickException {
-        if (!phaseOneNewNode && !phaseTwoNewNode) {
-            phaseOneNewNode = true;
+        if (!phaseOneNewElement && !phaseTwoNewElement) {
+            phaseOneNewElement = true;
             tmpNode = new Node( mouseX, mouseY, 10, "server", 0, Color.black );
 
             float x = Math.max( Math.min( mouseX - tmpNode.getRay(), width - tmpNode.getRay()*2 ), 0 );
@@ -118,8 +120,8 @@ public class NetworkDisplay
     /**Add a new switch node in the simulation
      * @throws SlickException */
     public void addSwitch( final float mouseX, final float mouseY ) throws SlickException {
-        if (!phaseOneNewNode && !phaseTwoNewNode) {
-            phaseOneNewNode = true;
+        if (!phaseOneNewElement && !phaseTwoNewElement) {
+            phaseOneNewElement = true;
             tmpNode = new Node( mouseX, mouseY, 10, "switch", 0, Color.blue );
 
             float x = Math.max( Math.min( mouseX - tmpNode.getRay(), width - tmpNode.getRay()*2 ), 0 );
@@ -130,9 +132,8 @@ public class NetworkDisplay
     }
     
     public void addPacket( final float mouseX, final float mouseY ) {
-        if (!phaseOneNewPacket && !phaseTwoNewPacket) {
-            phaseOneNewPacket = true;
-            //tmpPacket = new Packet( nodes.get( 0 ), nodes.get( 1 ), Color.gray, 0, 100, width, height, 0 );
+        if (!phaseOneNewElement && !phaseTwoNewElement) {
+            phaseOneNewElement = true;
         }
     }
     
@@ -236,63 +237,65 @@ public class NetworkDisplay
     	}
     }
     
-    private void manageAddPacket( final boolean leftMouse  ) {
-        if (phaseOneNewPacket) {
+    private void manageAddElement( final boolean leftMouse ) {
+        if (phaseOneNewElement) {
+            if (leftMouse){
+                if (addingNode) {
+                    phaseOneNewElement = false;
+                    phaseTwoNewElement = true;
+                } else if (addingPacket) {
+                    for (Node node: nodes) {
+                        if (node.checkCollision( mouseX, mouseY )) {
+                            source = node;
+                            source.setLinkAvailable();
+                            phaseOneNewElement = false;
+                            phaseTwoNewElement = true;
+                            break;
+                        }
+                    }
+                }
+            } else if (addingNode) {
+                float x = Math.max( Math.min( mouseX - tmpNode.getRay(), width - tmpNode.getRay()*2 ), 0 );
+                float y = Math.max( Math.min( mouseY - tmpNode.getRay(), zone.getMaxY() - tmpNode.getRay()*2 ), zone.getY() );
+                
+                tmpNode.getArea().setLocation( x, y );
+            }
+        } else if (phaseTwoNewElement) {
             for (Node node: nodes) {
                 if (leftMouse && node.checkCollision( mouseX, mouseY )) {
-                    source = node;
-                    source.setLinkAvailable();
-                    phaseOneNewPacket = false;
-                    phaseTwoNewPacket = true;
-                    break;
-                }
-            }
-        } else if (phaseTwoNewPacket) {
-            for (Node node: nodes) {
-                if (leftMouse && node.checkCollision( mouseX, mouseY ) && !node.equals( source ) && node.checkLinks( source )) {
-                    packets.add( new Packet( source, node, source.getColor(), 0, 100, width, height, 0 ) );
-                    phaseTwoNewPacket = false;
-                    source.setLinkAvailable();
-                    source = null;
-                    
-                    System.out.println( "PACCHETTO INSERITO" );
-                    
-                    break;
+                    if (addingNode) {
+                        nodes.add( tmpNode.clone( node, width, height ) );
+                        node.addLink( nodes.get( nodes.size() - 1 ), 0, 0, width, height, NetworkLink.BIDIRECTIONAL );
+                        
+                        phaseTwoNewElement = false;
+                        tmpNode = null;
+                        
+                        addingNode = false;
+                        
+                        break;
+                    } else if (addingPacket && !node.equals( source ) && node.checkLinks( source )) {
+                        packets.add( new Packet( source, node, source.getColor(), 0, 100, width, height, 0 ) );
+                        phaseTwoNewElement = false;
+                        source.setLinkAvailable();
+                        source = null;
+                        
+                        System.out.println( "PACCHETTO INSERITO" );
+                        
+                        addingPacket = false;
+                        
+                        break;
+                    }
                 }
             }
         }
     }
     
-    // TODO PROVARE AD ACCORPARE QUESTO METODO CON ADDPACKET
-    // MAGARI PROVANDO A CHIAMARLO manageAddElement( gc )
-    private void manageAddNode( final GameContainer gc ) throws SlickException {
-    	if (phaseOneNewNode) {
-        	if (gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON )) {
-        		phaseOneNewNode = false;
-        		phaseTwoNewNode = true;
-        	} else {
-        		float x = Math.max( Math.min( mouseX - tmpNode.getRay(), width - tmpNode.getRay()*2 ), 0 );
-            	float y = Math.max( Math.min( mouseY - tmpNode.getRay(), zone.getMaxY() - tmpNode.getRay()*2 ), zone.getY() );
-            	
-        		tmpNode.getArea().setLocation( x, y );
-        	}
-        } else if (phaseTwoNewNode) {
-        	for (Node node: nodes) {
-        		if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) && node.checkCollision( mouseX, mouseY )) {
-        			if (nodesChanged) {
-        				tmpNode.setSelectable();
-        			}
-        			
-        			nodes.add( tmpNode.clone( node, width, height ) );
-        			node.addLink( nodes.get( nodes.size() - 1 ), 0, 0, width, height, NetworkLink.BIDIRECTIONAL );
-        			
-        			phaseTwoNewNode = false;
-        			tmpNode = null;
-        			
-        			break;
-        		}
-        	}
-        }
+    public void setAddingNode() {
+        addingNode = true;
+    }
+    
+    public void setAddingPacket() {
+        addingPacket = true;
     }
     
     public void manageMovingNode( final GameContainer gc ) {
@@ -326,12 +329,8 @@ public class NetworkDisplay
         // Reset the visibility at the very beginning.
         info.setVisible( false );
         
-        if (phaseOneNewNode || phaseTwoNewNode) {
-        	manageAddNode( gc );
-        }
-        
-        if (phaseOneNewPacket || phaseTwoNewPacket) {
-            manageAddPacket( leftMouse );
+        if (phaseOneNewElement || phaseTwoNewElement) {
+            manageAddElement( leftMouse );
         }
         
         if (nodesChanged) {
@@ -343,7 +342,7 @@ public class NetworkDisplay
         }
     	
         for (Node node: nodes) {
-            node.update( gc, width, zone.getY(), (int) zone.getMaxY(), phaseTwoNewNode );
+            node.update( gc, width, zone.getY(), (int) zone.getMaxY(), phaseTwoNewElement );
         }
         
         for (Packet packet: packets) {

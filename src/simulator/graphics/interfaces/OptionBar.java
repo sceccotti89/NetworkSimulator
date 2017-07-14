@@ -150,16 +150,21 @@ public class OptionBar implements AnimationInterface
             
             if (!nd.isMoving() && !nd.isRemoving() && chooseType) {
                 if (!nd.isInExecution()) {
+                    // TODO SISTEMARE IL FATTO CHE MENTRE INSERISCO NON POSSO FARE ALTRO
                     for (Operation op: type) {
                         if (op.checkCollision( mouseX, mouseY )) {
                             if (op.getName().equals( CLIENT )) {
                                 nd.addClient( mouseX, mouseY );
+                                nd.setAddingNode();
                             } else if (op.getName().equals( SERVER )) {
                                 nd.addServer( mouseX, mouseY );
+                                nd.setAddingNode();
                             } else if (op.getName().equals( SWITCH )) {
                                 nd.addSwitch( mouseX, mouseY );
+                                nd.setAddingNode();
                             } else if (op.getName().equals( PACKET )) {
                                 nd.addPacket( mouseX, mouseY );
+                                nd.setAddingPacket();
                             }
                             
                             chooseOption = false;
