@@ -99,7 +99,7 @@ public class OptionBar implements AnimationInterface
             chooseType = areaType[0].contains( mouseX, mouseY );
         }
         
-        if (leftMouse && !mouseDown) {
+        if (!nd.isAddingElement() && !nd.isMoving() && !nd.isRemoving() && leftMouse && !mouseDown) {
             mouseDown = true;
             
             for (SimpleButton button : buttons) {
@@ -154,7 +154,6 @@ public class OptionBar implements AnimationInterface
                 if (!nd.isInExecution()) {
                     for (Operation op: type) {
                         if (op.checkCollision( mouseX, mouseY )) {
-                            // TODO MENTRE INSERISCO LA TENDINA DEI NODI DEVE STARE SU
                             if (op.getName().equals( CLIENT )) {
                                 nd.addNode( mouseX, mouseY, "client" );
                                 nd.setAddingNode();

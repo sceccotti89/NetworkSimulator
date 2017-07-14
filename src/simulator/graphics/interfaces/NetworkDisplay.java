@@ -214,10 +214,14 @@ public class NetworkDisplay
     	}
     }
     
+    private boolean checkMousePosition() {
+        return zone.contains( mouseX , mouseY );
+    }
+    
     private void manageAddElement( final boolean leftMouse ) {
         if (phaseOneNewElement) {
             if (leftMouse){
-                if (addingNode) {
+                if (addingNode && checkMousePosition()) {
                     phaseOneNewElement = false;
                     phaseTwoNewElement = true;
                 } else if (addingPacket) {
