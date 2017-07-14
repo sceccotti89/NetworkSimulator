@@ -45,6 +45,8 @@ public class NetworkDisplay
 	private Packet tmpPacket;
 
 	private boolean removing;
+	
+	private Node source = null;
     
     public NetworkDisplay( final int width, final int height, final float startY, final List<Node> nodes, final List<Packet> packets )
     {
@@ -131,7 +133,7 @@ public class NetworkDisplay
     public void addPacket( final float mouseX, final float mouseY ) {
         if (!phaseOneNewPacket && !phaseTwoNewPacket) {
             phaseOneNewPacket = true;
-            tmpPacket = new Packet( null, null, Color.gray, 0, 0, width, height, 0 );
+            tmpPacket = new Packet( nodes.get( 0 ), nodes.get( 1 ), Color.gray, 0, 100, width, height, 0 );
 
             float x = Math.max( Math.min( mouseX, width - tmpPacket.getWidth() ), 0 );
             float y = Math.max( Math.min( mouseY, zone.getMaxY() - tmpPacket.getHeight() ), zone.getY() );
@@ -235,23 +237,27 @@ public class NetworkDisplay
     // TODO COMPLETARE QUESTO METODO
     private void manageAddPacket( final GameContainer gc  ) {
         if (phaseOneNewPacket) {
-            if (gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON )) {
-                phaseOneNewPacket = false;
-                phaseTwoNewPacket = true;
-            } else {
-                float x = Math.max( Math.min( mouseX, width - tmpPacket.getWidth() ), 0 );
-                float y = Math.max( Math.min( mouseY, zone.getMaxY() - tmpPacket.getHeight() ), zone.getY() );
-                
-                tmpPacket.setLocation( x, y );
+            for (Node node: nodes) {
+                if (gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON ) && node.checkCollision( mouseX, mouseY )) {
+                    source = node;
+                    phaseOneNewPacket = false;
+                    phaseTwoNewPacket = true;
+                    break;
+                }
             }
         } else if (phaseTwoNewPacket) {
             for (Node node: nodes) {
-                if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) && node.checkCollision( mouseX, mouseY )) {
-                    
-                    packets.add( tmpPacket );
+                if (gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON )
+                 && node.checkCollision( mouseX, mouseY )
+                 && !node.equals( source )) {
+                    packets.add( new Packet( source, node, source.getColor(), 0, 100, width, height, 0 ) );
                     
                     phaseTwoNewPacket = false;
+                    
                     tmpPacket = null;
+                    source = null;
+                    
+                    System.out.println( "PACCHETTO INSERITO" );
                     
                     break;
                 }
@@ -382,6 +388,10 @@ public class NetworkDisplay
         
         if (tmpNode != null) {
         	tmpNode.drawNode( g );
+        }
+        
+        if (tmpPacket != null) {
+            tmpPacket.render( g, timer );
         }
         
         info.render( g );

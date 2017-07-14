@@ -200,6 +200,10 @@ public class Packet implements Comparable<Packet>
     	return info;
     }
     
+    public Packet clone() {
+        return new Packet( source, dest, color, startTime, endTime, width, height, type );
+    }
+    
     public void update( final GameContainer gc, final long time, final boolean update )
     {
     	mouseX = gc.getInput().getMouseX();
