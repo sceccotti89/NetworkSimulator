@@ -131,6 +131,7 @@ public class OptionBar implements AnimationInterface
                 }
             }
             
+            // TODO SETTARE DELLE DIPENDENZE (UNA OPERAZIONE ALLA VOLTA E' CONSENTITA)
             for (Operation op : operation) {
             	if (op.checkCollision( mouseX, mouseY )) {
                     if (chooseOption) {
@@ -138,6 +139,8 @@ public class OptionBar implements AnimationInterface
 	                        nd.setNodeSelectable();
 	                    } else if (op.getName().equals( REMOVE )) {
 	                        nd.removeNode();
+	                    } else {
+	                        break;
 	                    }
                     }
 	            	
