@@ -36,8 +36,7 @@ public class NetworkDisplay
 
 	private int mouseX, mouseY;
 	
-	// TODO VEDERE SE POSSO USARE TMPNODE PER ENTRAMBI I CASI
-	private Node nodeMoved = null, tmpNode, source = null;
+	private Node tmpNode = null, source = null;
 
 	private boolean removing, addingPacket, addingNode;
 
@@ -274,17 +273,17 @@ public class NetworkDisplay
     
     public void manageMovingNode( final GameContainer gc ) {
     	if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
-    		if (nodeMoved == null) {
+    		if (tmpNode == null) {
 	            for (Node node: nodes) {
 	            	if (node.checkCollision( mouseX, mouseY )) {
 	            		node.setMoving( true );
-	            		nodeMoved = node;
+	            		tmpNode = node;
 	            	}
 	            }
     		}
-		} else if (nodeMoved != null) {
-			nodeMoved.setMoving( false );
-			nodeMoved = null;
+		} else if (tmpNode != null) {
+			tmpNode.setMoving( false );
+			tmpNode = null;
 		}
     }
     
