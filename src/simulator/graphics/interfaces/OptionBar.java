@@ -9,6 +9,7 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
+import org.newdawn.slick.geom.Shape;
 
 import simulator.graphics.dataButton.SimpleButton;
 import simulator.graphics.elements.Operation;
@@ -34,9 +35,9 @@ public class OptionBar implements AnimationInterface
     
     private boolean mouseDown;
     
-    private boolean chooseOption = false;
-
-    private boolean chooseType = false;
+    private boolean chooseOption = false, chooseType = false;
+    
+    private Shape[] areaType;
     
     public OptionBar( final GameContainer gc, final int width, final int height ) throws SlickException
     {
@@ -75,6 +76,11 @@ public class OptionBar implements AnimationInterface
         type.add( client );
         type.add( server );
         type.add( switcher );
+        
+        areaType = new Shape[] {add.getArea()};
+        for (Operation op: type) {
+            areaType = areaType[0].union( op.getArea() );
+        }
     }
     
     public float getMaxY() {
@@ -88,8 +94,7 @@ public class OptionBar implements AnimationInterface
         mouseY = gc.getInput().getMouseY();
         
         if (chooseOption) {
-            chooseType = add.intersects( mouseX, mouseY );
-            // TODO RAGIONARCI BENE
+            chooseType = areaType[0].contains( mouseX, mouseY );
         }
         
         if (leftMouse && !mouseDown) {

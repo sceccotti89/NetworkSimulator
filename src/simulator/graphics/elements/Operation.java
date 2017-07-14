@@ -3,6 +3,7 @@ package simulator.graphics.elements;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Rectangle;
+import org.newdawn.slick.geom.Shape;
 
 public class Operation
 {
@@ -43,6 +44,10 @@ public class Operation
 	
 	public String getName() {
 		return name;
+	}
+	
+	public Shape getArea() {
+	    return area;
 	}
 	
 	public void update() {
