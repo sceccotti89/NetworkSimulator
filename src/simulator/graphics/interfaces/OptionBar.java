@@ -19,11 +19,12 @@ public class OptionBar implements AnimationInterface
     
     private SimpleButton file, options, edit;
     private Operation move, add, remove;
+    private Operation client, server, switcher;
     
     private float widthB, heightB;
     
     private List<SimpleButton> buttons;
-    private List<Operation> operation;
+    private List<Operation> operation, type;
 
     private int mouseX, mouseY;
     
@@ -51,7 +52,7 @@ public class OptionBar implements AnimationInterface
         
         operation = new ArrayList<Operation>();
         
-        final float startX = edit.getX() + width/400;
+        float startX = edit.getX() + width/400;
         move   = new Operation( MOVE, startX, edit.getMaxY(), widthB, heightB );
         add    = new Operation( ADD, startX, move.getMaxY(), widthB, heightB );
         remove = new Operation( REMOVE, startX, add.getMaxY(), widthB, heightB );
@@ -59,6 +60,17 @@ public class OptionBar implements AnimationInterface
         operation.add( move );
         operation.add( add );
         operation.add( remove );
+        
+        type = new ArrayList<Operation>();
+        
+        startX = move.getMaxX();
+        client   = new Operation( MOVE, startX, add.getY(), widthB, heightB );
+        server   = new Operation( ADD, startX, client.getMaxY(), widthB, heightB );
+        switcher = new Operation( REMOVE, startX, server.getMaxY(), widthB, heightB );
+        
+        type.add( client );
+        type.add( server );
+        type.add( switcher );
     }
     
     public float getMaxY() {

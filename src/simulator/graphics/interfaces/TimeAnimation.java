@@ -7,6 +7,7 @@ import java.util.List;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
@@ -112,7 +113,7 @@ public class TimeAnimation implements AnimationInterface
     	}
     }
     
-    private String setTimer( long time, final GameContainer gc ) {
+    private String setTime( long time, final GameContainer gc ) {
     	long decimal = time;
     	time = time / limit;
     	long h = time/3600, m = (time - h*3600)/60, s = time - h*3600 - m*60,
@@ -174,6 +175,10 @@ public class TimeAnimation implements AnimationInterface
 	       	} else {
 	       		info = info + ns + "µs";
 	       	}
+       	}
+       	
+       	if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
+       	    System.out.println( "NS = " + ns );
        	}
        	
     	return info;
@@ -256,7 +261,7 @@ public class TimeAnimation implements AnimationInterface
         }
         
         if (timing.intersects( mouse ) || timingHit) {
-        	String info = setTimer( getTime( mouseX ), gc );
+        	String info = setTime( getTime( mouseX ), gc );
         	
             float fontW = g.getFont().getWidth( info );
             float x = Math.max( Math.min( mouseX, timing.getMaxX() ), startTimingX ) - fontW/2;
@@ -281,7 +286,7 @@ public class TimeAnimation implements AnimationInterface
         g.setColor( Color.white );
         g.fill( cursor );
         
-        String info = setTimer( timer, gc ) + "/" + setTimer( AnimationNetwork.timeSimulation, gc );
+        String info = setTime( timer, gc ) + "/" + setTime( AnimationNetwork.timeSimulation, gc );
         
         int fWidth = g.getFont().getWidth( info ), fHeight = g.getFont().getHeight( info );
        	setPositionArrows( fWidth + OFFSET );

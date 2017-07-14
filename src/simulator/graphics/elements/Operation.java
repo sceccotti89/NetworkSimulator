@@ -25,6 +25,14 @@ public class Operation
 		return area.getX();
 	}
 	
+	public float getY(){
+	    return area.getY();
+	}
+	
+	public float getMaxX(){
+	    return area.getMaxX();
+	}
+	
 	public float getMaxY() {
 		return area.getMaxY();
 	}
