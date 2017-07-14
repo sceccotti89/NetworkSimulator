@@ -315,7 +315,7 @@ public class NetworkDisplay
         }
     	
         for (Node node: nodes) {
-            node.update( gc, width, zone.getY(), (int) zone.getMaxY(), phaseTwoNewElement );
+            node.update( gc, width, zone.getY(), (int) zone.getMaxY(), (addingNode && phaseTwoNewElement) );
         }
         
         for (Packet packet: packets) {
