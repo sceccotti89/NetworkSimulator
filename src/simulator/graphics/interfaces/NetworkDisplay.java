@@ -42,7 +42,6 @@ public class NetworkDisplay
     private boolean phaseOneNewPacket = false, phaseTwoNewPacket = false;
 
 	private Node tmpNode;
-	//private Packet tmpPacket;
 
 	private boolean removing;
 	
@@ -151,6 +150,10 @@ public class NetworkDisplay
     	}
     }
     
+    public boolean isMoving() {
+        return nodesChanged;
+    }
+    
     public float getMaxY() {
         return zone.getMaxY();
     }
@@ -195,6 +198,10 @@ public class NetworkDisplay
     	removing = !removing;
     }
     
+    public boolean isRemoving() {
+        return removing;
+    }
+    
     private void manageRemoveNode( final GameContainer gc ) {
     	if (gc.getInput().isMousePressed( Input.MOUSE_RIGHT_BUTTON )) {
     		for (Node node: nodes) {
@@ -229,7 +236,6 @@ public class NetworkDisplay
     	}
     }
     
-    // TODO COMPLETARE QUESTO METODO
     private void manageAddPacket( final boolean leftMouse  ) {
         if (phaseOneNewPacket) {
             for (Node node: nodes) {
