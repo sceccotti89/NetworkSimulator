@@ -262,6 +262,9 @@ public class NetworkDisplay
                         
                         System.out.println( "PACCHETTO INSERITO" );
                         
+                        // TODO CAPIRE PERCHE NON VIENE VISUALIZZATO IL NUOVO PACKET INSERITO
+                        System.out.println( "PACKETS = " + packets.size() );
+                        
                         addingPacket = false;
                         
                         break;
