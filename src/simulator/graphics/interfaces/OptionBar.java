@@ -134,13 +134,19 @@ public class OptionBar implements AnimationInterface
 	            	if (op.checkCollision( mouseX, mouseY )) {
 		            	if (op.getName().equals( MOVE )) {
 	                        nd.setNodeSelectable();
-	                    } else if (op.getName().equals( ADD )) {
-	                    	if (!nd.isInExecution()) {
-	                    		nd.addNewNode( mouseX, mouseY );
-	                    	}
 	                    } else if (op.getName().equals( REMOVE )) {
 	                        nd.removeNode();
-	                    }
+	                    } else if (chooseType) {
+                            if (!nd.isInExecution()) {
+                                if (op.getName().equals( CLIENT )) {
+                                    nd.addClient( mouseX, mouseY );
+                                } else if (op.getName().equals( SERVER )) {
+                                    nd.addServer( mouseX, mouseY );
+                                } else if (op.getName().equals( SWITCH )) {
+                                    nd.addSwitch( mouseX, mouseY );
+                                }
+                            }
+                        } 
 		            	
 		            	chooseOption = false;
 	            	}
