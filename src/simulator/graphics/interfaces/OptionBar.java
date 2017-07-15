@@ -35,7 +35,7 @@ public class OptionBar implements AnimationInterface
     
     private boolean mouseDown;
     
-    private boolean chooseOption = false, chooseType = false;
+    private boolean editing = false, chooseType = false;
     
     private Shape[] areaType;
     
@@ -95,7 +95,7 @@ public class OptionBar implements AnimationInterface
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();
         
-        if (chooseOption) {
+        if (editing) {
             chooseType = areaType[0].contains( mouseX, mouseY );
         }
         
@@ -125,7 +125,7 @@ public class OptionBar implements AnimationInterface
                         } else if (button.getName().equals( OPTIONS )) {
                             ;
                         } else if (button.getName().equals( EDIT )) {
-                        	chooseOption = !chooseOption;
+                        	editing = !editing;
                         }
                     }
                 }
@@ -134,7 +134,7 @@ public class OptionBar implements AnimationInterface
             if (!nd.isAddingElement()) {
                 for (Operation op : operation) {
                 	if (op.checkCollision( mouseX, mouseY )) {
-                        if (chooseOption) {
+                        if (editing) {
     		            	if (op.getName().equals( MOVE ) && !nd.isRemoving()) {
     	                        nd.setNodeSelectable();
     	                    } else if (op.getName().equals( REMOVE ) && !nd.isMoving()) {
@@ -145,7 +145,7 @@ public class OptionBar implements AnimationInterface
                         }
     	            	
                         chooseType = false;
-    	            	chooseOption = false;
+    	            	editing = false;
                 	}
                 }
             }
@@ -168,7 +168,7 @@ public class OptionBar implements AnimationInterface
                                 nd.setAddingPacket();
                             }
                             
-                            chooseOption = false;
+                            editing = false;
                             chooseType = false;
                             
                             break;
@@ -187,7 +187,7 @@ public class OptionBar implements AnimationInterface
             button.draw( g );
         }
         
-        if (chooseOption) {
+        if (editing) {
         	for (Operation op: operation) {
         		op.render( g );
         	}

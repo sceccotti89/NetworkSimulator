@@ -30,9 +30,10 @@ public class Node
 	
 	private boolean selectable, moving, choose;
 	
-	private Image circleDashed, redCircle;
+	private Image whiteCircle, redCircle, greenCircle;
 	
 	private int angle = 0;
+	private boolean removable;
     
     public Node( final float x, final float y, final long nodeID, final String name, final long delay, final Color color ) throws SlickException
     {
@@ -48,11 +49,14 @@ public class Node
     }
     
     public void Init() throws SlickException {
-    	circleDashed = new Image( "./data/Image/Circle.png" );
-        circleDashed.setCenterOfRotation( node.getCenterX(), node.getCenterY() );
+    	whiteCircle = new Image( "./data/Image/Circle.png" );
+        whiteCircle.setCenterOfRotation( node.getCenterX(), node.getCenterY() );
         
         redCircle = new Image( "./data/Image/RedCircle.png" );
         redCircle.setCenterOfRotation( node.getCenterX(), node.getCenterY() );
+        
+        greenCircle = new Image( "./data/Image/GreenCircle.png" );
+        greenCircle.setCenterOfRotation( node.getCenterX(), node.getCenterY() );
     }
     
     public long getNodeID() {
@@ -199,6 +203,10 @@ public class Node
     	}
     }
     
+    public void setRemovable() {
+    	removable = !removable;
+    }
+    
     public Node clone( final Node dest, final int width, final int height ) {
     	try {
 			Node tmp = new Node( node.getCenterX(), node.getCenterY(), nodeID, name, delay, color );
@@ -224,11 +232,11 @@ public class Node
         }
         
         if (choose) {
+        	greenCircle.setRotation( ++angle );
+        } else if (removable) {
         	redCircle.setRotation( ++angle );
-        }
-        
-        if (selectable) {
-            circleDashed.setRotation( ++angle );
+        } else if (selectable) {
+            whiteCircle.setRotation( ++angle );
             
             if (moving) {
             	float x = Math.max( Math.min( getCenterX() - ray + mouseX - moveX, widthSpace - ray*2 ), 0 );
@@ -268,10 +276,14 @@ public class Node
         g.drawString( nodeID + "", node.getCenterX() - f.getWidth( nodeID + "" )/2, node.getCenterY() - f.getHeight( nodeID + "" )/2 );
         
         if (selectable) {
-        	g.drawImage( circleDashed, node.getX(), node.getY() );
+        	g.drawImage( whiteCircle, node.getX(), node.getY() );
         }
         
         if (choose) {
+        	g.drawImage( greenCircle, node.getX(), node.getY() );
+        }
+        
+        if (removable) {
         	g.drawImage( redCircle, node.getX(), node.getY() );
         }
     }

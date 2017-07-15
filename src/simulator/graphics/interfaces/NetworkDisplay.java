@@ -170,6 +170,10 @@ public class NetworkDisplay
     
     public void removeNode() {
     	removing = !removing;
+    	
+    	for (Node node: nodes) {
+    		node.setRemovable();
+    	}
     }
     
     public boolean isRemoving() {
