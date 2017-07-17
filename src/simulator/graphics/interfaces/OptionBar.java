@@ -22,8 +22,8 @@ public class OptionBar implements AnimationInterface
     
     
     // TODO REALIZZARE I BOTTONI A TENDINA TRAMITE CLASSE
-    private final MenuItem FILES, OPTION, EDITING;
-    
+    private /*final*/ MenuItem FILES, OPTION, EDITING;
+    private final List<MenuItem> items;
     
     
     private final SimpleButton file, options, edit;
@@ -53,6 +53,14 @@ public class OptionBar implements AnimationInterface
     {
         widthB = width/10;
         heightB = height/30;
+        
+        
+        // TODO INZIAMO IL CODE REFACTORING
+        
+        items = new ArrayList<MenuItem>();
+        
+        
+        
         
         buttons = new ArrayList<SimpleButton>();
         
