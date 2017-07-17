@@ -4,7 +4,7 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.geom.Rectangle;
 
-public class Time
+public class CheckBox
 {
 	private final Rectangle area;
 	private final String time;
@@ -13,7 +13,7 @@ public class Time
 	
 	private boolean selected = true;
 	
-	public Time( final float x, final float y, final float width, final float height, final String time )
+	public CheckBox( final float x, final float y, final float width, final float height, final String time )
 	{
 		this.time = time;
 		this.width = width;

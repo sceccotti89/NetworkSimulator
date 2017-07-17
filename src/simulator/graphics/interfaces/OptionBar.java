@@ -110,6 +110,20 @@ public class OptionBar implements AnimationInterface
             chooseType = areaType[0].contains( mouseX, mouseY );
         }
         
+        if (opFile) {
+        	for (Operation op: saveload) {
+        		op.checkContains( mouseX, mouseY );
+        	}
+        } else if (chooseType) {
+        	for (Operation op: type) {
+        		op.checkContains( mouseX, mouseY );
+        	}
+        } else if (editing) {
+        	for (Operation op: operation) {
+        		op.checkContains( mouseX, mouseY );
+        	}
+        }
+        
         if (!nd.isAddingElement() && leftMouse && !mouseDown) {
             mouseDown = true;
             
@@ -148,7 +162,9 @@ public class OptionBar implements AnimationInterface
             	for (Operation op: saveload) {
             		if (op.checkCollision( mouseX, mouseY )) {
             			if (op.getName().equals( SAVE )) {
-	                        nd.setNodeSelectable();
+	                        // TODO COMPLETARE QUESTA PARTE
+            			} else if (op.getName().equals( LOAD )) {
+	                        // TODO COMPLETARE QUESTA PARTE
             			}
             		}
             	}
@@ -157,13 +173,13 @@ public class OptionBar implements AnimationInterface
             if (!nd.isMoving() && !nd.isRemoving() && !nd.isAddingElement() && editing) {
                 for (Operation op : operation) {
                 	if (op.checkCollision( mouseX, mouseY )) {
-    		            	if (op.getName().equals( MOVE ) && !nd.isRemoving()) {
-    	                        nd.setNodeSelectable();
-    	                    } else if (op.getName().equals( REMOVE ) && !nd.isMoving()) {
-    	                        nd.removeNode();
-    	                    } else {
-    	                        break;
-    	                    }
+		            	if (op.getName().equals( MOVE ) && !nd.isRemoving()) {
+	                        nd.setNodeSelectable();
+	                    } else if (op.getName().equals( REMOVE ) && !nd.isMoving()) {
+	                        nd.removeNode();
+	                    } else {
+	                        break;
+	                    }
     	            	
                         chooseType = false;
     	            	editing = false;

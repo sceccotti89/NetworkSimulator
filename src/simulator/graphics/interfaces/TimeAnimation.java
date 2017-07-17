@@ -12,7 +12,7 @@ import org.newdawn.slick.geom.Rectangle;
 
 import simulator.graphics.AnimationNetwork;
 import simulator.graphics.dataButton.ArrowButton;
-import simulator.graphics.elements.Time;
+import simulator.graphics.elements.CheckBox;
 
 public class TimeAnimation implements AnimationInterface
 {
@@ -40,7 +40,7 @@ public class TimeAnimation implements AnimationInterface
     
     private boolean buttonHit = false, timingHit = false;
     
-    private final Time timeUs, timeS;
+    private final CheckBox timeUs, timeS;
 	private boolean mouseDown;
     
     public TimeAnimation( float startY, final float width, final float height ) throws SlickException
@@ -79,8 +79,8 @@ public class TimeAnimation implements AnimationInterface
         
         final float widthT = width/53, heightT = height/40;
         startY = timing.getMaxY() + (height - timing.getMaxY())*7/8 - heightT/2;
-        timeUs = new Time( width/2 - widthT/2 - width/16, startY - heightT/2, widthT, heightT, "µs" );
-        timeS  = new Time( width/2 - widthT/2 + width/16, startY - heightT/2 , widthT, heightT, "h:m:s" );
+        timeUs = new CheckBox( width/2 - widthT/2 - width/16, startY - heightT/2, widthT, heightT, "µs" );
+        timeS  = new CheckBox( width/2 - widthT/2 + width/16, startY - heightT/2 , widthT, heightT, "h:m:s" );
     }
     
     private long roundValue( final double value ) {

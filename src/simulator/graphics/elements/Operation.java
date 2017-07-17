@@ -7,7 +7,9 @@ import org.newdawn.slick.geom.Shape;
 
 public class Operation
 {
-	private Rectangle area;
+	private final Rectangle area, zone;
+	
+	private boolean selected = false;
 	
 	private String name;
 	
@@ -16,6 +18,7 @@ public class Operation
 		this.name = name;
 		
 		area = new Rectangle( x, y, width + width/4, height );
+		zone = new Rectangle( x, y, width + width/4, height );
 	}
 	
 	public boolean checkCollision( final int mouseX, final int mouseY ) {
@@ -50,6 +53,14 @@ public class Operation
 	    return area;
 	}
 	
+	public void checkContains( final float mouseX, final float mouseY ) {
+		selected = area.contains( mouseX, mouseY );
+	}
+	
+	public void setSelected( final boolean val ) {
+		selected = val;
+	}
+	
 	public void update() {
 		
 	}
@@ -59,6 +70,15 @@ public class Operation
 		g.fill( area );
 		g.setColor( Color.black );
 		g.draw( area );
+		
+		if (selected) {
+			Color color = new Color( Color.blue );
+			color.a = 0.5f;
+			g.setColor( color );
+			g.fill( zone );
+		}
+		
+		g.setColor( Color.black );
 		
 		int fWidth = g.getFont().getWidth( name ), fHeight = g.getFont().getHeight( name );
 		g.drawString( name, area.getCenterX() - fWidth/2, area.getCenterY() - fHeight/2 );
