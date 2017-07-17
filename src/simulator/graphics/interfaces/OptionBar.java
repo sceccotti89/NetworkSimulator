@@ -18,24 +18,26 @@ public class OptionBar implements AnimationInterface
 {
     private Rectangle barOptions = new Rectangle( 0, 0, 800, 20 );
     
-    private SimpleButton file, options, edit;
-    private Operation move, add, remove;
-    private Operation client, server, switcher, packet;
+    private final SimpleButton file, options, edit;
+    private final Operation save, load;
+    private final Operation move, add, remove;
+    private final Operation client, server, switcher, packet;
     
     private float widthB, heightB;
     
-    private List<SimpleButton> buttons;
-    private List<Operation> operation, type;
+    private final List<SimpleButton> buttons;
+    private final List<Operation> operation, type, saveload;
 
     private int mouseX, mouseY;
     
     private String FILE = "File", OPTIONS = "Options", EDIT = "Edit",
+    			   SAVE = "Save File", LOAD = "Load File",
                    MOVE = "MoveNode", ADD = "AddElement", REMOVE = "RemoveNode",
                    CLIENT = "Client", SERVER = "Server", SWITCH = "Switch", PACKET = "Packet";
     
     private boolean mouseDown;
     
-    private boolean editing = false, chooseType = false;
+    private boolean editing = false, chooseType = false, opFile = false;
     
     private Shape[] areaType;
     
@@ -55,9 +57,18 @@ public class OptionBar implements AnimationInterface
         buttons.add( options );
         buttons.add( edit );
         
+        saveload = new ArrayList<Operation>();
+
+        float startX = file.getX() + width/400;
+        save = new Operation( SAVE, startX, file.getMaxY(), widthB, heightB );
+        load = new Operation( LOAD, startX, save.getMaxY(), widthB, heightB );
+        
+        saveload.add( save );
+        saveload.add( load );
+        
         operation = new ArrayList<Operation>();
         
-        float startX = edit.getX() + width/400;
+        startX = edit.getX() + width/400;
         move   = new Operation( MOVE, startX, edit.getMaxY(), widthB, heightB );
         add    = new Operation( ADD, startX, move.getMaxY(), widthB, heightB );
         remove = new Operation( REMOVE, startX, add.getMaxY(), widthB, heightB );
@@ -121,20 +132,31 @@ public class OptionBar implements AnimationInterface
 
                     if (button.checkClick( mouseX, mouseY )) {
                         if (button.getName().equals( FILE )) {
-                            ;
+                            opFile = !opFile;
+                            editing = false;
                         } else if (button.getName().equals( OPTIONS )) {
                             ;
                         } else if (button.getName().equals( EDIT )) {
                         	editing = !editing;
+                        	opFile = false;
                         }
                     }
                 }
             }
+            
+            if (opFile) {
+            	for (Operation op: saveload) {
+            		if (op.checkCollision( mouseX, mouseY )) {
+            			if (op.getName().equals( SAVE )) {
+	                        nd.setNodeSelectable();
+            			}
+            		}
+            	}
+            }
 
-            if (!nd.isAddingElement()) {
+            if (!nd.isMoving() && !nd.isRemoving() && !nd.isAddingElement() && editing) {
                 for (Operation op : operation) {
                 	if (op.checkCollision( mouseX, mouseY )) {
-                        if (editing) {
     		            	if (op.getName().equals( MOVE ) && !nd.isRemoving()) {
     	                        nd.setNodeSelectable();
     	                    } else if (op.getName().equals( REMOVE ) && !nd.isMoving()) {
@@ -142,7 +164,6 @@ public class OptionBar implements AnimationInterface
     	                    } else {
     	                        break;
     	                    }
-                        }
     	            	
                         chooseType = false;
     	            	editing = false;
@@ -198,7 +219,13 @@ public class OptionBar implements AnimationInterface
         	    }
         	}
         }
-    }
+
+    	if (opFile) {
+    		for (Operation op: saveload) {
+    			op.render( g );
+        	}
+    	}
+	}
     
     public void resetAllButtons() {
         for (SimpleButton button: buttons) {
