@@ -114,14 +114,18 @@ public class OptionBar implements AnimationInterface
         	for (Operation op: saveload) {
         		op.checkContains( mouseX, mouseY );
         	}
-        } else if (chooseType) {
-        	for (Operation op: type) {
-        		op.checkContains( mouseX, mouseY );
-        	}
-        } else if (editing) {
-        	for (Operation op: operation) {
-        		op.checkContains( mouseX, mouseY );
-        	}
+        } else {
+	        if (chooseType) {
+	        	for (Operation op: type) {
+	        		op.checkContains( mouseX, mouseY );
+	        	}
+	        } 
+	        
+	        if (editing) {
+	        	for (Operation op: operation) {
+	        		op.checkContains( mouseX, mouseY );
+	        	}
+	        }
         }
         
         if (!nd.isAddingElement() && leftMouse && !mouseDown) {
