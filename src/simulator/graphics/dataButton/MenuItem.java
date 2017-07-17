@@ -1,5 +1,5 @@
 package simulator.graphics.dataButton;
 
-public class ToggleButton {
+public class MenuItem {
 
 }
