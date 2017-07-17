@@ -12,11 +12,19 @@ import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.geom.Shape;
 
 import simulator.graphics.dataButton.SimpleButton;
+import simulator.graphics.dataButton.ToggleButton;
 import simulator.graphics.elements.Operation;
 
 public class OptionBar implements AnimationInterface
 {
     private Rectangle barOptions = new Rectangle( 0, 0, 800, 20 );
+    
+    
+    
+    // TODO REALIZZARE I BOTTONI A TENDINA TRAMITE CLASSE
+    private final ToggleButton FILES, OPTION, EDITING;
+    
+    
     
     private final SimpleButton file, options, edit;
     private final Operation save, load;
