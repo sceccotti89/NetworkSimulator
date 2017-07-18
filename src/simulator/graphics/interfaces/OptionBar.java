@@ -149,6 +149,7 @@ public class OptionBar implements AnimationInterface
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();
         
+        // TODO RAGIONARE UN PO SUI PULSANTI PREMUTI
         if (leftMouse && !mouseDown) {
             mouseDown = true;
         } else if (!leftMouse && mouseDown) {

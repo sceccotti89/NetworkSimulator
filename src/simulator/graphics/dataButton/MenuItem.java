@@ -21,9 +21,13 @@ public class MenuItem extends Button
 		this.operations = new ArrayList<Operation>( operations );
 	}
 	
-	public void addItem( final Operation op ) {
+	public void addItem( final Operation op, final ArrayList<Operation> ops ) {
 		operations.add( op );
         areaType = areaType[0].union( op.getArea() );
+        
+        for (Operation ope: ops) {
+            areaType = areaType[0].union( ope.getArea() );
+        }
 	}
 	
 	public float getX() {
@@ -43,7 +47,11 @@ public class MenuItem extends Button
 			if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
 	            button.setPressed( true );
 	        }
-		} else button.setPressed( false );
+		} else if (!leftMouse && mouseDown) {
+			if (!button.checkClick( mouseX, mouseY )) {
+				button.setPressed( false );
+			}
+		}
 		
 		for (Operation op: operations) {
 			op.checkContains( mouseX, mouseY );
@@ -57,8 +65,10 @@ public class MenuItem extends Button
 		button.draw( g );
 		
 		// TODO SETTARE UN PARAMETRO PER DETERMINARE SE DISEGNARLO O NO
-		for (Operation op: operations) {
-			op.render( g );
+		if (button.isPressed()) {
+			for (Operation op: operations) {
+				op.render( g );
+			}
 		}
 	}
 }
