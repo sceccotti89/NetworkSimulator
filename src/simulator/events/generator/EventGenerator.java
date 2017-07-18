@@ -2,7 +2,7 @@
  * @author Stefano Ceccotti
 */
 
-package simulator.events;
+package simulator.events.generator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import simulator.core.Agent;
+import simulator.events.Event;
+import simulator.events.Packet;
 import simulator.events.EventHandler.EventType;
 import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;

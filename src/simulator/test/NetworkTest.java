@@ -10,8 +10,9 @@ import java.util.concurrent.TimeUnit;
 import simulator.core.Agent;
 import simulator.core.Simulator;
 import simulator.events.Event;
-import simulator.events.EventGenerator;
 import simulator.events.Packet;
+import simulator.events.generator.CBRGenerator;
+import simulator.events.generator.EventGenerator;
 import simulator.events.impl.RequestEvent;
 import simulator.exception.SimulatorException;
 import simulator.graphics.AnimationNetwork;
@@ -26,29 +27,6 @@ import simulator.utils.Utils;
 public class NetworkTest
 {
     private static final int CPU_CORES = 4;
-    
-    protected static class CBRGenerator extends EventGenerator
-    {
-        public CBRGenerator( final Time duration,
-                             final Time departureTime,
-                             final Packet reqPacket,
-                             final Packet resPacket )
-        {
-            super( duration, departureTime, Utils.INFINITE,
-                   reqPacket, resPacket, true, false, false );
-        }
-        
-        @Override
-        public void update() {
-            super.update();
-        }
-        
-        @Override
-        public Time computeDepartureTime( final Event e ) {
-            // Empty method.
-            return null;
-        }
-    }
     
     protected static class ClientGenerator extends EventGenerator
     {
@@ -102,13 +80,13 @@ public class NetworkTest
         }
     }
     
-    protected static class SinkGenerator extends EventGenerator
+    protected static class SinkGenerator extends simulator.events.generator.SinkGenerator
     {
         public SinkGenerator( final Time duration,
                               final Packet reqPacket,
                               final Packet resPacket )
         {
-            super( duration, Time.ZERO, 1L, reqPacket, resPacket, false, false, true );
+            super( duration, 1L, reqPacket, resPacket );
         }
         
         @Override
@@ -119,12 +97,6 @@ public class NetworkTest
             } else {
                 return new Packet( 40, SizeUnit.KILOBYTE );
             }
-        }
-        
-        @Override
-        public Time computeDepartureTime( final Event e ) {
-            // Empty method.
-            return null;
         }
     }
     

@@ -13,9 +13,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import simulator.events.Event;
-import simulator.events.EventGenerator;
 import simulator.events.EventHandler;
 import simulator.events.EventScheduler;
+import simulator.events.generator.EventGenerator;
 import simulator.network.protocols.NetworkProtocol;
 import simulator.topology.NetworkNode;
 import simulator.utils.Time;
