@@ -29,12 +29,12 @@ public class OptionBar implements AnimationInterface
     private final SimpleButton file, options, edit;
     private final Operation save, load;
     private final Operation move, add, remove;
-    private final Operation client, server, switcher, packet;
+    private Operation client, server, switcher, packet;
     
     private float widthB, heightB;
     
-    private final List<SimpleButton> buttons;
-    private final List<Operation> operation, type, saveload;
+    private List<SimpleButton> buttons;
+    private List<Operation> operation, type, saveload;
 
     private int mouseX, mouseY;
     
@@ -48,23 +48,57 @@ public class OptionBar implements AnimationInterface
     private boolean editing = false, chooseType = false, opFile = false;
     
     private Shape[] areaType;
+
+
+
+	private ArrayList<Operation> operations;
     
     public OptionBar( final GameContainer gc, final int width, final int height ) throws SlickException
     {
         widthB = width/10;
         heightB = height/30;
         
+        int index = 0;
         
-        // TODO INZIAMO IL CODE REFACTORING
+        
+        // TODO INIZIAMO IL CODE REFACTORING
+        operations = new ArrayList<Operation>();
+        
+        // TODO NELLA CLASSE OPERATION INSERIRE IL METODO IN CUI CIASCUNO DI ESSI FA IL PROPRIO LAVORO
+        
+        file = new SimpleButton( 0, 0, widthB, heightB, FILE, Color.gray, index++, gc );
+        float startX = file.getX() + width/400;
+        save = new Operation( SAVE, startX, file.getMaxY(), widthB, heightB );
+        load = new Operation( LOAD, startX, save.getMaxY(), widthB, heightB );
+        operations.add( save );
+        operations.add( load );
+        FILES   = new MenuItem( file, operations );
+        operations.clear();
+        
+        options = new SimpleButton( FILES.getMaxX(), 0, widthB, heightB, OPTIONS, Color.gray, index++, gc );
+        OPTION  = new MenuItem( options, operations );
+        operations.clear();
+
+        edit    = new SimpleButton( options.getMaxX(), 0, widthB, heightB, EDIT, Color.gray, index++, gc );
+        startX = edit.getX() + width/400;
+        move   = new Operation( MOVE, startX, edit.getMaxY(), widthB, heightB );
+        add    = new Operation( ADD, startX, move.getMaxY(), widthB, heightB );
+        remove = new Operation( REMOVE, startX, add.getMaxY(), widthB, heightB );
+        operations.add( move );
+        operations.add( add );
+        operations.add( remove );
+        EDITING = new MenuItem( edit, operations );
+        operations.clear();
         
         items = new ArrayList<MenuItem>();
         
+        items.add( FILES );
+        items.add( OPTION );
+        items.add( EDITING );
         
         
+        /*buttons = new ArrayList<SimpleButton>();
         
-        buttons = new ArrayList<SimpleButton>();
-        
-        int index = 0;
         file    = new SimpleButton( 0, 0, widthB, heightB, FILE, Color.gray, index++, gc );
         options = new SimpleButton( file.getMaxX(), 0, widthB, heightB, OPTIONS, Color.gray, index++, gc );
         edit    = new SimpleButton( options.getMaxX(), 0, widthB, heightB, EDIT, Color.gray, index++, gc );
@@ -74,20 +108,13 @@ public class OptionBar implements AnimationInterface
         buttons.add( edit );
         
         saveload = new ArrayList<Operation>();
-
-        float startX = file.getX() + width/400;
-        save = new Operation( SAVE, startX, file.getMaxY(), widthB, heightB );
-        load = new Operation( LOAD, startX, save.getMaxY(), widthB, heightB );
         
         saveload.add( save );
         saveload.add( load );
         
         operation = new ArrayList<Operation>();
         
-        startX = edit.getX() + width/400;
-        move   = new Operation( MOVE, startX, edit.getMaxY(), widthB, heightB );
-        add    = new Operation( ADD, startX, move.getMaxY(), widthB, heightB );
-        remove = new Operation( REMOVE, startX, add.getMaxY(), widthB, heightB );
+        
         
         operation.add( move );
         operation.add( add );
@@ -109,7 +136,7 @@ public class OptionBar implements AnimationInterface
         areaType = new Shape[] {add.getArea()};
         for (Operation op: type) {
             areaType = areaType[0].union( op.getArea() );
-        }
+        }*/
     }
     
     public float getMaxY() {
@@ -122,7 +149,30 @@ public class OptionBar implements AnimationInterface
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();
         
-        if (editing) {
+        if (leftMouse && !mouseDown) {
+            mouseDown = true;
+            
+            for (MenuItem item: items) {
+            	item.update( mouseX, mouseY, leftMouse, mouseDown );
+            }
+            
+            /*for (SimpleButton button : buttons) {
+                if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
+                    button.setPressed( true );
+                }
+            }*/
+        } else if (!leftMouse && mouseDown) {
+            mouseDown = false;
+            
+            for (MenuItem item: items) {
+            	item.update( mouseX, mouseY, leftMouse, mouseDown );
+            }
+        }
+        
+        
+        
+        
+        /*if (editing) {
             chooseType = areaType[0].contains( mouseX, mouseY );
         }
         
@@ -156,7 +206,6 @@ public class OptionBar implements AnimationInterface
             mouseDown = false;
             
             for (SimpleButton button: buttons) {
-                // if a button is pressed
                 if (button.isPressed()) {
                     for (SimpleButton bottone: buttons) {
                         if (bottone.isPressed()) {
@@ -182,9 +231,7 @@ public class OptionBar implements AnimationInterface
             	for (Operation op: saveload) {
             		if (op.checkCollision( mouseX, mouseY )) {
             			if (op.getName().equals( SAVE )) {
-	                        // TODO COMPLETARE QUESTA PARTE
             			} else if (op.getName().equals( LOAD )) {
-	                        // TODO COMPLETARE QUESTA PARTE
             			}
             		}
             	}
@@ -233,14 +280,18 @@ public class OptionBar implements AnimationInterface
                     }
                 }
             }
-        }
+        }*/
     }
     
     @Override
     public void render( final GameContainer gc ) {
         Graphics g = gc.getGraphics();
         
-        for (SimpleButton button: buttons) {
+        for (MenuItem item: items) {
+        	item.render( g );
+        }
+        
+        /*for (SimpleButton button: buttons) {
             button.draw( g );
         }
         
@@ -260,7 +311,7 @@ public class OptionBar implements AnimationInterface
     		for (Operation op: saveload) {
     			op.render( g );
         	}
-    	}
+    	}*/
 	}
     
     public void resetAllButtons() {
