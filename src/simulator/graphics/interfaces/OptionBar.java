@@ -151,22 +151,12 @@ public class OptionBar implements AnimationInterface
         
         if (leftMouse && !mouseDown) {
             mouseDown = true;
-            
-            for (MenuItem item: items) {
-            	item.update( mouseX, mouseY, leftMouse, mouseDown );
-            }
-            
-            /*for (SimpleButton button : buttons) {
-                if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
-                    button.setPressed( true );
-                }
-            }*/
         } else if (!leftMouse && mouseDown) {
             mouseDown = false;
-            
-            for (MenuItem item: items) {
-            	item.update( mouseX, mouseY, leftMouse, mouseDown );
-            }
+        }
+        
+        for (MenuItem item: items) {
+        	item.update( mouseX, mouseY, leftMouse, mouseDown );
         }
         
         
