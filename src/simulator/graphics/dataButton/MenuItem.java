@@ -7,6 +7,7 @@ import org.newdawn.slick.Graphics;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Shape;
 
+import simulator.graphics.elements.Menu;
 import simulator.graphics.elements.Operation;
 
 public class MenuItem extends Button
@@ -18,6 +19,9 @@ public class MenuItem extends Button
 	private List<Operation> area;
 	private int index = -1;
 	
+	// TODO UTILIZZARE LA CALSSE MENU
+	private List<Menu> menu;
+	
 	// TODO NEL CASO DI MENU A TENDINA CONCATENATE, DOVRO PENSARE DI FARE UNA CLASSE APPOSTA PER GESTIRLE E AREATYPE
 	
 	public MenuItem( final SimpleButton button, final ArrayList<Operation> operations ) throws SlickException
@@ -27,7 +31,24 @@ public class MenuItem extends Button
 	}
 	
 	public void addItem( final Operation op, final ArrayList<Operation> ops ) {
-		area = new ArrayList<Operation>(ops);
+		// TODO UTILIZZARE LA CLASSE MENU
+		for (Menu m: menu) {
+			if (m.checkButton( op )) {
+				// TODO PENSARE A COME GESTIRE LA COSA
+				m.addItems( op, ops );
+				return;
+			}
+		} 
+		
+		// TODO INSERIRE UN NUOVO MENU
+		for (int i = 0; i < operations.size(); i++) {
+			if (operations.get( i ).equals( op )) {
+				index = i;
+				menu.add( new Menu( op, ops, index ) );
+			}
+		}
+		
+		/*area = new ArrayList<Operation>(ops);
 		for (int i = 0; i < operations.size(); i++) {
 			if (operations.get( i ).equals( op )) {
 				index = i;
@@ -37,7 +58,7 @@ public class MenuItem extends Button
         
         for (Operation ope: ops) {
             areaType = areaType[0].union( ope.getArea() );
-        }
+        }*/
 	}
 	
 	public float getX() {
@@ -65,7 +86,15 @@ public class MenuItem extends Button
 			}
 		}
 		
-		if (!viewAreaType && index != -1) {
+		// TODO UTILIZZARE I MENU
+		for (Menu m: menu) {
+			m.update( mouseX, mouseY );
+		}
+		
+		
+		
+		
+		/*if (!viewAreaType && index != -1) {
 			viewAreaType = operations.get( index ).checkCollision( mouseX, mouseY );
 		}
 		
@@ -91,22 +120,21 @@ public class MenuItem extends Button
 		
 		if (viewAreaType) {
 			operations.get( index ).setSelected( true );
-		}
+		}*/
 	}
 	
 	public void render( Graphics g ) {
 		button.draw( g );
 		
 		if (button.isPressed()) {
-			for (Operation op: operations) {
-				op.render( g );
+			for (Menu m: menu) {
+				m.render( g );
 			}
-		}
-		
-		if (viewAreaType) {
-			for (Operation op: area) {
+			
+			
+			/*for (Operation op: operations) {
 				op.render( g );
-			}
+			}*/
 		}
 	}
 }
