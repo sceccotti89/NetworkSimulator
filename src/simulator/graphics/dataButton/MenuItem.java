@@ -13,7 +13,10 @@ public class MenuItem extends Button
 {
 	private SimpleButton button;
 	private List<Operation> operations;
-	private Shape[] areaType;
+	private Shape[] areaType = null;
+	private boolean viewAreaType = false;
+	private List<Operation> area;
+	private int index = -1;
 	
 	public MenuItem( final SimpleButton button, final ArrayList<Operation> operations ) throws SlickException
 	{
@@ -22,8 +25,13 @@ public class MenuItem extends Button
 	}
 	
 	public void addItem( final Operation op, final ArrayList<Operation> ops ) {
-		operations.add( op );
-        areaType = areaType[0].union( op.getArea() );
+		area = new ArrayList<Operation>(ops);
+		for (int i = 0; i < operations.size(); i++) {
+			if (operations.get( i ).equals( op )) {
+				index = i;
+			}
+		}
+		areaType = new Shape[] {op.getArea()};
         
         for (Operation ope: ops) {
             areaType = areaType[0].union( ope.getArea() );
@@ -47,9 +55,28 @@ public class MenuItem extends Button
 			if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
 	            button.setPressed( true );
 	        }
-		} else if (!leftMouse && mouseDown) {
-			if (!button.checkClick( mouseX, mouseY )) {
-				button.setPressed( false );
+		} else if (!leftMouse && !mouseDown) {
+			if (button.isPressed()) {
+				if (button.checkClick( mouseX, mouseY )) {
+					button.setPressed( false );
+				}
+			}
+		}
+		
+		if (!viewAreaType && index != -1) {
+			viewAreaType = operations.get( index ).checkCollision( mouseX, mouseY );
+		}
+		
+		if (viewAreaType) {
+			if (!areaType[0].contains( mouseX, mouseY )) {
+				viewAreaType = false;
+			} else {
+				for (Operation op: area) {
+					op.checkContains( mouseX, mouseY );
+					if (op.checkCollision( mouseX, mouseY )) {
+						// TODO FA IL SUO LAVORO
+					}
+				}
 			}
 		}
 		
@@ -59,14 +86,23 @@ public class MenuItem extends Button
 				// TODO FAR ESEGUIRE LA PROPRIA OPERAZIONE
 			}
 		}
+		
+		if (viewAreaType) {
+			operations.get( index ).setSelected( true );
+		}
 	}
 	
 	public void render( Graphics g ) {
 		button.draw( g );
 		
-		// TODO SETTARE UN PARAMETRO PER DETERMINARE SE DISEGNARLO O NO
 		if (button.isPressed()) {
 			for (Operation op: operations) {
+				op.render( g );
+			}
+		}
+		
+		if (viewAreaType) {
+			for (Operation op: area) {
 				op.render( g );
 			}
 		}

@@ -48,9 +48,7 @@ public class OptionBar implements AnimationInterface
     private boolean editing = false, chooseType = false, opFile = false;
     
     private Shape[] areaType;
-
-
-
+    
 	private ArrayList<Operation> operations;
     
     public OptionBar( final GameContainer gc, final int width, final int height ) throws SlickException
@@ -65,6 +63,7 @@ public class OptionBar implements AnimationInterface
         operations = new ArrayList<Operation>();
         
         // TODO NELLA CLASSE OPERATION INSERIRE IL METODO IN CUI CIASCUNO DI ESSI FA IL PROPRIO LAVORO
+        // ANCHE SE RAGIONANDOCI NON PENSO SI POSSA FARE, VEDREMO
         
         file = new SimpleButton( 0, 0, widthB, heightB, FILE, Color.gray, index++, gc );
         float startX = file.getX() + width/400;
@@ -88,6 +87,19 @@ public class OptionBar implements AnimationInterface
         operations.add( add );
         operations.add( remove );
         EDITING = new MenuItem( edit, operations );
+        
+        operations.clear();
+        startX = move.getMaxX();
+        client   = new Operation( CLIENT, startX, add.getY(), widthB, heightB );
+        server   = new Operation( SERVER, startX, client.getMaxY(), widthB, heightB );
+        switcher = new Operation( SWITCH, startX, server.getMaxY(), widthB, heightB );
+        packet   = new Operation( PACKET, startX, switcher.getMaxY(), widthB, heightB );
+        operations.add( client );
+        operations.add( server );
+        operations.add( switcher );
+        operations.add( packet );
+        EDITING.addItem( add, operations );
+        
         operations.clear();
         
         items = new ArrayList<MenuItem>();
@@ -152,9 +164,12 @@ public class OptionBar implements AnimationInterface
         // TODO RAGIONARE UN PO SUI PULSANTI PREMUTI
         if (leftMouse && !mouseDown) {
             mouseDown = true;
-        } else if (!leftMouse && mouseDown) {
+        } 
+        
+        // TODO PER ORA LO LASCIO IN COMMENTO PER LAVORARCI, POI SI VEDRA
+        /*else if (!leftMouse && mouseDown) {
             mouseDown = false;
-        }
+        }*/
         
         for (MenuItem item: items) {
         	item.update( mouseX, mouseY, leftMouse, mouseDown );
