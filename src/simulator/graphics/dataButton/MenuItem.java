@@ -18,6 +18,8 @@ public class MenuItem extends Button
 	private List<Operation> area;
 	private int index = -1;
 	
+	// TODO NEL CASO DI MENU A TENDINA CONCATENATE, DOVRO PENSARE DI FARE UNA CLASSE APPOSTA PER GESTIRLE E AREATYPE
+	
 	public MenuItem( final SimpleButton button, final ArrayList<Operation> operations ) throws SlickException
 	{
 		this.button = button;
