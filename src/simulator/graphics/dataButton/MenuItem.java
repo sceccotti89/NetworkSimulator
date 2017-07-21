@@ -3,7 +3,6 @@ package simulator.graphics.dataButton;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Shape;
@@ -16,14 +15,9 @@ public class MenuItem extends Button
 	private SimpleButton button;
 	private List<Operation> operations;
 	private Shape[] areaType = null;
-	private boolean viewAreaType = false;
-	private List<Operation> area;
 	private int index = -1;
 	
-	// TODO UTILIZZARE LA CLASSE MENU
 	private List<Menu> menu;
-	
-	// TODO NEL CASO DI MENU A TENDINA CONCATENATE, DOVRO PENSARE DI FARE UNA CLASSE APPOSTA PER GESTIRLE E AREATYPE
 	
 	public MenuItem( final SimpleButton button, final ArrayList<Operation> operations ) throws SlickException
 	{
