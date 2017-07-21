@@ -48,7 +48,7 @@ public class Menu
     }
 	
 	public boolean checkContains( final float mouseX, final float mouseY, final boolean leftMouse ) {
-	    // TODO PENSARLA E RIFARLA DA CAPO SE SERVE
+	    // TODO RIFARE TOTALMENTE RAGIONANDOLA BENE (POI DOVREI AVER FINITO)
 	    
 	    if (leftMouse) {
 	        if (index != -1) {
