@@ -7,8 +7,8 @@ import org.newdawn.slick.geom.Shape;
 
 public class Menu
 {
-	private final Operation start;
-	private final ArrayList<Operation> ops;
+	private Operation start;
+	private ArrayList<Operation> ops;
 	private ArrayList<Menu> menu;
 	// TODO PENSARE A COME GESTIRLO
 	private Shape[] areaType = null;
@@ -16,7 +16,17 @@ public class Menu
 	
 	public Menu ( final Operation start, final ArrayList<Operation> ops, final int index ) {
 		this.start = start;
-		this.ops = ops;
+		this.ops = new ArrayList<Operation>(ops);
+	}
+	
+	/**empty builder*/
+	public Menu () {
+	    ops = new ArrayList<Operation>();
+        menu = new ArrayList<Menu>();
+	}
+	
+	public int getSizeOp() {
+	    return ops.size();
 	}
 	
 	public void addItems( final Operation op, final ArrayList<Operation> ops ) {
@@ -49,6 +59,8 @@ public class Menu
 	}
 	
 	public void render( final Graphics g ) {
-		
+		for (Operation op: ops) {
+		    op.render( g );
+		}
 	}
 }

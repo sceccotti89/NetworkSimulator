@@ -19,7 +19,7 @@ public class MenuItem extends Button
 	private List<Operation> area;
 	private int index = -1;
 	
-	// TODO UTILIZZARE LA CALSSE MENU
+	// TODO UTILIZZARE LA CLASSE MENU
 	private List<Menu> menu;
 	
 	// TODO NEL CASO DI MENU A TENDINA CONCATENATE, DOVRO PENSARE DI FARE UNA CLASSE APPOSTA PER GESTIRLE E AREATYPE
@@ -28,37 +28,38 @@ public class MenuItem extends Button
 	{
 		this.button = button;
 		this.operations = new ArrayList<Operation>( operations );
+        
+        System.out.println( "SIZE = " + operations.size() );
+		
+		menu = new ArrayList<Menu>();
+		
+		// TODO APPENA OPTIONS AVRA OPERAZIONI QUESTO IF VERRA ELIMINATO
+		if (this.operations.size() > 0) {
+    		areaType = new Shape[] {this.operations.get( 0 ).getArea()};
+    		
+    		for (Operation op: this.operations) {
+                areaType = areaType[0].union( op.getArea() );
+                menu.add( new Menu() );
+            }
+		}
 	}
 	
 	public void addItem( final Operation op, final ArrayList<Operation> ops ) {
-		// TODO UTILIZZARE LA CLASSE MENU
 		for (Menu m: menu) {
 			if (m.checkButton( op )) {
-				// TODO PENSARE A COME GESTIRE LA COSA
 				m.addItems( op, ops );
 				return;
 			}
 		} 
 		
-		// TODO INSERIRE UN NUOVO MENU
 		for (int i = 0; i < operations.size(); i++) {
+		    areaType = areaType[0].union( operations.get( i ).getArea() );
+		    
 			if (operations.get( i ).equals( op )) {
-				index = i;
-				menu.add( new Menu( op, ops, index ) );
+			    menu.remove( i );
+				menu.add( i, new Menu( op, ops, index ) );
 			}
 		}
-		
-		/*area = new ArrayList<Operation>(ops);
-		for (int i = 0; i < operations.size(); i++) {
-			if (operations.get( i ).equals( op )) {
-				index = i;
-			}
-		}
-		areaType = new Shape[] {op.getArea()};
-        
-        for (Operation ope: ops) {
-            areaType = areaType[0].union( ope.getArea() );
-        }*/
 	}
 	
 	public float getX() {
@@ -74,7 +75,9 @@ public class MenuItem extends Button
 	}
 	
 	public void update( final int mouseX, final int mouseY, final boolean leftMouse, final boolean mouseDown ) {
-		if (leftMouse && mouseDown) {
+		index = -1;
+	    
+	    if (leftMouse && mouseDown) {
 			if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
 	            button.setPressed( true );
 	        }
@@ -86,55 +89,26 @@ public class MenuItem extends Button
 			}
 		}
 		
-		// TODO UTILIZZARE I MENU
-		for (Menu m: menu) {
-			m.update( mouseX, mouseY );
+		if (button.isPressed()) {
+		    for (int i = 0; i < operations.size(); i++) {
+		        if (operations.get( i ).checkContains( mouseX, mouseY )) {
+		            index = i;
+		        }
+		    }
 		}
-		
-		
-		
-		
-		/*if (!viewAreaType && index != -1) {
-			viewAreaType = operations.get( index ).checkCollision( mouseX, mouseY );
-		}
-		
-		if (viewAreaType) {
-			if (!areaType[0].contains( mouseX, mouseY )) {
-				viewAreaType = false;
-			} else {
-				for (Operation op: area) {
-					op.checkContains( mouseX, mouseY );
-					if (op.checkCollision( mouseX, mouseY )) {
-						// TODO FA IL SUO LAVORO
-					}
-				}
-			}
-		}
-		
-		for (Operation op: operations) {
-			op.checkContains( mouseX, mouseY );
-			if (op.checkCollision( mouseX, mouseY )) {
-				// TODO FAR ESEGUIRE LA PROPRIA OPERAZIONE
-			}
-		}
-		
-		if (viewAreaType) {
-			operations.get( index ).setSelected( true );
-		}*/
 	}
 	
 	public void render( Graphics g ) {
 		button.draw( g );
 		
 		if (button.isPressed()) {
-			for (Menu m: menu) {
-				m.render( g );
-			}
-			
-			
-			/*for (Operation op: operations) {
+			for (Operation op: operations) {
 				op.render( g );
-			}*/
+			}
+	        
+	        if (index != -1) {
+	            menu.get( index ).render( g );
+	        }
 		}
 	}
 }

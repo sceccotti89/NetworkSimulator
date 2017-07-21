@@ -53,8 +53,8 @@ public class Operation
 	    return area;
 	}
 	
-	public void checkContains( final float mouseX, final float mouseY ) {
-		selected = area.contains( mouseX, mouseY );
+	public boolean checkContains( final float mouseX, final float mouseY ) {
+		return selected = area.contains( mouseX, mouseY );
 	}
 	
 	public void setSelected( final boolean val ) {
