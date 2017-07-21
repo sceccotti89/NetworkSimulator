@@ -13,7 +13,6 @@ public class Menu
 	// TODO PENSARE A COME GESTIRLO
 	private Rectangle areaType = null;
 	private int index = -1;
-	private int pos = -1;
 	
 	public Menu ( final Operation start, final ArrayList<Operation> ops ) {
 		this.start = start;
@@ -37,21 +36,19 @@ public class Menu
             menu.add( new Menu() );
         }
         
-        for (int i = 0; i < ops.size(); i++) {
-            if (ops.get( i ).equals( op )) {
+        for (int i = 0; i < this.ops.size(); i++) {
+            if (this.ops.get( i ).equals( op )) {
                 System.out.println( "INDEX = " + index );
                 menu.remove( i );
                 menu.add( i, new Menu( op, ops ) );
                 return;
             }
         }
-        
-        if (pos != -1) {
-            menu.get( pos ).addItems( op, ops );
-        }
     }
 	
 	public boolean checkContains( final float mouseX, final float mouseY, final boolean leftMouse ) {
+	    // TODO PENSARLA E RIFARLA DA CAPO SE SERVE
+	    
 	    if (leftMouse) {
 	        if (index != -1) {
 	            if (areaType.contains( mouseX, mouseY )) {
@@ -90,7 +87,6 @@ public class Menu
 	    
 	    for (int i = 0; i < menu.size(); i++) {
 	        if (menu.get( i ).checkButton( op )) {
-	            pos = i;
 	            return true;
 	        }
 	    }

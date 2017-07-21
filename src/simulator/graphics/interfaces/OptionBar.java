@@ -99,10 +99,10 @@ public class OptionBar implements AnimationInterface
         EDITING.addItem( move, operations );
         
         operations.clear();
-        startX = client.getMaxX();
+        startX = server.getMaxX();
         test   = new Operation( CLIENT, startX, client.getY(), widthB, heightB );
         operations.add( test );
-        EDITING.addItem( client, operations );
+        EDITING.addItem( server, operations );
         
         operations.clear();
         

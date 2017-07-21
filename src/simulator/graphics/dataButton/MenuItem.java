@@ -50,6 +50,7 @@ public class MenuItem extends Button
 	    for (Menu m: menu) {
 	        if (m.checkButton( op )) {
 	            m.addItems( op, ops );
+	            return;
 	        }
 	    }
 	}
