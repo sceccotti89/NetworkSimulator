@@ -17,6 +17,7 @@ public class MenuItem extends Button
 	private Shape[] areaType = null;
 	private int index = -1;
 	
+	// TODO PENSARE DI USARE VETTORE DI MENUITEM INVECE DI MENU (ELIMINEREI QUEST'ULTIMA CLASSE)
 	private List<Menu> menu;
 	
 	public MenuItem( final SimpleButton button, final ArrayList<Operation> operations ) throws SlickException
@@ -45,6 +46,7 @@ public class MenuItem extends Button
 	    for (int i = 0; i < operations.size(); i++) {
             if (operations.get( i ).equals( op )) {
                 menu.remove( i );
+                // TODO VEDIAMO SE INDEX SERVIRA'
                 menu.add( i, new Menu( op, ops, index ) );
             }
         }
