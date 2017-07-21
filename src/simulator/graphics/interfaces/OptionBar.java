@@ -27,8 +27,9 @@ public class OptionBar implements AnimationInterface
     
     private final SimpleButton file, options, edit;
     private final Operation save, load;
+    private final Operation option;
     private final Operation move, add, remove;
-    private Operation client, server, switcher, packet;
+    private Operation client, server, switcher, packet, test;
     
     private float widthB, heightB;
     
@@ -37,7 +38,7 @@ public class OptionBar implements AnimationInterface
     private int mouseX, mouseY;
     
     private String FILE = "File", OPTIONS = "Options", EDIT = "Edit",
-    			   SAVE = "Save File", LOAD = "Load File",
+    			   SAVE = "Save File", LOAD = "Load File", OPZIONI = "Option",
                    MOVE = "MoveNode", ADD = "AddElement", REMOVE = "RemoveNode",
                    CLIENT = "Client", SERVER = "Server", SWITCH = "Switch", PACKET = "Packet";
     
@@ -69,6 +70,9 @@ public class OptionBar implements AnimationInterface
         operations.clear();
         
         options = new SimpleButton( FILES.getMaxX(), 0, widthB, heightB, OPTIONS, Color.gray, index++, gc );
+        startX = options.getX() + width/400;
+        option = new Operation( OPZIONI, startX, options.getMaxY(), widthB, heightB );
+        operations.add( option );
         OPTION = new MenuItem( options, operations );
         operations.clear();
 
@@ -84,7 +88,7 @@ public class OptionBar implements AnimationInterface
         
         operations.clear();
         startX = move.getMaxX();
-        client   = new Operation( CLIENT, startX, add.getY(), widthB, heightB );
+        client   = new Operation( CLIENT, startX, move.getY(), widthB, heightB );
         server   = new Operation( SERVER, startX, client.getMaxY(), widthB, heightB );
         switcher = new Operation( SWITCH, startX, server.getMaxY(), widthB, heightB );
         packet   = new Operation( PACKET, startX, switcher.getMaxY(), widthB, heightB );
@@ -92,7 +96,13 @@ public class OptionBar implements AnimationInterface
         operations.add( server );
         operations.add( switcher );
         operations.add( packet );
-        EDITING.addItem( add, operations );
+        EDITING.addItem( move, operations );
+        
+        operations.clear();
+        startX = client.getMaxX();
+        test   = new Operation( CLIENT, startX, client.getY(), widthB, heightB );
+        operations.add( test );
+        EDITING.addItem( client, operations );
         
         operations.clear();
         

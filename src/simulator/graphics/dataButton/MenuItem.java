@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.SlickException;
-import org.newdawn.slick.geom.Shape;
+import org.newdawn.slick.geom.Rectangle;
 
 import simulator.graphics.elements.Menu;
 import simulator.graphics.elements.Operation;
@@ -14,7 +14,7 @@ public class MenuItem extends Button
 {
 	private SimpleButton button;
 	private List<Operation> operations;
-	private Shape[] areaType = null;
+	private Rectangle areaType = null;
 	private int index = -1;
 	
 	// TODO PENSARE DI USARE VETTORE DI MENUITEM INVECE DI MENU (ELIMINEREI QUEST'ULTIMA CLASSE)
@@ -27,36 +27,31 @@ public class MenuItem extends Button
 		
 		menu = new ArrayList<Menu>();
 		
-		// TODO APPENA OPTIONS AVRA OPERAZIONI QUESTO IF VERRA ELIMINATO
-		if (this.operations.size() > 0) {
-    		areaType = new Shape[] {this.operations.get( 0 ).getArea()};
+		areaType = new Rectangle( operations.get( 0 ).getX(), operations.get( 0 ).getY(),
+		                          operations.get( 0 ).getWidth(),
+		                          operations.get( operations.size() - 1 ).getMaxY() - operations.get( 0 ).getY());
     		
-    		for (int i = 0; i < operations.size(); i++) {
-                menu.add( new Menu() );
-            }
-		}
+		for (int i = 0; i < operations.size(); i++) {
+            menu.add( new Menu() );
+        }
 	}
 	
 	public void addItem( final Operation op, final ArrayList<Operation> ops ) {
-        areaType = areaType[0].union( op.getArea() );
-	    for (Operation ope: ops) {
-	        areaType = areaType[0].union( ope.getArea() );
+	    // l'operazione era tra quelli della tendina
+	    for (int i = 0; i < operations.size(); i++) {
+	        if (operations.get( i ).equals( op )) {
+	            menu.remove( i );
+	            menu.add( i, new Menu( op, ops ) );
+	            return;
+	        }
 	    }
 	    
-	    for (int i = 0; i < operations.size(); i++) {
-            if (operations.get( i ).equals( op )) {
-                menu.remove( i );
-                // TODO VEDIAMO SE INDEX SERVIRA'
-                menu.add( i, new Menu( op, ops, index ) );
-            }
-        }
-	    
+	    // itero sui vari sotto-menu a tendina
 	    for (Menu m: menu) {
-			if (m.checkButton( op )) {
-				m.addItems( op, ops );
-				return;
-			}
-		}
+	        if (m.checkButton( op )) {
+	            m.addItems( op, ops );
+	        }
+	    }
 	}
 	
 	public float getX() {
@@ -84,21 +79,24 @@ public class MenuItem extends Button
 			}
 		}
 		
-		if (button.isPressed()) {
-            for (int i = 0; i < operations.size(); i++) {
-                if (operations.get( i ).checkContains( mouseX, mouseY )) {
-                    index = i;
-                }
+		// FINO A QUI...TUTTO..BENE!
+		boolean find = false;
+		for (int i = 0; i < operations.size(); i++) {
+            Operation op = operations.get( i );
+            if (op.checkContains( mouseX, mouseY )) {
+                index = i;
+                find = true;
             }
-            
-		    if (index != -1) {
-		        if (operations.get( index ).checkContains( mouseX, mouseY )
-		         || areaType[0].contains( mouseX, mouseY )) {
-		            menu.get( index ).update( mouseX, mouseY );
-		        } else {
-		            index = -1;
-		        }
-		    }
+        }
+		
+		if (!find) {
+    		for (Menu m: menu) {
+    		    m.checkContains( mouseX, mouseY, leftMouse );
+    		}
+		}
+		
+		if (index != -1) {
+		    menu.get( index ).update( mouseX, mouseY, leftMouse );
 		}
 	}
 	

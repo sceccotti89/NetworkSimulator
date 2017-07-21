@@ -37,6 +37,10 @@ public class Operation
 	    return area.getY();
 	}
 	
+	public float getWidth() {
+	    return area.getWidth();
+	}
+	
 	public float getMaxX(){
 	    return area.getMaxX();
 	}
