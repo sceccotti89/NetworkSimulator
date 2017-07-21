@@ -98,7 +98,7 @@ public class OptionBar implements AnimationInterface
         
         operations.clear();
         startX = switcher.getMaxX();
-        test   = new Operation( "Test", startX, client.getY(), widthB, heightB );
+        test   = new Operation( "Test", startX, switcher.getY(), widthB, heightB );
         operations.add( test );
         EDITING.addItem( switcher, operations );
         

@@ -39,6 +39,7 @@ public class Menu
         for (int i = 0; i < this.ops.size(); i++) {
             if (this.ops.get( i ).equals( op )) {
                 System.out.println( "INDEX = " + i );
+                System.out.println( "NAME = " + this.ops.get( i ).getName() );
                 menu.remove( i );
                 menu.add( i, new Menu( op, ops ) );
                 return;
@@ -111,12 +112,18 @@ public class Menu
         }
         
         if (index != -1) {
-            menu.get( index ).update( mouseX, mouseY, leftMouse );
+            if (menu.size() >= index + 1) {
+                menu.get( index ).update( mouseX, mouseY, leftMouse );
+            }
         }
 	}
 	
 	public void render( final Graphics g ) {
 	    if (index != -1) {
+	        if (menu.size() >= index + 1) {
+	            menu.get( index ).render( g );
+	        }
+	        
 	        ops.get( index ).setSelected( true );
 	    }
 	    
