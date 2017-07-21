@@ -3,6 +3,7 @@ package simulator.graphics.dataButton;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Shape;
@@ -28,8 +29,6 @@ public class MenuItem extends Button
 	{
 		this.button = button;
 		this.operations = new ArrayList<Operation>( operations );
-        
-        System.out.println( "SIZE = " + operations.size() );
 		
 		menu = new ArrayList<Menu>();
 		
@@ -37,27 +36,29 @@ public class MenuItem extends Button
 		if (this.operations.size() > 0) {
     		areaType = new Shape[] {this.operations.get( 0 ).getArea()};
     		
-    		for (Operation op: this.operations) {
-                areaType = areaType[0].union( op.getArea() );
+    		for (int i = 0; i < operations.size(); i++) {
                 menu.add( new Menu() );
             }
 		}
 	}
 	
 	public void addItem( final Operation op, final ArrayList<Operation> ops ) {
-		for (Menu m: menu) {
+        areaType = areaType[0].union( op.getArea() );
+	    for (Operation ope: ops) {
+	        areaType = areaType[0].union( ope.getArea() );
+	    }
+	    
+	    for (int i = 0; i < operations.size(); i++) {
+            if (operations.get( i ).equals( op )) {
+                menu.remove( i );
+                menu.add( i, new Menu( op, ops, index ) );
+            }
+        }
+	    
+	    for (Menu m: menu) {
 			if (m.checkButton( op )) {
 				m.addItems( op, ops );
 				return;
-			}
-		} 
-		
-		for (int i = 0; i < operations.size(); i++) {
-		    areaType = areaType[0].union( operations.get( i ).getArea() );
-		    
-			if (operations.get( i ).equals( op )) {
-			    menu.remove( i );
-				menu.add( i, new Menu( op, ops, index ) );
 			}
 		}
 	}
@@ -88,18 +89,18 @@ public class MenuItem extends Button
 		}
 		
 		if (button.isPressed()) {
+            for (int i = 0; i < operations.size(); i++) {
+                if (operations.get( i ).checkContains( mouseX, mouseY )) {
+                    index = i;
+                }
+            }
+            
 		    if (index != -1) {
 		        if (operations.get( index ).checkContains( mouseX, mouseY )
 		         || areaType[0].contains( mouseX, mouseY )) {
 		            menu.get( index ).update( mouseX, mouseY );
 		        } else {
 		            index = -1;
-		        }
-		    }
-		    
-		    for (int i = 0; i < operations.size(); i++) {
-		        if (operations.get( i ).checkContains( mouseX, mouseY )) {
-		            index = i;
 		        }
 		    }
 		}
@@ -109,15 +110,15 @@ public class MenuItem extends Button
 		button.draw( g );
 		
 		if (button.isPressed()) {
+            if (index != -1) {
+                menu.get( index ).render( g );
+                
+                operations.get( index ).setSelected( true );
+            }
+            
 			for (Operation op: operations) {
 				op.render( g );
 			}
-	        
-	        if (index != -1) {
-	            menu.get( index ).render( g );
-	            
-	            operations.get( index ).setSelected( true );
-	        }
 		}
 	}
 }
