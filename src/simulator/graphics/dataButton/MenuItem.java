@@ -75,9 +75,7 @@ public class MenuItem extends Button
 	}
 	
 	public void update( final int mouseX, final int mouseY, final boolean leftMouse, final boolean mouseDown ) {
-		index = -1;
-	    
-	    if (leftMouse && mouseDown) {
+		if (leftMouse && mouseDown) {
 			if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
 	            button.setPressed( true );
 	        }
@@ -90,6 +88,15 @@ public class MenuItem extends Button
 		}
 		
 		if (button.isPressed()) {
+		    if (index != -1) {
+		        if (operations.get( index ).checkContains( mouseX, mouseY )
+		         || areaType[0].contains( mouseX, mouseY )) {
+		            menu.get( index ).update( mouseX, mouseY );
+		        } else {
+		            index = -1;
+		        }
+		    }
+		    
 		    for (int i = 0; i < operations.size(); i++) {
 		        if (operations.get( i ).checkContains( mouseX, mouseY )) {
 		            index = i;
@@ -108,6 +115,8 @@ public class MenuItem extends Button
 	        
 	        if (index != -1) {
 	            menu.get( index ).render( g );
+	            
+	            operations.get( index ).setSelected( true );
 	        }
 		}
 	}
