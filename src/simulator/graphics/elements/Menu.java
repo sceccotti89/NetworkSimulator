@@ -38,7 +38,7 @@ public class Menu
         
         for (int i = 0; i < this.ops.size(); i++) {
             if (this.ops.get( i ).equals( op )) {
-                System.out.println( "INDEX = " + index );
+                System.out.println( "INDEX = " + i );
                 menu.remove( i );
                 menu.add( i, new Menu( op, ops ) );
                 return;
@@ -111,7 +111,6 @@ public class Menu
         }
         
         if (index != -1) {
-            System.out.println( "INDEX = " + index );
             menu.get( index ).update( mouseX, mouseY, leftMouse );
         }
 	}

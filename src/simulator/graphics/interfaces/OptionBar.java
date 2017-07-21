@@ -53,8 +53,6 @@ public class OptionBar implements AnimationInterface
         
         int index = 0;
         
-        
-        // TODO INIZIAMO IL CODE REFACTORING
         operations = new ArrayList<Operation>();
         
         // TODO NELLA CLASSE OPERATION INSERIRE IL METODO IN CUI CIASCUNO DI ESSI FA IL PROPRIO LAVORO
@@ -99,10 +97,10 @@ public class OptionBar implements AnimationInterface
         EDITING.addItem( move, operations );
         
         operations.clear();
-        startX = server.getMaxX();
-        test   = new Operation( CLIENT, startX, client.getY(), widthB, heightB );
+        startX = switcher.getMaxX();
+        test   = new Operation( "Test", startX, client.getY(), widthB, heightB );
         operations.add( test );
-        EDITING.addItem( server, operations );
+        EDITING.addItem( switcher, operations );
         
         operations.clear();
         
