@@ -60,7 +60,7 @@ public class Menu
 	            if (areaType.contains( mouseX, mouseY )) {
 	                return true;
 	            } else {
-	                if (menu.get( index ) != null) {
+	                if (menu.size() >= index + 1) {
 	                    if (!menu.get( index ).checkContains( mouseX, mouseY, leftMouse )) {
 	                        index = -1;
 	                        return false;

@@ -97,8 +97,18 @@ public class MenuItem extends Button
 		
 		if (!find) {
     		for (Menu m: menu) {
-    		    m.checkContains( mouseX, mouseY, leftMouse );
+    		    find = find || m.checkContains( mouseX, mouseY, leftMouse );
     		}
+		}
+		
+		if (!find) {
+		    // TODO CHIUDERE TUTTE LE TENDINE E SOTTOTENDINE
+            for (Menu m: menu) {
+                m.resetIndex();
+            }
+            
+            index = -1;
+            //button.setPressed( false );
 		}
 		
 		if (index != -1) {
