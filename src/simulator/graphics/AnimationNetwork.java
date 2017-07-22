@@ -227,7 +227,8 @@ public class AnimationNetwork extends AppGameContainer
         @Override
         public void update( final GameContainer gc, final int delta ) throws SlickException
         {
-            leftMouse = gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
+            // TODO INSERIRE UNA VARIABILE SIA PER MOUSEPRESSED CHE PER MOUSEBUTTONDOWN
+            leftMouse = gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON );
             
             nd.nodeInit();
     
@@ -235,6 +236,8 @@ public class AnimationNetwork extends AppGameContainer
             ob.update( delta, gc, leftMouse, nd );
             am.update( delta, gc, leftMouse, nd );
             ta.update( delta, gc, leftMouse, nd );
+            
+            //gc.getInput().clearMousePressedRecord();
         }
         
         @Override

@@ -71,6 +71,7 @@ public class MenuItem extends Button
 		if (leftMouse && mouseDown) {
 			if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
 	            button.setPressed( true );
+	            return;
 	        }
 		} else if (!leftMouse && !mouseDown) {
 			if (button.isPressed()) {
@@ -78,6 +79,10 @@ public class MenuItem extends Button
 					button.setPressed( false );
 				}
 			}
+		}
+		
+		if (!button.isPressed()) {
+		    return;
 		}
 		
 		// FINO A QUI...TUTTO..BENE!
@@ -101,14 +106,16 @@ public class MenuItem extends Button
     		}
 		}
 		
-		if (!find) {
+		if (!find && leftMouse) {
 		    // TODO CHIUDERE TUTTE LE TENDINE E SOTTOTENDINE
             for (Menu m: menu) {
                 m.resetIndex();
             }
             
+            //System.out.println( "BAH IO SAREI QUI..." );
+            
             index = -1;
-            //button.setPressed( false );
+            button.setPressed( false );
 		}
 		
 		if (index != -1) {
