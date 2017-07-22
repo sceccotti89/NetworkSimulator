@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.SlickException;
-import org.newdawn.slick.geom.Rectangle;
 
 import simulator.graphics.elements.Menu;
 import simulator.graphics.elements.Operation;
@@ -14,10 +13,8 @@ public class MenuItem extends Button
 {
 	private SimpleButton button;
 	private List<Operation> operations;
-	private Rectangle areaType = null;
 	private int index = -1;
 	
-	// TODO PENSARE DI USARE VETTORE DI MENUITEM INVECE DI MENU (ELIMINEREI QUEST'ULTIMA CLASSE)
 	private List<Menu> menu;
 	
 	public MenuItem( final SimpleButton button, final ArrayList<Operation> operations ) throws SlickException
@@ -27,10 +24,6 @@ public class MenuItem extends Button
 		
 		menu = new ArrayList<Menu>();
 		
-		areaType = new Rectangle( operations.get( 0 ).getX(), operations.get( 0 ).getY(),
-		                          operations.get( 0 ).getWidth(),
-		                          operations.get( operations.size() - 1 ).getMaxY() - operations.get( 0 ).getY());
-    		
 		for (int i = 0; i < operations.size(); i++) {
             menu.add( new Menu() );
         }
@@ -85,7 +78,6 @@ public class MenuItem extends Button
 		    return;
 		}
 		
-		// FINO A QUI...TUTTO..BENE!
 		boolean find = false;
 		for (int i = 0; i < operations.size(); i++) {
             Operation op = operations.get( i );
@@ -107,12 +99,9 @@ public class MenuItem extends Button
 		}
 		
 		if (!find && leftMouse) {
-		    // TODO CHIUDERE TUTTE LE TENDINE E SOTTOTENDINE
             for (Menu m: menu) {
                 m.resetIndex();
             }
-            
-            //System.out.println( "BAH IO SAREI QUI..." );
             
             index = -1;
             button.setPressed( false );

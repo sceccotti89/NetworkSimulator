@@ -7,15 +7,12 @@ import org.newdawn.slick.geom.Rectangle;
 
 public class Menu
 {
-	private Operation start;
 	private ArrayList<Operation> ops;
 	private ArrayList<Menu> menu;
-	// TODO PENSARE A COME GESTIRLO
 	private Rectangle areaType = null;
 	private int index = -1;
 	
 	public Menu ( final Operation start, final ArrayList<Operation> ops ) {
-		this.start = start;
 		this.ops = new ArrayList<Operation>(ops);
         
         areaType = new Rectangle( ops.get( 0 ).getX(), ops.get( 0 ).getY(),
@@ -53,8 +50,6 @@ public class Menu
     }
 	
 	public boolean checkContains( final float mouseX, final float mouseY, final boolean leftMouse ) {
-	    // TODO RIFARE TOTALMENTE RAGIONANDOLA BENE (POI DOVREI AVER FINITO)
-	    
 	    if (leftMouse) {
 	        if (index != -1) {
 	            if (areaType.contains( mouseX, mouseY )) {
