@@ -22,7 +22,6 @@ public class Menu
         menu = new ArrayList<Menu>();
 	}
 	
-	/**empty builder*/
 	public Menu () {
 	    ops = new ArrayList<Operation>();
         menu = new ArrayList<Menu>();
@@ -73,10 +72,6 @@ public class Menu
 	    }
 	    
 	    return true;
-	}
-	
-	public int getSizeOp() {
-	    return ops.size();
 	}
 	
 	public boolean checkButton( Operation op ) {
