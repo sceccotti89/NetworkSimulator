@@ -85,6 +85,11 @@ public class MenuItem extends Button
 		for (int i = 0; i < operations.size(); i++) {
             Operation op = operations.get( i );
             if (op.checkContains( mouseX, mouseY )) {
+                if (index != i && index != -1) {
+                    for (Menu m: menu) {
+                        m.resetIndex();
+                    }
+                }
                 index = i;
                 find = true;
             }

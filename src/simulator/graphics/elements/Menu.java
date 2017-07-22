@@ -38,12 +38,17 @@ public class Menu
         
         for (int i = 0; i < this.ops.size(); i++) {
             if (this.ops.get( i ).equals( op )) {
-                System.out.println( "INDEX = " + i );
-                System.out.println( "NAME = " + this.ops.get( i ).getName() );
                 menu.remove( i );
                 menu.add( i, new Menu( op, ops ) );
                 return;
             }
+        }
+    }
+    
+    public void resetIndex() {
+        index = -1;
+        for (Menu m: menu) {
+            m.resetIndex();
         }
     }
 	
