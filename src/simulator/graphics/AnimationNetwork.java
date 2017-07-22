@@ -236,8 +236,6 @@ public class AnimationNetwork extends AppGameContainer
             ob.update( delta, gc, leftMouse, nd );
             am.update( delta, gc, leftMouse, nd );
             ta.update( delta, gc, leftMouse, nd );
-            
-            //gc.getInput().clearMousePressedRecord();
         }
         
         @Override
