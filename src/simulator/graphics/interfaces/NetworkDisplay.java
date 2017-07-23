@@ -42,7 +42,7 @@ public class NetworkDisplay
 
     private boolean phaseTwoNewElement, phaseOneNewElement;
     
-    private String CLIENT = "client", SERVER = "server", SWITCH = "switch";
+    private String CLIENT = "Client", SERVER = "Server", SWITCH = "Switch";
     
     public NetworkDisplay( final int width, final int height, final float startY, final List<Node> nodes, final List<Packet> packets )
     {
@@ -89,6 +89,7 @@ public class NetworkDisplay
     public void addNode( final float mouseX, final float mouseY, final String type ) throws SlickException {
         if (!phaseOneNewElement && !phaseTwoNewElement) {
             phaseOneNewElement = true;
+            addingNode = true;
             if (type.equals( CLIENT )) {
                 tmpNode = new Node( mouseX, mouseY, 10, type, 0, Color.yellow );
             } else if (type.equals( SERVER )) {
@@ -107,6 +108,7 @@ public class NetworkDisplay
     public void addPacket( final float mouseX, final float mouseY ) {
         if (!phaseOneNewElement && !phaseTwoNewElement) {
             phaseOneNewElement = true;
+            addingPacket = true;
         }
     }
     
@@ -116,7 +118,7 @@ public class NetworkDisplay
     	}
     }
     
-    public void setNodeSelectable() {
+    public void moveNode() {
     	nodesChanged = !nodesChanged;
     	
     	for (Node node: nodes) {
@@ -276,14 +278,6 @@ public class NetworkDisplay
                 }
             }
         }
-    }
-    
-    public void setAddingNode() {
-        addingNode = true;
-    }
-    
-    public void setAddingPacket() {
-        addingPacket = true;
     }
     
     public void manageMovingNode( final GameContainer gc ) {

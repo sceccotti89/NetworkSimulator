@@ -3,7 +3,10 @@ package simulator.graphics.elements;
 import java.util.ArrayList;
 
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
+
+import simulator.graphics.interfaces.NetworkDisplay;
 
 public class Menu
 {
@@ -47,15 +50,25 @@ public class Menu
             m.resetIndex();
         }
     }
+    
+    private void executeOperation( final int mouseX, final int mouseY, final NetworkDisplay nd ) throws SlickException {
+    	for (Operation op: ops) {
+    		if (op.checkCollision( mouseX, mouseY )) {
+    			op.execute( mouseX, mouseY, nd );
+    			return;
+    		}
+    	}	
+    }
 	
-	public boolean checkContains( final float mouseX, final float mouseY, final boolean leftMouse ) {
+	public boolean checkContains( final int mouseX, final int mouseY, final boolean leftMouse, final NetworkDisplay nd ) throws SlickException {
 	    if (leftMouse) {
 	        if (index != -1) {
 	            if (areaType.contains( mouseX, mouseY )) {
-	                return true;
+	            	executeOperation( mouseX, mouseY, nd );
+	                return false;
 	            } else {
 	                if (menu.size() >= index + 1) {
-	                    if (!menu.get( index ).checkContains( mouseX, mouseY, leftMouse )) {
+	                    if (!menu.get( index ).checkContains( mouseX, mouseY, leftMouse, nd )) {
 	                        index = -1;
 	                        return false;
 	                    } else {
@@ -90,7 +103,7 @@ public class Menu
 		return false;
 	}
 	
-	public void update( final int mouseX, final int mouseY, final boolean leftMouse ) {
+	public void update( final int mouseX, final int mouseY, final boolean leftMouse, final NetworkDisplay nd ) throws SlickException {
 	    boolean find = false;
         for (int i = 0; i < ops.size(); i++) {
             Operation op = ops.get( i );
@@ -102,13 +115,13 @@ public class Menu
         
         if (!find) {
             for (Menu m: menu) {
-                m.checkContains( mouseX, mouseY, leftMouse );
+                m.checkContains( mouseX, mouseY, leftMouse, nd );
             }
         }
         
         if (index != -1) {
             if (menu.size() >= index + 1) {
-                menu.get( index ).update( mouseX, mouseY, leftMouse );
+                menu.get( index ).update( mouseX, mouseY, leftMouse, nd );
             }
         }
 	}

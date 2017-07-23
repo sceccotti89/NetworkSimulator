@@ -2,8 +2,11 @@ package simulator.graphics.elements;
 
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.geom.Shape;
+
+import simulator.graphics.interfaces.NetworkDisplay;
 
 public class Operation
 {
@@ -12,6 +15,10 @@ public class Operation
 	private boolean selected = false;
 	
 	private String name;
+	
+	private final String SAVE = "Save File", LOAD = "Load File",
+			       		 MOVE = "MoveNode", REMOVE = "RemoveNode",
+			       		 CLIENT = "Client", SERVER = "Server", SWITCH = "Switch", PACKET = "Packet";
 	
 	public Operation( final String name,  final float x, final float y, final float width, final float height )
 	{
@@ -63,6 +70,46 @@ public class Operation
 	
 	public void setSelected( final boolean val ) {
 		selected = val;
+	}
+	
+	public void execute( final int mouseX, final int mouseY, final NetworkDisplay nd ) throws SlickException {
+		switch ( name ) {
+		
+		case CLIENT:
+			nd.addNode( mouseX, mouseY, CLIENT );
+			break;
+			
+		case SERVER:
+			nd.addNode( mouseX, mouseY, SERVER );
+			break;
+			
+		case SWITCH:
+			nd.addNode( mouseX, mouseY, SWITCH );
+			break;
+			
+		case PACKET:
+			nd.addPacket(mouseX, mouseY);
+			break;
+			
+		case REMOVE:
+			nd.removeNode();
+			break;
+			
+		case MOVE:
+			nd.moveNode();
+			break;
+			
+		case SAVE:
+			// TODO DA IMPLEMENTARE
+			break;
+			
+		case LOAD:
+			// TODO DA IMPLEMENTARE
+			break;
+
+		default:
+			break;
+		}
 	}
 	
 	public void update() {

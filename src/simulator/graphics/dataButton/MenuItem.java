@@ -8,6 +8,7 @@ import org.newdawn.slick.SlickException;
 
 import simulator.graphics.elements.Menu;
 import simulator.graphics.elements.Operation;
+import simulator.graphics.interfaces.NetworkDisplay;
 
 public class MenuItem extends Button
 {
@@ -60,7 +61,7 @@ public class MenuItem extends Button
 		return button.getMaxY();
 	}
 	
-	public void update( final int mouseX, final int mouseY, final boolean leftMouse, final boolean mouseDown ) {
+	public void update( final int mouseX, final int mouseY, final boolean leftMouse, final boolean mouseDown, final NetworkDisplay nd ) throws SlickException {
 		if (leftMouse && mouseDown) {
 			if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
 	            button.setPressed( true );
@@ -87,14 +88,24 @@ public class MenuItem extends Button
                         m.resetIndex();
                     }
                 }
+                
+                if (leftMouse) {
+                	op.execute( mouseX, mouseY, nd );
+                	
+                	index = -1;
+                	button.setPressed( false );
+                	
+                	return;
+                }
+                
                 index = i;
                 find = true;
             }
-        }
+		}
 		
 		if (!find) {
     		for (Menu m: menu) {
-    		    find = find || m.checkContains( mouseX, mouseY, leftMouse );
+    		    find = find || m.checkContains( mouseX, mouseY, leftMouse, nd );
     		}
 		}
 		
@@ -108,7 +119,7 @@ public class MenuItem extends Button
 		}
 		
 		if (index != -1) {
-		    menu.get( index ).update( mouseX, mouseY, leftMouse );
+		    menu.get( index ).update( mouseX, mouseY, leftMouse, nd );
 		}
 	}
 	

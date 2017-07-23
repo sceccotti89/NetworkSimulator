@@ -18,18 +18,14 @@ public class OptionBar implements AnimationInterface
 {
     private Rectangle barOptions = new Rectangle( 0, 0, 800, 20 );
     
-    
-    
-    // TODO REALIZZARE I BOTTONI A TENDINA TRAMITE CLASSE
-    private /*final*/ MenuItem FILES, OPTION, EDITING;
+    private final MenuItem FILES, OPTION, EDITING;
     private final List<MenuItem> items;
-    
     
     private final SimpleButton file, options, edit;
     private final Operation save, load;
     private final Operation option;
     private final Operation move, add, remove;
-    private Operation client, server, switcher, packet, test;
+    private Operation client, server, switcher, packet;
     
     private float widthB, heightB;
     
@@ -54,9 +50,6 @@ public class OptionBar implements AnimationInterface
         int index = 0;
         
         operations = new ArrayList<Operation>();
-        
-        // TODO NELLA CLASSE OPERATION INSERIRE IL METODO IN CUI CIASCUNO DI ESSI FA IL PROPRIO LAVORO
-        // ANCHE SE RAGIONANDOCI NON PENSO SI POSSA FARE, VEDREMO
         
         file = new SimpleButton( 0, 0, widthB, heightB, FILE, Color.gray, index++, gc );
         float startX = file.getX() + width/400;
@@ -85,8 +78,8 @@ public class OptionBar implements AnimationInterface
         EDITING = new MenuItem( edit, operations );
         
         operations.clear();
-        startX = move.getMaxX();
-        client   = new Operation( CLIENT, startX, move.getY(), widthB, heightB );
+        startX = add.getMaxX();
+        client   = new Operation( CLIENT, startX, add.getY(), widthB, heightB );
         server   = new Operation( SERVER, startX, client.getMaxY(), widthB, heightB );
         switcher = new Operation( SWITCH, startX, server.getMaxY(), widthB, heightB );
         packet   = new Operation( PACKET, startX, switcher.getMaxY(), widthB, heightB );
@@ -94,13 +87,7 @@ public class OptionBar implements AnimationInterface
         operations.add( server );
         operations.add( switcher );
         operations.add( packet );
-        EDITING.addItem( move, operations );
-        
-        operations.clear();
-        startX = switcher.getMaxX();
-        test   = new Operation( "Test", startX, switcher.getY(), widthB, heightB );
-        operations.add( test );
-        EDITING.addItem( switcher, operations );
+        EDITING.addItem( add, operations );
         
         operations.clear();
         
@@ -132,7 +119,7 @@ public class OptionBar implements AnimationInterface
         }*/
         
         for (MenuItem item: items) {
-        	item.update( mouseX, mouseY, leftMouse, mouseDown );
+        	item.update( mouseX, mouseY, leftMouse, mouseDown, nd );
         }
     }
     
