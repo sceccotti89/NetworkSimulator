@@ -18,6 +18,7 @@ import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 
+import simulator.graphics.elements.Event;
 import simulator.graphics.elements.Node;
 import simulator.graphics.elements.Packet;
 import simulator.graphics.interfaces.AnimationManager;
@@ -36,6 +37,8 @@ public class AnimationNetwork extends AppGameContainer
 	private final int limit = 1000000;
 	
 	private static Animator anim;
+	
+	private Event event;
     
     public AnimationNetwork( final int width, final int height, final String title ) throws SlickException
     {
@@ -47,6 +50,8 @@ public class AnimationNetwork extends AppGameContainer
         packets = new ArrayList<Packet>();
         
         anim.setAnimationElements( nodes, packets );
+        
+        event = new Event();
     }
     
     /**
@@ -230,6 +235,8 @@ public class AnimationNetwork extends AppGameContainer
             leftMouse = gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
             
             nd.nodeInit();
+            
+            // TODO CREARE LA CLASSE EVENT PER GESTIRE GLI INPUT
     
             nd.update( gc, am, leftMouse );
             ob.update( delta, gc, gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON ), nd );
