@@ -37,8 +37,6 @@ public class AnimationNetwork extends AppGameContainer
 	private final int limit = 1000000;
 	
 	private static Animator anim;
-	
-	private Event event;
     
     public AnimationNetwork( final int width, final int height, final String title ) throws SlickException
     {
@@ -50,8 +48,6 @@ public class AnimationNetwork extends AppGameContainer
         packets = new ArrayList<Packet>();
         
         anim.setAnimationElements( nodes, packets );
-        
-        event = new Event();
     }
     
     /**
@@ -200,6 +196,8 @@ public class AnimationNetwork extends AppGameContainer
         protected NetworkDisplay nd; 
         
         protected boolean leftMouse;
+    	
+    	private Event event;
         
         private List<Node> nodes;
         private List<Packet> packets;
@@ -213,6 +211,8 @@ public class AnimationNetwork extends AppGameContainer
             
             this.width = width;
             this.height = height;
+            
+            event = new Event();
         }
         
         private void setAnimationElements( final List<Node> nodes, final List<Packet> packets ) {
@@ -227,16 +227,16 @@ public class AnimationNetwork extends AppGameContainer
             am = new AnimationManager( gc, ob.getMaxY(), width, height );
             nd = new NetworkDisplay( width, height, am.getMaxY(), nodes, packets );
             ta = new TimeAnimation( nd.getMaxY(), width, height );
+            
+            nd.nodeInit();
         }
         
         @Override
         public void update( final GameContainer gc, final int delta ) throws SlickException
-        {   
+        {
+        	event.setInput( gc.getInput() );
+        	
             leftMouse = gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
-            
-            nd.nodeInit();
-            
-            // TODO CREARE LA CLASSE EVENT PER GESTIRE GLI INPUT
     
             nd.update( gc, am, leftMouse );
             ob.update( delta, gc, gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON ), nd );
