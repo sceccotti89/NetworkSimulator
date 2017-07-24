@@ -235,13 +235,14 @@ public class AnimationNetwork extends AppGameContainer
         public void update( final GameContainer gc, final int delta ) throws SlickException
         {
         	event.setInput( gc.getInput() );
+        	event.setConsumed( false );
         	
-            leftMouse = gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
+            //leftMouse = gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
     
-            nd.update( gc, am, leftMouse );
-            ob.update( delta, gc, gc.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON ), nd );
-            am.update( delta, gc, leftMouse, nd );
-            ta.update( delta, gc, leftMouse, nd );
+            nd.update( gc, am, event );
+            ob.update( delta, gc, event, nd );
+            am.update( delta, gc, event, nd );
+            ta.update( delta, gc, event, nd );
         }
         
         @Override

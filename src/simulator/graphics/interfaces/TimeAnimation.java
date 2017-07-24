@@ -7,12 +7,14 @@ import java.util.List;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
 import simulator.graphics.AnimationNetwork;
 import simulator.graphics.dataButton.ArrowButton;
 import simulator.graphics.elements.CheckBox;
+import simulator.graphics.elements.Event;
 
 public class TimeAnimation implements AnimationInterface
 {
@@ -41,7 +43,7 @@ public class TimeAnimation implements AnimationInterface
     private boolean buttonHit = false, timingHit = false;
     
     private final CheckBox timeUs, timeS;
-	private boolean mouseDown;
+	private boolean leftMouse, mouseDown;
     
     public TimeAnimation( float startY, final float width, final float height ) throws SlickException
     {
@@ -184,11 +186,13 @@ public class TimeAnimation implements AnimationInterface
     }
     
     @Override
-    public void update( final int delta, final GameContainer gc, final boolean leftMouse, final NetworkDisplay nd )
+    public void update( final int delta, final GameContainer gc, final Event event, final NetworkDisplay nd )
     {
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();
         Graphics g = gc.getGraphics();
+        
+        leftMouse = event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
         
         mouse.setLocation( mouseX, mouseY );
         
@@ -197,6 +201,7 @@ public class TimeAnimation implements AnimationInterface
         if (buttonHit) {
         	ArrowButton arrow = arrows.get( index );
             if (arrow.contains( mouseX, mouseY ) && ++tick >= 50) {
+            	event.setConsumed( true );
                 setCursor( index, nd );
             }
         }
@@ -207,6 +212,7 @@ public class TimeAnimation implements AnimationInterface
             mouseDown = false;
            	
             if (timeUs.checkClick( mouseX, mouseY )) {
+            	event.setConsumed( true );
             	if (timeS.isSelected()) {
                 	timeUs.setSelected();
             	}
@@ -217,6 +223,7 @@ public class TimeAnimation implements AnimationInterface
             		moving = 1 * limit;
             	}
             } else if (timeS.checkClick( mouseX, mouseY )) {
+            	event.setConsumed( true );
             	if (timeUs.isSelected()) {
             		timeS.setSelected();
             	}
@@ -244,12 +251,14 @@ public class TimeAnimation implements AnimationInterface
         	
         	if (!buttonHit && !timingHit) {
         		if (timing.intersects( mouse )) {
+        			event.setConsumed( true );
 	    			timingHit = true;
 	        		setTime( nd );
 	    		} else if (nd.isInPause()) {
 	    			for (ArrowButton arrow: arrows) {
 						if (arrow.contains( mouseX, mouseY )) {
 							arrow.setPressed( true );
+							event.setConsumed( true );
 							buttonHit = true;
 							index = arrow.getIndex();
 							setCursor( index, nd );

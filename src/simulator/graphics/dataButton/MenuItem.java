@@ -6,6 +6,7 @@ import java.util.List;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.SlickException;
 
+import simulator.graphics.elements.Event;
 import simulator.graphics.elements.Menu;
 import simulator.graphics.elements.Operation;
 import simulator.graphics.interfaces.NetworkDisplay;
@@ -61,15 +62,17 @@ public class MenuItem extends Button
 		return button.getMaxY();
 	}
 	
-	public void update( final int mouseX, final int mouseY, final boolean leftMouse, final boolean mouseDown, final NetworkDisplay nd ) throws SlickException {
+	public void update( final int mouseX, final int mouseY, final boolean leftMouse, final Event event, final boolean mouseDown, final NetworkDisplay nd ) throws SlickException {
 		if (leftMouse && mouseDown) {
 			if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
 	            button.setPressed( true );
+	            event.setConsumed( true );
 	            return;
 	        }
 		} else if (!leftMouse && !mouseDown) {
 			if (button.isPressed()) {
 				if (button.checkClick( mouseX, mouseY )) {
+					event.setConsumed( true );
 					button.setPressed( false );
 				}
 			}
@@ -90,6 +93,7 @@ public class MenuItem extends Button
                 }
                 
                 if (leftMouse) {
+                	event.setConsumed( true );
                 	op.execute( mouseX, mouseY, nd );
                 	
                 	index = -1;

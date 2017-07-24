@@ -7,11 +7,13 @@ import java.util.List;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
 import simulator.graphics.dataButton.MenuItem;
 import simulator.graphics.dataButton.SimpleButton;
+import simulator.graphics.elements.Event;
 import simulator.graphics.elements.Operation;
 
 public class OptionBar implements AnimationInterface
@@ -38,7 +40,7 @@ public class OptionBar implements AnimationInterface
                    MOVE = "MoveNode", ADD = "AddElement", REMOVE = "RemoveNode",
                    CLIENT = "Client", SERVER = "Server", SWITCH = "Switch", PACKET = "Packet";
     
-    private boolean mouseDown;
+    private boolean leftMouse, mouseDown;
     
 	private ArrayList<Operation> operations;
     
@@ -103,10 +105,12 @@ public class OptionBar implements AnimationInterface
     }
     
     @Override
-    public void update( final int delta, final GameContainer gc, final boolean leftMouse, final NetworkDisplay nd ) throws SlickException
+    public void update( final int delta, final GameContainer gc, final Event event, final NetworkDisplay nd ) throws SlickException
     {
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();
+        
+        leftMouse = event.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON );
         
         // TODO RAGIONARE UN PO SUI PULSANTI PREMUTI
         if (leftMouse && !mouseDown) {
@@ -119,7 +123,7 @@ public class OptionBar implements AnimationInterface
         }*/
         
         for (MenuItem item: items) {
-        	item.update( mouseX, mouseY, leftMouse, mouseDown, nd );
+        	item.update( mouseX, mouseY, leftMouse, event, mouseDown, nd );
         }
     }
     

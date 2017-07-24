@@ -7,10 +7,12 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
+import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
 import simulator.graphics.dataButton.ImageButton;
+import simulator.graphics.elements.Event;
 
 public class AnimationManager implements AnimationInterface
 {
@@ -34,7 +36,7 @@ public class AnimationManager implements AnimationInterface
     
     private final String START = "Start", STOP = "Stop", PAUSE = "Pause", PLUS = "Plus", MINUS = "Minus";
     
-    private boolean mouseDown;
+    private boolean leftMouse, mouseDown;
     
     private String frameLenght = "" + frames;
     
@@ -81,14 +83,17 @@ public class AnimationManager implements AnimationInterface
     }
     
     @Override
-    public void update( final int delta, final GameContainer gc, final boolean leftMouse, final NetworkDisplay nd )
+    public void update( final int delta, final GameContainer gc, final Event event, final NetworkDisplay nd )
     {        
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();
         
+        leftMouse = event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
+        
         if (index >= 0) {
             ImageButton button = buttons.get( index );
             if (button.contains( mouseX, mouseY ) && ++timer >= 50) {
+            	event.setConsumed( true );
                 setFrames( index, nd );
             }
         }

@@ -10,6 +10,7 @@ import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
 import simulator.graphics.AnimationNetwork;
+import simulator.graphics.elements.Event;
 import simulator.graphics.elements.Info;
 import simulator.graphics.elements.Node;
 import simulator.graphics.elements.Packet;
@@ -43,6 +44,8 @@ public class NetworkDisplay
     private boolean phaseTwoNewElement, phaseOneNewElement;
     
     private String CLIENT = "Client", SERVER = "Server", SWITCH = "Switch";
+    
+    private boolean leftMouse;
     
     public NetworkDisplay( final int width, final int height, final float startY, final List<Node> nodes, final List<Packet> packets )
     {
@@ -296,10 +299,12 @@ public class NetworkDisplay
 		}
     }
     
-    public void update( final GameContainer gc, final AnimationManager am, final boolean leftMouse ) throws SlickException
+    public void update( final GameContainer gc, final AnimationManager am, final Event event ) throws SlickException
     {
     	mouseX = gc.getInput().getMouseX();
     	mouseY = gc.getInput().getMouseY();
+    	
+    	leftMouse = event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
     	
         if (timer > AnimationNetwork.timeSimulation) {
             stopAnimation();
