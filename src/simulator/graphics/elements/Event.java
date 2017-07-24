@@ -4,7 +4,7 @@ import org.newdawn.slick.Input;
 
 public class Event
 {
-	private boolean consumed;
+	private boolean consumed = false;
 	
 	private Input input;
 	
@@ -22,5 +22,9 @@ public class Event
 	
 	public Input getInput() {
 		return input;
+	}
+	
+	public boolean isMouseButtonDown() {
+		return input.isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) || input.isMouseButtonDown( Input.MOUSE_RIGHT_BUTTON );
 	}
 }

@@ -195,7 +195,7 @@ public class AnimationNetwork extends AppGameContainer
         protected TimeAnimation ta;
         protected NetworkDisplay nd; 
         
-        protected boolean leftMouse;
+        protected boolean leftMouse, mouseDown;
     	
     	private Event event;
         
@@ -234,15 +234,30 @@ public class AnimationNetwork extends AppGameContainer
         @Override
         public void update( final GameContainer gc, final int delta ) throws SlickException
         {
-        	event.setInput( gc.getInput() );
-        	event.setConsumed( false );
+            event.setInput( gc.getInput() );
+            
+            // TODO RAGIONARE UN PO SUI TASTI
+        	if (event.isMouseButtonDown() && !mouseDown) {
+        		mouseDown = true;
+            	System.out.println( "TASTO PREMUTO" );
+        	} else if (!event.isMouseButtonDown() && mouseDown) {
+        		mouseDown = false;
+            	event.setConsumed( false );
+            	System.out.println( "TASTO RILASCIATO" );
+        	}
         	
-            //leftMouse = gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
-    
-            nd.update( gc, am, event );
-            ob.update( delta, gc, event, nd );
-            am.update( delta, gc, event, nd );
-            ta.update( delta, gc, event, nd );
+        	if (!event.isConsumed()) {
+        		ob.update( delta, gc, event, nd );
+        	}
+            if (!event.isConsumed()) {
+            	nd.update( gc, am, event );
+            }
+            if (!event.isConsumed()) {
+            	am.update( delta, gc, event, nd );
+            }
+            if (!event.isConsumed()) {
+	            ta.update( delta, gc, event, nd );
+            }
         }
         
         @Override
