@@ -10,5 +10,5 @@ public interface AnimationInterface
 {    
     public void render( final GameContainer gc );
 
-    public void update( final int delta, final GameContainer gc, final Event event, final NetworkDisplay nd ) throws SlickException;
+    public void update( final int delta, final GameContainer gc, final boolean mouseEvent, final Event event, final NetworkDisplay nd ) throws SlickException;
 }

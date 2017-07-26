@@ -15,6 +15,7 @@ import org.newdawn.slick.BasicGame;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 
 import simulator.graphics.elements.Event;
@@ -194,7 +195,7 @@ public class AnimationNetwork extends AppGameContainer
         protected TimeAnimation ta;
         protected NetworkDisplay nd; 
         
-        protected boolean leftMouse, mouseDown;
+        protected boolean mouseEvent = false;
     	
     	private Event event;
         
@@ -228,34 +229,40 @@ public class AnimationNetwork extends AppGameContainer
             ta = new TimeAnimation( nd.getMaxY(), width, height );
             
             nd.nodeInit();
+            event.setInput( gc.getInput() );
+        }
+        
+        private boolean evaluateEventMouse( final Input input ) {
+        	return (input.isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )
+        		 || input.isMouseButtonDown( Input.MOUSE_RIGHT_BUTTON )
+        		 || input.isMousePressed( Input.MOUSE_LEFT_BUTTON ));
         }
         
         @Override
         public void update( final GameContainer gc, final int delta ) throws SlickException
         {
-            event.setInput( gc.getInput() );
-            
             // TODO RAGIONARE UN PO SUI TASTI
-        	if (event.isMouseButtonDown() && !mouseDown) {
-        		mouseDown = true;
+        	if (evaluateEventMouse( gc.getInput() ) && !mouseEvent) {
+                event.setInput( gc.getInput() );
+        		mouseEvent = true;
             	System.out.println( "TASTO PREMUTO" );
-        	} else if (!event.isMouseButtonDown() && mouseDown) {
-        		mouseDown = false;
+        	} else if (!evaluateEventMouse( gc.getInput() ) && mouseEvent) {
+        		mouseEvent = false;
             	event.setConsumed( false );
             	System.out.println( "TASTO RILASCIATO" );
         	}
         	
         	if (!event.isConsumed()) {
-        		ob.update( delta, gc, event, nd );
+        		ob.update( delta, gc, mouseEvent, event, nd );
         	}
             if (!event.isConsumed()) {
-            	nd.update( gc, am, event );
+            	nd.update( gc, am, mouseEvent, event );
             }
             if (!event.isConsumed()) {
-            	am.update( delta, gc, event, nd );
+            	am.update( delta, gc, mouseEvent, event, nd );
             }
             if (!event.isConsumed()) {
-	            ta.update( delta, gc, event, nd );
+	            ta.update( delta, gc, mouseEvent, event, nd );
             }
         }
         

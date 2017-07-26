@@ -83,7 +83,7 @@ public class AnimationManager implements AnimationInterface
     }
     
     @Override
-    public void update( final int delta, final GameContainer gc, final Event event, final NetworkDisplay nd )
+    public void update( final int delta, final GameContainer gc, final boolean mouseEvent, final Event event, final NetworkDisplay nd )
     {        
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();

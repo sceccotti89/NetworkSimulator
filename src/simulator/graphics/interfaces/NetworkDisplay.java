@@ -299,7 +299,7 @@ public class NetworkDisplay
 		}
     }
     
-    public void update( final GameContainer gc, final AnimationManager am, final Event event ) throws SlickException
+    public void update( final GameContainer gc, final AnimationManager am, final boolean mouseEvent, final Event event ) throws SlickException
     {
     	mouseX = gc.getInput().getMouseX();
     	mouseY = gc.getInput().getMouseY();
