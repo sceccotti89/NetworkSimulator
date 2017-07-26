@@ -253,16 +253,16 @@ public class AnimationNetwork extends AppGameContainer
         	}
         	
         	if (!event.isConsumed()) {
-        		ob.update( delta, gc, mouseEvent, event, nd );
+        		ob.update( delta, gc, event, nd );
         	}
             if (!event.isConsumed()) {
-            	nd.update( gc, am, mouseEvent, event );
+            	nd.update( gc, am, event );
             }
             if (!event.isConsumed()) {
-            	am.update( delta, gc, mouseEvent, event, nd );
+            	am.update( delta, gc, event, nd );
             }
             if (!event.isConsumed()) {
-	            ta.update( delta, gc, mouseEvent, event, nd );
+	            ta.update( delta, gc, event, nd );
             }
         }
         
