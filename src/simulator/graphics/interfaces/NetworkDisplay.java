@@ -16,7 +16,7 @@ import simulator.graphics.elements.Node;
 import simulator.graphics.elements.Packet;
 import simulator.topology.NetworkLink;
 
-public class NetworkDisplay
+public class NetworkDisplay implements AnimationInterface
 {
     private Rectangle zone;
     
@@ -297,8 +297,14 @@ public class NetworkDisplay
 			tmpNode = null;
 		}
     }
+
+	@Override
+	public void update(int delta, GameContainer gc, Event event, NetworkDisplay nd) throws SlickException {
+		// TODO Auto-generated method stub
+		
+	}
     
-    public void update( final GameContainer gc, final AnimationManager am, final Event event ) throws SlickException
+    public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event )
     {
     	mouseX = gc.getInput().getMouseX();
     	mouseY = gc.getInput().getMouseY();
@@ -347,7 +353,7 @@ public class NetworkDisplay
         }
     }
     
-    public void render( final GameContainer gc ) throws SlickException
+    public void render( final GameContainer gc )
     {
         Graphics g = gc.getGraphics();
         

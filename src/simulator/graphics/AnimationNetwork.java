@@ -21,6 +21,7 @@ import org.newdawn.slick.SlickException;
 import simulator.graphics.elements.Event;
 import simulator.graphics.elements.Node;
 import simulator.graphics.elements.Packet;
+import simulator.graphics.interfaces.AnimationInterface;
 import simulator.graphics.interfaces.AnimationManager;
 import simulator.graphics.interfaces.NetworkDisplay;
 import simulator.graphics.interfaces.OptionBar;
@@ -205,6 +206,8 @@ public class AnimationNetwork extends AppGameContainer
         private int width;
         private int height;
         
+        private final List<AnimationInterface> interfaces;
+        
         public Animator( final int width, final int height, final String title )
         {
             super( title );
@@ -213,6 +216,8 @@ public class AnimationNetwork extends AppGameContainer
             this.height = height;
             
             event = new Event();
+            
+            interfaces = new ArrayList<AnimationInterface>();
         }
         
         private void setAnimationElements( final List<Node> nodes, final List<Packet> packets ) {
@@ -230,12 +235,16 @@ public class AnimationNetwork extends AppGameContainer
             
             nd.nodeInit();
             event.setInput( gc.getInput() );
+            
+            interfaces.add( ob );
+            interfaces.add( am );
+            interfaces.add( nd );
+            interfaces.add( ta );
         }
         
         private boolean evaluateEventMouse( final Input input ) {
         	return (input.isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )
-        		 || input.isMouseButtonDown( Input.MOUSE_RIGHT_BUTTON )
-        		 /*|| input.isMousePressed( Input.MOUSE_LEFT_BUTTON )*/);
+        		 || input.isMouseButtonDown( Input.MOUSE_RIGHT_BUTTON ));
         }
         
         @Override
@@ -253,11 +262,13 @@ public class AnimationNetwork extends AppGameContainer
             	event.setConsumed( false );
         	}
         	
+        	// TODO RAGIONARE UN PO SULLE INTERFACCE
+        	
         	if (!event.isConsumed()) {
         		ob.update( delta, gc, event, nd );
         	}
             if (!event.isConsumed()) {
-            	nd.update( gc, am, event );
+            	nd.update( delta, gc, am, event );
             }
             if (!event.isConsumed()) {
             	am.update( delta, gc, event, nd );
