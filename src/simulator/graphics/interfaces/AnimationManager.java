@@ -93,7 +93,6 @@ public class AnimationManager implements AnimationInterface
         if (index >= 0) {
             ImageButton button = buttons.get( index );
             if (button.contains( mouseX, mouseY ) && ++timer >= 50) {
-            	event.setConsumed( true );
                 setFrames( index, nd );
             }
         }
