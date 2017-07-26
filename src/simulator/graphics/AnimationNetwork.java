@@ -235,20 +235,22 @@ public class AnimationNetwork extends AppGameContainer
         private boolean evaluateEventMouse( final Input input ) {
         	return (input.isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )
         		 || input.isMouseButtonDown( Input.MOUSE_RIGHT_BUTTON )
-        		 || input.isMousePressed( Input.MOUSE_LEFT_BUTTON ));
+        		 /*|| input.isMousePressed( Input.MOUSE_LEFT_BUTTON )*/);
         }
         
         @Override
         public void update( final GameContainer gc, final int delta ) throws SlickException
         {
-        	if (evaluateEventMouse( gc.getInput() ) && !mouseEvent) {
+        	if (mouseEvent) {
+        		event.setInput( gc.getInput() );
+        	}
+        	
+        	if (!mouseEvent && evaluateEventMouse( gc.getInput() )) {
                 event.setInput( gc.getInput() );
         		mouseEvent = true;
-            	System.out.println( "TASTO PREMUTO" );
-        	} else if (!evaluateEventMouse( gc.getInput() ) && mouseEvent) {
+        	} else if (mouseEvent && !evaluateEventMouse( gc.getInput() )) {
         		mouseEvent = false;
             	event.setConsumed( false );
-            	System.out.println( "TASTO RILASCIATO" );
         	}
         	
         	if (!event.isConsumed()) {

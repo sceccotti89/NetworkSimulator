@@ -93,6 +93,9 @@ public class MenuItem extends Button
                 }
                 
                 if (leftMouse) {
+                	for (Operation ope: operations) {
+                		ope.setSelected( false );
+                	}
                 	event.setConsumed( true );
                 	op.execute( mouseX, mouseY, nd );
                 	

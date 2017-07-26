@@ -201,8 +201,7 @@ public class TimeAnimation implements AnimationInterface
         if (buttonHit) {
         	ArrowButton arrow = arrows.get( index );
             if (arrow.contains( mouseX, mouseY ) && ++tick >= 50) {
-            	event.setConsumed( true );
-                setCursor( index, nd );
+            	setCursor( index, nd );
             }
         }
         
@@ -258,7 +257,6 @@ public class TimeAnimation implements AnimationInterface
 	    			for (ArrowButton arrow: arrows) {
 						if (arrow.contains( mouseX, mouseY )) {
 							arrow.setPressed( true );
-							event.setConsumed( true );
 							buttonHit = true;
 							index = arrow.getIndex();
 							setCursor( index, nd );
