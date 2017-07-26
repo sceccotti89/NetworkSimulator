@@ -241,7 +241,6 @@ public class AnimationNetwork extends AppGameContainer
         @Override
         public void update( final GameContainer gc, final int delta ) throws SlickException
         {
-            // TODO RAGIONARE UN PO SUI TASTI
         	if (evaluateEventMouse( gc.getInput() ) && !mouseEvent) {
                 event.setInput( gc.getInput() );
         		mouseEvent = true;

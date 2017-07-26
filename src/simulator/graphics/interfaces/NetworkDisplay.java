@@ -215,7 +215,6 @@ public class NetworkDisplay
     				
     				node.removeLink( null );
     				nodes.remove( node );
-    				removing = false;
     				
     				return;
     			}
