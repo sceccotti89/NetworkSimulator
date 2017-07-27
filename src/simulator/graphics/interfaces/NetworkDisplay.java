@@ -297,14 +297,8 @@ public class NetworkDisplay implements AnimationInterface
 			tmpNode = null;
 		}
     }
-
-	@Override
-	public void update(int delta, GameContainer gc, Event event, NetworkDisplay nd) throws SlickException {
-		// TODO Auto-generated method stub
-		
-	}
     
-    public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event )
+    public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd )
     {
     	mouseX = gc.getInput().getMouseX();
     	mouseY = gc.getInput().getMouseY();

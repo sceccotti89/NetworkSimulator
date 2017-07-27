@@ -264,18 +264,24 @@ public class AnimationNetwork extends AppGameContainer
         	
         	// TODO RAGIONARE UN PO SULLE INTERFACCE
         	
-        	if (!event.isConsumed()) {
-        		ob.update( delta, gc, event, nd );
+        	for (AnimationInterface obj: interfaces) {
+        		if (!event.isConsumed()) {
+            		obj.update( delta, gc, am, event, nd );
+            	}
+        	}
+        	
+        	/*if (!event.isConsumed()) {
+        		ob.update( delta, gc, am, event, nd );
         	}
             if (!event.isConsumed()) {
-            	nd.update( delta, gc, am, event );
+            	nd.update( delta, gc, am, event, nd );
             }
             if (!event.isConsumed()) {
-            	am.update( delta, gc, event, nd );
+            	am.update( delta, gc, am, event, nd );
             }
             if (!event.isConsumed()) {
-	            ta.update( delta, gc, event, nd );
-            }
+	            ta.update( delta, gc, am, event, nd );
+            }*/
         }
         
         @Override
