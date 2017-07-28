@@ -45,8 +45,6 @@ public class NetworkDisplay implements AnimationInterface
     
     private String CLIENT = "Client", SERVER = "Server", SWITCH = "Switch";
     
-    private boolean leftMouse;
-    
     public NetworkDisplay( final int width, final int height, final float startY, final List<Node> nodes, final List<Packet> packets )
     {
     	this.width = width;
@@ -226,7 +224,7 @@ public class NetworkDisplay implements AnimationInterface
         return zone.contains( mouseX , mouseY );
     }
     
-    private void manageAddElement( final boolean leftMouse ) {
+    private boolean manageAddElement( final boolean leftMouse ) {
         if (phaseOneNewElement) {
             if (leftMouse){
                 if (addingNode && checkMousePosition()) {
@@ -239,7 +237,8 @@ public class NetworkDisplay implements AnimationInterface
                             source.setLinkAvailable();
                             phaseOneNewElement = false;
                             phaseTwoNewElement = true;
-                            break;
+                            
+                            return true;
                         }
                     }
                 }
@@ -261,7 +260,7 @@ public class NetworkDisplay implements AnimationInterface
                         
                         addingNode = false;
                         
-                        break;
+                        return true;
                     } else if (addingPacket && !node.equals( source ) && node.checkLinks( source )) {
                         packets.add( new Packet( source, node, source.getColor(), 0, 100, width, height, 0 ) );
                         phaseTwoNewElement = false;
@@ -275,11 +274,13 @@ public class NetworkDisplay implements AnimationInterface
                         
                         addingPacket = false;
                         
-                        break;
+                        return true;
                     }
                 }
             }
         }
+        
+        return false;
     }
     
     public void manageMovingNode( final GameContainer gc ) {
@@ -298,12 +299,18 @@ public class NetworkDisplay implements AnimationInterface
 		}
     }
     
+    public boolean checkClick( Event event ) {
+        if (phaseOneNewElement || phaseTwoNewElement) {
+            return manageAddElement( event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) );
+        }
+    	
+    	return false;
+    }
+    
     public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd )
     {
     	mouseX = gc.getInput().getMouseX();
     	mouseY = gc.getInput().getMouseY();
-    	
-    	leftMouse = event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
     	
         if (timer > AnimationNetwork.timeSimulation) {
             stopAnimation();
@@ -316,7 +323,7 @@ public class NetworkDisplay implements AnimationInterface
         info.setVisible( false );
         
         if (phaseOneNewElement || phaseTwoNewElement) {
-            manageAddElement( leftMouse );
+            manageAddElement( event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) );
         }
         
         if (nodesChanged) {

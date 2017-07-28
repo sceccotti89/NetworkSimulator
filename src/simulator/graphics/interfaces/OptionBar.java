@@ -104,6 +104,14 @@ public class OptionBar implements AnimationInterface
         return barOptions.getMaxY();
     }
     
+    public boolean checkClick( Event event ) {
+        for (MenuItem item: items) {
+        	item.update( mouseX, mouseY, leftMouse, event, mouseDown, nd );
+        }
+    	
+    	return false;
+    }
+    
     @Override
     public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd ) throws SlickException
     {

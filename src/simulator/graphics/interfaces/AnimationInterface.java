@@ -9,6 +9,8 @@ import simulator.graphics.elements.Event;
 public interface AnimationInterface
 {    
     public void render( final GameContainer gc );
+    
+    public boolean checkClick( final Event event );
 
     public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd ) throws SlickException;
 }

@@ -256,32 +256,29 @@ public class AnimationNetwork extends AppGameContainer
         	
         	if (!mouseEvent && evaluateEventMouse( gc.getInput() )) {
                 event.setInput( gc.getInput() );
+            	event.setConsumed( false );
         		mouseEvent = true;
         	} else if (mouseEvent && !evaluateEventMouse( gc.getInput() )) {
         		mouseEvent = false;
-            	event.setConsumed( false );
+            	event.setConsumed( true );
         	}
         	
-        	// TODO RAGIONARE UN PO SULLE INTERFACCE
-        	
+        	// controllo dei click
         	for (AnimationInterface obj: interfaces) {
-        		if (!event.isConsumed()) {
-            		obj.update( delta, gc, am, event, nd );
-            	}
+        		if (mouseEvent) {
+	        		if (!event.isConsumed()) {
+	            		if (obj.checkClick( event )) {
+	            			mouseEvent = false;
+	            			event.setConsumed( true );
+	            		}
+	            	}
+        		}
         	}
         	
-        	/*if (!event.isConsumed()) {
-        		ob.update( delta, gc, am, event, nd );
+        	// update delle interfacce
+        	for (AnimationInterface obj: interfaces) {
+        		obj.update( delta, gc, am, event, nd );
         	}
-            if (!event.isConsumed()) {
-            	nd.update( delta, gc, am, event, nd );
-            }
-            if (!event.isConsumed()) {
-            	am.update( delta, gc, am, event, nd );
-            }
-            if (!event.isConsumed()) {
-	            ta.update( delta, gc, am, event, nd );
-            }*/
         }
         
         @Override

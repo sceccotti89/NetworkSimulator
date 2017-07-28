@@ -82,6 +82,12 @@ public class AnimationManager implements AnimationInterface
     	return startY;
     }
     
+    public boolean checkClick( Event event ) {
+    	
+    	
+    	return false;
+    }
+    
     @Override
     public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd )
     {        
