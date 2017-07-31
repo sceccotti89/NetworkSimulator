@@ -35,7 +35,7 @@ public class Node
 	private int angle = 0;
 	private boolean removable;
     
-    public Node( final float x, final float y, final long nodeID, final String name, final long delay, final Color color ) throws SlickException
+    public Node( final float x, final float y, final long nodeID, final String name, final long delay, final Color color )
     {
         this.nodeID = nodeID;
         this.color = color;

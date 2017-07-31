@@ -193,7 +193,7 @@ public class Plotter
     /**
      * Set the timer of the animation.</br>
      * By default this animator makes use of a timer of 30 FPS,
-     * only for the animation repainting.
+     * just for the animation repainting.
      * 
      * @param FPS    frame per second
     */
@@ -208,6 +208,17 @@ public class Plotter
         setTimer( FPS, listener );
     }
     
+    /**
+     * Set the timer of the animation with a specific action listener.</br>
+     * By default the FPS are fixed to 30, just for the animation repainting.
+     * 
+     * @param FPS         frame per second
+     * @param listener    the associated event listener
+    */
+    public void setTimer( final int FPS, final ActionListener listener ) {
+        timer = new Timer( 1000 / FPS, listener );
+    }
+
     public void addPlot( final String filePlotter, final Color color, final String title ) throws IOException {
         addPlot( readPlot( filePlotter ), color, Line.UNIFORM, title );
     }
@@ -226,17 +237,6 @@ public class Plotter
     
     public void addPlot( final Plot plot ) {
         plotter.addPlot( plot.points, plot.color,plot.line , plot.title );
-    }
-    
-    /**
-     * Set the timer of the animation with a specific action listener.</br>
-     * By default the FPS are fixed to 30, just for the animation repainting.
-     * 
-     * @param FPS         frame per second
-     * @param listener    the associated event listener
-    */
-    public void setTimer( final int FPS, final ActionListener listener ) {
-        timer = new Timer( 1000 / FPS, listener );
     }
     
     public void setVisible( final boolean visible )
@@ -368,7 +368,7 @@ public class Plotter
         System.out.println( "Image \"" + fileName + "." + fileExtension + "\" saved in \"" + Utils.IMAGES_DIR + "\"." );
     }
     
-    public PlotterSettings getsettings() {
+    public PlotterSettings getSettings() {
         return settings;
     }
     
@@ -1074,7 +1074,8 @@ public class Plotter
         }
     }
     
-    public void dispose() {
+    private void dispose() {
         frame.dispose();
+        timer.stop();
     }
 }

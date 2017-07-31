@@ -194,7 +194,7 @@ public class PlotterMenuBar extends JMenuBar implements ActionListener
                 break;
             case( 8 ): // Settings.
                 // Open a dialog to edit the plotter settings.
-                JDialog settings = new SettingsDialog( plotter.getFrame(), plotter.getsettings() );
+                JDialog settings = new SettingsDialog( plotter.getFrame(), plotter.getSettings() );
                 settings.setVisible( true );
                 break;
         }
