@@ -90,9 +90,10 @@ public class AnimationNetwork
     
     private void addComponentsToPane( final Container pane, final float width, final float height )
     {
-        pane.add( new AnimationManager( width, (height/100f)*30f ),    BorderLayout.PAGE_START );
-        pane.add( nd = new NetworkDisplay( width, (height/100f)*30f ), BorderLayout.CENTER );
-        pane.add( new TimeAnimation( width, (height/100f)*30f ),       BorderLayout.PAGE_END );
+        AnimationManager am = new AnimationManager( width, (height/100f)*10f );
+        pane.add( am,                                                      BorderLayout.PAGE_START );
+        pane.add( nd = new NetworkDisplay( am, width, (height/100f)*75f ), BorderLayout.CENTER );
+        pane.add( new TimeAnimation( nd, width, (height/100f)*15f ),       BorderLayout.PAGE_END );
     }
     
     /**
@@ -252,7 +253,7 @@ public class AnimationNetwork
         ActionListener listener = new ActionListener() {
             @Override
             public void actionPerformed( final ActionEvent e ) {
-                nd.repaint();
+                nd.update( FPS );
             }
         };
         setTimer( FPS, listener );
