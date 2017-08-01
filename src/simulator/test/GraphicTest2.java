@@ -9,6 +9,7 @@ import simulator.graphics_swing.AnimationNetwork;
      public static void main( final String[] args ) throws IOException
      {
          AnimationNetwork an = new AnimationNetwork( 800, 600, "prova" );
+         an.setTimer( 90 );
          
          an.loadSimulation( "Topology/Topology_multicore.json", "data/File/Packets.txt" );
          //an.loadSimulation( "Topology/Topology_multicore.json", "Results/packets.txt" );
