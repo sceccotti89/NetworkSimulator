@@ -9,9 +9,10 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
-import simulator.graphics.AnimationNetwork;
-import simulator.graphics.elements.Node;
-import simulator.graphics.elements.Packet;
+import simulator.graphics_swing.AnimationNetwork;
+import simulator.graphics_swing.elements.Info;
+import simulator.graphics_swing.elements.Node;
+import simulator.graphics_swing.elements.Packet;
 
 public class NetworkDisplay extends JPanel
 {
@@ -21,27 +22,35 @@ public class NetworkDisplay extends JPanel
     private AnimationManager am;
     
     private int index;
+    private int packetSize;
     private long timer = 0;
+    
+    public static Info info;
     
     private List<Node> nodes;
     private List<Packet> packets;
     
     private boolean start;
     private boolean pause;
+    
+    
 
     public NetworkDisplay( final AnimationManager am, final float width, final float height )
     {
         this.am = am;
         am.setNetworkDisplay( this );
         
+        info = new Info();
+        
         setPreferredSize( new Dimension( (int) width, (int) height ) );
-    
-        resetAnimation();
     }
     
-    public void setElements( final List<Node> nodes, final List<Packet> packets ) {
+    public void setElements( final List<Node> nodes, final List<Packet> packets )
+    {
         this.nodes = nodes;
         this.packets = packets;
+        packetSize = packets.size();
+        resetAnimation();
     }
     
     private void resetAnimation()
@@ -85,10 +94,9 @@ public class NetworkDisplay extends JPanel
             timer = timer + AnimationManager.frames;
         }
         
-        timer = timer + delta;
-        
         for (Node node: nodes) {
-            node.update( width, zone.getY(), (int) zone.getMaxY(), (addingNode && phaseTwoNewElement) );
+            //node.update( width, zone.getY(), (int) zone.getMaxY(), (addingNode && phaseTwoNewElement) );
+            node.update();
         }
         
         for (Packet packet: packets) {
@@ -111,10 +119,13 @@ public class NetworkDisplay extends JPanel
     protected void paintComponent( final Graphics g )
     {
         super.paintComponent( g );
+        setBackground( Color.LIGHT_GRAY );
         
         Graphics2D g2 = (Graphics2D) g;
         
-        setBackground( Color.LIGHT_GRAY );
+        for (int i = index; i < packetSize; i++) {
+            packets.get( i ).render( g2, timer );
+        }
         
         for (Node node: nodes) {
             node.drawLinks( g2 );

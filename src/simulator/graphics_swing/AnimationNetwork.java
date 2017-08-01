@@ -2,6 +2,7 @@
 package simulator.graphics_swing;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -22,10 +23,9 @@ import javax.swing.WindowConstants;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.newdawn.slick.Color;
 
-import simulator.graphics.elements.Node;
-import simulator.graphics.elements.Packet;
+import simulator.graphics_swing.elements.Node;
+import simulator.graphics_swing.elements.Packet;
 import simulator.graphics_swing.interfaces.AnimationManager;
 import simulator.graphics_swing.interfaces.NetworkDisplay;
 import simulator.graphics_swing.interfaces.TimeAnimation;
@@ -236,6 +236,7 @@ public class AnimationNetwork
     
     public void start()
     {
+        nd.setElements( nodes, packets );
         frame.setVisible( true );
         frame.requestFocusInWindow();
         timer.restart();
@@ -254,6 +255,7 @@ public class AnimationNetwork
             @Override
             public void actionPerformed( final ActionEvent e ) {
                 nd.update( FPS );
+                nd.repaint();
             }
         };
         setTimer( FPS, listener );

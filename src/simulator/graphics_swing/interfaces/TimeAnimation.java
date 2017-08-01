@@ -29,10 +29,10 @@ public class TimeAnimation extends JPanel implements ChangeListener
         time = new JSlider( JSlider.HORIZONTAL, 0, 10, 0 );
         time.setPreferredSize( new Dimension( (int) width - 10, (int) height ) );
         time.setForeground( Color.RED );
-        //time.setMajorTickSpacing( 10 );
-        //time.setMinorTickSpacing( 1 );
+        time.setMajorTickSpacing( 1 );
+        time.setMinorTickSpacing( 1 );
         time.addChangeListener( this );
-        //time.setPaintTicks( true );
+        time.setPaintTicks( true );
         //time.setPaintLabels( true );
         add( time );
     }

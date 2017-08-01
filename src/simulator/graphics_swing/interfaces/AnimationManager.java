@@ -11,6 +11,8 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.AbstractButton;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
@@ -19,7 +21,9 @@ public class AnimationManager extends JPanel
     /** Generated Serial ID. */
     private static final long serialVersionUID = -5413597974128852252L;
     
-    private List<JToggleButton> buttons;
+    private List<AbstractButton> buttons;
+    
+    public static int frames = 1;
 
     public AnimationManager( final float width, final float height )
     {
@@ -27,14 +31,14 @@ public class AnimationManager extends JPanel
         setLayout( new GridLayout( 1, 4 ) );
         
         buttons = new ArrayList<>();
-        JToggleButton button = new JToggleButton( "START" );
+        AbstractButton button = new JToggleButton( "START" );
         button.setEnabled( true );
         buttons.add( button );
         add( button );
         button = new JToggleButton( "PAUSE" );
         add( button );
         buttons.add( button );
-        button = new JToggleButton( "STOP" );
+        button = new JButton( "STOP" );
         add( button );
         buttons.add( button );
         
@@ -42,12 +46,14 @@ public class AnimationManager extends JPanel
         
     }
     
-    public void setNetworkDisplay( final NetworkDisplay nd ) {
+    public void setNetworkDisplay( final NetworkDisplay nd )
+    {
         // START
         buttons.get( 0 ).addActionListener( new ActionListener() {
             @Override
             public void actionPerformed( final ActionEvent e ) {
                 nd.startAnimation();
+                buttons.get( 1 ).setSelected( false );
             }
         } );
         
@@ -56,6 +62,7 @@ public class AnimationManager extends JPanel
             @Override
             public void actionPerformed( final ActionEvent e ) {
                 nd.pauseAnimation();
+                buttons.get( 0 ).setSelected( false );
             }
         } );
         
@@ -64,13 +71,14 @@ public class AnimationManager extends JPanel
             @Override
             public void actionPerformed( final ActionEvent e ) {
                 nd.stopAnimation();
+                resetButtons();
             }
         } );
     }
     
     public void resetButtons()
     {
-        for (JToggleButton button : buttons) {
+        for (AbstractButton button : buttons) {
             button.setSelected( false );
         }
     }
