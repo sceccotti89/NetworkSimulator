@@ -15,7 +15,7 @@ public class Node
     private Color color;
     
     private Rectangle node;
-    final private int ray = 25;
+    final private int ray = 45;
     
     final private long delay;
     final private String name;
@@ -36,7 +36,7 @@ public class Node
         links = new ArrayList<>();
     }
     
-    public long getNodeID() {
+    public long getID() {
         return nodeID;
     }
     
@@ -56,25 +56,21 @@ public class Node
         return node;
     }
     
-    public Float getAngle( final long destID ) {
-        for (Link link: links) {
-            if (link.getDestNode().getNodeID() == destID)
-                return link.getAngle();
-        }
-        
-        return null;
-    }
-    
     public int numberLinks() {
         return links.size();
     }
     
-    private float angleValutation( final double x1, final double y1, final float x2, final float y2 )
+    public float calculateAngle( final Node dest ) {
+        return calculateAngle( getCenterX(), getCenterY(),
+                               dest.getCenterX(), dest.getCenterY() );
+    }
+    
+    public float calculateAngle( final double x1, final double y1, final float x2, final float y2 )
     {
         double m = (y2 - y1)/(x2 - x1);
         
         if (y1 == y2) {
-            if (x1 <= x2) return  0;
+            if (x1 <= x2) return 0;
             else return  -180;
         }
         
@@ -94,24 +90,11 @@ public class Node
         
         return 0;
     }
-
-    private float calculateAngle( final float x1, final float y1, final float x2, final float y2 ) {
-        return angleValutation( x1, y1, x2, y2 );
-    }
     
-    public void addLink( final Node dest, final double bandwidth, final long delay, final int width, final int height, final String type ) {
+    public void addLink( final Node dest, final double bandwidth, final long delay, final int width, final int height, final String type )
+    {
         float angle = calculateAngle( getCenterX(), getCenterY(), dest.getCenterX(), dest.getCenterY() );
         links.add( new Link( this, dest, bandwidth, delay, angle, width, height, type ) );
-    }
-    
-    public Float getLinkLenght( final long destID ) {
-        for (Link link: links) {
-            if (link.getDestNode().getNodeID() == destID) {
-                return link.getLenght();
-            }
-        }
-        
-        return null;
     }
     
     public float getRay() {
@@ -129,7 +112,7 @@ public class Node
     public void setLinkPosition( Link link, Node source ) {
     	for(Link linked: links) {
     		if (linked.getDestNode() == source) {
-    			float angle = angleValutation( node.getCenterX(), node.getCenterY(), linked.getDestNode().getCenterX(), linked.getDestNode().getCenterY() );
+    			float angle = calculateAngle( node.getCenterX(), node.getCenterY(), linked.getDestNode().getCenterX(), linked.getDestNode().getCenterY() );
         		linked.setPosition( this, angle );
     		}
     	}
@@ -180,22 +163,17 @@ public class Node
     
     public void update()
     {
-    	// TODO inserire lo spostamento di un nodo
+    	// TODO inserire la gestione dello spostamento di un nodo
         
     }
     
-    public void drawLinks( final Graphics2D g ) {
-        for (Link link: links) {
-            link.render( g );
-        }
-    }
-    
-    public void drawNode( final Graphics2D g ) {
+    public void draw( final Graphics2D g )
+    {
         g.setColor( color );
-        g.fill( node );
+        g.fillOval( node.x, node.y, node.width, node.height );
         
         g.setColor( Color.black );
-        g.draw( node );
+        g.drawOval( node.x, node.y, node.width, node.height );
         
         g.setColor( Color.white );
         FontMetrics font = g.getFontMetrics();

@@ -30,6 +30,7 @@ public class Packet implements Comparable<Packet>
     private float linkLenght, distance;
     
     private Node source, dest;
+    private Link link;
     
     private float startX, startY;
 
@@ -43,7 +44,7 @@ public class Packet implements Comparable<Packet>
 	
 	
     
-    public Packet( final Node source, final Node dest,
+    public Packet( final Node source, final Node dest, final Link link,
                    final Color color,
                    final long startTime, final long endTime,
                    final int width, final int height,
@@ -51,6 +52,7 @@ public class Packet implements Comparable<Packet>
         
         this.source = source;
         this.dest = dest;
+        this.link = link;
         this.color = color;
         this.height = height;
         this.width = width;
@@ -62,17 +64,14 @@ public class Packet implements Comparable<Packet>
         
         offset = width/80;
         
-        init( source, dest, startTime );
+        init( startTime );
     }
     
-    public void init( final Node source, final Node dest, final long time )
+    public void init( final long time )
     {
-        this.source = source;
-    	this.dest = dest;
-    	
-        angle = source.getAngle( dest.getNodeID() );
+        angle = source.calculateAngle( dest );
         
-        linkLenght = source.getLinkLenght( dest.getNodeID() ) - 2 * source.getRay();
+        linkLenght = link.getLenght() - 2 * source.getRay();
         
         startX = source.getCenterX() + source.getRay();
         startY = source.getCenterY() - height/120;
@@ -89,7 +88,7 @@ public class Packet implements Comparable<Packet>
     	return dest;
     }
     
-    /**set the position of the packet basing on the time of the simulation*/
+    /** Set the position of the packet based on the time of the simulation. */
     public void setPosition( final long time )
     {
         active = true;
@@ -206,7 +205,7 @@ public class Packet implements Comparable<Packet>
     }
     
     public Packet clone() {
-        return new Packet( source, dest, color, startTime, endTime, width, height, type );
+        return new Packet( source, dest, link, color, startTime, endTime, width, height, type );
     }
     
     public void update( final long time, final boolean update )
@@ -217,6 +216,7 @@ public class Packet implements Comparable<Packet>
         }
         
         if (update) {
+            setPosition( time );
             distance = distance + speed;
             area.setLocation( (int) (area.getX() + speed), (int) area.getY() );
             
@@ -229,7 +229,7 @@ public class Packet implements Comparable<Packet>
         //}
     }
     
-    public void render( final Graphics2D g, final long time )
+    public void draw( final Graphics2D g, final long time )
     {
     	if (time < startTime || time > endTime)
             return;
@@ -249,7 +249,7 @@ public class Packet implements Comparable<Packet>
     public String toString() {
         return "start  = " + setInfo( startTime, measure ) + "\n" +
                "end    = " + setInfo( endTime, measure ) + "\n" +
-               "source = " + source.getNodeID() + "\n" +
-               "dest   = " + dest.getNodeID();
+               "source = " + source.getID() + "\n" +
+               "dest   = " + dest.getID();
     }
 }
