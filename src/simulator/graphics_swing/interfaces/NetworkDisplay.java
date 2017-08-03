@@ -5,12 +5,14 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.util.List;
 
 import javax.swing.JPanel;
 
 import simulator.graphics_swing.AnimationNetwork;
 import simulator.graphics_swing.elements.Info;
+import simulator.graphics_swing.elements.Link;
 import simulator.graphics_swing.elements.Node;
 import simulator.graphics_swing.elements.Packet;
 
@@ -28,6 +30,7 @@ public class NetworkDisplay extends JPanel
     public static Info info;
     
     private List<Node> nodes;
+    private List<Link> links;
     private List<Packet> packets;
     
     private boolean start;
@@ -42,12 +45,14 @@ public class NetworkDisplay extends JPanel
         
         info = new Info();
         
+        setDoubleBuffered( true );
         setPreferredSize( new Dimension( (int) width, (int) height ) );
     }
     
-    public void setElements( final List<Node> nodes, final List<Packet> packets )
+    public void setElements( final List<Node> nodes, final List<Link> links, final List<Packet> packets )
     {
         this.nodes = nodes;
+        this.links = links;
         this.packets = packets;
         packetSize = packets.size();
         resetAnimation();
@@ -62,7 +67,7 @@ public class NetworkDisplay extends JPanel
         pause = true;
 
         for (Packet packet: packets) {
-            packet.init( packet.getNodeSource(), packet.getNodeDest(), packet.getStartTime() );
+            packet.init( packet.getStartTime() );
         }
     }
     
@@ -99,9 +104,9 @@ public class NetworkDisplay extends JPanel
             node.update();
         }
         
-        for (Packet packet: packets) {
-            packet.init( packet.getNodeSource(), packet.getNodeDest(), timer );
-        }
+        /*for (Packet packet: packets) {
+            packet.setPosition( timer );
+        }*/
         
         for (int i = index; i < packetSize; i++) {
             Packet packet = packets.get( i );
@@ -122,17 +127,19 @@ public class NetworkDisplay extends JPanel
         setBackground( Color.LIGHT_GRAY );
         
         Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING,
+                             RenderingHints.VALUE_ANTIALIAS_ON );
         
         for (int i = index; i < packetSize; i++) {
-            packets.get( i ).render( g2, timer );
+            packets.get( i ).draw( g2, timer );
+        }
+        
+        for (Link link: links) {
+            link.draw( g2 );
         }
         
         for (Node node: nodes) {
-            node.drawLinks( g2 );
-        }
-        
-        for (Node node: nodes) {
-            node.drawNode( g2 );
+            node.draw( g2 );
         }
     }
 }

@@ -95,6 +95,10 @@ public class Link
     	rotateLink();
     }
     
+    public Node getSourceNode() {
+        return source;
+    }
+    
     public Node getDestNode() {
         return dest;
     }
@@ -115,7 +119,8 @@ public class Link
     	return type;
     }
     
-    public void render( final Graphics2D g ) {
+    public void draw( final Graphics2D g )
+    {
         if (available) {
             g.setColor( Color.red );
         } else {
