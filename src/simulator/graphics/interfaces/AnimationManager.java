@@ -50,18 +50,19 @@ public class AnimationManager implements AnimationInterface
         
         buttons = new ArrayList<ImageButton>();
 
-        start = new ImageButton( 0, startY, width, height, START, Color.gray, 0, gc, new Image( "./data/Image/Start.png" ), widthM/20, heightM/20 );
-        pause = new ImageButton( start.getMaxX(), startY, width, height, PAUSE, Color.gray, 1, gc, new Image( "./data/Image/Pause.png" ), widthM/20, heightM/20 );
-        stop  = new ImageButton( pause.getMaxX(), startY, width, height, STOP, Color.gray, 2, gc, new Image( "./data/Image/Stop.png" ), widthM/20, heightM/20 );
-        minus = new ImageButton( stop.getMaxX() + widthM/15, startY + height/2 - heightM/40, widthM/20, heightM/20, MINUS, Color.yellow, 3, gc, new Image( "./data/Image/Minus.png" ), widthM/45, heightM/90 );
-        plus  = new ImageButton( stop.getMaxX() + widthM/4, startY + height/2 - heightM/40, widthM/20, heightM/20, PLUS, Color.yellow, 4, gc, new Image( "./data/Image/Plus.png" ), widthM/40, heightM/30 );
+        int index = 0;
+        start = new ImageButton( 0, startY, width, height, START, Color.gray, index++, gc, new Image( "./data/Image/Start.png" ), widthM/20, heightM/20 );
+        pause = new ImageButton( start.getMaxX(), startY, width, height, PAUSE, Color.gray, index++, gc, new Image( "./data/Image/Pause.png" ), widthM/20, heightM/20 );
+        stop  = new ImageButton( pause.getMaxX(), startY, width, height, STOP, Color.gray, index++, gc, new Image( "./data/Image/Stop.png" ), widthM/20, heightM/20 );
+        minus = new ImageButton( stop.getMaxX() + widthM/15, startY + height/2 - heightM/40, widthM/20, heightM/20, MINUS, Color.yellow, index++, gc, new Image( "./data/Image/Minus.png" ), widthM/45, heightM/90 );
+        plus  = new ImageButton( stop.getMaxX() + widthM/4, startY + height/2 - heightM/40, widthM/20, heightM/20, PLUS, Color.yellow, index++, gc, new Image( "./data/Image/Plus.png" ), widthM/40, heightM/30 );
 
         showFrame = new Rectangle( minus.getMaxX() + (plus.getX() - minus.getMaxX())/2 - widthFrame/2, minus.getY(), widthFrame, minus.getAlt());
         speed     = new Rectangle( pause.getMaxX(), startY, gc.getWidth() - pause.getMaxX(), height );
         
         buttons.add( start );
-        buttons.add( stop );
         buttons.add( pause );
+        buttons.add( stop );
         buttons.add( minus );
         buttons.add( plus );
     }
@@ -82,6 +83,10 @@ public class AnimationManager implements AnimationInterface
     	return startY;
     }
     
+    public void resetIndex() {
+    	index = -1;
+    }
+    
     public boolean checkClick( Event event ) {
     	if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
 	    	if (index == -1) {
@@ -99,10 +104,6 @@ public class AnimationManager implements AnimationInterface
     	return false;
     }
     
-    public void resetIndex() {
-    	index = -1;
-    }
-    
     @Override
     public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd )
     {        
@@ -113,48 +114,86 @@ public class AnimationManager implements AnimationInterface
         
         if (index >= 0 && (buttons.get( index ).getName().equals( PLUS ) || buttons.get( index ).getName().equals( MINUS ))) {
             ImageButton button = buttons.get( index );
-            if (button.contains( mouseX, mouseY ) && ++timer >= 50) {
+            if (!button.isPressed() && button.contains( mouseX, mouseY )) {
+            	button.setPressed( true );
+            	setFrames( index = button.getIndex(), nd );
+            } else if (button.contains( mouseX, mouseY ) && ++timer >= 50) {
                 setFrames( index, nd );
             }
         }
         
-        if (leftMouse && !mouseDown) {
+        if (leftMouse /*&& !mouseDown*/) {
             mouseDown = true;
             
-            for (ImageButton button : buttons) {
+            /*for (ImageButton button : buttons) {
                 if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
                     button.setPressed( true );
                     if (button.getName().equals( PLUS ) || button.getName().equals( MINUS )) {
                         setFrames( index = button.getIndex(), nd );
                     }
                 }
+            }*/
+            
+            if (index != -1) {
+	            ImageButton button = buttons.get( index );
+	        	System.out.println( "INDEX = " + index );
+	        	System.out.println( "NAME = " + button.getName() );
+	            // TODO PLUS E MINUS DA RENDERE ANCHE SCRIVIBILE
+	            if (button.getName().equals( PLUS )) {
+	                button.setPressed( false );
+	            } else if (button.getName().equals( MINUS )) {
+	                button.setPressed( false );
+	            } else if (button.getName().equals( START )) {
+	                nd.startAnimation();
+	                button.setPressed( true );
+	                resetButtons( button );
+	            } else if (button.getName().equals( PAUSE )) {
+	            	System.out.println( "PAUSA!!!" );
+	            	if (nd.isInExecution()) {
+	            		nd.pauseAnimation();
+	                    button.setPressed( true );
+	                    resetButtons( button );
+	            	} else {
+	            		button.setPressed( false );
+	            	}
+	            } else if (button.getName().equals( STOP )) {
+	                nd.stopAnimation();
+	                resetButtons( null );
+	                button.setPressed( false );
+	            }
+	            
+	            index = -1;
             }
-        } else if (!leftMouse && mouseDown && index != -1) {
+        } /*else if (!leftMouse && mouseDown) {
             mouseDown = false;
             timer = 0;
 
             // TEMPORANEO
-            ImageButton button = buttons.get( index );
-            // TODO PLUS E MINUS DA RENDERE ANCHE SCRIVIBILE
-            if (button.getName().equals( PLUS )) {
-                button.setPressed( false );
-            } else if (button.getName().equals( MINUS )) {
-                button.setPressed( false );
-            } else if (button.getName().equals( START )) {
-                nd.startAnimation();
-                button.setPressed( true );
-                resetButtons( button );
-            } else if (button.getName().equals( PAUSE )) {
-            	if (nd.isInExecution()) {
-            		nd.pauseAnimation();
-                    button.setPressed( true );
-                    resetButtons( button );
-            	} else {
-            		button.setPressed( false );
-            	}
-            } else if (button.getName().equals( STOP )) {
-                nd.stopAnimation();
-                resetButtons( null );
+            if (index != -1) {
+                System.out.println( "INDEX = " + index );
+	            ImageButton button = buttons.get( index );
+	            // TODO PLUS E MINUS DA RENDERE ANCHE SCRIVIBILE
+	            if (button.getName().equals( PLUS )) {
+	                button.setPressed( false );
+	            } else if (button.getName().equals( MINUS )) {
+	                button.setPressed( false );
+	            } else if (button.getName().equals( START )) {
+	                nd.startAnimation();
+	                button.setPressed( true );
+	                resetButtons( button );
+	            } else if (button.getName().equals( PAUSE )) {
+	            	if (nd.isInExecution()) {
+	            		nd.pauseAnimation();
+	                    button.setPressed( false );
+	                    resetButtons( button );
+	            	} else {
+	            		button.setPressed( false );
+	            	}
+	            } else if (button.getName().equals( STOP )) {
+	                nd.stopAnimation();
+	                resetButtons( null );
+	                button.setPressed( false );
+	            }
             }
             
             index = -1;
@@ -184,8 +223,8 @@ public class AnimationManager implements AnimationInterface
                         resetButtons( null );
                     }
                 }
-            }*/
-        }
+            }
+        }*/
     }
     
     public float getMaxY() {
