@@ -262,7 +262,7 @@ public class NetworkDisplay implements AnimationInterface
                 } else if (addingPacket) {
                 	// TEMPORANEO
                 	if (indexElement != -1) {
-	                	source = nodes.get( index );
+	                	source = nodes.get( indexElement );
 	                	source.setLinkAvailable();
 	                    phaseOneNewElement = false;
 	                    phaseTwoNewElement = true;
