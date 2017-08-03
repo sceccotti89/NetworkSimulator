@@ -99,6 +99,10 @@ public class AnimationManager implements AnimationInterface
     	return false;
     }
     
+    public void resetIndex() {
+    	index = -1;
+    }
+    
     @Override
     public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd )
     {        

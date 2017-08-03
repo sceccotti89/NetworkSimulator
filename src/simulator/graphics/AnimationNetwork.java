@@ -261,6 +261,9 @@ public class AnimationNetwork extends AppGameContainer
         	} else if (mouseEvent && !evaluateEventMouse( gc.getInput() )) {
         		mouseEvent = false;
             	event.setConsumed( true );
+            	for (AnimationInterface obj: interfaces) {
+            		obj.resetIndex();
+            	}
         	}
         	
         	// controllo dei click

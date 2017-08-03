@@ -185,8 +185,16 @@ public class TimeAnimation implements AnimationInterface
     	return info;
     }
     
+    public void resetIndex() {
+    	index = -1;
+    }
+    
     public boolean checkClick( Event event ) {
-    	
+    	if (index == -1) {
+    		if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
+    			// TODO DA COMPLETARE
+    		}
+    	}
     	
     	return false;
     }

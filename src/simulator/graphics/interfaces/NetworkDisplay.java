@@ -29,7 +29,7 @@ public class NetworkDisplay implements AnimationInterface
     
     private boolean start, pause;
     
-    private int index, packetSize;
+    private int index = 0, indexElement = -1, packetSize;
     
     public static Info info;
 
@@ -37,7 +37,7 @@ public class NetworkDisplay implements AnimationInterface
 	
 	private Node tmpNode = null, source = null;
 
-	private boolean moving = false, removing, addingPacket, addingNode;
+	private boolean moving = false, removing = false, addingPacket = false, addingNode = false;
 
     private boolean phaseTwoNewElement, phaseOneNewElement;
     
@@ -63,6 +63,7 @@ public class NetworkDisplay implements AnimationInterface
     private void resetAnimation() {
         timer = 0;
         index = 0;
+        indexElement = -1;
         
         start = false;
         pause = true;
@@ -171,6 +172,7 @@ public class NetworkDisplay implements AnimationInterface
     
     public void moveNode() {
     	moving = !moving;
+    	System.out.println( "INDEXELE = " + indexElement );
     	
     	for (Node node: nodes) {
     		node.setSelectable();
@@ -186,18 +188,21 @@ public class NetworkDisplay implements AnimationInterface
     }
     
     private boolean manageRemoveNode( final GameContainer gc ) {
+    	System.out.println( "NODE = " + indexElement );
     	for (Node node: nodes) {
-    		node.removeLink( nodes.get( index ) );
+    		node.removeLink( nodes.get( indexElement ) );
     		
     		for (int i = packets.size() - 1; i >= 0; i--) {
 				Packet packet = packets.get( i );
-				if (packet.getNodeSource().equals( node ) || packet.getNodeDest().equals( node )) {
+				if (packet.getNodeSource().equals( nodes.get( indexElement ) ) || packet.getNodeDest().equals( node )) {
 					packets.remove( packet );
 				}
 			}
 			
 			packetSize = packets.size();
 			
+			// TODO DA RIVEDERE QUESTA PARTE (PERCHE L'HO RIMESSO A 0?, MI PARE SBAGLIATO)
+			// NON DOVREI AGGIORNARE IL TEMPO MASSIMO DELLA SIMULAZIONE?
 			AnimationNetwork.timeSimulation = 0;
 			for (Packet packet : packets) {
 				if (packet.getEndTime() > AnimationNetwork.timeSimulation) {
@@ -205,8 +210,10 @@ public class NetworkDisplay implements AnimationInterface
 				}
 			}
 			
-			nodes.get( index ).removeLink( null );
-			nodes.remove( nodes.get( index ) );
+			nodes.get( indexElement ).removeLink( null );
+			nodes.remove( nodes.get( indexElement ) );
+			
+			indexElement = -1;
 			
 			return true;
     	}
@@ -260,7 +267,7 @@ public class NetworkDisplay implements AnimationInterface
                     phaseTwoNewElement = true;
                 } else if (addingPacket) {
                 	// TEMPORANEO
-                	if (index != -1) {
+                	if (indexElement != -1) {
 	                	source = nodes.get( index );
 	                	source.setLinkAvailable();
 	                    phaseOneNewElement = false;
@@ -324,8 +331,9 @@ public class NetworkDisplay implements AnimationInterface
     public boolean manageMovingNode( final GameContainer gc ) {
     	// TEMPORANEO
     	if (tmpNode == null) {
-    		if (index != -1) {
-    			tmpNode = nodes.get( index );
+    		if (indexElement != -1) {
+    			nodes.get( indexElement ).setMoving( true );
+    			tmpNode = nodes.get( indexElement );
     			return true;
     		}
     	} else if (tmpNode != null) {
@@ -355,21 +363,27 @@ public class NetworkDisplay implements AnimationInterface
     }
     
     public void resetIndex() {
-    	index = -1;
+    	indexElement = -1;
     }
     
     public boolean checkClick( Event event ) {
     	// controllare se un nodo è stato colpito
-        if (index == -1) {
+        if (indexElement == -1) {
         	for (int i = 0; i < nodes.size(); i++) {
         		if (nodes.get( i ).checkCollision( mouseX, mouseY )) {
-                	if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
-                		if (moving || phaseOneNewElement || phaseTwoNewElement) {
-                			index = i;
+        			// TODO NON SO SE SIA CAMBIATO QUALCOSA METTENDO MOVING A PARTE
+        			// FARE POI DEI TEST PER VEDERE DIFFERENZE
+        			if (event.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON )) {
+        				if (moving) {
+        					indexElement = i;
+        				}
+        			} else if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
+                		if (phaseOneNewElement || phaseTwoNewElement) {
+                			indexElement = i;
                 		}
                 	} else if (event.getInput().isMouseButtonDown( Input.MOUSE_RIGHT_BUTTON )) {
                 		if (removing) {
-                			index = i;
+                			indexElement = i;
                 		}
                 	}
                 	
@@ -404,7 +418,7 @@ public class NetworkDisplay implements AnimationInterface
         	manageMovingNode( gc );
         }
         
-        if (removing) {
+        if (removing && indexElement != -1) {
         	manageRemoveNode( gc );
         }
     	

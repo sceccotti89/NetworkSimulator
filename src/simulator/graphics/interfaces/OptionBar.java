@@ -43,6 +43,9 @@ public class OptionBar implements AnimationInterface
     private boolean leftMouse, mouseDown;
     
 	private ArrayList<Operation> operations;
+
+	// TODO DA USARE
+	private int index = -1;
     
     public OptionBar( final GameContainer gc, final int width, final int height ) throws SlickException
     {
@@ -102,6 +105,10 @@ public class OptionBar implements AnimationInterface
     
     public float getMaxY() {
         return barOptions.getMaxY();
+    }
+    
+    public void resetIndex() {
+    	index = -1;
     }
     
     public boolean checkClick( Event event ) {
