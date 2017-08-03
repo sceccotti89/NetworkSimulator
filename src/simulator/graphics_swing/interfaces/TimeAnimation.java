@@ -33,7 +33,7 @@ public class TimeAnimation extends JPanel implements ChangeListener
         time.setMajorTickSpacing( 1 );
         time.setMinorTickSpacing( 1 );
         time.addChangeListener( this );
-        time.setPaintTicks( true );
+        //time.setPaintTicks( true );
         //time.setPaintLabels( true );
         add( time );
         
