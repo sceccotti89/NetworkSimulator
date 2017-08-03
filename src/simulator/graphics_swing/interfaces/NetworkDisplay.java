@@ -104,10 +104,6 @@ public class NetworkDisplay extends JPanel
             node.update();
         }
         
-        /*for (Packet packet: packets) {
-            packet.setPosition( timer );
-        }*/
-        
         for (int i = index; i < packetSize; i++) {
             Packet packet = packets.get( i );
             if (packet.getStartTime() > timer)

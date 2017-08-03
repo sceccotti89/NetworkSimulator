@@ -1,9 +1,10 @@
+
 package simulator.graphics_swing.elements;
 
 import java.awt.Color;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class Node
     private Color color;
     
     private Rectangle node;
-    final private int ray = 45;
+    final private int ray = 25;
     
     final private long delay;
     final private String name;
@@ -31,7 +32,7 @@ public class Node
         this.delay = delay;
         this.name = name;
         
-        node = new Rectangle( (int) x, (int) y, ray, ray );
+        node = new Rectangle( (int) x, (int) y, ray * 2, ray * 2 );
         
         links = new ArrayList<>();
     }
@@ -176,11 +177,9 @@ public class Node
         g.drawOval( node.x, node.y, node.width, node.height );
         
         g.setColor( Color.white );
-        FontMetrics font = g.getFontMetrics();
-        double width  = font.stringWidth( nodeID + "" );
-        double height = font.getHeight();
+        Rectangle2D bounds = g.getFontMetrics().getStringBounds( nodeID + "", g );
         g.drawString( nodeID + "",
-                     (int) (node.getCenterX() - width/2),
-                     (int) (node.getCenterY() - height/2) );
+                     (int) (node.getCenterX() - bounds.getWidth()/2),
+                     (int) (node.getCenterY() + bounds.getHeight()/2) );
     }
 }

@@ -80,14 +80,6 @@ public class Packet implements Comparable<Packet>
         setPosition( time );
     }
     
-    public Node getNodeSource() {
-    	return source;
-    }
-    
-    public Node getNodeDest() {
-    	return dest;
-    }
-    
     /** Set the position of the packet based on the time of the simulation. */
     public void setPosition( final long time )
     {
@@ -97,18 +89,6 @@ public class Packet implements Comparable<Packet>
         
         area.x = (int) (startX + distance);
         rotatePacket();
-    }
-    
-    public double getWidth() {
-        return area.getWidth();
-    }
-    
-    public double getHeight() {
-        return area.getHeight();
-    }
-    
-    public void setLocation( final float x, final float y ) {
-        area.setLocation( (int) x, (int) y );
     }
     
     public void setSpeed() {
@@ -143,7 +123,8 @@ public class Packet implements Comparable<Packet>
         if (angle >= 90 || angle <= -90 || angle == -180) offset *= -type;
         area.y = (int) (area.getY() + offset);
         
-        final float centerX = source.getCenterX(), centerY = source.getCenterY();
+        final float centerX = source.getCenterX();
+        final float centerY = source.getCenterY();
         Point p1 = worldToView( area.getX() - centerX,    area.getY() - centerY, angle );
         Point p2 = worldToView( area.getMaxX() - centerX, area.getY() - centerY, angle );
         Point p3 = worldToView( area.getMaxX() - centerX, area.getMaxY() - centerY, angle );
@@ -160,7 +141,7 @@ public class Packet implements Comparable<Packet>
     	this.measure  = measure;
     }
     
-    private String setInfo( long time, final String measure )
+    private String getInfo( long time, final String measure )
     {
     	long decimal = time;
     	if (measure.equals( "TIME" )) {
@@ -247,8 +228,8 @@ public class Packet implements Comparable<Packet>
     
     @Override
     public String toString() {
-        return "start  = " + setInfo( startTime, measure ) + "\n" +
-               "end    = " + setInfo( endTime, measure ) + "\n" +
+        return "start  = " + getInfo( startTime, measure ) + "\n" +
+               "end    = " + getInfo( endTime, measure ) + "\n" +
                "source = " + source.getID() + "\n" +
                "dest   = " + dest.getID();
     }
