@@ -275,6 +275,15 @@ public class AnimationNetwork extends AppGameContainer
         		}
         	}
         	
+        	// checkClick delle interfacce
+        	for (AnimationInterface obj: interfaces) {
+        		if (obj.checkClick( event )) {
+        			interfaces.remove( obj );
+        			interfaces.add( 0, obj );
+        			break;
+        		}
+        	}
+        	
         	// update delle interfacce
         	for (AnimationInterface obj: interfaces) {
         		obj.update( delta, gc, am, event, nd );
