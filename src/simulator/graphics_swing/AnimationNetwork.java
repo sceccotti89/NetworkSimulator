@@ -39,6 +39,7 @@ public class AnimationNetwork
     private Timer timer;
     
     private NetworkDisplay nd;
+    private TimeAnimation tm;
     
     private final int height;
     private final int width;
@@ -96,7 +97,7 @@ public class AnimationNetwork
         AnimationManager am = new AnimationManager( width, (height/100f)*10f );
         pane.add( am, BorderLayout.PAGE_START );
         pane.add( nd = new NetworkDisplay( am, width, (height/100f)*75f ), BorderLayout.CENTER );
-        pane.add( new TimeAnimation( nd, width, (height/100f)*15f ), BorderLayout.PAGE_END );
+        pane.add( tm = new TimeAnimation( nd, width, (height/100f)*15f ), BorderLayout.PAGE_END );
     }
     
     /**
@@ -273,6 +274,7 @@ public class AnimationNetwork
             @Override
             public void actionPerformed( final ActionEvent e ) {
                 nd.update( FPS );
+                tm.update();
                 nd.repaint();
             }
         };

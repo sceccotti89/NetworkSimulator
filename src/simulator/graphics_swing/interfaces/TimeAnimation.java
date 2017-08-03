@@ -8,6 +8,9 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.metal.MetalSliderUI;
+
+import simulator.graphics_swing.AnimationNetwork;
 
 public class TimeAnimation extends JPanel implements ChangeListener
 {
@@ -16,8 +19,6 @@ public class TimeAnimation extends JPanel implements ChangeListener
     
     private NetworkDisplay nd;
     
-    private long maxTimer;
-    private long timer = 0;
     private JSlider time;
 
     public TimeAnimation( final NetworkDisplay nd, final float width, final float height )
@@ -26,7 +27,7 @@ public class TimeAnimation extends JPanel implements ChangeListener
         
         this.nd = nd;
         
-        time = new JSlider( JSlider.HORIZONTAL, 0, 10, 0 );
+        time = new JSlider( JSlider.HORIZONTAL, 0, 200, 0 );
         time.setPreferredSize( new Dimension( (int) width - 10, (int) height ) );
         time.setForeground( Color.RED );
         time.setMajorTickSpacing( 1 );
@@ -35,21 +36,37 @@ public class TimeAnimation extends JPanel implements ChangeListener
         time.setPaintTicks( true );
         //time.setPaintLabels( true );
         add( time );
+        
+        time.setUI( new MetalSliderUI() {
+            @Override
+            protected void scrollDueToClickInTrack( final int direction )
+            {
+                int value = slider.getValue(); 
+                if (slider.getOrientation() == JSlider.HORIZONTAL) {
+                    value = valueForXPosition( slider.getMousePosition().x );
+                } else if (slider.getOrientation() == JSlider.VERTICAL) {
+                    value = valueForYPosition( slider.getMousePosition().y );
+                }
+                slider.setValue( value );
+            }
+        } );
     }
 
     @Override
     public void stateChanged( final ChangeEvent e )
     {
-        long value = time.getValue();
-        timer = maxTimer * value;
+        double value = time.getValue();
+        long timer = (long) (AnimationNetwork.timeSimulation * (value / time.getMaximum()));
         nd.setTime( timer );
     }
     
-    public void update( final int delta )
+    public void update()
     {
-        timer = timer + delta;
-        time.setValue( (int) (maxTimer/timer) );
+        if (!nd.isPauseAnimation()) {
+            long timer = nd.getTime();
+            time.setValue( (int) (time.getMaximum() * (timer / (double) AnimationNetwork.timeSimulation)) );
+        }
     }
     
-    // TODO controllare se sia il caso di fare override del metodo paintComponents.
+    // TODO controllare se sia il caso di fare override del metodo paintComponents. Probabilmente si.
 }

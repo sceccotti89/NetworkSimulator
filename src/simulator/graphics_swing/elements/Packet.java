@@ -80,7 +80,7 @@ public class Packet implements Comparable<Packet>
         setPosition( time );
     }
     
-    /** Set the position of the packet based on the time of the simulation. */
+    /** Sets the position of the packet based on the time of the simulation. */
     public void setPosition( final long time )
     {
         active = true;
@@ -195,9 +195,10 @@ public class Packet implements Comparable<Packet>
             active = false;
             return;
         }
+    	
+    	setPosition( time );
         
         if (update) {
-            setPosition( time );
             distance = distance + speed;
             area.setLocation( (int) (area.getX() + speed), (int) area.getY() );
             

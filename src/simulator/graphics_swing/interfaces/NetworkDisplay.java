@@ -80,13 +80,24 @@ public class NetworkDisplay extends JPanel
         pause = true;
     }
     
+    public boolean isPauseAnimation() {
+        return pause;
+    }
+    
     public void stopAnimation() {
         resetAnimation();
+    }
+    
+    public long getTime() {
+        return timer;
     }
     
     public void setTime( final long time )
     {
         timer = time;
+        for (Packet packet : packets) {
+            packet.setPosition( timer );
+        }
         repaint();
     }
     
