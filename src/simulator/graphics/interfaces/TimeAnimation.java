@@ -40,7 +40,7 @@ public class TimeAnimation implements AnimationInterface
     private final ArrowButton timeOn, timeBack;
     private final List<ArrowButton> arrows;
     
-    private boolean buttonHit = false, timingHit = false;
+    private boolean arrowHit = false, timingHit = false;
     
     private final CheckBox timeUs, timeS;
 	private boolean leftMouse, mouseDown;
@@ -204,7 +204,7 @@ public class TimeAnimation implements AnimationInterface
         
         timer = nd.getTimeSimulation();
         
-        if (buttonHit) {
+        if (arrowHit) {
         	ArrowButton arrow = arrows.get( index );
             if (arrow.contains( mouseX, mouseY ) && ++tick >= 50) {
             	setCursor( index, nd );
@@ -240,8 +240,8 @@ public class TimeAnimation implements AnimationInterface
             	}
             }
             
-            if (buttonHit && index != -1) {
-        		buttonHit = false;
+            if (arrowHit && index != -1) {
+            	arrowHit = false;
         		arrows.get( index ).setPressed( false );
         		index = -1;
         		tick = 0;
@@ -254,7 +254,7 @@ public class TimeAnimation implements AnimationInterface
         		setTime( nd );
         	} 
         	
-        	if (!buttonHit && !timingHit) {
+        	if (!arrowHit && !timingHit) {
         		if (timing.intersects( mouse )) {
         			event.setConsumed( true );
 	    			timingHit = true;
@@ -263,7 +263,7 @@ public class TimeAnimation implements AnimationInterface
 	    			for (ArrowButton arrow: arrows) {
 						if (arrow.contains( mouseX, mouseY )) {
 							arrow.setPressed( true );
-							buttonHit = true;
+							arrowHit = true;
 							index = arrow.getIndex();
 							setCursor( index, nd );
 						}

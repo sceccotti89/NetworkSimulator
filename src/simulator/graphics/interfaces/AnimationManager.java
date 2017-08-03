@@ -83,7 +83,18 @@ public class AnimationManager implements AnimationInterface
     }
     
     public boolean checkClick( Event event ) {
-    	
+    	if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
+	    	if (index == -1) {
+	    		for (ImageButton button : buttons) {
+	                if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
+	                	index = button.getIndex();
+	                	event.setConsumed( true );
+	                
+	                	return true;
+	                }
+	    		}
+	    	}
+    	}
     	
     	return false;
     }
@@ -96,7 +107,7 @@ public class AnimationManager implements AnimationInterface
         
         leftMouse = event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
         
-        if (index >= 0) {
+        if (index >= 0 && (buttons.get( index ).getName().equals( PLUS ) || buttons.get( index ).getName().equals( MINUS ))) {
             ImageButton button = buttons.get( index );
             if (button.contains( mouseX, mouseY ) && ++timer >= 50) {
                 setFrames( index, nd );
@@ -114,13 +125,37 @@ public class AnimationManager implements AnimationInterface
                     }
                 }
             }
-        } else if (!leftMouse && mouseDown) {
+        } else if (!leftMouse && mouseDown && index != -1) {
             mouseDown = false;
             timer = 0;
+
+            // TEMPORANEO
+            ImageButton button = buttons.get( index );
+            // TODO PLUS E MINUS DA RENDERE ANCHE SCRIVIBILE
+            if (button.getName().equals( PLUS )) {
+                button.setPressed( false );
+            } else if (button.getName().equals( MINUS )) {
+                button.setPressed( false );
+            } else if (button.getName().equals( START )) {
+                nd.startAnimation();
+                button.setPressed( true );
+                resetButtons( button );
+            } else if (button.getName().equals( PAUSE )) {
+            	if (nd.isInExecution()) {
+            		nd.pauseAnimation();
+                    button.setPressed( true );
+                    resetButtons( button );
+            	} else {
+            		button.setPressed( false );
+            	}
+            } else if (button.getName().equals( STOP )) {
+                nd.stopAnimation();
+                resetButtons( null );
+            }
+            
             index = -1;
             
-            boolean buttonFounded = false;
-            for (ImageButton button: buttons) {
+            /*for (ImageButton button: buttons) {
                 if (button.checkClick( mouseX, mouseY )) {
                     buttonFounded = true;
                     // TODO PLUS E MINUS DA RENDERE ANCHE SCRIVIBILE
@@ -145,25 +180,7 @@ public class AnimationManager implements AnimationInterface
                         resetButtons( null );
                     }
                 }
-            }
-            
-            if (!buttonFounded){
-                for (ImageButton button: buttons) {
-                    if (button.isPressed()) {
-                    	if (button.getName().equals( START )) {
-                    		if (!nd.isInExecution()) {
-                    			button.setPressed( false );
-                    		}
-                    	} else if (button.getName().equals( PAUSE )) {
-                    		if (!nd.isInPause()) {
-                    			button.setPressed( false );
-                    		}
-                    	} else {
-                    		button.setPressed( false );
-                    	}
-                    }
-                }
-            }
+            }*/
         }
     }
     

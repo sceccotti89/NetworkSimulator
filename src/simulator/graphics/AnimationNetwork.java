@@ -264,7 +264,7 @@ public class AnimationNetwork extends AppGameContainer
         	}
         	
         	// controllo dei click
-        	for (AnimationInterface obj: interfaces) {
+        	/*for (AnimationInterface obj: interfaces) {
         		if (mouseEvent) {
 	        		if (!event.isConsumed()) {
 	            		if (obj.checkClick( event )) {
@@ -273,14 +273,12 @@ public class AnimationNetwork extends AppGameContainer
 	            		}
 	            	}
         		}
-        	}
+        	}*/
         	
-        	// checkClick delle interfacce
+        	// checkClick
         	for (AnimationInterface obj: interfaces) {
-        		if (obj.checkClick( event )) {
-        			interfaces.remove( obj );
-        			interfaces.add( 0, obj );
-        			break;
+        		if (!event.isConsumed()) {
+        			obj.checkClick( event );
         		}
         	}
         	

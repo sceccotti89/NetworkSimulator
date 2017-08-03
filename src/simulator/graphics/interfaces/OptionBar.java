@@ -105,9 +105,7 @@ public class OptionBar implements AnimationInterface
     }
     
     public boolean checkClick( Event event ) {
-        for (MenuItem item: items) {
-        	item.update( mouseX, mouseY, leftMouse, event, mouseDown, nd );
-        }
+    	
     	
     	return false;
     }

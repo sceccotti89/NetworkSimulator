@@ -32,14 +32,12 @@ public class NetworkDisplay implements AnimationInterface
     private int index, packetSize;
     
     public static Info info;
-    
-    private boolean nodesChanged = false;
 
 	private int mouseX, mouseY;
 	
 	private Node tmpNode = null, source = null;
 
-	private boolean removing, addingPacket, addingNode;
+	private boolean moving = false, removing, addingPacket, addingNode;
 
     private boolean phaseTwoNewElement, phaseOneNewElement;
     
@@ -119,18 +117,6 @@ public class NetworkDisplay implements AnimationInterface
     	}
     }
     
-    public void moveNode() {
-    	nodesChanged = !nodesChanged;
-    	
-    	for (Node node: nodes) {
-    		node.setSelectable();
-    	}
-    }
-    
-    public boolean isMoving() {
-        return nodesChanged;
-    }
-    
     public float getMaxY() {
         return zone.getMaxY();
     }
@@ -183,12 +169,52 @@ public class NetworkDisplay implements AnimationInterface
         return removing;
     }
     
+    public void moveNode() {
+    	moving = !moving;
+    	
+    	for (Node node: nodes) {
+    		node.setSelectable();
+    	}
+    }
+    
+    public boolean isMoving() {
+        return moving;
+    }
+    
     public boolean isAddingElement() {
         return addingNode || addingPacket;
     }
     
-    private void manageRemoveNode( final GameContainer gc ) {
-    	if (gc.getInput().isMousePressed( Input.MOUSE_RIGHT_BUTTON )) {
+    private boolean manageRemoveNode( final GameContainer gc ) {
+    	for (Node node: nodes) {
+    		node.removeLink( nodes.get( index ) );
+    		
+    		for (int i = packets.size() - 1; i >= 0; i--) {
+				Packet packet = packets.get( i );
+				if (packet.getNodeSource().equals( node ) || packet.getNodeDest().equals( node )) {
+					packets.remove( packet );
+				}
+			}
+			
+			packetSize = packets.size();
+			
+			AnimationNetwork.timeSimulation = 0;
+			for (Packet packet : packets) {
+				if (packet.getEndTime() > AnimationNetwork.timeSimulation) {
+					AnimationNetwork.timeSimulation = packet.getEndTime();
+				}
+			}
+			
+			nodes.get( index ).removeLink( null );
+			nodes.remove( nodes.get( index ) );
+			
+			return true;
+    	}
+    	
+    	
+    	
+    	
+    	/*if (gc.getInput().isMousePressed( Input.MOUSE_RIGHT_BUTTON )) {
     		for (Node node: nodes) {
     			if (node.checkCollision( mouseX, mouseY )) {
     				for (Node nodo: nodes) {
@@ -214,10 +240,12 @@ public class NetworkDisplay implements AnimationInterface
     				node.removeLink( null );
     				nodes.remove( node );
     				
-    				return;
+    				return true;
     			}
     		}
-    	}
+    	}*/
+    	
+    	return false;
     }
     
     private boolean checkMousePosition() {
@@ -231,7 +259,17 @@ public class NetworkDisplay implements AnimationInterface
                     phaseOneNewElement = false;
                     phaseTwoNewElement = true;
                 } else if (addingPacket) {
-                    for (Node node: nodes) {
+                	// TEMPORANEO
+                	if (index != -1) {
+	                	source = nodes.get( index );
+	                	source.setLinkAvailable();
+	                    phaseOneNewElement = false;
+	                    phaseTwoNewElement = true;
+	                    
+	                    return true;
+                	}
+                	
+                    /*for (Node node: nodes) {
                         if (node.checkCollision( mouseX, mouseY )) {
                             source = node;
                             source.setLinkAvailable();
@@ -240,7 +278,7 @@ public class NetworkDisplay implements AnimationInterface
                             
                             return true;
                         }
-                    }
+                    }*/
                 }
             } else if (addingNode) {
                 float x = Math.max( Math.min( mouseX - tmpNode.getRay(), width - tmpNode.getRay()*2 ), 0 );
@@ -283,25 +321,61 @@ public class NetworkDisplay implements AnimationInterface
         return false;
     }
     
-    public void manageMovingNode( final GameContainer gc ) {
-    	if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
+    public boolean manageMovingNode( final GameContainer gc ) {
+    	// TEMPORANEO
+    	if (tmpNode == null) {
+    		if (index != -1) {
+    			tmpNode = nodes.get( index );
+    			return true;
+    		}
+    	} else if (tmpNode != null) {
+			tmpNode.setMoving( false );
+			tmpNode = null;
+		}
+    	
+    	
+    	
+    	/*if (gc.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
     		if (tmpNode == null) {
 	            for (Node node: nodes) {
 	            	if (node.checkCollision( mouseX, mouseY )) {
 	            		node.setMoving( true );
 	            		tmpNode = node;
+	            		
+	            		return true;
 	            	}
 	            }
     		}
 		} else if (tmpNode != null) {
 			tmpNode.setMoving( false );
 			tmpNode = null;
-		}
+		}*/
+    	
+    	return false;
+    }
+    
+    public void resetIndex() {
+    	index = -1;
     }
     
     public boolean checkClick( Event event ) {
-        if (phaseOneNewElement || phaseTwoNewElement) {
-            return manageAddElement( event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) );
+    	// controllare se un nodo è stato colpito
+        if (index == -1) {
+        	for (int i = 0; i < nodes.size(); i++) {
+        		if (nodes.get( i ).checkCollision( mouseX, mouseY )) {
+                	if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
+                		if (moving || phaseOneNewElement || phaseTwoNewElement) {
+                			index = i;
+                		}
+                	} else if (event.getInput().isMouseButtonDown( Input.MOUSE_RIGHT_BUTTON )) {
+                		if (removing) {
+                			index = i;
+                		}
+                	}
+                	
+        			return true;
+        		}
+        	}
         }
     	
     	return false;
@@ -326,7 +400,7 @@ public class NetworkDisplay implements AnimationInterface
             manageAddElement( event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) );
         }
         
-        if (nodesChanged) {
+        if (moving) {
         	manageMovingNode( gc );
         }
         
