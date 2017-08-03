@@ -187,7 +187,7 @@ public class NetworkDisplay implements AnimationInterface
         return addingNode || addingPacket;
     }
     
-    private boolean manageRemoveNode( final GameContainer gc ) {
+    private void manageRemoveNode( final GameContainer gc ) {
     	System.out.println( "NODE = " + indexElement );
     	for (Node node: nodes) {
     		node.removeLink( nodes.get( indexElement ) );
@@ -200,25 +200,21 @@ public class NetworkDisplay implements AnimationInterface
 			}
 			
 			packetSize = packets.size();
-			
-			// TODO DA RIVEDERE QUESTA PARTE (PERCHE L'HO RIMESSO A 0?, MI PARE SBAGLIATO)
-			// NON DOVREI AGGIORNARE IL TEMPO MASSIMO DELLA SIMULAZIONE?
-			AnimationNetwork.timeSimulation = 0;
-			for (Packet packet : packets) {
-				if (packet.getEndTime() > AnimationNetwork.timeSimulation) {
-					AnimationNetwork.timeSimulation = packet.getEndTime();
-				}
-			}
-			
-			nodes.get( indexElement ).removeLink( null );
-			nodes.remove( nodes.get( indexElement ) );
-			
-			indexElement = -1;
-			
-			return true;
     	}
-    	
-    	
+		
+		// TODO DA RIVEDERE QUESTA PARTE (PERCHE L'HO RIMESSO A 0?, MI PARE SBAGLIATO)
+		// NON DOVREI AGGIORNARE IL TEMPO MASSIMO DELLA SIMULAZIONE?
+		AnimationNetwork.timeSimulation = 0;
+		for (Packet packet : packets) {
+			if (packet.getEndTime() > AnimationNetwork.timeSimulation) {
+				AnimationNetwork.timeSimulation = packet.getEndTime();
+			}
+		}
+		
+		nodes.get( indexElement ).removeLink( null );
+		nodes.remove( nodes.get( indexElement ) );
+		
+		indexElement = -1;
     	
     	
     	/*if (gc.getInput().isMousePressed( Input.MOUSE_RIGHT_BUTTON )) {
@@ -251,8 +247,6 @@ public class NetworkDisplay implements AnimationInterface
     			}
     		}
     	}*/
-    	
-    	return false;
     }
     
     private boolean checkMousePosition() {
