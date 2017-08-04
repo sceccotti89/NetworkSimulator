@@ -7,11 +7,14 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.util.List;
 
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 
 import simulator.graphics_swing.AnimationNetwork;
 import simulator.graphics_swing.elements.Info;
@@ -19,7 +22,7 @@ import simulator.graphics_swing.elements.Link;
 import simulator.graphics_swing.elements.Node;
 import simulator.graphics_swing.elements.Packet;
 
-public class NetworkDisplay extends JPanel implements MouseMotionListener
+public class NetworkDisplay extends JPanel implements MouseMotionListener, ComponentListener
 {
     /** Generated Serial ID. */
     private static final long serialVersionUID = 6828820513635876566L;
@@ -29,6 +32,8 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener
     private int index;
     private int packetSize;
     private long timer = 0;
+    
+    private JScrollBar scrolls;
     
     public static Info info;
     
@@ -45,15 +50,26 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener
 
     public NetworkDisplay( final AnimationManager am, final float width, final float height )
     {
+        addMouseMotionListener( this );
+        addComponentListener( this );
+        setDoubleBuffered( true );
+        
+        setPreferredSize( new Dimension( (int) width, (int) height ) );
+        
         this.am = am;
         am.setNetworkDisplay( this );
         
         mouse = new Point( -1, -1 );
         info = new Info();
         
-        addMouseMotionListener( this );
-        setDoubleBuffered( true );
-        setPreferredSize( new Dimension( (int) width, (int) height ) );
+        addComponentsToPane();
+    }
+    
+    private void addComponentsToPane()
+    {
+        scrolls = new JScrollBar( JScrollBar.VERTICAL );
+        //scrolls.setVisible( false );
+        add( scrolls );
     }
     
     public void setElements( final List<Node> nodes, final List<Link> links, final List<Packet> packets )
@@ -173,5 +189,29 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener
         }
         
         info.render( g2 );
+    }
+
+    @Override
+    public void componentResized( final ComponentEvent e ) {
+        remove( scrolls );
+        addComponentsToPane();
+    }
+
+    @Override
+    public void componentMoved(ComponentEvent e) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void componentShown(ComponentEvent e) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void componentHidden(ComponentEvent e) {
+        // TODO Auto-generated method stub
+        
     }
 }
