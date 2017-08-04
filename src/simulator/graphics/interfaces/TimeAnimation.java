@@ -81,7 +81,7 @@ public class TimeAnimation implements AnimationInterface
         
         final float widthT = width/53, heightT = height/40;
         startY = timing.getMaxY() + (height - timing.getMaxY())*7/8 - heightT/2;
-        timeUs = new CheckBox( width/2 - widthT/2 - width/16, startY - heightT/2, widthT, heightT, "탎" );
+        timeUs = new CheckBox( width/2 - widthT/2 - width/16, startY - heightT/2, widthT, heightT, "us" );
         timeS  = new CheckBox( width/2 - widthT/2 + width/16, startY - heightT/2 , widthT, heightT, "h:m:s" );
     }
     
@@ -150,11 +150,11 @@ public class TimeAnimation implements AnimationInterface
        		
        		ns = decimal - ms*1000;
        		if (ns < 10) {
-	   			info = info + "00" + ns + "탎";
+	   			info = info + "00" + ns + "us";
 	       	} else if (ns < 100) {
-	       		info = info + "0" + ns + "탎";
+	       		info = info + "0" + ns + "us";
 	       	} else {
-	       		info = info + ns + "탎";
+	       		info = info + ns + "us";
 	       	}
            	
        		return info;
@@ -170,11 +170,11 @@ public class TimeAnimation implements AnimationInterface
 	       	}
 	       	
 	       	if (ns < 10) {
-	   			info = info + "00" + ns + "탎";
+	   			info = info + "00" + ns + "us";
 	       	} else if (ns < 100) {
-	       		info = info + "0" + ns + "탎";
+	       		info = info + "0" + ns + "us";
 	       	} else {
-	       		info = info + ns + "탎";
+	       		info = info + ns + "us";
 	       	}
        	}
        	

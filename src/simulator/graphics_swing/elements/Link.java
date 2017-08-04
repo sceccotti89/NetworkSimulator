@@ -10,8 +10,6 @@ import simulator.graphics_swing.interfaces.NetworkDisplay;
 
 public class Link
 {
-    private Color color = Color.BLACK;
-    
     private float angle;
     
     private double bandwidth;
@@ -27,14 +25,12 @@ public class Link
     private Node source, dest;
     
     private String type;
-
-    private boolean available = false;
     
     public Link( final Node source, final Node dest,
                  final double bandwidth, final long delay,
                  float angle, final int width, final int height,
-                 final String type) {
-        
+                 final String type )
+    {
         this.source = source;
         this.dest = dest;
         this.angle = angle;
@@ -71,18 +67,19 @@ public class Link
                                    4 );
     }
     
-    public void update( final Graphics2D g, final int mouseX, final int mouseY ) {
-    	if (source.getArea().contains( mouseX, mouseY ) || dest.getArea().contains( mouseX, mouseY )) {
+    public void update( final Graphics2D g, final Point mouse )
+    {
+        final int mouseX = mouse.x;
+        final int mouseY = mouse.y;
+        
+    	if (source.getArea().contains( mouseX, mouseY ) ||
+    	    dest.getArea().contains( mouseX, mouseY )) {
     		return;
     	}
     	
     	if (areaRotated.contains( mouseX, mouseY )) {
     	    NetworkDisplay.info.setAttributes( g, toString(), mouseX + offset, mouseY + offset );
         }
-    }
-    
-    public void setAvailable() {
-        available  = !available;
     }
     
     public void setPosition( final Node node, final float angle ) {
@@ -121,11 +118,7 @@ public class Link
     
     public void draw( final Graphics2D g )
     {
-        if (available) {
-            g.setColor( Color.red );
-        } else {
-            g.setColor( color );
-        }
+        g.setColor( Color.BLACK );
         g.draw( areaRotated );
     }
     

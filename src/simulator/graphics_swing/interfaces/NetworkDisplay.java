@@ -5,7 +5,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.util.List;
 
 import javax.swing.JPanel;
@@ -16,7 +19,7 @@ import simulator.graphics_swing.elements.Link;
 import simulator.graphics_swing.elements.Node;
 import simulator.graphics_swing.elements.Packet;
 
-public class NetworkDisplay extends JPanel
+public class NetworkDisplay extends JPanel implements MouseMotionListener
 {
     /** Generated Serial ID. */
     private static final long serialVersionUID = 6828820513635876566L;
@@ -36,6 +39,8 @@ public class NetworkDisplay extends JPanel
     private boolean start;
     private boolean pause;
     
+    private Point mouse;
+    
     
 
     public NetworkDisplay( final AnimationManager am, final float width, final float height )
@@ -43,8 +48,10 @@ public class NetworkDisplay extends JPanel
         this.am = am;
         am.setNetworkDisplay( this );
         
+        mouse = new Point( -1, -1 );
         info = new Info();
         
+        addMouseMotionListener( this );
         setDoubleBuffered( true );
         setPreferredSize( new Dimension( (int) width, (int) height ) );
     }
@@ -101,13 +108,19 @@ public class NetworkDisplay extends JPanel
         repaint();
     }
     
-    public void update( final int delta )
+    private void update( final Graphics2D g, final int delta )
     {
         if (timer > AnimationNetwork.timeSimulation) {
             stopAnimation();
             am.resetButtons();
         } else if (!pause) {
             timer = timer + AnimationManager.frames;
+        }
+        
+        info.setVisible( false );
+        
+        for (Link link : links) {
+            link.update( g, mouse );
         }
         
         for (Node node: nodes) {
@@ -120,13 +133,21 @@ public class NetworkDisplay extends JPanel
             if (packet.getStartTime() > timer)
                 break;
             
-            packet.update( timer, start && !pause );
+            packet.update( g, timer, start && !pause, mouse );
             if (!packet.isActive() && i == index) {
                 index++;
             }
         }
     }
     
+    @Override
+    public void mouseDragged( final MouseEvent event ) {}
+
+    @Override
+    public void mouseMoved( final MouseEvent event ) {
+        mouse = event.getPoint();
+    }
+
     @Override
     protected void paintComponent( final Graphics g )
     {
@@ -136,6 +157,8 @@ public class NetworkDisplay extends JPanel
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING,
                              RenderingHints.VALUE_ANTIALIAS_ON );
+        
+        this.update( g2, AnimationNetwork.fps );
         
         for (int i = index; i < packetSize; i++) {
             packets.get( i ).draw( g2, timer );
@@ -148,5 +171,7 @@ public class NetworkDisplay extends JPanel
         for (Node node: nodes) {
             node.draw( g2 );
         }
+        
+        info.render( g2 );
     }
 }

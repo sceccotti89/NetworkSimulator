@@ -189,7 +189,7 @@ public class Packet implements Comparable<Packet>
         return new Packet( source, dest, link, color, startTime, endTime, width, height, type );
     }
     
-    public void update( final long time, final boolean update )
+    public void update( final Graphics2D g, final long time, final boolean update, final Point mouse )
     {
     	if (time >= endTime) {
             active = false;
@@ -205,10 +205,11 @@ public class Packet implements Comparable<Packet>
             rotatePacket();
         }
         
-        // TODO aggiungere non appena avro' la posizione del mouse
-    	//if(areaRotated.contains( mouseX, mouseY )) {
-        //	NetworkDisplay.info.setAttributes( g, toString(), mouseX + offset, mouseY + offset );
-        //}
+        mouseX = mouse.x;
+        mouseY = mouse.y;
+        if(areaRotated.contains( mouseX, mouseY )) {
+        	NetworkDisplay.info.setAttributes( g, toString(), mouseX + offset, mouseY + offset );
+        }
     }
     
     public void draw( final Graphics2D g, final long time )

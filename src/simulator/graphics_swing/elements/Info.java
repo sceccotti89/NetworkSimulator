@@ -1,9 +1,9 @@
 package simulator.graphics_swing.elements;
 
 import java.awt.Color;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 
 public class Info
 {
@@ -13,17 +13,21 @@ public class Info
 	private String infos;
 	private final float OFFSET = 5f;
 	
-	public Info() {}
+	
+	
+	public Info() {
+	    
+	}
 	
 	public void setAttributes( final Graphics2D g, final String info, final float x, final float y )
 	{
-	    FontMetrics font = g.getFontMetrics();
-        double width  = font.stringWidth( info );
-        double height = font.getHeight();
+	    Rectangle2D bounds = g.getFontMetrics().getStringBounds( info, g );
+        double width  = bounds.getWidth();
+        double height = bounds.getHeight();
 		infos = info;
 		area = new Rectangle( (int) (x - OFFSET), (int) (y - OFFSET),
 		                      (int) (width + 2 * OFFSET), (int) (height + 2 * OFFSET) );
-        visible = true;
+        setVisible( true );
 	}
 	
 	public void setVisible( final boolean flag ) {
@@ -39,7 +43,9 @@ public class Info
     		g.setColor( Color.black );
     		g.draw( area );
     		
-    		g.drawString( infos, (int) (area.getX() + OFFSET), (int) (area.getY() + OFFSET) );
+    		Rectangle2D bounds = g.getFontMetrics().getStringBounds( infos, g );
+    		double height = bounds.getHeight();
+    		g.drawString( infos, (int) (area.getX() + OFFSET), (int) (area.getY() + height + OFFSET) );
 	    }
 	}
 }
