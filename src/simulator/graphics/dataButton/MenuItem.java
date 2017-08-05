@@ -95,7 +95,9 @@ public class MenuItem extends Button
 	        		    click = click || m.checkClick( mouseX, mouseY );
 	        		}
 	            	
-	            	return click;
+	            	if(click) {
+	            		return true;
+	            	}
 	            }
 			}
 		}
