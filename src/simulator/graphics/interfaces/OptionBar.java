@@ -111,8 +111,16 @@ public class OptionBar implements AnimationInterface
     	index = -1;
     }
     
-    public boolean checkClick( Event event ) {
-    	
+    public boolean checkClick( final Event event, final NetworkDisplay nd ) throws SlickException {
+    	// TODO RAGIONARCI SOPRA UN POININO
+    	System.out.println( "CLICCATO" );
+    	for (int i = 0; i < items.size(); i++) {
+    		if (items.get( i ).checkClick( mouseX, mouseY, mouseDown, leftMouse, event, nd )) {
+    			index = i;
+    			event.setConsumed( true );
+    			return true;
+    		}
+    	}
     	
     	return false;
     }

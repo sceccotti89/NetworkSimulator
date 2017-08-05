@@ -12,7 +12,7 @@ public interface AnimationInterface
 
 	public void resetIndex();
     
-    public boolean checkClick( Event event );
+    public boolean checkClick( Event event, final NetworkDisplay nd )  throws SlickException;
 
     public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd ) throws SlickException;
 }

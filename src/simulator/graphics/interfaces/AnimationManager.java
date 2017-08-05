@@ -87,7 +87,7 @@ public class AnimationManager implements AnimationInterface
     	index = -1;
     }
     
-    public boolean checkClick( Event event ) {
+    public boolean checkClick( final Event event, final NetworkDisplay nd ) {
     	if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
 	    	if (index == -1) {
 	    		for (ImageButton button : buttons) {

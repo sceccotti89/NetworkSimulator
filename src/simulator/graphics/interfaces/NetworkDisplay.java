@@ -172,7 +172,6 @@ public class NetworkDisplay implements AnimationInterface
     
     public void moveNode() {
     	moving = !moving;
-    	System.out.println( "INDEXELE = " + indexElement );
     	
     	for (Node node: nodes) {
     		node.setSelectable();
@@ -360,7 +359,7 @@ public class NetworkDisplay implements AnimationInterface
     	indexElement = -1;
     }
     
-    public boolean checkClick( Event event ) {
+    public boolean checkClick( final Event event, final NetworkDisplay nd )  throws SlickException {
     	// controllare se un nodo è stato colpito
         if (indexElement == -1) {
         	for (int i = 0; i < nodes.size(); i++) {

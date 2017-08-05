@@ -62,8 +62,49 @@ public class MenuItem extends Button
 		return button.getMaxY();
 	}
 	
+	public boolean checkClick( final int mouseX, final int mouseY, final boolean mouseDown, final boolean leftMouse, final Event event, final NetworkDisplay nd ) throws SlickException {
+		// TODO COMPLETARE
+		if (event.isMouseButtonDown()) {
+			if (leftMouse && mouseDown) {
+				if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
+		            button.setPressed( true );
+		            event.setConsumed( true );
+		            return true;
+		        }
+			} else if (!leftMouse && !mouseDown) {
+				if (button.isPressed()) {
+					if (button.checkClick( mouseX, mouseY )) {
+						event.setConsumed( true );
+						button.setPressed( false );
+						return true;
+					}
+				}
+			}
+			
+			for (int i = 0; i < operations.size(); i++) {
+	            Operation op = operations.get( i );
+	            if (op.checkContains( mouseX, mouseY )) {
+	                index = -1;
+	                for (Menu m: menu) {
+                        m.resetIndex();
+                    }
+	                return true;
+	            } else {
+	            	boolean click = false;
+	            	for (Menu m: menu) {
+	        		    click = click || m.checkClick( mouseX, mouseY );
+	        		}
+	            	
+	            	return click;
+	            }
+			}
+		}
+		
+		return false;
+	}
+	
 	public void update( final int mouseX, final int mouseY, final boolean leftMouse, final Event event, final boolean mouseDown, final NetworkDisplay nd ) throws SlickException {
-		if (leftMouse && mouseDown) {
+		/*if (leftMouse && mouseDown) {
 			if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
 	            button.setPressed( true );
 	            event.setConsumed( true );
@@ -76,7 +117,7 @@ public class MenuItem extends Button
 					button.setPressed( false );
 				}
 			}
-		}
+		}*/
 		
 		if (!button.isPressed()) {
 		    return;

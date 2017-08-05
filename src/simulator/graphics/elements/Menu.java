@@ -103,6 +103,21 @@ public class Menu
 		return false;
 	}
 	
+	public boolean checkClick( final int mouseX, final int mouseY ) {
+		for (Operation op: ops) {
+			if (op.checkContains( mouseX, mouseY )) {
+				return true;
+			}
+		}
+		
+		boolean click = false;
+		for (Menu m: menu) {
+			click = click || m.checkClick( mouseX, mouseY );
+		}
+		
+		return click;
+	}
+	
 	public void update( final int mouseX, final int mouseY, final boolean leftMouse, final NetworkDisplay nd ) throws SlickException {
 	    boolean find = false;
         for (int i = 0; i < ops.size(); i++) {

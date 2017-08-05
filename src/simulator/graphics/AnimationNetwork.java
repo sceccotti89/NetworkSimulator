@@ -255,10 +255,12 @@ public class AnimationNetwork extends AppGameContainer
         	}
         	
         	if (!mouseEvent && evaluateEventMouse( gc.getInput() )) {
+        		System.out.println( "EVENTO NUOVO" );
                 event.setInput( gc.getInput() );
             	event.setConsumed( false );
         		mouseEvent = true;
-        	} else if (mouseEvent && !evaluateEventMouse( gc.getInput() )) {
+        	} else if ((mouseEvent && !evaluateEventMouse( gc.getInput() ))) {
+        		System.out.println( "EVENTO CONSUMATO" );
         		mouseEvent = false;
             	event.setConsumed( true );
             	for (AnimationInterface obj: interfaces) {
@@ -282,7 +284,8 @@ public class AnimationNetwork extends AppGameContainer
         	if (mouseEvent) {
 	        	for (int i = 0; i < interfaces.size(); i++) {
 	        		AnimationInterface obj = interfaces.get( i );
-	        		if (obj.checkClick( event )) {
+	        		if (obj.checkClick( event, nd )) {
+	        			System.out.println( "CONSUMED = " + event.isConsumed() );
 	        			if (i > 0) {
 	        				interfaces.remove( obj );
 	        				interfaces.add( i, obj );

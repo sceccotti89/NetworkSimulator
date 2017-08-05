@@ -112,10 +112,6 @@ public class Operation
 		}
 	}
 	
-	public void update() {
-		
-	}
-	
 	public void render( Graphics g ) {
 		g.setColor( Color.white );
 		g.fill( area );
