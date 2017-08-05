@@ -162,7 +162,7 @@ public class Packet implements Comparable<Packet>
     	if (measure.equals( "TIME" )) {
     		time = time / limit;
     	} else {
-    		return time + "탎";
+    		return time + "us";
     	}
     	
     	long h = time/3600, m = (time - h*3600)/60, s = time - h*3600 - m*60,
@@ -190,11 +190,11 @@ public class Packet implements Comparable<Packet>
     	}
     	
     	if (ns < 10) {
-			info = info + "00" + ns + "탎";
+			info = info + "00" + ns + "us";
     	} else if (ns < 100) {
-    		info = info + "0" + ns + "탎";
+    		info = info + "0" + ns + "us";
     	} else {
-    		info = info + ns + "탎";
+    		info = info + ns + "us";
     	}
     	
     	return info;

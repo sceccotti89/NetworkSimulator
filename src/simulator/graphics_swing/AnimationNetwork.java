@@ -50,6 +50,10 @@ public class AnimationNetwork
     
     public static long timeSimulation = 0;
 	private final int limit = 1000000;
+	
+	public static int fps = 30;
+	
+	
     
     public AnimationNetwork( final int width, final int height, final String title )
     {
@@ -273,7 +277,6 @@ public class AnimationNetwork
         ActionListener listener = new ActionListener() {
             @Override
             public void actionPerformed( final ActionEvent e ) {
-                nd.update( FPS );
                 tm.update();
                 nd.repaint();
             }
@@ -289,6 +292,7 @@ public class AnimationNetwork
      * @param listener    the associated event listener
     */
     public void setTimer( final int FPS, final ActionListener listener ) {
+        fps = FPS;
         timer = new Timer( 1000 / FPS, listener );
     }
     

@@ -5,10 +5,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.List;
-
-import simulator.topology.NetworkLink;
 
 public class Node
 {
@@ -21,8 +17,7 @@ public class Node
     final private long delay;
     final private String name;
     
-    private List<Link> links;
-	private boolean removable;
+    
     
     public Node( final double x, final double y, final long nodeID, final String name, final long delay, final Color color )
     {
@@ -33,8 +28,6 @@ public class Node
         this.name = name;
         
         node = new Rectangle( (int) x, (int) y, ray * 2, ray * 2 );
-        
-        links = new ArrayList<>();
     }
     
     public long getID() {
@@ -55,10 +48,6 @@ public class Node
     
     public Rectangle getArea() {
         return node;
-    }
-    
-    public int numberLinks() {
-        return links.size();
     }
     
     public float calculateAngle( final Node dest ) {
@@ -92,12 +81,6 @@ public class Node
         return 0;
     }
     
-    public void addLink( final Node dest, final double bandwidth, final long delay, final int width, final int height, final String type )
-    {
-        float angle = calculateAngle( getCenterX(), getCenterY(), dest.getCenterX(), dest.getCenterY() );
-        links.add( new Link( this, dest, bandwidth, delay, angle, width, height, type ) );
-    }
-    
     public float getRay() {
         return ray;
     }
@@ -110,55 +93,12 @@ public class Node
         return name;
     }
     
-    public void setLinkPosition( Link link, Node source ) {
-    	for(Link linked: links) {
-    		if (linked.getDestNode() == source) {
-    			float angle = calculateAngle( node.getCenterX(), node.getCenterY(), linked.getDestNode().getCenterX(), linked.getDestNode().getCenterY() );
-        		linked.setPosition( this, angle );
-    		}
-    	}
-    }
-    
     public boolean checkCollision( final int mouseX, final int mouseY ) {
     	return node.contains( mouseX, mouseY );
     }
     
-    public boolean checkLinks( final Node source ) {
-        for (Link link: links) {
-            if (link.getDestNode().equals( source )) {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    public void setLinkAvailable() {
-        for (Link link: links) {
-            link.setAvailable();
-        }
-    }
-    
-    public void removeLink( Node node ) {
-    	if (node != null) {
-	    	for (Link link: links) {
-	            if (link.getDestNode().equals( node )) {
-	            	links.remove( link );
-	            	return;
-	            }
-	        }
-    	} else {
-    		links.clear();
-    	}
-    }
-    
-    public void setRemovable() {
-    	removable = !removable;
-    }
-    
     public Node clone( final Node dest, final int width, final int height ) {
     	Node tmp = new Node( node.getCenterX(), node.getCenterY(), nodeID, name, delay, color );
-		tmp.addLink( dest, 0, 0, width, height, NetworkLink.BIDIRECTIONAL );
 		return tmp;
     }
     
