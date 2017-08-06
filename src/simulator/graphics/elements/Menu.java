@@ -103,16 +103,27 @@ public class Menu
 		return false;
 	}
 	
-	public boolean checkClick( final int mouseX, final int mouseY ) {
+	public boolean checkClick( final int mouseX, final int mouseY, final Event event, final NetworkDisplay nd ) throws SlickException {
 		for (Operation op: ops) {
 			if (op.checkContains( mouseX, mouseY )) {
+				System.out.println( "ESECUZIONE OPERAZIONE" );
+				executeOperation( mouseX, mouseY, nd );
+				event.setConsumed( true );
 				return true;
 			}
 		}
 		
 		boolean click = false;
 		for (Menu m: menu) {
-			click = click || m.checkClick( mouseX, mouseY );
+			click = click || m.checkClick( mouseX, mouseY, event, nd );
+		}
+		
+		if (click) {
+			event.setConsumed( true );
+			
+			for (Menu m: menu) {
+				m.resetIndex();
+			}
 		}
 		
 		return click;

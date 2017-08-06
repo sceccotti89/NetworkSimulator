@@ -36,7 +36,7 @@ public class AnimationManager implements AnimationInterface
     
     private final String START = "Start", STOP = "Stop", PAUSE = "Pause", PLUS = "Plus", MINUS = "Minus";
     
-    private boolean leftMouse, mouseDown;
+    private boolean leftMouse;
     
     private String frameLenght = "" + frames;
     
@@ -122,18 +122,7 @@ public class AnimationManager implements AnimationInterface
             }
         }
         
-        if (leftMouse /*&& !mouseDown*/) {
-            mouseDown = true;
-            
-            /*for (ImageButton button : buttons) {
-                if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
-                    button.setPressed( true );
-                    if (button.getName().equals( PLUS ) || button.getName().equals( MINUS )) {
-                        setFrames( index = button.getIndex(), nd );
-                    }
-                }
-            }*/
-            
+        if (leftMouse) {
             if (index != -1) {
 	            ImageButton button = buttons.get( index );
 	        	System.out.println( "INDEX = " + index );

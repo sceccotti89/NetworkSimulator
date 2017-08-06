@@ -120,9 +120,10 @@ public class OptionBar implements AnimationInterface
     	// CIOE CON IL MOUSE ARRIVO A DETERMINARE L'INDICE DEL RELATIVO OGGETTO CON QUELLA SPECIFICA OPERAZIONE, POI DA LI DETERINARNE IL CLICK E' EASY 
     	
     	
-    	System.out.println( "CLICCATO" );
     	for (int i = 0; i < items.size(); i++) {
+        	System.out.println( "CLICCATO" );
     		if (items.get( i ).checkClick( mouseX, mouseY, mouseDown, leftMouse, event, nd )) {
+    	    	System.out.println( "PREMUTO OGGETTO" );
     			index = i;
     			event.setConsumed( true );
     			return true;

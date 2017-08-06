@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 
 import simulator.graphics.elements.Event;
@@ -64,11 +65,28 @@ public class MenuItem extends Button
 	
 	public boolean checkClick( final int mouseX, final int mouseY, final boolean mouseDown, final boolean leftMouse, final Event event, final NetworkDisplay nd ) throws SlickException {
 		// TODO COMPLETARE
-		if (event.isMouseButtonDown()) {
-			if (leftMouse && mouseDown) {
+		if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
+			if (button.checkClick( mouseX, mouseY )) {
+				if (button.isPressed()) {
+					button.setPressed( false );
+					for (Menu m: menu) {
+                        m.resetIndex();
+                    }
+					index = -1;
+				} else {
+					button.setPressed( true );
+				}
+				
+				event.setConsumed( true );
+				return true;
+			}
+			
+			
+			
+			/*if (leftMouse && mouseDown) {
 				if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
-		            button.setPressed( true );
 		            event.setConsumed( true );
+		            button.setPressed( true );
 		            return true;
 		        }
 			} else if (!leftMouse && !mouseDown) {
@@ -79,16 +97,25 @@ public class MenuItem extends Button
 						return true;
 					}
 				}
-			}
+			}*/
 			
 			if (button.isPressed()) {
 				for (int i = 0; i < operations.size(); i++) {
 		            Operation op = operations.get( i );
 		            if (op.checkContains( mouseX, mouseY )) {
-		                index = -1;
+		            	for (Operation ope: operations) {
+	                		ope.setSelected( false );
+	                	}
+
+	                	event.setConsumed( true );
+	                	op.execute( mouseX, mouseY, nd );
+		            	
 		                for (Menu m: menu) {
 	                        m.resetIndex();
 	                    }
+
+		                index = -1;
+	                	button.setPressed( false );
 		                return true;
 		            } 
 				}
@@ -96,7 +123,7 @@ public class MenuItem extends Button
 	        	boolean click = false;
 	        	
 	    		for (Menu m: menu) {
-	    			click = click || m.checkContains( mouseX, mouseY, leftMouse, nd );
+	    			click = click || m.checkClick( mouseX, mouseY, event, nd );
 	    		}
 	    		
 	    		if (!click) {
@@ -108,8 +135,18 @@ public class MenuItem extends Button
 	                button.setPressed( false );
 	                return false;
 	    		} else {
+	    			System.out.println( "SWITCH ADDING" );
+	    			for (Menu m: menu) {
+	                    m.resetIndex();
+	                }
+	                
+	                index = -1;
+	                button.setPressed( false );
+                	event.setConsumed( true );
 	    			return true;
 	    		}
+			} else {
+				return false;
 			}
         }
 		
@@ -147,7 +184,7 @@ public class MenuItem extends Button
                 }
                 
                 // TODO QUESTA PARTE INSERIRLA IN CHECKCLICK (UN PASSO ALLA VOLTA PERO)
-                if (leftMouse) {
+                /*if (leftMouse) {
                 	for (Operation ope: operations) {
                 		ope.setSelected( false );
                 	}
@@ -159,7 +196,7 @@ public class MenuItem extends Button
                 	button.setPressed( false );
                 	
                 	return;
-                }
+                }*/
                 
                 index = i;
                 find = true;

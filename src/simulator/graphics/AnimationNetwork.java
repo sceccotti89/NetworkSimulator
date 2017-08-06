@@ -207,6 +207,8 @@ public class AnimationNetwork extends AppGameContainer
         private int height;
         
         private final List<AnimationInterface> interfaces;
+    	
+    	private Input lastInput = null;
         
         public Animator( final int width, final int height, final String title )
         {
@@ -254,38 +256,35 @@ public class AnimationNetwork extends AppGameContainer
         		event.setInput( gc.getInput() );
         	}
         	
-        	if (!mouseEvent && evaluateEventMouse( gc.getInput() )) {
-        		System.out.println( "EVENTO NUOVO" );
-                event.setInput( gc.getInput() );
-            	event.setConsumed( false );
-        		mouseEvent = true;
-        	} else if ((mouseEvent && !evaluateEventMouse( gc.getInput() ))) {
-        		System.out.println( "EVENTO CONSUMATO" );
-        		mouseEvent = false;
-            	event.setConsumed( true );
-            	for (AnimationInterface obj: interfaces) {
-            		obj.resetIndex();
-            	}
+        	if (!mouseEvent && !evaluateEventMouse( gc.getInput() )) {
+        		lastInput = null;
         	}
         	
-        	// controllo dei click
-        	/*for (AnimationInterface obj: interfaces) {
-        		if (mouseEvent) {
-	        		if (!event.isConsumed()) {
-	            		if (obj.checkClick( event )) {
-	            			mouseEvent = false;
-	            			event.setConsumed( true );
-	            		}
-	            	}
+        	// TODO RAGIONARE SUI CLICK (DEVE VENIRMI PERFETTO)
+        	if (!mouseEvent && evaluateEventMouse( gc.getInput() ) && gc.getInput() != lastInput) {
+        		System.out.println( "EVENTO NUOVO" );
+        		mouseEvent = true;
+        		event.setInput( gc.getInput() );
+        		event.setConsumed( false );
+        		lastInput = gc.getInput();
+        	} else if (mouseEvent) {
+        		if (!evaluateEventMouse( gc.getInput() )) {
+        			lastInput = null;
+        			mouseEvent = false;
+        		} else if (event.isConsumed()) {
+        			mouseEvent = false;
         		}
-        	}*/
+        		
+        		System.out.println( "EVENTO CONSUMATO" );
+        		System.out.println( "MEVENT = " + mouseEvent );
+        	}
         	
         	// checkClick
         	if (mouseEvent) {
 	        	for (int i = 0; i < interfaces.size(); i++) {
 	        		AnimationInterface obj = interfaces.get( i );
 	        		if (obj.checkClick( event, nd )) {
-	        			System.out.println( "CONSUMED = " + event.isConsumed() );
+	        			System.out.println( "CONSUMED = " + event.isConsumed() + " INDEX = " + i );
 	        			if (i > 0) {
 	        				interfaces.remove( obj );
 	        				interfaces.add( i, obj );
