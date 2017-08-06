@@ -100,6 +100,10 @@ public class MenuItem extends Button
 	    		}
 	    		
 	    		if (!click) {
+	    			for (Menu m: menu) {
+	                    m.resetIndex();
+	                }
+	                
 	                index = -1;
 	                button.setPressed( false );
 	                return false;
@@ -166,15 +170,6 @@ public class MenuItem extends Button
     		for (Menu m: menu) {
     		    find = find || m.checkContains( mouseX, mouseY, leftMouse, nd );
     		}
-		}
-		
-		if (!find && leftMouse) {
-            for (Menu m: menu) {
-                m.resetIndex();
-            }
-            
-            index = -1;
-            button.setPressed( false );
 		}
 		
 		if (index != -1) {
