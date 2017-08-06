@@ -81,26 +81,33 @@ public class MenuItem extends Button
 				}
 			}
 			
-			for (int i = 0; i < operations.size(); i++) {
-	            Operation op = operations.get( i );
-	            if (op.checkContains( mouseX, mouseY )) {
+			if (button.isPressed()) {
+				for (int i = 0; i < operations.size(); i++) {
+		            Operation op = operations.get( i );
+		            if (op.checkContains( mouseX, mouseY )) {
+		                index = -1;
+		                for (Menu m: menu) {
+	                        m.resetIndex();
+	                    }
+		                return true;
+		            } 
+				}
+			
+	        	boolean click = false;
+	        	
+	    		for (Menu m: menu) {
+	    			click = click || m.checkContains( mouseX, mouseY, leftMouse, nd );
+	    		}
+	    		
+	    		if (!click) {
 	                index = -1;
-	                for (Menu m: menu) {
-                        m.resetIndex();
-                    }
-	                return true;
-	            } else {
-	            	boolean click = false;
-	            	for (Menu m: menu) {
-	        		    click = click || m.checkClick( mouseX, mouseY );
-	        		}
-	            	
-	            	if(click) {
-	            		return true;
-	            	}
-	            }
+	                button.setPressed( false );
+	                return false;
+	    		} else {
+	    			return true;
+	    		}
 			}
-		}
+        }
 		
 		return false;
 	}
@@ -135,6 +142,7 @@ public class MenuItem extends Button
                     }
                 }
                 
+                // TODO QUESTA PARTE INSERIRLA IN CHECKCLICK (UN PASSO ALLA VOLTA PERO)
                 if (leftMouse) {
                 	for (Operation ope: operations) {
                 		ope.setSelected( false );
