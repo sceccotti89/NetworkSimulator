@@ -28,6 +28,7 @@ import simulator.graphics_swing.elements.Link;
 import simulator.graphics_swing.elements.Node;
 import simulator.graphics_swing.elements.Packet;
 import simulator.graphics_swing.interfaces.AnimationManager;
+import simulator.graphics_swing.interfaces.MenuAnimationBar;
 import simulator.graphics_swing.interfaces.NetworkDisplay;
 import simulator.graphics_swing.interfaces.TimeAnimation;
 import simulator.topology.NetworkLink;
@@ -76,6 +77,9 @@ public class AnimationNetwork
         
         frame = new JFrame( title );
         frame.setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
+        
+        MenuAnimationBar menuBar = new MenuAnimationBar();
+        frame.setJMenuBar( menuBar );
         
         frame.setLocationRelativeTo( null );
         frame.setBounds( x, y, width, height );

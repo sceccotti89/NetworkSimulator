@@ -1,5 +1,5 @@
 
-package simulator.graphics.plotter;
+package simulator.graphics_swing.interfaces;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,12 +8,12 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
-public class MenuBar extends JMenuBar implements ActionListener
+public class MenuAnimationBar extends JMenuBar implements ActionListener
 {
     /* serial ID */
     private static final long serialVersionUID = 8213088039082560260L;
 
-    public MenuBar()
+    public MenuAnimationBar()
     {
         JMenu file = new JMenu( "File" );
         JMenuItem new_project = new JMenuItem( "New Project" );
