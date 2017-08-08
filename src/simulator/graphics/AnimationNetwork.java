@@ -287,7 +287,7 @@ public class AnimationNetwork extends AppGameContainer
 	        			System.out.println( "CONSUMED = " + event.isConsumed() + " INDEX = " + i );
 	        			if (i > 0) {
 	        				interfaces.remove( obj );
-	        				interfaces.add( i, obj );
+	        				interfaces.add( 0, obj );
 	        			}
 	        			
 	        			break;
