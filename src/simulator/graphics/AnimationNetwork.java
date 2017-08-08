@@ -260,7 +260,6 @@ public class AnimationNetwork extends AppGameContainer
         		lastInput = null;
         	}
         	
-        	// TODO RAGIONARE SUI CLICK (DEVE VENIRMI PERFETTO)
         	if (!mouseEvent && evaluateEventMouse( gc.getInput() ) && gc.getInput() != lastInput) {
         		System.out.println( "EVENTO NUOVO" );
         		mouseEvent = true;
