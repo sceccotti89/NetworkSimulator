@@ -337,9 +337,6 @@ public class NetworkDisplay implements AnimationInterface
             timer = timer + AnimationManager.frames;
         }
         
-        // Reset the visibility at the very beginning.
-        info.setVisible( false );
-        
         if (phaseOneNewElement || phaseTwoNewElement) {
             manageAddElement( event );
         }

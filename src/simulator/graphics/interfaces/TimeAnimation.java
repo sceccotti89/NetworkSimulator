@@ -243,6 +243,9 @@ public class TimeAnimation implements AnimationInterface
         
         timer = nd.getTimeSimulation();
 
+        // Reset the visibility at the very beginning.
+        NetworkDisplay.info.setVisible( false );
+
         if (index != -1 || timingHit) {
 	        if (arrowHit) {
 	        	if (!event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
@@ -295,9 +298,7 @@ public class TimeAnimation implements AnimationInterface
 	        }
         }
         
-        // TODO DOPO IL PRIMO CLICK SULLA BARRA LA FINESTRA DEL TIMING NON COMPARE PIU...PERCHE???
         if (timing.intersects( mouse ) || timingHit) {
-        	System.out.println( "BARRA" );
         	String info = setTime( getTime( mouseX ), gc );
         	
             float fontW = g.getFont().getWidth( info );
