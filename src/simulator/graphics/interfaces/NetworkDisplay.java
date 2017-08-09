@@ -91,11 +91,11 @@ public class NetworkDisplay implements AnimationInterface
             phaseOneNewElement = true;
             addingNode = true;
             if (type.equals( CLIENT )) {
-                tmpNode = new Node( mouseX, mouseY, 10, type, 0, Color.yellow );
+                tmpNode = new Node( mouseX, mouseY, 10, type, 0, Color.yellow, nodes.size() );
             } else if (type.equals( SERVER )) {
-                tmpNode = new Node( mouseX, mouseY, 10, type, 0, Color.black );
+                tmpNode = new Node( mouseX, mouseY, 10, type, 0, Color.black, nodes.size() );
             } else if (type.equals( SWITCH )) {
-                tmpNode = new Node( mouseX, mouseY, 10, type, 0, Color.blue );
+                tmpNode = new Node( mouseX, mouseY, 10, type, 0, Color.blue, nodes.size() );
             }
             
             float x = Math.max( Math.min( mouseX - tmpNode.getRay(), width - tmpNode.getRay()*2 ), 0 );
@@ -293,15 +293,15 @@ public class NetworkDisplay implements AnimationInterface
     
     public boolean checkClick( final Event event, final NetworkDisplay nd )  throws SlickException {
         if (indexElement == -1) {
-        	for (int i = 0; i < nodes.size(); i++) {
-        		if (nodes.get( i ).checkCollision( mouseX, mouseY )) {
+        	for (Node node: nodes) {
+        		if (node.checkCollision( mouseX, mouseY )) {
         			if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
                 		if (moving || phaseOneNewElement || phaseTwoNewElement) {
-                			indexElement = i;
+                			indexElement = node.getIndex();
                 		}
                 	} else if (event.getInput().isMouseButtonDown( Input.MOUSE_RIGHT_BUTTON )) {
                 		if (removing) {
-                			indexElement = i;
+                			indexElement = node.getIndex();
                 		}
                 	}
                 	

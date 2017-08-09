@@ -34,8 +34,10 @@ public class Node
 	
 	private int angle = 0;
 	private boolean removable;
+	
+	private int index;
     
-    public Node( final float x, final float y, final long nodeID, final String name, final long delay, final Color color )
+    public Node( final float x, final float y, final long nodeID, final String name, final long delay, final Color color, final int index )
     {
         this.nodeID = nodeID;
         this.color = color;
@@ -46,6 +48,8 @@ public class Node
         node = new Circle( x, y, ray );
         
         links = new ArrayList<>();
+        
+        this.index = index;
     }
     
     public void Init() throws SlickException {
@@ -57,6 +61,10 @@ public class Node
         
         greenCircle = new Image( "./data/Image/GreenCircle.png" );
         greenCircle.setCenterOfRotation( node.getCenterX(), node.getCenterY() );
+    }
+    
+    public int getIndex() {
+    	return index;
     }
     
     public long getNodeID() {
@@ -209,7 +217,7 @@ public class Node
     
     public Node clone( final Node dest, final int width, final int height ) {
     	try {
-			Node tmp = new Node( node.getCenterX(), node.getCenterY(), nodeID, name, delay, color );
+			Node tmp = new Node( node.getCenterX(), node.getCenterY(), nodeID, name, delay, color, index );
 			tmp.addLink( dest, 0, 0, width, height, NetworkLink.BIDIRECTIONAL );
 			tmp.Init();
 			return tmp;

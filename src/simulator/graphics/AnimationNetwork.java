@@ -123,6 +123,7 @@ public class AnimationNetwork extends AppGameContainer
         // Get the list of nodes.
         JSONArray nodes = settings.getJSONArray( "nodes" );
         int length = nodes.length();
+        int index = 0;
         for(int i = 0; i < length; i++) {
             JSONObject node = nodes.getJSONObject( i );
             long id     = node.getLong( NetworkNode.ID );
@@ -132,7 +133,7 @@ public class AnimationNetwork extends AppGameContainer
             int yPos    = (node.has( NetworkNode.Y_POS )) ? node.getInt( NetworkNode.Y_POS ) : 0;
             Color color = Color.decode( node.getString( "color" ) );
             
-            addNode( xPos, yPos, id, name, delay, color );
+            addNode( xPos, yPos, id, name, delay, color, index++ );
         }
         
         // Get the list of links.
@@ -158,8 +159,8 @@ public class AnimationNetwork extends AppGameContainer
         br.close();
     }
     
-    public void addNode( final int x, final int y, final long nodeID, final String name, final long delay, final Color color ) throws SlickException {
-        Node node = new Node( x, y, nodeID, name, delay, color );
+    public void addNode( final int x, final int y, final long nodeID, final String name, final long delay, final Color color, final int index ) throws SlickException {
+        Node node = new Node( x, y, nodeID, name, delay, color, index );
         nodes.add( node );
     }
     
