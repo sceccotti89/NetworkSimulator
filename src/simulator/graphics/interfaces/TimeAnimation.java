@@ -83,8 +83,9 @@ public class TimeAnimation implements AnimationInterface
         
         final float widthT = width/53, heightT = height/40;
         startY = timing.getMaxY() + (height - timing.getMaxY())*7/8 - heightT/2;
-        timeUs = new CheckBox( width/2 - widthT/2 - width/16, startY - heightT/2, widthT, heightT, "us" );
-        timeS  = new CheckBox( width/2 - widthT/2 + width/16, startY - heightT/2 , widthT, heightT, "h:m:s" );
+        int index = 0;
+        timeUs = new CheckBox( width/2 - widthT/2 - width/16, startY - heightT/2, widthT, heightT, "us", index++ );
+        timeS  = new CheckBox( width/2 - widthT/2 + width/16, startY - heightT/2 , widthT, heightT, "h:m:s", index++ );
         
         checkBoxes = new ArrayList<CheckBox>();
         checkBoxes.add( timeUs );
@@ -210,10 +211,11 @@ public class TimeAnimation implements AnimationInterface
     public boolean checkClick( final Event event, final NetworkDisplay nd ) {
     	if (index == -1 && !timingHit) {
     		if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
-    			for (int i = 0; i < checkBoxes.size(); i++) {
-    				if (checkBoxes.get( i ).checkClick( mouseX, mouseY )) {
-    					index = i;
+    			for (CheckBox box: checkBoxes) {
+    				if (box.checkClick( mouseX, mouseY )) {
+    					index = box.getIndex();
     					checkBoxHit = true;
+    	        		event.setConsumed( true );
     					return true;
     				}
     			}
@@ -280,7 +282,6 @@ public class TimeAnimation implements AnimationInterface
         		
         		index = -1;
         		checkBoxHit = false;
-        		event.setConsumed( true );
         	}
         	
         	if (timingHit) {

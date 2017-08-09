@@ -107,11 +107,6 @@ public class OptionBar implements AnimationInterface
     public void resetIndex() {}
     
     public boolean checkClick( final Event event, final NetworkDisplay nd ) throws SlickException {
-    	// TODO RIPENSARE A TUTTO IL SISTEMA DELLE OPERAZIONI, SCRIVENDOLO PIU INTUITIVO, COSI E' ASSURDO
-    	// INIZIO SCINDENDO I CLICK DALLA PRESENZA SOPRA DEL MOUSE, USANDO INDEX COME VARIABILE DI RIFERIMENTO
-    	// CIOE CON IL MOUSE ARRIVO A DETERMINARE L'INDICE DEL RELATIVO OGGETTO CON QUELLA SPECIFICA OPERAZIONE, POI DA LI DETERINARNE IL CLICK E' EASY 
-    	
-    	
     	for (int i = 0; i < items.size(); i++) {
         	System.out.println( "CLICCATO" );
     		if (items.get( i ).checkClick( mouseX, mouseY, mouseDown, leftMouse, event, nd )) {
