@@ -187,7 +187,6 @@ public class NetworkDisplay implements AnimationInterface
     }
     
     private void manageRemoveNode( final GameContainer gc ) {
-    	System.out.println( "NODE = " + indexElement );
     	for (Node node: nodes) {
     		node.removeLink( nodes.get( indexElement ) );
     		
@@ -200,9 +199,7 @@ public class NetworkDisplay implements AnimationInterface
 			
 			packetSize = packets.size();
     	}
-		
-		// TODO DA RIVEDERE QUESTA PARTE (PERCHE L'HO RIMESSO A 0?, MI PARE SBAGLIATO)
-		// NON DOVREI AGGIORNARE IL TEMPO MASSIMO DELLA SIMULAZIONE?
+
 		AnimationNetwork.timeSimulation = 0;
 		for (Packet packet : packets) {
 			if (packet.getEndTime() > AnimationNetwork.timeSimulation) {
@@ -298,12 +295,8 @@ public class NetworkDisplay implements AnimationInterface
         if (indexElement == -1) {
         	for (int i = 0; i < nodes.size(); i++) {
         		if (nodes.get( i ).checkCollision( mouseX, mouseY )) {
-        			if (event.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON )) {
-        				if (moving) {
-        					indexElement = i;
-        				}
-        			} else if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
-                		if (phaseOneNewElement || phaseTwoNewElement) {
+        			if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
+                		if (moving || phaseOneNewElement || phaseTwoNewElement) {
                 			indexElement = i;
                 		}
                 	} else if (event.getInput().isMouseButtonDown( Input.MOUSE_RIGHT_BUTTON )) {
