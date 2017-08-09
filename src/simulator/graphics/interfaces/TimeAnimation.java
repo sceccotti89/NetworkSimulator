@@ -212,6 +212,8 @@ public class TimeAnimation implements AnimationInterface
         
         timer = nd.getTimeSimulation();
         
+        // TODO COMPLETARE QUESTA PARTE
+        
         if (arrowHit && index != -1) {
         	ArrowButton arrow = arrows.get( index );
             if (arrow.contains( mouseX, mouseY ) && ++tick >= 50) {

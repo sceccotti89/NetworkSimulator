@@ -37,8 +37,6 @@ public class AnimationManager implements AnimationInterface
     
     private final String START = "Start", STOP = "Stop", PAUSE = "Pause", PLUS = "Plus", MINUS = "Minus";
     
-    private boolean leftMouse;
-    
     private String frameLenght = "" + frames;
     
     public AnimationManager( final GameContainer gc, final float startY, final float widthM, final float heightM ) throws SlickException
@@ -123,8 +121,6 @@ public class AnimationManager implements AnimationInterface
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();
         
-        leftMouse = event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
-        
         if (index >= 0 && (buttons.get( index ).getName().equals( PLUS ) || buttons.get( index ).getName().equals( MINUS ))) {
         	if (!event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
         		resetAll();
@@ -142,35 +138,27 @@ public class AnimationManager implements AnimationInterface
             }
         }
         
-        if (leftMouse) {
-            if (index != -1) {
-	            ImageButton button = buttons.get( index );
-	            // TODO PLUS E MINUS DA RENDERE ANCHE SCRIVIBILE
-	            /*if (button.getName().equals( PLUS )) {
-	                button.setPressed( false );
-	            } else if (button.getName().equals( MINUS )) {
-	                button.setPressed( false );
-	            } else*/ 
-	        	if (button.getName().equals( START )) {
-	                nd.startAnimation();
-	                button.setPressed( true );
-	                resetButtons( button );
-		            index = -1;
-	            } else if (button.getName().equals( PAUSE )) {
-	            	if (nd.isInExecution()) {
-	            		nd.pauseAnimation();
-	                    button.setPressed( true );
-	                    resetButtons( button );
-	    	            index = -1;
-	            	} else {
-	            		button.setPressed( false );
-	            	}
-	            } else if (button.getName().equals( STOP )) {
-	                nd.stopAnimation();
-	                resetButtons( null );
-	                button.setPressed( false );
-		            index = -1;
-	            }
+        if (index != -1) {
+            ImageButton button = buttons.get( index );
+        	if (button.getName().equals( START )) {
+                nd.startAnimation();
+                button.setPressed( true );
+                resetButtons( button );
+	            index = -1;
+            } else if (button.getName().equals( PAUSE )) {
+            	if (nd.isInExecution()) {
+            		nd.pauseAnimation();
+                    button.setPressed( true );
+                    resetButtons( button );
+    	            index = -1;
+            	} else {
+            		button.setPressed( false );
+            	}
+            } else if (button.getName().equals( STOP )) {
+                nd.stopAnimation();
+                resetButtons( null );
+                button.setPressed( false );
+	            index = -1;
             }
         } /*else if (!leftMouse && mouseDown) {
             mouseDown = false;
