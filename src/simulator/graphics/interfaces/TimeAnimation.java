@@ -253,6 +253,7 @@ public class TimeAnimation implements AnimationInterface
         if (index != -1 || timingHit) {
 	        if (arrowHit) {
 	        	if (!event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
+	        		event.setConsumed( true );
 	        		resetAll();
 	        	} else {
 		        	ArrowButton arrow = arrows.get( index );

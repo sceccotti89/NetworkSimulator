@@ -277,32 +277,27 @@ public class NetworkDisplay implements AnimationInterface
         return false;
     }
     
-    public boolean manageMovingNode( final GameContainer gc ) {
+    public void manageMovingNode( final GameContainer gc, final Event event ) {
     	if (tmpNode == null) {
     		if (indexElement != -1) {
     			nodes.get( indexElement ).setMoving( true );
     			tmpNode = nodes.get( indexElement );
-    			return true;
     		}
-    	} else if (tmpNode != null) {
-			tmpNode.setMoving( false );
-			tmpNode = null;
-		}
-    	
-    	return false;
-    }
+    	} else if (!event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
+    		tmpNode.setMoving( false );
+    		tmpNode = null;
+    		indexElement = -1;
+    	}
+	}
     
     public void resetIndex() {
     	indexElement = -1;
     }
     
     public boolean checkClick( final Event event, final NetworkDisplay nd )  throws SlickException {
-    	// controllare se un nodo è stato colpito
         if (indexElement == -1) {
         	for (int i = 0; i < nodes.size(); i++) {
         		if (nodes.get( i ).checkCollision( mouseX, mouseY )) {
-        			// TODO NON SO SE SIA CAMBIATO QUALCOSA METTENDO MOVING A PARTE
-        			// FARE POI DEI TEST PER VEDERE DIFFERENZE
         			if (event.getInput().isMousePressed( Input.MOUSE_LEFT_BUTTON )) {
         				if (moving) {
         					indexElement = i;
@@ -342,7 +337,7 @@ public class NetworkDisplay implements AnimationInterface
         }
         
         if (moving) {
-        	manageMovingNode( gc );
+        	manageMovingNode( gc, event );
         }
         
         if (removing && indexElement != -1) {
