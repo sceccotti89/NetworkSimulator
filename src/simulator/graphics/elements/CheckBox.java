@@ -13,12 +13,19 @@ public class CheckBox
 	
 	private boolean selected = true;
 	
-	public CheckBox( final float x, final float y, final float width, final float height, final String time )
+	private final int index;
+	
+	public CheckBox( final float x, final float y, final float width, final float height, final String time, final int index )
 	{
 		this.time = time;
 		this.width = width;
+		this.index = index;
 		
 		area = new Rectangle( x, y, width, height );
+	}
+	
+	public int getIndex() {
+		return index;
 	}
 	
 	public boolean checkClick( final float mouseX, final float mouseY ) {
