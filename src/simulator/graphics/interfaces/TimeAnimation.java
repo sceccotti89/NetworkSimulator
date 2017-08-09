@@ -253,7 +253,6 @@ public class TimeAnimation implements AnimationInterface
         if (index != -1 || timingHit) {
 	        if (arrowHit) {
 	        	if (!event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
-	        		event.setConsumed( true );
 	        		resetAll();
 	        	} else {
 		        	ArrowButton arrow = arrows.get( index );
@@ -267,11 +266,9 @@ public class TimeAnimation implements AnimationInterface
 	        }
 	        
         	if (checkBoxHit) {
-        		if (index == 0) {
-        			if (timeS.isSelected()) {
-        				timeUs.setSelected();
-        			}
-        		} else if (timeUs.isSelected()) {
+        		if (index == 0 && timeS.isSelected()) {
+    				timeUs.setSelected();
+        		} else if (index == 1 && timeUs.isSelected()) {
             		timeS.setSelected();
         		}
             	
