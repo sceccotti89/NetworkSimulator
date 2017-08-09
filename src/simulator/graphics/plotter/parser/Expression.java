@@ -46,6 +46,7 @@ public class Expression
     {
         public Term( final Token token ) {
             super( token );
+            e1 = this;
         }
     }
 }

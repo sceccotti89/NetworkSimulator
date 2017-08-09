@@ -12,10 +12,10 @@ public class Tokenizer
     /* Table maps used to reserve words for token type. */
     private Map<String, Integer> table;
     
-    public Tokenizer( final String expression ) {
+    public Tokenizer( final String expression )
+    {
         this.expression = expression;
         index = 0;
-        
         init_table();
     }
     
@@ -23,31 +23,45 @@ public class Tokenizer
     {
         table = new HashMap<>( 8 );
         
-        table.put( "log",    Token.T_LOG );
-        table.put( "ln",     Token.T_LN );
-        table.put( "sin",    Token.T_SIN );
-        table.put( "arcsin", Token.T_ARC_SIN );
-        table.put( "cos",    Token.T_COS );
-        table.put( "arccos", Token.T_ARC_COS );
-        table.put( "tan",    Token.T_TAN );
-        table.put( "arctan", Token.T_ARC_TAN );
+        table.put( "sqrt", Token.T_SQRT );
+        table.put( "log",  Token.T_LOG );
+        table.put( "ln",   Token.T_LN );
+        table.put( "sin",  Token.T_SIN );
+        table.put( "asin", Token.T_ARC_SIN );
+        table.put( "cos",  Token.T_COS );
+        table.put( "acos", Token.T_ARC_COS );
+        table.put( "tan",  Token.T_TAN );
+        table.put( "atan", Token.T_ARC_TAN );
     }
     
     public int getIndex() {
         return index;
+    }
+    
+    private char peek() {
+        return expression.charAt( index );
+    }
+    
+    private char next() {
+        return expression.charAt( index++ );
     }
 
     private void consume() {
         index++;
     }
     
-    /**
-     * Ignores tabs and whitespaces.
-    */
-    private void whiteSpaces()
+    private boolean isEoF() {
+        return index == expression.length();
+    }
+    
+    private void rewind( final int length ) {
+        index -= length;
+    }
+    
+    private void skipTabsAndWhiteSpaces()
     {
         while (index < expression.length()) {
-            char c = expression.charAt( index );
+            char c = peek();
             if(c == ' ' || c == '\t'){
                 consume();
             } else {
@@ -56,14 +70,111 @@ public class Tokenizer
         }
     }
     
-    public Token nextToken()
+    /**
+     * Gets the next token produced by the parser.
+     * 
+     * @return the next token if found, null otherwise
+    */
+    private Token getToken() throws RuntimeException
     {
-        whiteSpaces();
+        StringBuilder ide = new StringBuilder( 16 );
+        boolean is_number = true;
+        boolean number_founded = false;
+        boolean point = false;
+        Token token = null;
         
-        if (index == expression.length())
-            return new Token( Token.T_EOF );
+        char c = peek();
+        
+        // check if the first element is a character or a number
+        if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') {
+            ide.append( c );
+            is_number = false;
+        } else {
+            if ((c >= '0' && c <= '9') || c == '.') {
+                if(c == '.') point = true;
+                ide.append( c );
+                number_founded = true;
+            } else {
+                return null;
+            }
+        }
+        
+        consume();
+        
+        while (!isEoF()) {
+            c = peek();
+            
+            // check if it is a character or a number
+            if((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') {
+                if(is_number){
+                    ide.append( c );
+                    throw new RuntimeException( "Error position " + getIndex() + ": syntax error on token \"" + c + "\", delete this token." );
+                } else {
+                    ide.append( c );
+                }
+            } else {
+                if ((c >= '0' && c <= '9') || c == '.') {
+                    ide.append( c );
+                    
+                    // it may be a double or a float
+                    if(c == '.'){
+                        if(!is_number)
+                            throw new RuntimeException( "Error position " + getIndex() + ": syntax error on token \"" + c + "\", delete this token." );
+                        
+                        if(point)
+                            throw new RuntimeException( "Error position " + getIndex() + ": duplication of token \".\"." );
+                        else
+                            point = true;
+                    }
+                    
+                    if(!number_founded)
+                        number_founded = true;
+                } else {
+                    break;
+                }
+            }
+            
+            consume();
+        }
+        
+        if (ide.length() > 0) {
+            if (is_number) {
+                if (!number_founded) {
+                    rewind( 1 );
+                    return null;
+                } else {
+                    token = new Token( Token.T_NUMBER );
+                    token.value = Double.parseDouble( ide.toString() );
+                }
+            } else {
+                // Identifier.
+                token = new Token( Token.T_IDENTIFIER );
+                token.stringValue = ide.toString();
+                if((token.type = table.get( token.stringValue )) != null) {
+                    token.stringValue = null;
+                }
+            }
+            
+            return token;
+        }
         
         return null;
+    }
+    
+    public Token nextToken()
+    {
+        skipTabsAndWhiteSpaces();
+        
+        if (isEoF())
+            return new Token( Token.T_EOF );
+        
+        System.out.println( "CURRENT: " + peek() );
+        
+        Token token = getToken();
+        if (token == null) {
+            token = new Token( next() );
+        }
+        return token;
     }
     
     public static class Token
@@ -76,7 +187,6 @@ public class Tokenizer
             T_MINUS                 = '-', // 45
             
             // Miscellaneous tokens.
-            T_COMMA                 = ',', // 44
             T_OPEN_PARENTHESIS      = '(', // 40
             T_CLOSED_PARENTHESIS    = ')', // 41
             T_IDENTIFIER            =  24,
@@ -92,7 +202,7 @@ public class Tokenizer
             T_TAN                   = 32,
             T_ARC_TAN               = 33,
             T_SQRT                  = 34,
-            T_UPPER                 = '^',
+            T_UPPER                 = '^', // 94
             
             // Exception tokens.
             T_EOF                   = 46,
@@ -128,11 +238,20 @@ public class Tokenizer
                 case( T_MULTIPLY ):           return "*";
                 case( T_PLUS ):               return "+";
                 case( T_MINUS ):              return "-";
+                case( T_UPPER ):              return "^";
                 
                 // Miscellaneous tokens.
-                case( T_COMMA ):              return ",";
                 case( T_OPEN_PARENTHESIS ):   return "(";
                 case( T_CLOSED_PARENTHESIS ): return ")";
+                case( T_SQRT ):               return "sqrt";
+                case( T_LN ):                 return "ln";
+                case( T_LOG ):                return "log";
+                case( T_SIN ):                return "sin";
+                case( T_ARC_SIN ):            return "asin";
+                case( T_COS ):                return "cos";
+                case( T_ARC_COS ):            return "acos";
+                case( T_TAN ):                return "tan";
+                case( T_ARC_TAN ):            return "atan";
                 case( T_IDENTIFIER ):         return "Identifier";
                 
                 // Type tokens.
