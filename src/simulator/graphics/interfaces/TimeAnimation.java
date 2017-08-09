@@ -191,10 +191,14 @@ public class TimeAnimation implements AnimationInterface
     	return info;
     }
     
-    private void resetVariables() {
+    private void resetAll() {
     	checkBoxHit = false;
     	arrowHit = false;
     	timingHit = false;
+    	
+    	for (ArrowButton arrow: arrows) {
+    		arrow.setPressed( false );
+    	}
     	
     	index = -1;
     }
@@ -249,7 +253,7 @@ public class TimeAnimation implements AnimationInterface
         if (index != -1 || timingHit) {
 	        if (arrowHit) {
 	        	if (!event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
-	        		resetVariables();
+	        		resetAll();
 	        	} else {
 		        	ArrowButton arrow = arrows.get( index );
 		        	if (!arrow.isPressed()) {
@@ -291,7 +295,7 @@ public class TimeAnimation implements AnimationInterface
         	
         	if (timingHit) {
         		if (!event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
-            		resetVariables();
+        			resetAll();
         		} else {
         			setTime( nd );
         		}
