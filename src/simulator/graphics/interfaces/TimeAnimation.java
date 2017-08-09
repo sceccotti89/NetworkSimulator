@@ -13,6 +13,7 @@ import org.newdawn.slick.geom.Rectangle;
 
 import simulator.graphics.AnimationNetwork;
 import simulator.graphics.dataButton.ArrowButton;
+import simulator.graphics.dataButton.ImageButton;
 import simulator.graphics.elements.CheckBox;
 import simulator.graphics.elements.Event;
 
@@ -43,7 +44,10 @@ public class TimeAnimation implements AnimationInterface
     private boolean arrowHit = false, timingHit = false;
     
     private final CheckBox timeUs, timeS;
+    private List<CheckBox> checkBoxes; 
+    
 	private boolean leftMouse, mouseDown;
+	private boolean checkBoxHit;
     
     public TimeAnimation( float startY, final float width, final float height ) throws SlickException
     {
@@ -83,6 +87,10 @@ public class TimeAnimation implements AnimationInterface
         startY = timing.getMaxY() + (height - timing.getMaxY())*7/8 - heightT/2;
         timeUs = new CheckBox( width/2 - widthT/2 - width/16, startY - heightT/2, widthT, heightT, "us" );
         timeS  = new CheckBox( width/2 - widthT/2 + width/16, startY - heightT/2 , widthT, heightT, "h:m:s" );
+        
+        checkBoxes = new ArrayList<CheckBox>();
+        checkBoxes.add( timeUs );
+        checkBoxes.add( timeS );
     }
     
     private long roundValue( final double value ) {
@@ -185,14 +193,42 @@ public class TimeAnimation implements AnimationInterface
     	return info;
     }
     
+    private void resetVariables() {
+    	checkBoxHit = false;
+    	arrowHit = false;
+    	timingHit = false;
+    	
+    	index = -1;
+    }
+    
     public void resetIndex() {
     	index = -1;
     }
     
     public boolean checkClick( final Event event, final NetworkDisplay nd ) {
-    	if (index == -1) {
+    	if (index == -1 && !timingHit) {
     		if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
     			// TODO DA COMPLETARE
+    			for (int i = 0; i < checkBoxes.size(); i++) {
+    				if (checkBoxes.get( i ).checkClick( mouseX, mouseY )) {
+    					index = i;
+    					checkBoxHit = true;
+    					return true;
+    				}
+    			}
+    			
+    			for (ArrowButton arrow: arrows) {
+    				if (arrow.contains( mouseX, mouseY )) {
+    					index = arrow.getIndex();
+    					arrowHit = true;
+    					return true;
+    				}
+    			}
+    			
+    			if (timing.contains( mouseX, mouseY )) {
+    				timingHit = true;
+    				return true;
+    			}
     		}
     	}
     	
@@ -211,84 +247,68 @@ public class TimeAnimation implements AnimationInterface
         mouse.setLocation( mouseX, mouseY );
         
         timer = nd.getTimeSimulation();
-        
-        // TODO COMPLETARE QUESTA PARTE
-        
-        if (arrowHit && index != -1) {
-        	ArrowButton arrow = arrows.get( index );
-            if (arrow.contains( mouseX, mouseY ) && ++tick >= 50) {
-            	setCursor( index, nd );
-            }
-        }
-        
-        if (leftMouse && !mouseDown) {
-            mouseDown = true;
-        } else if (!leftMouse && mouseDown) {
-            mouseDown = false;
-           	
-            if (timeUs.checkClick( mouseX, mouseY )) {
-            	event.setConsumed( true );
-            	if (timeS.isSelected()) {
-                	timeUs.setSelected();
-            	}
-            	
-            	if (timeUs.isSelected()) {
-            		moving = 1;
-            	} else {
-            		moving = 1 * limit;
-            	}
-            } else if (timeS.checkClick( mouseX, mouseY )) {
-            	event.setConsumed( true );
-            	if (timeUs.isSelected()) {
-            		timeS.setSelected();
-            	}
 
-            	if (timeUs.isSelected()) {
-            		moving = 1;
-            	} else {
-            		moving = 1 * limit;
-            	}
-            }
-            
-            if (arrowHit && index != -1) {
-            	arrowHit = false;
-        		arrows.get( index ).setPressed( false );
+        if (index != -1 || timingHit) {
+	        if (arrowHit) {
+	        	if (!event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
+	        		resetVariables();
+	        	} else {
+		        	ArrowButton arrow = arrows.get( index );
+		        	if (!arrow.isPressed()) {
+		        		arrow.setPressed( true );
+		        		setCursor( index, nd );
+		        	} else if (++AnimationNetwork.timer >= 50) {
+		        		setCursor( index, nd );
+		            }
+	        	}
+	        }
+	        
+        	if (checkBoxHit) {
+        		if (index == 0) {
+        			if (timeS.isSelected()) {
+                    	timeUs.setSelected();
+                	}
+                	
+                	if (timeUs.isSelected()) {
+                		moving = 1;
+                	} else {
+                		moving = 1 * limit;
+                	}
+        		} else {
+        			if (timeUs.isSelected()) {
+                		timeS.setSelected();
+                	}
+
+                	if (timeUs.isSelected()) {
+                		moving = 1;
+                	} else {
+                		moving = 1 * limit;
+                	}
+        		}
+        		
         		index = -1;
-        		tick = 0;
-        	} else if (timingHit) {
-        		timingHit = false;
-        		setTime( nd );
+        		checkBoxHit = false;
+        		event.setConsumed( true );
         	}
-        } else if (leftMouse) {
-        	if (timingHit) {
-        		setTime( nd );
-        	} 
         	
-        	if (!arrowHit && !timingHit) {
-        		if (timing.intersects( mouse )) {
-        			event.setConsumed( true );
-	    			timingHit = true;
-	        		setTime( nd );
-	    		} else if (nd.isInPause()) {
-	    			for (ArrowButton arrow: arrows) {
-						if (arrow.contains( mouseX, mouseY )) {
-							arrow.setPressed( true );
-							arrowHit = true;
-							index = arrow.getIndex();
-							setCursor( index, nd );
-						}
-	    			}
-				}
-        	}
+        	if (timingHit) {
+        		if (!event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
+            		resetVariables();
+        		} else {
+        			setTime( nd );
+        		}
+	        }
         }
         
         if (timing.intersects( mouse ) || timingHit) {
+        	System.out.println( "BARRA" );
         	String info = setTime( getTime( mouseX ), gc );
         	
             float fontW = g.getFont().getWidth( info );
             float x = Math.max( Math.min( mouseX, timing.getMaxX() ), startTimingX ) - fontW/2;
             x = Math.max( x, 0 ); x = Math.min( x, width - fontW );
             NetworkDisplay.info.setAttributes( g, info, x, timing.getMaxY() + offsetH );
+            NetworkDisplay.info.setVisible( true );
         }
         
         cursor.setX( startTimingX - widthCursor/2 + timing.getWidth() / AnimationNetwork.timeSimulation * timer );
