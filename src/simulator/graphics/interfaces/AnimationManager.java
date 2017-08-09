@@ -132,7 +132,7 @@ public class AnimationManager implements AnimationInterface
             	if (!button.isPressed()) {
             		button.setPressed( true );
                 	setFrames( index = button.getIndex(), nd );
-            	} else if (++AnimationNetwork.timer >= 50) {
+            	} else if (++AnimationNetwork.tick >= 50) {
                     setFrames( index, nd );
                 }
             }

@@ -13,7 +13,6 @@ import org.newdawn.slick.geom.Rectangle;
 
 import simulator.graphics.AnimationNetwork;
 import simulator.graphics.dataButton.ArrowButton;
-import simulator.graphics.dataButton.ImageButton;
 import simulator.graphics.elements.CheckBox;
 import simulator.graphics.elements.Event;
 
@@ -253,7 +252,7 @@ public class TimeAnimation implements AnimationInterface
 		        	if (!arrow.isPressed()) {
 		        		arrow.setPressed( true );
 		        		setCursor( index, nd );
-		        	} else if (++AnimationNetwork.timer >= 50) {
+		        	} else if (++AnimationNetwork.tick >= 50) {
 		        		setCursor( index, nd );
 		            }
 	        	}
