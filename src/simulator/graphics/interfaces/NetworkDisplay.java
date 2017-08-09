@@ -213,35 +213,27 @@ public class NetworkDisplay implements AnimationInterface
 		indexElement = -1;
     }
     
-    private boolean checkMousePosition() {
-        return zone.contains( mouseX , mouseY );
-    }
-    
-    private boolean manageAddElement( final Event event ) {
+    private void manageAddElement( final Event event ) {
         if (phaseOneNewElement) {
-            if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) && !event.isConsumed()) {
-                if (addingNode && checkMousePosition()) {
-                    phaseOneNewElement = false;
+        	if (addingNode) {
+        		if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) && zone.contains( mouseX , mouseY )) {
+        			phaseOneNewElement = false;
                     phaseTwoNewElement = true;
-                } else if (addingPacket) {
-                	if (indexElement != -1) {
-	                	source = nodes.get( indexElement );
-	                	source.setLinkAvailable();
-	                    phaseOneNewElement = false;
-	                    phaseTwoNewElement = true;
-	                    
-	                    return true;
-                	}
-                }
-            } else if (addingNode) {
-                float x = Math.max( Math.min( mouseX - tmpNode.getRay(), width - tmpNode.getRay()*2 ), 0 );
+        		}
+        		
+        		float x = Math.max( Math.min( mouseX - tmpNode.getRay(), width - tmpNode.getRay()*2 ), 0 );
                 float y = Math.max( Math.min( mouseY - tmpNode.getRay(), zone.getMaxY() - tmpNode.getRay()*2 ), zone.getY() );
                 
                 tmpNode.getArea().setLocation( x, y );
+        	} else if (addingPacket && indexElement != -1) {
+            	source = nodes.get( indexElement );
+            	source.setLinkAvailable();
+                phaseOneNewElement = false;
+                phaseTwoNewElement = true;
             }
         } else if (phaseTwoNewElement) {
             for (Node node: nodes) {
-                if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) && !event.isConsumed() && node.checkCollision( mouseX, mouseY )) {
+                if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) && node.checkCollision( mouseX, mouseY )) {
                     if (addingNode) {
                         nodes.add( tmpNode.clone( node, width, height ) );
                         node.addLink( nodes.get( nodes.size() - 1 ), 0, 0, width, height, NetworkLink.BIDIRECTIONAL );
@@ -250,8 +242,9 @@ public class NetworkDisplay implements AnimationInterface
                         tmpNode = null;
                         
                         addingNode = false;
+                        indexElement = -1;
                         
-                        return true;
+                        return;
                     } else if (addingPacket && !node.equals( source ) && node.checkLinks( source )) {
                         packets.add( new Packet( source, node, source.getColor(), 0, 100, width, height, 0 ) );
                         phaseTwoNewElement = false;
@@ -264,14 +257,13 @@ public class NetworkDisplay implements AnimationInterface
                         System.out.println( "PACKETS = " + packets.size() );
                         
                         addingPacket = false;
+                        indexElement = -1;
                         
-                        return true;
+                        return;
                     }
                 }
             }
         }
-        
-        return false;
     }
     
     public void manageMovingNode( final GameContainer gc, final Event event ) {
