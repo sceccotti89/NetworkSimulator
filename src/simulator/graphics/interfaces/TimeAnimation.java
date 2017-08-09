@@ -269,25 +269,17 @@ public class TimeAnimation implements AnimationInterface
         	if (checkBoxHit) {
         		if (index == 0) {
         			if (timeS.isSelected()) {
-                    	timeUs.setSelected();
-                	}
-                	
-                	if (timeUs.isSelected()) {
-                		moving = 1;
-                	} else {
-                		moving = 1 * limit;
-                	}
-        		} else {
-        			if (timeUs.isSelected()) {
-                		timeS.setSelected();
-                	}
-
-                	if (timeUs.isSelected()) {
-                		moving = 1;
-                	} else {
-                		moving = 1 * limit;
-                	}
+        				timeUs.setSelected();
+        			}
+        		} else if (timeUs.isSelected()) {
+            		timeS.setSelected();
         		}
+            	
+            	if (timeUs.isSelected()) {
+            		moving = 1;
+            	} else {
+            		moving = 1 * limit;
+            	}
         		
         		index = -1;
         		checkBoxHit = false;
