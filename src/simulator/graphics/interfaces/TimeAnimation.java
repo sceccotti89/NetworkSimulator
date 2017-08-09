@@ -23,7 +23,7 @@ public class TimeAnimation implements AnimationInterface
 	private final Rectangle barTiming, timing, cursor;
     private long timer;
     
-    private int tick = 0, moving = 1, index = -1;
+    private int moving = 1, index = -1;
 
     private int mouseX, mouseY;
     
@@ -46,7 +46,6 @@ public class TimeAnimation implements AnimationInterface
     private final CheckBox timeUs, timeS;
     private List<CheckBox> checkBoxes; 
     
-	private boolean leftMouse, mouseDown;
 	private boolean checkBoxHit;
     
     public TimeAnimation( float startY, final float width, final float height ) throws SlickException
@@ -208,7 +207,6 @@ public class TimeAnimation implements AnimationInterface
     public boolean checkClick( final Event event, final NetworkDisplay nd ) {
     	if (index == -1 && !timingHit) {
     		if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
-    			// TODO DA COMPLETARE
     			for (int i = 0; i < checkBoxes.size(); i++) {
     				if (checkBoxes.get( i ).checkClick( mouseX, mouseY )) {
     					index = i;
@@ -241,8 +239,6 @@ public class TimeAnimation implements AnimationInterface
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();
         Graphics g = gc.getGraphics();
-        
-        leftMouse = event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
         
         mouse.setLocation( mouseX, mouseY );
         
