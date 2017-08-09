@@ -154,21 +154,6 @@ public class MenuItem extends Button
 	}
 	
 	public void update( final int mouseX, final int mouseY, final boolean leftMouse, final Event event, final boolean mouseDown, final NetworkDisplay nd ) throws SlickException {
-		/*if (leftMouse && mouseDown) {
-			if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
-	            button.setPressed( true );
-	            event.setConsumed( true );
-	            return;
-	        }
-		} else if (!leftMouse && !mouseDown) {
-			if (button.isPressed()) {
-				if (button.checkClick( mouseX, mouseY )) {
-					event.setConsumed( true );
-					button.setPressed( false );
-				}
-			}
-		}*/
-		
 		if (!button.isPressed()) {
 		    return;
 		}
@@ -182,21 +167,6 @@ public class MenuItem extends Button
                         m.resetIndex();
                     }
                 }
-                
-                // TODO QUESTA PARTE INSERIRLA IN CHECKCLICK (UN PASSO ALLA VOLTA PERO)
-                /*if (leftMouse) {
-                	for (Operation ope: operations) {
-                		ope.setSelected( false );
-                	}
-                	
-                	event.setConsumed( true );
-                	op.execute( mouseX, mouseY, nd );
-                	
-                	index = -1;
-                	button.setPressed( false );
-                	
-                	return;
-                }*/
                 
                 index = i;
                 find = true;
