@@ -160,67 +160,7 @@ public class AnimationManager implements AnimationInterface
                 button.setPressed( false );
 	            index = -1;
             }
-        } /*else if (!leftMouse && mouseDown) {
-            mouseDown = false;
-            timer = 0;
-
-            // TEMPORANEO
-            if (index != -1) {
-                System.out.println( "INDEX = " + index );
-	            ImageButton button = buttons.get( index );
-	            // TODO PLUS E MINUS DA RENDERE ANCHE SCRIVIBILE
-	            if (button.getName().equals( PLUS )) {
-	                button.setPressed( false );
-	            } else if (button.getName().equals( MINUS )) {
-	                button.setPressed( false );
-	            } else if (button.getName().equals( START )) {
-	                nd.startAnimation();
-	                button.setPressed( true );
-	                resetButtons( button );
-	            } else if (button.getName().equals( PAUSE )) {
-	            	if (nd.isInExecution()) {
-	            		nd.pauseAnimation();
-	                    button.setPressed( false );
-	                    resetButtons( button );
-	            	} else {
-	            		button.setPressed( false );
-	            	}
-	            } else if (button.getName().equals( STOP )) {
-	                nd.stopAnimation();
-	                resetButtons( null );
-	                button.setPressed( false );
-	            }
-            }
-            
-            index = -1;
-            
-            /*for (ImageButton button: buttons) {
-                if (button.checkClick( mouseX, mouseY )) {
-                    buttonFounded = true;
-                    // TODO PLUS E MINUS DA RENDERE ANCHE SCRIVIBILE
-                    if (button.getName().equals( PLUS )) {
-                        button.setPressed( false );
-                    } else if (button.getName().equals( MINUS )) {
-                        button.setPressed( false );
-                    } else if (button.getName().equals( START )) {
-                        nd.startAnimation();
-                        button.setPressed( true );
-                        resetButtons( button );
-                    } else if (button.getName().equals( PAUSE )) {
-                    	if (nd.isInExecution()) {
-                    		nd.pauseAnimation();
-                            button.setPressed( true );
-                            resetButtons( button );
-                    	} else {
-                    		button.setPressed( false );
-                    	}
-                    } else if (button.getName().equals( STOP )) {
-                        nd.stopAnimation();
-                        resetButtons( null );
-                    }
-                }
-            }
-        }*/
+        }
     }
     
     public float getMaxY() {
