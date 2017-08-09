@@ -38,6 +38,8 @@ public class AnimationNetwork extends AppGameContainer
 	private final int limit = 1000000;
 	
 	private static Animator anim;
+	
+	public static int timer = 0;
     
     public AnimationNetwork( final int width, final int height, final String title ) throws SlickException
     {
@@ -260,6 +262,7 @@ public class AnimationNetwork extends AppGameContainer
         		lastInput = null;
         	}
         	
+        	// TODO RAGIONARE SUI CLICK (DEVE VENIRMI PERFETTO)
         	if (!mouseEvent && evaluateEventMouse( gc.getInput() ) && gc.getInput() != lastInput) {
         		System.out.println( "EVENTO NUOVO" );
         		mouseEvent = true;
@@ -270,11 +273,14 @@ public class AnimationNetwork extends AppGameContainer
         		if (!evaluateEventMouse( gc.getInput() )) {
         			lastInput = null;
         			mouseEvent = false;
+        			timer = 0;
+            		System.out.println( "EVENTO CONSUMATO" );
         		} else if (event.isConsumed()) {
         			mouseEvent = false;
+        			timer = 0;
+            		System.out.println( "EVENTO CONSUMATO" );
         		}
         		
-        		System.out.println( "EVENTO CONSUMATO" );
         		System.out.println( "MEVENT = " + mouseEvent );
         	}
         	

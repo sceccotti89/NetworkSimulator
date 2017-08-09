@@ -11,6 +11,7 @@ import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Rectangle;
 
+import simulator.graphics.AnimationNetwork;
 import simulator.graphics.dataButton.ImageButton;
 import simulator.graphics.elements.Event;
 
@@ -30,7 +31,7 @@ public class AnimationManager implements AnimationInterface
     
     public static int frames = 1;
     
-    private int timer;
+    //private int timer = 0;
     
     private static final int limit = Integer.MAX_VALUE;
     
@@ -87,17 +88,29 @@ public class AnimationManager implements AnimationInterface
     	index = -1;
     }
     
+    private void resetAll() {
+    	for (ImageButton button: buttons) {
+    		button.setPressed( false );
+    	}
+    	
+    	index = -1;
+    }
+    
     public boolean checkClick( final Event event, final NetworkDisplay nd ) {
     	if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
 	    	if (index == -1) {
 	    		for (ImageButton button : buttons) {
 	                if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
 	                	index = button.getIndex();
-	                	event.setConsumed( true );
+	                	if (!button.getName().equals( PLUS ) && !button.getName().equals( MINUS )) {
+	                		event.setConsumed( true );
+	                	}
 	                
 	                	return true;
 	                }
 	    		}
+	    	} else { 
+	    		return true;
 	    	}
     	}
     	
@@ -113,35 +126,42 @@ public class AnimationManager implements AnimationInterface
         leftMouse = event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON );
         
         if (index >= 0 && (buttons.get( index ).getName().equals( PLUS ) || buttons.get( index ).getName().equals( MINUS ))) {
+        	if (!event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
+        		resetAll();
+        		return;
+        	}
+        	
             ImageButton button = buttons.get( index );
-            if (!button.isPressed() && button.contains( mouseX, mouseY )) {
-            	button.setPressed( true );
-            	setFrames( index = button.getIndex(), nd );
-            } else if (button.contains( mouseX, mouseY ) && ++timer >= 50) {
-                setFrames( index, nd );
+            if (button.contains( mouseX, mouseY )) {
+            	if (!button.isPressed()) {
+            		button.setPressed( true );
+                	setFrames( index = button.getIndex(), nd );
+            	} else if (++AnimationNetwork.timer >= 50) {
+                    setFrames( index, nd );
+                }
             }
         }
         
         if (leftMouse) {
             if (index != -1) {
 	            ImageButton button = buttons.get( index );
-	        	System.out.println( "INDEX = " + index );
-	        	System.out.println( "NAME = " + button.getName() );
 	            // TODO PLUS E MINUS DA RENDERE ANCHE SCRIVIBILE
-	            if (button.getName().equals( PLUS )) {
+	            /*if (button.getName().equals( PLUS )) {
 	                button.setPressed( false );
 	            } else if (button.getName().equals( MINUS )) {
 	                button.setPressed( false );
-	            } else if (button.getName().equals( START )) {
+	            } else*/ 
+	        	if (button.getName().equals( START )) {
 	                nd.startAnimation();
 	                button.setPressed( true );
 	                resetButtons( button );
+		            index = -1;
 	            } else if (button.getName().equals( PAUSE )) {
-	            	System.out.println( "PAUSA!!!" );
 	            	if (nd.isInExecution()) {
 	            		nd.pauseAnimation();
 	                    button.setPressed( true );
 	                    resetButtons( button );
+	    	            index = -1;
 	            	} else {
 	            		button.setPressed( false );
 	            	}
@@ -149,9 +169,8 @@ public class AnimationManager implements AnimationInterface
 	                nd.stopAnimation();
 	                resetButtons( null );
 	                button.setPressed( false );
+		            index = -1;
 	            }
-	            
-	            index = -1;
             }
         } /*else if (!leftMouse && mouseDown) {
             mouseDown = false;
