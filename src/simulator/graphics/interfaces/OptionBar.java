@@ -43,9 +43,6 @@ public class OptionBar implements AnimationInterface
     private boolean leftMouse, mouseDown;
     
 	private ArrayList<Operation> operations;
-
-	// TODO DA USARE
-	private int index = -1;
     
     public OptionBar( final GameContainer gc, final int width, final int height ) throws SlickException
     {
@@ -107,9 +104,7 @@ public class OptionBar implements AnimationInterface
         return barOptions.getMaxY();
     }
     
-    public void resetIndex() {
-    	index = -1;
-    }
+    public void resetIndex() {}
     
     public boolean checkClick( final Event event, final NetworkDisplay nd ) throws SlickException {
     	// TODO RAGIONARCI SOPRA UN POININO
@@ -124,7 +119,6 @@ public class OptionBar implements AnimationInterface
         	System.out.println( "CLICCATO" );
     		if (items.get( i ).checkClick( mouseX, mouseY, mouseDown, leftMouse, event, nd )) {
     	    	System.out.println( "PREMUTO OGGETTO" );
-    			index = i;
     			event.setConsumed( true );
     			return true;
     		}

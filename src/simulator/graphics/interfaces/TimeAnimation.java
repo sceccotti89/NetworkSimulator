@@ -295,6 +295,7 @@ public class TimeAnimation implements AnimationInterface
 	        }
         }
         
+        // TODO DOPO IL PRIMO CLICK SULLA BARRA LA FINESTRA DEL TIMING NON COMPARE PIU...PERCHE???
         if (timing.intersects( mouse ) || timingHit) {
         	System.out.println( "BARRA" );
         	String info = setTime( getTime( mouseX ), gc );
