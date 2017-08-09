@@ -73,42 +73,56 @@ public class Operation
 	}
 	
 	public void execute( final int mouseX, final int mouseY, final NetworkDisplay nd ) throws SlickException {
-		switch ( name ) {
-		
-		case CLIENT:
-			nd.addNode( mouseX, mouseY, CLIENT );
-			break;
+		if (!nd.isInExecution()) {
+			switch ( name ) {
 			
-		case SERVER:
-			nd.addNode( mouseX, mouseY, SERVER );
-			break;
-			
-		case SWITCH:
-			nd.addNode( mouseX, mouseY, SWITCH );
-			break;
-			
-		case PACKET:
-			nd.addPacket(mouseX, mouseY);
-			break;
-			
-		case REMOVE:
-			nd.removeNode();
-			break;
-			
-		case MOVE:
-			nd.moveNode();
-			break;
-			
-		case SAVE:
-			// TODO DA IMPLEMENTARE
-			break;
-			
-		case LOAD:
-			// TODO DA IMPLEMENTARE
-			break;
-
-		default:
-			break;
+			case CLIENT:
+				if (!nd.isMoving() && !nd.isRemoving()) {
+					nd.addNode( mouseX, mouseY, CLIENT );
+				}
+				break;
+				
+			case SERVER:
+				if (!nd.isMoving() && !nd.isRemoving()) {
+					nd.addNode( mouseX, mouseY, SERVER );
+				}
+				break;
+				
+			case SWITCH:
+				if (!nd.isMoving() && !nd.isRemoving()) {
+					nd.addNode( mouseX, mouseY, SWITCH );
+				}
+				break;
+				
+			case PACKET:
+				if (!nd.isMoving() && !nd.isRemoving()) {
+					nd.addPacket(mouseX, mouseY);
+				}
+				break;
+				
+			case REMOVE:
+				if (!nd.isMoving() && !nd.isAddingElement()) {
+					nd.removeNode();
+				}
+				break;
+				
+			case MOVE:
+				if (!nd.isRemoving() && !nd.isAddingElement()) {
+					nd.moveNode();
+				}
+				break;
+				
+			case SAVE:
+				// TODO DA IMPLEMENTARE
+				break;
+				
+			case LOAD:
+				// TODO DA IMPLEMENTARE
+				break;
+	
+			default:
+				break;
+			}
 		}
 	}
 	
