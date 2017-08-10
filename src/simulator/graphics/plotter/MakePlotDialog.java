@@ -26,10 +26,10 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import net.sourceforge.jeval.EvaluationException;
-import net.sourceforge.jeval.Evaluator;
 import simulator.graphics.plotter.Plotter.Line;
 import simulator.graphics.plotter.Plotter.Plot;
+import simulator.graphics.plotter.evaluator.EvaluationException;
+import simulator.graphics.plotter.evaluator.Evaluator;
 import simulator.utils.Pair;
 
 public class MakePlotDialog extends JDialog implements ActionListener
@@ -374,16 +374,19 @@ public class MakePlotDialog extends JDialog implements ActionListener
     private void saveAndExit() throws EvaluationException
     {
         // Create the function using the expression in the text field.
-        final Evaluator evaluator = new Evaluator();
+        Evaluator evaluator = new Evaluator( functionField.getText() );
+        //final FunctionParser parser = new FunctionParser( functionField.getText() );
         
         double from = Double.parseDouble( fromField.getText() );
         double to   = Double.parseDouble( toField.getText() );
         double jump = Double.parseDouble( jumpField.getText() );
         plot.points = new ArrayList<>();
         for (double x = from; x <= to; x += jump) {
-            String function = functionField.getText().replaceAll( "x", "(#{x})" );
-            evaluator.putVariable( "x", x + "" );
-            double y = Double.parseDouble( evaluator.evaluate( function ) );
+            //String function = functionField.getText().replaceAll( "x", "(#{x})" );
+            //evaluator.putVariable( "x", x + "" );
+            //double y = Double.parseDouble( evaluator.evaluate( function ) );
+            evaluator.putVariable( "x", x );
+            double y = evaluator.eval();
             plot.points.add( new Pair<>( x, y ) );
         }
         
