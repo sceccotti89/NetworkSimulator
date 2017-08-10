@@ -11,7 +11,7 @@ import simulator.graphics_swing.AnimationNetwork;
  {
      public static void main( final String[] args ) throws IOException
      {
-         FunctionParser parser = new FunctionParser( "(2^10)" );
+         FunctionParser parser = new FunctionParser( "sqrt(2^10) + 5 - 2^3" );
          System.out.println( FunctionInterpreter.interpret( parser.parse(), null ) );
          System.exit( 0 );
          

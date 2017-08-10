@@ -1,7 +1,7 @@
 
 package simulator.graphics.plotter.parser;
 
-import simulator.graphics.plotter.parser.Expression.Term;
+import simulator.graphics.plotter.parser.Expr.Term;
 import simulator.graphics.plotter.parser.Tokenizer.Token;
 
 public class FunctionParser
@@ -13,7 +13,7 @@ public class FunctionParser
         tokenizer = new Tokenizer( expression );
     }
     
-    public Expression parse() {
+    public Expr parse() {
         return parseEXPRESSION();
     }
     
@@ -31,15 +31,15 @@ public class FunctionParser
                                         "\", instead of: \"" +  Token.getTokenValue( current ) + "\"." );
     }
 
-    private Expression parseEXPRESSION()
+    private Expr parseEXPRESSION()
     {
-        Expression expr;
+        Expr expr;
         Token base = null;
         
         token = tokenizer.nextToken();
         System.out.println( "TOKEN: " + token );
         if (token.getType() == Token.T_NUMBER || token.getType() == Token.T_IDENTIFIER) {
-            Expression term = new Term( token );
+            Expr term = new Term( token );
             System.out.println( "TERM: " + token );
             expr = parseRIGHT_EXPR( term );
         } else {
@@ -49,29 +49,28 @@ public class FunctionParser
                 expectedToken( base.getType(), Token.T_NUMBER );
             }
             
-            Token oldToken = token;
             if (token.getType() != Token.T_OPEN_PARENTHESIS) {
                 System.out.println( "SONO QUI 1" );
                 expectedToken( tokenizer.nextToken().getType(), Token.T_OPEN_PARENTHESIS );
             }
             
             if (base == null) {
-                expr = new Expression( token, parseEXPRESSION() );
+                expr = new Expr( token, parseEXPRESSION() );
             } else {
-                expr = new Expression( token, new Term( base ), parseEXPRESSION() );
+                expr = new Expr( token, new Term( base ), parseEXPRESSION() );
                 System.out.println( "TERMINATA RICORSIONE" );
             }
             
-            if (oldToken.getType() != Token.T_OPEN_PARENTHESIS) {
-                System.out.println( "SONO QUI 2" );
-                expectedToken( token.getType(), Token.T_CLOSED_PARENTHESIS );
-            }
+            expectedToken( token.getType(), Token.T_CLOSED_PARENTHESIS );
+            
+            expr = parseRIGHT_EXPR( expr );
+            //expr = new Expr( expr, e );
         }
         
         return expr;
     }
     
-    private Expression parseRIGHT_EXPR( final Expression e1 )
+    private Expr parseRIGHT_EXPR( final Expr e1 )
     {
         token = tokenizer.nextToken();
         System.out.println( "RIGHT: " + token );
@@ -81,12 +80,13 @@ public class FunctionParser
         
         if (token.getType() != Token.T_PLUS && token.getType() != Token.T_MINUS &&
             token.getType() != Token.T_MULTIPLY && token.getType() != Token.T_DIVIDE &&
-            token.getType() != Token.T_UPPER) {
+            token.getType() != Token.T_POW) {
             return e1;
         }
         
         Token currentToken = token;
-        Expression e2 = parseEXPRESSION();
-        return new Expression( currentToken, e1, e2 );
+        Expr e2 = parseEXPRESSION();
+        System.out.println( "TOKEN: " + currentToken + ", E2: " + e2 );
+        return new Expr( currentToken, e1, e2 );
     }
 }

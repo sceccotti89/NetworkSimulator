@@ -3,32 +3,32 @@ package simulator.graphics.plotter.parser;
 
 import simulator.graphics.plotter.parser.Tokenizer.Token;
 
-public class Expression
+public class Expr
 {
     protected Token token;
-    protected Expression e1;
-    protected Expression e2;
+    protected Expr e1;
+    protected Expr e2;
     
-    public Expression( final Token token ) {
+    public Expr( final Token token ) {
         this.token = token;
     }
     
-    public Expression( final Token token, final Expression e1 ) {
+    public Expr( final Token token, final Expr e1 ) {
         this( token );
         this.e1 = e1;
     }
     
-    public Expression( final Token token, final Expression e1, final Expression e2 ) {
+    public Expr( final Token token, final Expr e1, final Expr e2 ) {
         this( token );
         this.e1 = e1;
         this.e2 = e2;
     }
     
-    public Expression getExpr1() {
+    public Expr getExpr1() {
         return e1;
     }
     
-    public Expression getExpr2() {
+    public Expr getExpr2() {
         return e2;
     }
     
@@ -42,11 +42,16 @@ public class Expression
         else return e1.toString() + token.toString() + (e2 != null ? e2.toString() : "");
     }
     
-    public static class Term extends Expression
+    public static class Term extends Expr
     {
         public Term( final Token token ) {
             super( token );
             e1 = this;
+        }
+        
+        @Override
+        public String toString() {
+            return token.toString();
         }
     }
 }

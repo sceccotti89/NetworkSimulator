@@ -179,34 +179,33 @@ public class Tokenizer
     
     public static class Token
     {
-        public static final int
-            // Operational tokens.
-            T_DIVIDE                = '/',
-            T_MULTIPLY              = '*', // 42
-            T_PLUS                  = '+', // 43
-            T_MINUS                 = '-', // 45
+        // Operational tokens.
+        public static final int T_DIVIDE             = '/';
+        public static final int T_MULTIPLY           = '*'; // 42
+        public static final int T_PLUS               = '+'; // 43
+        public static final int T_MINUS              = '-'; // 45
             
-            // Miscellaneous tokens.
-            T_OPEN_PARENTHESIS      = '(', // 40
-            T_CLOSED_PARENTHESIS    = ')', // 41
-            T_IDENTIFIER            =  24,
-            T_NUMBER                =  25,
+        // Miscellaneous tokens.
+        public static final int T_OPEN_PARENTHESIS   = '('; // 40
+        public static final int T_CLOSED_PARENTHESIS = ')'; // 41
+        public static final int T_IDENTIFIER         =  24;
+        public static final int T_NUMBER             =  25;
             
-            // Command tokens.
-            T_LOG                   = 26,
-            T_LN                    = 27,
-            T_SIN                   = 28,
-            T_ARC_SIN               = 29,
-            T_COS                   = 30,
-            T_ARC_COS               = 31,
-            T_TAN                   = 32,
-            T_ARC_TAN               = 33,
-            T_SQRT                  = 34,
-            T_UPPER                 = '^', // 94
+        // Command tokens.
+        public static final int T_LOG                = 26;
+        public static final int T_LN                 = 27;
+        public static final int T_SIN                = 28;
+        public static final int T_ARC_SIN            = 29;
+        public static final int T_COS                = 30;
+        public static final int T_ARC_COS            = 31;
+        public static final int T_TAN                = 32;
+        public static final int T_ARC_TAN            = 33;
+        public static final int T_SQRT               = 34;
+        public static final int T_POW                = '^'; // 94
             
-            // Exception tokens.
-            T_EOF                   = 46,
-            T_UNKNOWN               = 47;
+        // Exception tokens.
+        public static final int T_EOF                = 46;
+        public static final int T_UNKNOWN            = 47;
         
         /* One of the above token codes. */
         public Integer type;
@@ -238,7 +237,7 @@ public class Tokenizer
                 case( T_MULTIPLY ):           return "*";
                 case( T_PLUS ):               return "+";
                 case( T_MINUS ):              return "-";
-                case( T_UPPER ):              return "^";
+                case( T_POW ):                return "^";
                 
                 // Miscellaneous tokens.
                 case( T_OPEN_PARENTHESIS ):   return "(";
