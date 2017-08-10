@@ -77,6 +77,10 @@ public class Packet implements Comparable<Packet>
         area = new Rectangle( startX, startY, width/80, height/60 );
         
         setPosition( time );
+        
+        setSpeed();
+        
+        System.out.println( "INIZIALIZZATO" );
     }
     
     public Node getNodeSource() {

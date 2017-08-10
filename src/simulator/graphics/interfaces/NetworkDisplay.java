@@ -246,7 +246,9 @@ public class NetworkDisplay implements AnimationInterface
                         
                         return;
                     } else if (addingPacket && !node.equals( source ) && node.checkLinks( source )) {
-                        packets.add( new Packet( source, node, source.getColor(), 0, 100, width, height, 0 ) );
+                    	Packet packet = new Packet( source, node, source.getColor(), 0, 100, width, height, 1 );
+                        packets.add( packet );
+                        packetSize++;
                         phaseTwoNewElement = false;
                         source.setLinkAvailable();
                         source = null;
@@ -254,7 +256,7 @@ public class NetworkDisplay implements AnimationInterface
                         System.out.println( "PACCHETTO INSERITO" );
                         
                         // TODO CAPIRE PERCHE NON VIENE VISUALIZZATO IL NUOVO PACKET INSERITO
-                        System.out.println( "PACKETS = " + packets.size() );
+                        System.out.println( "STARTTIME = " + packet.getStartTime() );
                         
                         addingPacket = false;
                         indexElement = -1;
@@ -331,6 +333,7 @@ public class NetworkDisplay implements AnimationInterface
         }
         
         for (int i = index; i < packetSize; i++) {
+        	//System.out.println( "INDEX = " + i );
             Packet packet = packets.get( i );
             if (packet.getStartTime() > timer)
                 break;
