@@ -317,24 +317,17 @@ public class NetworkDisplay implements AnimationInterface
             timer = timer + AnimationManager.frames;
         }
         
+        // manage nodes and packets
         if (phaseOneNewElement || phaseTwoNewElement) {
             manageAddElement( event, mouseEvent );
-        }
-        
-        if (moving) {
+        } else if (moving) {
         	manageMovingNode( gc, event );
-        }
-        
-        if (removing && indexElement != -1) {
+        } else if (removing && indexElement != -1) {
         	manageRemoveNode( gc );
         }
     	
         for (Node node: nodes) {
             node.update( gc, width, zone.getY(), (int) zone.getMaxY(), (addingNode && phaseTwoNewElement) );
-        }
-        
-        for (Packet packet: packets) {
-            packet.init( packet.getNodeSource(), packet.getNodeDest(), timer );
         }
         
         for (int i = index; i < packetSize; i++) {
