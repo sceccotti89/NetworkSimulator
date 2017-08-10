@@ -11,7 +11,7 @@ import simulator.graphics_swing.AnimationNetwork;
      public static void main( final String[] args ) throws IOException
      {
          //Evaluator evaluator = new Evaluator( "sqrt(2^10) + 5*asin(y) - cos(x)^3" );
-         // FIXME manca la precedneza degli operatori.
+         // FIXME manca la precedenza degli operatori.
          // FIXME manca la corretta gestione dei token con le funzioni log.
          Evaluator evaluator = new Evaluator( "3 + 5*4 - 2*2" );
          evaluator.putVariable( "x", 0.1 );
