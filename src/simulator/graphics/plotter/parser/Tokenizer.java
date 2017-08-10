@@ -149,9 +149,11 @@ public class Tokenizer
             } else {
                 // Identifier.
                 token = new Token( Token.T_IDENTIFIER );
-                token.stringValue = ide.toString();
-                if((token.type = table.get( token.stringValue )) != null) {
+                if((token.type = table.get( ide.toString() )) != null) {
                     token.stringValue = null;
+                } else {
+                    token.stringValue = ide.toString();
+                    token.type = Token.T_IDENTIFIER;
                 }
             }
             
@@ -180,7 +182,7 @@ public class Tokenizer
     public static class Token
     {
         // Operational tokens.
-        public static final int T_DIVIDE             = '/';
+        public static final int T_DIVIDE             = '/'; // 47
         public static final int T_MULTIPLY           = '*'; // 42
         public static final int T_PLUS               = '+'; // 43
         public static final int T_MINUS              = '-'; // 45
@@ -205,7 +207,7 @@ public class Tokenizer
             
         // Exception tokens.
         public static final int T_EOF                = 46;
-        public static final int T_UNKNOWN            = 47;
+        public static final int T_UNKNOWN            = 48;
         
         /* One of the above token codes. */
         public Integer type;

@@ -1,3 +1,6 @@
+/**
+ * @author Stefano Ceccotti
+*/
 
 package simulator.graphics.plotter.parser;
 
@@ -6,14 +9,15 @@ import simulator.graphics.plotter.parser.Tokenizer.Token;
 
 public class FunctionParser
 {
-    private Tokenizer tokenizer;
-    private Token token;
+    private static Tokenizer tokenizer;
+    private static Token token;
     
     public FunctionParser( final String expression ) {
         tokenizer = new Tokenizer( expression );
     }
     
-    public Expr parse() {
+    public static Expr parse( final String expression ) {
+        tokenizer = new Tokenizer( expression );
         return parseEXPRESSION();
     }
     
@@ -23,15 +27,16 @@ public class FunctionParser
      * @param current     the current token
      * @param expected    the expected token
     */
-    private void expectedToken( int current, int expected ) throws RuntimeException
+    private static void expectedToken( int current, int expected ) throws RuntimeException
     {
-        if(current != expected)
+        if(current != expected) {
             throw new RuntimeException( "Error position " + tokenizer.getIndex() +
                                         ": expected token: \"" + Token.getTokenValue( expected ) +
                                         "\", instead of: \"" +  Token.getTokenValue( current ) + "\"." );
+        }
     }
-
-    private Expr parseEXPRESSION()
+    
+    private static Expr parseEXPRESSION()
     {
         Expr expr;
         Token base = null;
@@ -64,13 +69,12 @@ public class FunctionParser
             expectedToken( token.getType(), Token.T_CLOSED_PARENTHESIS );
             
             expr = parseRIGHT_EXPR( expr );
-            //expr = new Expr( expr, e );
         }
         
         return expr;
     }
     
-    private Expr parseRIGHT_EXPR( final Expr e1 )
+    private static Expr parseRIGHT_EXPR( final Expr e1 )
     {
         token = tokenizer.nextToken();
         System.out.println( "RIGHT: " + token );
