@@ -81,24 +81,6 @@ public class MenuItem extends Button
 				return true;
 			}
 			
-			
-			
-			/*if (leftMouse && mouseDown) {
-				if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
-		            event.setConsumed( true );
-		            button.setPressed( true );
-		            return true;
-		        }
-			} else if (!leftMouse && !mouseDown) {
-				if (button.isPressed()) {
-					if (button.checkClick( mouseX, mouseY )) {
-						event.setConsumed( true );
-						button.setPressed( false );
-						return true;
-					}
-				}
-			}*/
-			
 			if (button.isPressed()) {
 				for (int i = 0; i < operations.size(); i++) {
 		            Operation op = operations.get( i );
