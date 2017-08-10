@@ -148,12 +148,11 @@ public class Tokenizer
                 }
             } else {
                 // Identifier.
-                token = new Token( Token.T_IDENTIFIER );
-                if((token.type = table.get( ide.toString() )) != null) {
-                    token.stringValue = null;
+                if(table.containsKey( ide.toString() )) {
+                    token = new Token( table.get( ide.toString() ) );
                 } else {
+                    token = new Token( Token.T_IDENTIFIER );
                     token.stringValue = ide.toString();
-                    token.type = Token.T_IDENTIFIER;
                 }
             }
             
@@ -210,7 +209,7 @@ public class Tokenizer
         public static final int T_UNKNOWN            = 48;
         
         /* One of the above token codes. */
-        public Integer type;
+        private Integer type;
         /* Holds value if number. */
         public Double value = null;
         /* Holds value if string. */

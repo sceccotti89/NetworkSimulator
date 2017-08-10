@@ -82,10 +82,14 @@ public class FunctionParser
             return e1;
         }
         
+        if(token.getType() == Token.T_CLOSED_PARENTHESIS) {
+            return e1;
+        }
+        
         if (token.getType() != Token.T_PLUS && token.getType() != Token.T_MINUS &&
             token.getType() != Token.T_MULTIPLY && token.getType() != Token.T_DIVIDE &&
             token.getType() != Token.T_POW) {
-            return e1;
+            throw new EvaluationException( "Invalid token '" + token.toString() + "'." );
         }
         
         Token currentToken = token;
