@@ -1,5 +1,5 @@
 
-package simulator.graphics.plotter.parser;
+package simulator.graphics.plotter.evaluator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +21,7 @@ public class Tokenizer
     
     private void init_table()
     {
-        table = new HashMap<>( 8 );
+        table = new HashMap<>( 9 );
         
         table.put( "sqrt", Token.T_SQRT );
         table.put( "log",  Token.T_LOG );

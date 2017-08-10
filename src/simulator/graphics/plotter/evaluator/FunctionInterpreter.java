@@ -2,12 +2,12 @@
  * @author Stefano Ceccotti
 */
 
-package simulator.graphics.plotter.parser;
+package simulator.graphics.plotter.evaluator;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import simulator.graphics.plotter.parser.Tokenizer.Token;
+import simulator.graphics.plotter.evaluator.Tokenizer.Token;
 
 public class FunctionInterpreter
 {

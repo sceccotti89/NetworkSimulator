@@ -28,8 +28,8 @@ import javax.swing.JTextField;
 
 import simulator.graphics.plotter.Plotter.Line;
 import simulator.graphics.plotter.Plotter.Plot;
-import simulator.graphics.plotter.parser.EvaluationException;
-import simulator.graphics.plotter.parser.Evaluator;
+import simulator.graphics.plotter.evaluator.EvaluationException;
+import simulator.graphics.plotter.evaluator.Evaluator;
 import simulator.utils.Pair;
 
 public class MakePlotDialog extends JDialog implements ActionListener

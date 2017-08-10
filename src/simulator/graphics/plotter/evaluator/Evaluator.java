@@ -2,7 +2,7 @@
  * @author Stefano Ceccotti
 */
 
-package simulator.graphics.plotter.parser;
+package simulator.graphics.plotter.evaluator;
 
 public class Evaluator
 {

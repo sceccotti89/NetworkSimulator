@@ -2,10 +2,10 @@
  * @author Stefano Ceccotti
 */
 
-package simulator.graphics.plotter.parser;
+package simulator.graphics.plotter.evaluator;
 
-import simulator.graphics.plotter.parser.Expr.Term;
-import simulator.graphics.plotter.parser.Tokenizer.Token;
+import simulator.graphics.plotter.evaluator.Expr.Term;
+import simulator.graphics.plotter.evaluator.Tokenizer.Token;
 
 public class FunctionParser
 {

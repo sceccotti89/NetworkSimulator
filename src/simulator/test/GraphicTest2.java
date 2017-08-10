@@ -3,7 +3,7 @@ package simulator.test;
  
  import java.io.IOException;
 
-import simulator.graphics.plotter.parser.Evaluator;
+import simulator.graphics.plotter.evaluator.Evaluator;
 import simulator.graphics_swing.AnimationNetwork;
  
  public class GraphicTest2
