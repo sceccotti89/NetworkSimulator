@@ -213,10 +213,10 @@ public class NetworkDisplay implements AnimationInterface
 		indexElement = -1;
     }
     
-    private void manageAddElement( final Event event ) {
+    private void manageAddElement( final Event event, final boolean mouseEvent ) {
         if (phaseOneNewElement) {
         	if (addingNode) {
-        		if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) && zone.contains( mouseX , mouseY )) {
+        		if (mouseEvent && event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) && zone.contains( mouseX , mouseY )) {
         			phaseOneNewElement = false;
                     phaseTwoNewElement = true;
         		}
@@ -305,7 +305,7 @@ public class NetworkDisplay implements AnimationInterface
     	return false;
     }
     
-    public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd )
+    public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd, final boolean mouseEvent )
     {
     	mouseX = gc.getInput().getMouseX();
     	mouseY = gc.getInput().getMouseY();
@@ -318,7 +318,7 @@ public class NetworkDisplay implements AnimationInterface
         }
         
         if (phaseOneNewElement || phaseTwoNewElement) {
-            manageAddElement( event );
+            manageAddElement( event, mouseEvent );
         }
         
         if (moving) {

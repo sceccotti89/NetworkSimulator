@@ -60,7 +60,7 @@ public class Menu
     	}	
     }
 	
-	public boolean checkContains( final int mouseX, final int mouseY, final boolean leftMouse, final NetworkDisplay nd ) throws SlickException {
+	public boolean checkContains( final int mouseX, final int mouseY, final boolean leftMouse, final NetworkDisplay nd, final Event event ) throws SlickException {
 	    if (leftMouse) {
 	        if (index != -1) {
 	            if (areaType.contains( mouseX, mouseY )) {
@@ -68,7 +68,7 @@ public class Menu
 	                return false;
 	            } else {
 	                if (menu.size() >= index + 1) {
-	                    if (!menu.get( index ).checkContains( mouseX, mouseY, leftMouse, nd )) {
+	                    if (!menu.get( index ).checkContains( mouseX, mouseY, leftMouse, nd, event )) {
 	                        index = -1;
 	                        return false;
 	                    } else {
@@ -106,7 +106,6 @@ public class Menu
 	public boolean checkClick( final int mouseX, final int mouseY, final Event event, final NetworkDisplay nd ) throws SlickException {
 		for (Operation op: ops) {
 			if (op.checkContains( mouseX, mouseY )) {
-				System.out.println( "ESECUZIONE OPERAZIONE" );
 				executeOperation( mouseX, mouseY, nd );
 				event.setConsumed( true );
 				return true;
@@ -129,7 +128,7 @@ public class Menu
 		return click;
 	}
 	
-	public void update( final int mouseX, final int mouseY, final boolean leftMouse, final NetworkDisplay nd ) throws SlickException {
+	public void update( final int mouseX, final int mouseY, final boolean leftMouse, final NetworkDisplay nd, final Event event ) throws SlickException {
 	    boolean find = false;
         for (int i = 0; i < ops.size(); i++) {
             Operation op = ops.get( i );
@@ -141,13 +140,13 @@ public class Menu
         
         if (!find) {
             for (Menu m: menu) {
-                m.checkContains( mouseX, mouseY, leftMouse, nd );
+                m.checkContains( mouseX, mouseY, leftMouse, nd, event );
             }
         }
         
         if (index != -1) {
             if (menu.size() >= index + 1) {
-                menu.get( index ).update( mouseX, mouseY, leftMouse, nd );
+                menu.get( index ).update( mouseX, mouseY, leftMouse, nd, event );
             }
         }
 	}

@@ -107,10 +107,8 @@ public class OptionBar implements AnimationInterface
     public void resetIndex() {}
     
     public boolean checkClick( final Event event, final NetworkDisplay nd ) throws SlickException {
-    	for (int i = 0; i < items.size(); i++) {
-        	System.out.println( "CLICCATO" );
-    		if (items.get( i ).checkClick( mouseX, mouseY, mouseDown, leftMouse, event, nd )) {
-    	    	System.out.println( "PREMUTO OGGETTO" );
+    	for (MenuItem item: items) {
+    		if (item.checkClick( mouseX, mouseY, mouseDown, leftMouse, event, nd )) {
     			event.setConsumed( true );
     			return true;
     		}
@@ -120,7 +118,7 @@ public class OptionBar implements AnimationInterface
     }
     
     @Override
-    public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd ) throws SlickException
+    public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd, final boolean mouseEvent ) throws SlickException
     {
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();

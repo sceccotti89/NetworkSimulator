@@ -239,7 +239,7 @@ public class TimeAnimation implements AnimationInterface
     }
     
     @Override
-    public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd )
+    public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd, final boolean mouseEvent )
     {
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();
