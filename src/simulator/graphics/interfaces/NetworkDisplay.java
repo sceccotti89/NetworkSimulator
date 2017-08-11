@@ -213,10 +213,10 @@ public class NetworkDisplay implements AnimationInterface
 		indexElement = -1;
     }
     
-    private void manageAddElement( final Event event ) {
+    private void manageAddElement( final Event event, final boolean mouseEvent ) {
         if (phaseOneNewElement) {
         	if (addingNode) {
-        		if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) && zone.contains( mouseX , mouseY )) {
+        		if (mouseEvent && event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) && zone.contains( mouseX , mouseY )) {
         			phaseOneNewElement = false;
                     phaseTwoNewElement = true;
         		}
@@ -246,7 +246,9 @@ public class NetworkDisplay implements AnimationInterface
                         
                         return;
                     } else if (addingPacket && !node.equals( source ) && node.checkLinks( source )) {
-                        packets.add( new Packet( source, node, source.getColor(), 0, 100, width, height, 0 ) );
+                    	Packet packet = new Packet( source, node, source.getColor(), 0, 100, width, height, 1 );
+                        packets.add( packet );
+                        packetSize++;
                         phaseTwoNewElement = false;
                         source.setLinkAvailable();
                         source = null;
@@ -254,7 +256,7 @@ public class NetworkDisplay implements AnimationInterface
                         System.out.println( "PACCHETTO INSERITO" );
                         
                         // TODO CAPIRE PERCHE NON VIENE VISUALIZZATO IL NUOVO PACKET INSERITO
-                        System.out.println( "PACKETS = " + packets.size() );
+                        System.out.println( "STARTTIME = " + packet.getStartTime() );
                         
                         addingPacket = false;
                         indexElement = -1;
@@ -305,7 +307,7 @@ public class NetworkDisplay implements AnimationInterface
     	return false;
     }
     
-    public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd )
+    public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd, final boolean mouseEvent )
     {
     	mouseX = gc.getInput().getMouseX();
     	mouseY = gc.getInput().getMouseY();
@@ -317,15 +319,12 @@ public class NetworkDisplay implements AnimationInterface
             timer = timer + AnimationManager.frames;
         }
         
+        // manage nodes and packets
         if (phaseOneNewElement || phaseTwoNewElement) {
-            manageAddElement( event );
-        }
-        
-        if (moving) {
+            manageAddElement( event, mouseEvent );
+        } else if (moving) {
         	manageMovingNode( gc, event );
-        }
-        
-        if (removing && indexElement != -1) {
+        } else if (removing && indexElement != -1) {
         	manageRemoveNode( gc );
         }
     	
@@ -333,11 +332,8 @@ public class NetworkDisplay implements AnimationInterface
             node.update( gc, width, zone.getY(), (int) zone.getMaxY(), (addingNode && phaseTwoNewElement) );
         }
         
-        for (Packet packet: packets) {
-            packet.init( packet.getNodeSource(), packet.getNodeDest(), timer );
-        }
-        
         for (int i = index; i < packetSize; i++) {
+        	//System.out.println( "INDEX = " + i );
             Packet packet = packets.get( i );
             if (packet.getStartTime() > timer)
                 break;

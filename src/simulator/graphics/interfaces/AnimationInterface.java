@@ -14,5 +14,5 @@ public interface AnimationInterface
     
     public boolean checkClick( Event event, final NetworkDisplay nd )  throws SlickException;
 
-    public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd ) throws SlickException;
+    public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd, final boolean mouseEvent ) throws SlickException;
 }

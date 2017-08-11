@@ -166,7 +166,6 @@ public class AnimationNetwork extends AppGameContainer
     
     public void addPacket( final long from_ID, final long dest_ID, final Color color, final long startTime, final long endTime, final int type ) {
         Packet packet = new Packet( getNode( from_ID ), getNode( dest_ID ), color, startTime, endTime, width, height, type );
-        packet.setSpeed();
         packets.add( packet );
     }
     
@@ -263,9 +262,8 @@ public class AnimationNetwork extends AppGameContainer
         		lastInput = null;
         	}
         	
-        	// TODO RAGIONARE SUI CLICK (DEVE VENIRMI PERFETTO)
+        	// TODO IMPOSTARE IL CONTROLLO DEL CLICK SUL RILASCIO DI ESSO
         	if (!mouseEvent && evaluateEventMouse( gc.getInput() ) && gc.getInput() != lastInput) {
-        		System.out.println( "EVENTO NUOVO" );
         		mouseEvent = true;
         		event.setInput( gc.getInput() );
         		event.setConsumed( false );
@@ -274,15 +272,7 @@ public class AnimationNetwork extends AppGameContainer
         		if (!evaluateEventMouse( gc.getInput() )) {
         			lastInput = null;
         			mouseEvent = false;
-        			tick = 0;
-            		System.out.println( "EVENTO CONSUMATO" );
-        		} else if (event.isConsumed()) {
-        			mouseEvent = false;
-        			tick = 0;
-            		System.out.println( "EVENTO CONSUMATO" );
         		}
-        		
-        		System.out.println( "MEVENT = " + mouseEvent );
         	}
         	
         	// checkClick
@@ -290,11 +280,13 @@ public class AnimationNetwork extends AppGameContainer
 	        	for (int i = 0; i < interfaces.size(); i++) {
 	        		AnimationInterface obj = interfaces.get( i );
 	        		if (obj.checkClick( event, nd )) {
-	        			System.out.println( "CONSUMED = " + event.isConsumed() + " INDEX = " + i );
 	        			if (i > 0) {
 	        				interfaces.remove( obj );
 	        				interfaces.add( 0, obj );
 	        			}
+	        			
+	        			mouseEvent = false;
+	        			tick = 0;
 	        			
 	        			break;
 	        		}
@@ -303,7 +295,7 @@ public class AnimationNetwork extends AppGameContainer
         	
         	// update delle interfacce
         	for (AnimationInterface obj: interfaces) {
-        		obj.update( delta, gc, am, event, nd );
+        		obj.update( delta, gc, am, event, nd, mouseEvent );
         	}
         }
         

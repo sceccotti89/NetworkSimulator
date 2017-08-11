@@ -64,7 +64,6 @@ public class MenuItem extends Button
 	}
 	
 	public boolean checkClick( final int mouseX, final int mouseY, final boolean mouseDown, final boolean leftMouse, final Event event, final NetworkDisplay nd ) throws SlickException {
-		// TODO COMPLETARE
 		if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
 			if (button.checkClick( mouseX, mouseY )) {
 				if (button.isPressed()) {
@@ -80,24 +79,6 @@ public class MenuItem extends Button
 				event.setConsumed( true );
 				return true;
 			}
-			
-			
-			
-			/*if (leftMouse && mouseDown) {
-				if (button.checkClick( mouseX, mouseY ) && !button.isPressed()) {
-		            event.setConsumed( true );
-		            button.setPressed( true );
-		            return true;
-		        }
-			} else if (!leftMouse && !mouseDown) {
-				if (button.isPressed()) {
-					if (button.checkClick( mouseX, mouseY )) {
-						event.setConsumed( true );
-						button.setPressed( false );
-						return true;
-					}
-				}
-			}*/
 			
 			if (button.isPressed()) {
 				for (int i = 0; i < operations.size(); i++) {
@@ -135,7 +116,6 @@ public class MenuItem extends Button
 	                button.setPressed( false );
 	                return false;
 	    		} else {
-	    			System.out.println( "SWITCH ADDING" );
 	    			for (Menu m: menu) {
 	                    m.resetIndex();
 	                }
@@ -175,12 +155,12 @@ public class MenuItem extends Button
 		
 		if (!find) {
     		for (Menu m: menu) {
-    		    find = find || m.checkContains( mouseX, mouseY, leftMouse, nd );
+    		    find = find || m.checkContains( mouseX, mouseY, leftMouse, nd, event );
     		}
 		}
 		
 		if (index != -1) {
-		    menu.get( index ).update( mouseX, mouseY, leftMouse, nd );
+		    menu.get( index ).update( mouseX, mouseY, leftMouse, nd, event );
 		}
 	}
 	
