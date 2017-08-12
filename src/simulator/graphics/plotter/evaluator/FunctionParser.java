@@ -142,7 +142,6 @@ public class FunctionParser
                 if (token.getType() == Token.T_LOG) {
                     // Get the logarithm base.
                     Term base = new Term( tokenizer.nextToken() );
-                    System.out.println( "BASE: " + base );
                     return new Expr( function, base, parseARGUMENT() );
                 } else {
                     return new Expr( function, parseARGUMENT() );

@@ -178,8 +178,6 @@ public class Tokenizer
         if (isEoF())
             return new Token( Token.T_EOF );
         
-        //System.out.println( "CURRENT: " + peek() );
-        
         Token token = getToken();
         if (token == null) {
             token = new Token( next() );
