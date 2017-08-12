@@ -28,12 +28,12 @@ public class FunctionParser
      * @param current     the current token
      * @param expected    the expected token
     */
-    private static void expectedToken( int current, int expected ) throws RuntimeException
+    private static void expectedToken( int current, int expected ) throws EvaluationException
     {
         if(current != expected) {
-            throw new RuntimeException( "Error position " + tokenizer.getIndex() +
-                                        ": expected token: \"" + Token.getTokenValue( expected ) +
-                                        "\", instead of: \"" +  Token.getTokenValue( current ) + "\"." );
+            throw new EvaluationException( "Error position " + tokenizer.getIndex() +
+                                           ": expected token: \"" + Token.getTokenValue( expected ) +
+                                           "\", instead of: \"" +  Token.getTokenValue( current ) + "\"." );
         }
     }
     
