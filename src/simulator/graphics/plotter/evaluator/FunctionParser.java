@@ -11,6 +11,7 @@ public class FunctionParser
 {
     private static Tokenizer tokenizer;
     private static Token token;
+    private static boolean readNext = true;
     
     public FunctionParser( final String expression ) {
         tokenizer = new Tokenizer( expression );
@@ -18,7 +19,7 @@ public class FunctionParser
     
     public static Expr parse( final String expression ) {
         tokenizer = new Tokenizer( expression );
-        return parseEXPRESSION();
+        return parseEXPR();
     }
     
     /**
@@ -36,65 +37,116 @@ public class FunctionParser
         }
     }
     
-    private static Expr parseEXPRESSION()
-    {
-        Expr expr;
-        Token base = null;
-        
-        token = tokenizer.nextToken();
-        System.out.println( "TOKEN: " + token );
-        if (token.getType() == Token.T_NUMBER || token.getType() == Token.T_IDENTIFIER) {
-            Expr term = new Term( token );
-            System.out.println( "TERM: " + token );
-            expr = parseRIGHT_EXPR( term );
-        } else {
-            if (token.getType() == Token.T_LOG) {
-                // Get the base of the logarithm.
-                base = tokenizer.nextToken();
-                expectedToken( base.getType(), Token.T_NUMBER );
-            }
-            
-            if (token.getType() != Token.T_OPEN_PARENTHESIS) {
-                System.out.println( "SONO QUI 1" );
-                expectedToken( tokenizer.nextToken().getType(), Token.T_OPEN_PARENTHESIS );
-            }
-            
-            if (base == null) {
-                expr = new Expr( token, parseEXPRESSION() );
-            } else {
-                expr = new Expr( token, new Term( base ), parseEXPRESSION() );
-                System.out.println( "TERMINATA RICORSIONE" );
-            }
-            
-            expectedToken( token.getType(), Token.T_CLOSED_PARENTHESIS );
-            
-            expr = parseRIGHT_EXPR( expr );
-        }
-        
-        return expr;
+    private static Expr parseEXPR() {
+        return parseSUM_OP( parseSIGNED_TERM() );
     }
     
-    private static Expr parseRIGHT_EXPR( final Expr e1 )
+    private static Expr parseSUM_OP( final Expr e )
     {
-        token = tokenizer.nextToken();
-        System.out.println( "RIGHT: " + token );
-        if (token.getType() == Token.T_EOF) {
-            return e1;
+        if (readNext)
+            token = tokenizer.nextToken();
+        readNext = true;
+        
+        if (token.getType() == Token.T_PLUS || token.getType() == Token.T_MINUS) {
+            return parseSUM_OP( new Expr( token.clone(), e, parseTERM() ) );
+        } else {
+            readNext = false;
+            return e;
+        }
+    }
+    
+    private static Expr parseSIGNED_TERM() {
+        return parseTERM();
+    }
+    
+    private static Expr parseTERM()
+    {
+        if (readNext)
+            token = tokenizer.nextToken();
+        readNext = true;
+        
+        Expr e;
+        if (token.getType() == Token.T_PLUS || token.getType() == Token.T_MINUS) {
+            e = new Expr( token.clone(), parseFACTOR() );
+        } else {
+            readNext = false;
+            e = parseFACTOR();
         }
         
-        if(token.getType() == Token.T_CLOSED_PARENTHESIS) {
-            return e1;
-        }
+        return parseTERM_OP( e );
+    }
+    
+    private static Expr parseTERM_OP( final Expr e )
+    {
+        if (readNext)
+            token = tokenizer.nextToken();
+        readNext = true;
         
-        if (token.getType() != Token.T_PLUS && token.getType() != Token.T_MINUS &&
-            token.getType() != Token.T_MULTIPLY && token.getType() != Token.T_DIVIDE &&
-            token.getType() != Token.T_POW) {
-            throw new EvaluationException( "Invalid token '" + token.toString() + "'." );
+        if (token.getType() == Token.T_MULTIPLY || token.getType() == Token.T_DIVIDE) {
+            return parseTERM_OP( new Expr( token.clone(), e, parseSIGNED_FACTOR() ) );
+        } else {
+            readNext = false;
+            return e;
         }
+    }
+    
+    private static Expr parseSIGNED_FACTOR()
+    {
+        if (readNext)
+            token = tokenizer.nextToken();
+        readNext = true;
         
-        Token currentToken = token;
-        Expr e2 = parseEXPRESSION();
-        System.out.println( "TOKEN: " + currentToken + ", E2: " + e2 );
-        return new Expr( currentToken, e1, e2 );
+        if (token.getType() == Token.T_MULTIPLY || token.getType() == Token.T_DIVIDE) {
+            return new Expr( token.clone(), parseFACTOR() );
+        } else {
+            readNext = false;
+            return parseFACTOR();
+        }
+    }
+    
+    private static Expr parseFACTOR() {
+        return parseFACTOR_OP( parseARGUMENT() );
+    }
+    
+    private static Expr parseFACTOR_OP( final Expr e )
+    {
+        if (readNext)
+            token = tokenizer.nextToken();
+        readNext = true;
+        
+        if (token.getType() == Token.T_POW) {
+            return new Expr( token.clone(), e, parseARGUMENT() );
+        } else {
+            readNext = false;
+            return e;
+        }
+    }
+    
+    private static Expr parseARGUMENT()
+    {
+        if (readNext)
+            token = tokenizer.nextToken();
+        readNext = true;
+        
+        switch( token.getType() ) {
+            case( Token.T_NUMBER ):
+            case( Token.T_IDENTIFIER ):
+                return new Term( token );
+            case( Token.T_OPEN_PARENTHESIS ):
+                Expr e = parseEXPR();
+                expectedToken( token.getType(), Token.T_CLOSED_PARENTHESIS );
+                readNext = true;
+                return e;
+            default: // Function.
+                Token function = token.clone();
+                if (token.getType() == Token.T_LOG) {
+                    // Get the logarithm base.
+                    Term base = new Term( tokenizer.nextToken() );
+                    System.out.println( "BASE: " + base );
+                    return new Expr( function, base, parseARGUMENT() );
+                } else {
+                    return new Expr( function, parseARGUMENT() );
+                }
+        }
     }
 }

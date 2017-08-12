@@ -1,3 +1,6 @@
+/**
+ * @author Stefano Ceccotti
+*/
 
 package simulator.graphics.plotter.evaluator;
 
@@ -147,12 +150,18 @@ public class Tokenizer
                     token.value = Double.parseDouble( ide.toString() );
                 }
             } else {
-                // Identifier.
-                if(table.containsKey( ide.toString() )) {
-                    token = new Token( table.get( ide.toString() ) );
+                if (ide.toString().startsWith( "log" )) {
+                    token = new Token( table.get( "log" ) );
+                    rewind( ide.toString().length() - 3 );
                 } else {
-                    token = new Token( Token.T_IDENTIFIER );
-                    token.stringValue = ide.toString();
+                    if(table.containsKey( ide.toString() )) {
+                        // Function.
+                        token = new Token( table.get( ide.toString() ) );
+                    } else {
+                        // Identifier.
+                        token = new Token( Token.T_IDENTIFIER );
+                        token.stringValue = ide.toString();
+                    }
                 }
             }
             
@@ -169,7 +178,7 @@ public class Tokenizer
         if (isEoF())
             return new Token( Token.T_EOF );
         
-        System.out.println( "CURRENT: " + peek() );
+        //System.out.println( "CURRENT: " + peek() );
         
         Token token = getToken();
         if (token == null) {
@@ -222,6 +231,15 @@ public class Tokenizer
         public int getType() {
             return type;
         }
+        
+        @Override
+        public Token clone()
+        {
+            Token token = new Token( type );
+            token.stringValue = stringValue;
+            token.value = value;
+            return token;
+        }
 
         /** 
          * Returns the string value of a token.
@@ -263,6 +281,7 @@ public class Tokenizer
         
         @Override
         public String toString() {
+            if (type == Token.T_NUMBER) return "" + value;
             return getTokenValue( type );
         }
     }

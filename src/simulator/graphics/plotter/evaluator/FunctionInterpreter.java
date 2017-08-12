@@ -29,15 +29,16 @@ public class FunctionInterpreter
     
     private double evalExpr( final Expr e )
     {
-        System.out.println( "TOKEN: " + e.getToken() );
-        switch (e.getToken().getType()) {
-            case( Token.T_NUMBER):      return e.getExpr1().getToken().value;
-            case( Token.T_IDENTIFIER ): return getValue( e.getExpr1().getToken() );
+        switch (e.getOp().getType()) {
+            case( Token.T_NUMBER):      return e.getExpr1().getOp().value;
+            case( Token.T_IDENTIFIER ): return getValue( e.getExpr1().getOp() );
             case( Token.T_OPEN_PARENTHESIS ): return evalExpr( e.getExpr1() );
-            case( Token.T_PLUS ) :     return evalExpr( e.getExpr1() ) + evalExpr( e.getExpr2() );
+            case( Token.T_PLUS ) :     if (e.getExpr2() == null) return evalExpr( e.getExpr1() );
+                                       else return evalExpr( e.getExpr1() ) + evalExpr( e.getExpr2() );
             case( Token.T_DIVIDE ) :   return evalExpr( e.getExpr1() ) / evalExpr( e.getExpr2() );
             case( Token.T_MULTIPLY ) : return evalExpr( e.getExpr1() ) * evalExpr( e.getExpr2() );
-            case( Token.T_MINUS ) :    return evalExpr( e.getExpr1() ) - evalExpr( e.getExpr2() );
+            case( Token.T_MINUS ) :    if (e.getExpr2() == null) return -evalExpr( e.getExpr1() );
+                                       else return evalExpr( e.getExpr1() ) - evalExpr( e.getExpr2() );
             case( Token.T_POW ) :      return Math.pow(   evalExpr( e.getExpr1() ), evalExpr( e.getExpr2() ) );
             case( Token.T_LN ) :       return Math.log(   evalExpr( e.getExpr1() ) );
             case( Token.T_LOG ) :      return Math.log10( evalExpr( e.getExpr2() ) )/Math.log10( evalExpr( e.getExpr1() ) );
