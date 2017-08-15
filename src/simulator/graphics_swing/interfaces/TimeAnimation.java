@@ -89,7 +89,7 @@ public class TimeAnimation extends JPanel implements ChangeListener, ComponentLi
     {
         if (!nd.isPauseAnimation()) {
             long timer = nd.getTime();
-            time.setValue( (int) (time.getMaximum() * (timer / (double) AnimationNetwork.timeSimulation)) );
+            time.setValue( (int) (time.getMaximum() * (timer / (double) AnimationNetwork.timeSimulation)));
         }
     }
     
