@@ -51,6 +51,16 @@ public class AnimationManager extends JPanel
         
     }
     
+    public AbstractButton findButton( String name ) {
+    	for (AbstractButton button: buttons) {
+    		if (button.getName().equals( name )) {
+    			return button;
+    		}
+    	}
+    	
+    	return null;
+    }
+    
     public void setNetworkDisplay( final NetworkDisplay nd )
     {
     	// TODO STE SE LO LEGGI, COSA NE PENSI?
@@ -61,7 +71,7 @@ public class AnimationManager extends JPanel
     	            @Override
     	            public void actionPerformed( final ActionEvent e ) {
     	                nd.startAnimation();
-    	                buttons.get( 1 ).setSelected( false );
+    	                findButton( PAUSE ).setSelected( false );
     	            }
     	        } );
     		} else if (button.getName().equals( PAUSE )) {
@@ -69,7 +79,7 @@ public class AnimationManager extends JPanel
     	            @Override
     	            public void actionPerformed( final ActionEvent e ) {
     	            	nd.pauseAnimation();
-    	                buttons.get( 0 ).setSelected( false );
+    	            	findButton( START ).setSelected( false );
     	            }
     	        } );
     		} else if (button.getName().equals( STOP )) {
