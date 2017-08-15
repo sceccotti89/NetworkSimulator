@@ -63,7 +63,7 @@ public class AnimationManager extends JPanel
     
     public void setNetworkDisplay( final NetworkDisplay nd )
     {
-    	// TODO STE SE LO LEGGI, COSA NE PENSI?
+    	// TODO STE SE LO LEGGI, COSA NE PENSI? CANCELLA QUELLA CHE OVVIAMENTE TI PIACE DI MENO
     	
     	for (AbstractButton button: buttons) {
     		if (button.getName().equals( START )) {
