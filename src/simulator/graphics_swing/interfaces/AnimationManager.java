@@ -53,6 +53,8 @@ public class AnimationManager extends JPanel
     
     public void setNetworkDisplay( final NetworkDisplay nd )
     {
+    	// TODO STE SE LO LEGGI, COSA NE PENSI?
+    	
     	for (AbstractButton button: buttons) {
     		if (button.getName().equals( START )) {
     			button.addActionListener( new ActionListener() {
