@@ -25,8 +25,13 @@ public class Message
         this.layer = layer;
     }
     
-    public <T extends Serializable> void addMessage( final T message ) {
-        setMessage( Utils.serializeObject( message ) );
+    public <T extends Serializable> void addMessage( final T message )
+    {
+        if (message instanceof byte[]){
+            setMessage( (byte[]) message );
+        } else {
+            setMessage( Utils.serializeObject( message ) );
+        }
     }
     
     private void setMessage( final byte[] message ) {
@@ -38,16 +43,13 @@ public class Message
      * 
      * @param length    length of the message
     */
-    private static byte[] createMessage( final long length ) {
+    private static byte[] createMessage( final long length )
+    {
         StringBuilder message = new StringBuilder();
         for (long i = 0; i < length; i++) {
             message.append( '0' );
         }
         return Utils.serializeObject( message );
-    }
-    
-    public void addMessage( byte[] message ) {
-        this.message = message;
     }
     
     public <T extends Serializable> T getMessage() {
