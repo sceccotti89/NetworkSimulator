@@ -19,7 +19,7 @@ public class CBRGenerator extends EventGenerator
         super( duration, departureTime, Utils.INFINITE,
                reqPacket, resPacket, true, false, false );
     }
-
+    
     @Override
     public Time computeDepartureTime( final Event e ) {
         return null;
