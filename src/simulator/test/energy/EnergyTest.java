@@ -33,9 +33,6 @@ import simulator.utils.Utils;
 
 public class EnergyTest
 {
-    private static final int CPU_CORES = 4;
-    private static final int SWITCHES = 2;
-    
     private static class ClientGenerator extends EventGenerator
     {
         private static final String QUERY_TRACE = "Models/PESOS/msn.day2.arrivals.txt";
@@ -378,6 +375,8 @@ public class EnergyTest
         String modelType = model.getModelType( true );
         
         client.connect( switchAgent );
+        
+        final int CPU_CORES = 4;
         List<EnergyCPU> cpus = new ArrayList<>( CPU_CORES );
         Plotter plotter = new Plotter( model.getModelType( false ), 800, 600 );
         for (int i = 0; i < CPU_CORES; i++) {
@@ -436,10 +435,10 @@ public class EnergyTest
     public static void testDistributedSingleNode( final CPUEnergyModel model ) throws Exception
     {
         /*
-                                   / core0    / core2
-                                  / dynamic  / dynamic
-               1000Mb,0ms        /          /
-        client ---------- switch  ---------
+                                   / core0    / core2     / core4
+                                  / dynamic  / dynamic   / dynamic
+               1000Mb,0ms        /          /           /
+        client ---------- switch  ---------  ----------
           0ms               0ms  \          \
                                   \          \
                                    \ core1    \ core3
@@ -467,6 +466,8 @@ public class EnergyTest
         String modelType = model.getModelType( true );
         
         client.connect( switchAgent );
+        
+        final int CPU_CORES = 5;
         List<EnergyCPU> cpus = new ArrayList<>( CPU_CORES );
         Plotter plotter = new Plotter( model.getModelType( false ), 800, 600 );
         for (int i = 0; i < CPU_CORES; i++) {
@@ -583,6 +584,8 @@ public class EnergyTest
         net.addAgent( switchAgent );
         client.connect( switchAgent );
         
+        final int CPU_CORES = 4;
+        final int SWITCHES = 2;
         List<EnergyCPU> cpus = new ArrayList<>( CPU_CORES * SWITCHES );
         Plotter plotter = new Plotter( model.getModelType( false ), 800, 600 );
         
@@ -681,6 +684,7 @@ public class EnergyTest
           0ms                    DYNAMIC
         */
         
+        final int CPU_CORES = 4;
         EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/PESOS/cpu_frequencies.txt" );
         cpu.setModel( model );
         
@@ -793,6 +797,8 @@ public class EnergyTest
         
         final int CPU_NODES = 2;
         String modelType = model.getModelType( true );
+        
+        final int CPU_CORES = 4;
         List<EnergyCPU> cpus = new ArrayList<>( CPU_CORES );
         Plotter plotter = new Plotter( model.getModelType( false ), 800, 600 );
         for (int i = 0; i < CPU_NODES; i++) {
