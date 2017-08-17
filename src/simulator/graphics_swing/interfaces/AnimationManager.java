@@ -24,6 +24,8 @@ public class AnimationManager extends JPanel
     private List<AbstractButton> buttons;
     
     public static int frames = 1;
+    
+    public final String START = "START", PAUSE = "PAUSE", STOP = "STOP";
 
     public AnimationManager( final float width, final float height )
     {
@@ -33,12 +35,15 @@ public class AnimationManager extends JPanel
         buttons = new ArrayList<>();
         AbstractButton button = new JToggleButton( "START" );
         button.setEnabled( true );
+        button.setName( START );
         buttons.add( button );
         add( button );
         button = new JToggleButton( "PAUSE" );
+        button.setName( PAUSE );
         add( button );
         buttons.add( button );
         button = new JButton( "STOP" );
+        button.setName( STOP );
         add( button );
         buttons.add( button );
         
@@ -46,10 +51,50 @@ public class AnimationManager extends JPanel
         
     }
     
+    public AbstractButton findButton( String name ) {
+    	for (AbstractButton button: buttons) {
+    		if (button.getName().equals( name )) {
+    			return button;
+    		}
+    	}
+    	
+    	return null;
+    }
+    
     public void setNetworkDisplay( final NetworkDisplay nd )
     {
+    	// TODO STE SE LO LEGGI, COSA NE PENSI? CANCELLA QUELLA CHE OVVIAMENTE TI PIACE DI MENO
+    	
+    	for (AbstractButton button: buttons) {
+    		if (button.getName().equals( START )) {
+    			button.addActionListener( new ActionListener() {
+    	            @Override
+    	            public void actionPerformed( final ActionEvent e ) {
+    	                nd.startAnimation();
+    	                findButton( PAUSE ).setSelected( false );
+    	            }
+    	        } );
+    		} else if (button.getName().equals( PAUSE )) {
+    			button.addActionListener( new ActionListener() {
+    	            @Override
+    	            public void actionPerformed( final ActionEvent e ) {
+    	            	nd.pauseAnimation();
+    	            	findButton( START ).setSelected( false );
+    	            }
+    	        } );
+    		} else if (button.getName().equals( STOP )) {
+    			button.addActionListener( new ActionListener() {
+    	            @Override
+    	            public void actionPerformed( final ActionEvent e ) {
+    	            	nd.stopAnimation();
+    	                resetButtons();
+    	            }
+    	        } );
+    		}
+    	}
+    	
         // START
-        buttons.get( 0 ).addActionListener( new ActionListener() {
+        /*buttons.get( 0 ).addActionListener( new ActionListener() {
             @Override
             public void actionPerformed( final ActionEvent e ) {
                 nd.startAnimation();
@@ -73,7 +118,7 @@ public class AnimationManager extends JPanel
                 nd.stopAnimation();
                 resetButtons();
             }
-        } );
+        } );*/
     }
     
     public void resetButtons()

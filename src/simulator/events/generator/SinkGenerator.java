@@ -19,7 +19,7 @@ public class SinkGenerator extends EventGenerator
                reqPacket, resPacket,
                false, false, true );
     }
-
+    
     @Override
     public Time computeDepartureTime( final Event e ) {
         return null;

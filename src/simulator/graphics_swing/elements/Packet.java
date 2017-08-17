@@ -217,8 +217,15 @@ public class Packet implements Comparable<Packet>
     	if (time < startTime || time > endTime)
             return;
     	
+    	float offset = height/30;
+    	if (angle >= 90 || angle <= -90 || angle == -180) offset *= -type;
+    	area.y = (int) (area.getY() + offset);
+    	g.rotate( (angle * Math.PI) / 180d );
         g.setColor( color );
-        g.fill( areaRotated );
+        //g.fill( areaRotated );
+        g.fill( area );
+        g.rotate( -((angle * Math.PI) / 180d) );
+        area.y = (int) (area.getY() - offset);
     }
 
     @Override

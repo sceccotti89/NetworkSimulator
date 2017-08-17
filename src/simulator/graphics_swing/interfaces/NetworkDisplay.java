@@ -45,8 +45,6 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener, Compo
     private boolean pause;
     
     private Point mouse;
-    
-    
 
     public NetworkDisplay( final AnimationManager am, final float width, final float height )
     {
