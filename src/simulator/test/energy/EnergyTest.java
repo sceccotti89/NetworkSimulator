@@ -33,6 +33,8 @@ import simulator.utils.Utils;
 
 public class EnergyTest
 {
+    private static final int CPU_CORES = 4;
+    
     private static class ClientGenerator extends EventGenerator
     {
         private static final String QUERY_TRACE = "Models/PESOS/msn.day2.arrivals.txt";
@@ -354,7 +356,7 @@ public class EnergyTest
     
     public static void testNetworkAnimation( final CPUEnergyModel model ) throws Exception
     {
-        NetworkTopology net = new NetworkTopology( "Topology/Topology_test.json" );
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_animation_test.json" );
         net.setTrackingEvent( "./Results/packets.txt" );
         System.out.println( net.toString() );
         
@@ -426,7 +428,7 @@ public class EnergyTest
         
         // Show the animation.
         AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );
-        an.loadSimulation( "Topology/Topology_test.json", "./Results/packets.txt" );
+        an.loadSimulation( "Topology/Topology_animation_test.json", "./Results/packets.txt" );
         an.setTargetFrameRate( 90 );
         an.setForceExit( false );
         an.start();
@@ -435,17 +437,17 @@ public class EnergyTest
     public static void testDistributedSingleNode( final CPUEnergyModel model ) throws Exception
     {
         /*
-                                   / core0    / core2     / core4
-                                  / dynamic  / dynamic   / dynamic
-               1000Mb,0ms        /          /           /
-        client ---------- switch  ---------  ----------
+                                   / node0    / node2
+                                  / dynamic  / dynamic
+               1000Mb,0ms        /          /
+        client ---------- switch  ---------
           0ms               0ms  \          \
                                   \          \
-                                   \ core1    \ core3
+                                   \ node1    \ node3
                                     dynamic    dynamic
         */
         
-        NetworkTopology net = new NetworkTopology( "Topology/Topology_multicore.json" );
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_singleNode.json" );
         net.setTrackingEvent( "./Results/packets2.txt" );
         System.out.println( net.toString() );
         
@@ -462,12 +464,10 @@ public class EnergyTest
                                                       new Packet( 20, SizeUnit.BYTE ) );
         Agent switchAgent = new SwitchAgent( 1, anyGen );
         net.addAgent( switchAgent );
+        client.connect( switchAgent );
         
         String modelType = model.getModelType( true );
         
-        client.connect( switchAgent );
-        
-        final int CPU_CORES = 5;
         List<EnergyCPU> cpus = new ArrayList<>( CPU_CORES );
         Plotter plotter = new Plotter( model.getModelType( false ), 800, 600 );
         for (int i = 0; i < CPU_CORES; i++) {
@@ -545,7 +545,7 @@ public class EnergyTest
 
     public static void testDistributedMultipleNodes( final CPUEnergyModel model ) throws IOException
     {
-        // TODO Per adesso uso soltanto 2 switch
+        // TODO Per adesso uso soltanto 2 switch, poi ce ne vorranno 5
         /*
                                    / switch_0  / switch_2
                                   /  dynamic  /  dynamic
@@ -566,7 +566,7 @@ public class EnergyTest
                      dynamic     dynamic
         */
         
-        NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed.json" );
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_multiNode.json" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -584,7 +584,6 @@ public class EnergyTest
         net.addAgent( switchAgent );
         client.connect( switchAgent );
         
-        final int CPU_CORES = 4;
         final int SWITCHES = 2;
         List<EnergyCPU> cpus = new ArrayList<>( CPU_CORES * SWITCHES );
         Plotter plotter = new Plotter( model.getModelType( false ), 800, 600 );
@@ -684,7 +683,6 @@ public class EnergyTest
           0ms                    DYNAMIC
         */
         
-        final int CPU_CORES = 4;
         EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/PESOS/cpu_frequencies.txt" );
         cpu.setModel( model );
         
@@ -694,7 +692,7 @@ public class EnergyTest
         cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
         cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
         
-        NetworkTopology net = new NetworkTopology( "Topology/Topology_nodeMulticore.json" );
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_mono_multicore.json" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -766,7 +764,7 @@ public class EnergyTest
     {
         // TODO Per adesso utilizzo soltanto 2 nodi, ciascuno con 4 core.
         /*
-        TODO i link dallo switch ai vari nodi sono per adesso di 1Gb e 0 ms di latenza.
+        TODO i link dallo switch ai vari nodi sono per adesso di 1Gb/s e 0 ms di latenza.
                                    / node0    / node2
                                   / dynamic  / dynamic
                1000Mb,0ms        /          /
@@ -798,7 +796,6 @@ public class EnergyTest
         final int CPU_NODES = 2;
         String modelType = model.getModelType( true );
         
-        final int CPU_CORES = 4;
         List<EnergyCPU> cpus = new ArrayList<>( CPU_CORES );
         Plotter plotter = new Plotter( model.getModelType( false ), 800, 600 );
         for (int i = 0; i < CPU_NODES; i++) {
