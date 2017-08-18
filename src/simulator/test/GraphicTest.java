@@ -12,9 +12,10 @@ import simulator.graphics.AnimationNetwork;
      {
          AnimationNetwork an = new AnimationNetwork( 800, 600, "prova" );
          
-         an.loadSimulation( "Topology/Topology_multicore.json", "data/File/Packets.txt" );
+         //an.loadSimulation( "Topology/Topology_multicore.json", "data/File/Packets.txt" );
+         an.loadNetwork( "Topology/Topology_distributed_multiNode.json" );
          //an.loadSimulation( "Topology/Topology_multicore.json", "Results/packets.txt" );
-        
+         
          //an.addNode( 100, 200, 3, Color.red );
          //an.addLink(  );
          

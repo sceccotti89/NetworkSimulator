@@ -185,7 +185,7 @@ public class AnimationNetwork
             long delay  = node.getLong( NetworkNode.DELAY );
             int xPos    = (node.has( NetworkNode.X_POS )) ? node.getInt( NetworkNode.X_POS ) : 0;
             int yPos    = (node.has( NetworkNode.Y_POS )) ? node.getInt( NetworkNode.Y_POS ) : 0;
-            Color color = Color.decode( node.getString( "color" ) );
+            Color color = (node.has( "color" )) ? Color.decode( node.getString( "color" ) ) : Color.BLACK;
             
             addNode( xPos, yPos, id, name, delay, color );
         }
