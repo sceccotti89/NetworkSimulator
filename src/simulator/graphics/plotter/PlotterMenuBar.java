@@ -166,7 +166,7 @@ public class PlotterMenuBar extends JMenuBar implements ActionListener
             case( 3 ): // Add plot.
                 f = new JFileChooser( Utils.RESULTS_DIR );
                 if (f.showOpenDialog( plotter.getFrame() ) == JFileChooser.APPROVE_OPTION) {
-                    String dir  = f.getCurrentDirectory().getName();
+                    String dir  = f.getCurrentDirectory().getAbsolutePath();
                     String file = f.getSelectedFile().getName();
                     int index = file.lastIndexOf( '.' );
                     try {

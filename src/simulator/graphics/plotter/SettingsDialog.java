@@ -45,8 +45,10 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
         JPanel boxPanel = new JPanel();
         boxPanel.setLayout( new BoxLayout( boxPanel, BoxLayout.Y_AXIS ) );
         
-        boxPanel.add( createPanel( "X ticks", "Value", settings._xNumTicks + "", "Interval", settings.xTickInterval + "" ) );
-        boxPanel.add( createPanel( "Y ticks", "Value", settings._yNumTicks + "", "Interval", settings.yTickInterval + "" ) );
+        int xNumTicks = (settings._xNumTicks == Integer.MAX_VALUE) ? 1 : settings._xNumTicks;
+        int yNumTicks = (settings._yNumTicks == Integer.MAX_VALUE) ? 1 : settings._yNumTicks;
+        boxPanel.add( createPanel( "X ticks", "Value", xNumTicks + "", "Interval", settings.xTickInterval + "" ) );
+        boxPanel.add( createPanel( "Y ticks", "Value", yNumTicks + "", "Interval", settings.yTickInterval + "" ) );
         Range range = settings._range;
         boxPanel.add( createPanel( "X range", "From", getValue( range.getMinX() ), "To", getValue( range.getMaxX() ) ) );
         boxPanel.add( createPanel( "Y range", "From", getValue( range.getMinY() ), "To", getValue( range.getMaxY() ) ) );

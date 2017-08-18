@@ -779,7 +779,7 @@ public class Plotter
             boolean drawCircle = true;
             Pair<Double,Double> point;
             Point p = new Point( plotLocation.x, plotLocation.y );
-            if(plot.points.size() > 0) {
+            if (plot.points.size() > 0) {
                 point = plot.points.get( 0 );
                 // Get the starting position.
                 double x = plotLocation.getX() + ((point.getFirst() - range.minX) * (xLength / range.getXRange()));
@@ -796,6 +796,16 @@ public class Plotter
             
             // Set the area to draw the points.
             g.setClip( area );
+            
+            if (plot.points.size() == 1) {
+                // Draw the point.
+                g.setColor( plot.color );
+                g.setStroke( plot.stroke );
+                point = plot.points.get( 0 );
+                double x = plotLocation.getX() + ((point.getFirst() - range.minX) * (xLength / range.getXRange()));
+                double y = plotLocation.getY() - ((point.getSecond() - range.minY) * (yLength / range.getYRange()));
+                g.drawLine( (int) p.getX(), (int) p.getY(), (int) x, (int) y );
+            }
             
             for (int i = 1; i < plot.points.size(); i++) {
                 try {
@@ -983,11 +993,18 @@ public class Plotter
                 try {
                     List<Pair<Double,Double>> points = plot.points;
                     if (points.size() > 0) {
-                        if (getMinX)  minX = Math.min( minX, points.get( 0 ).getFirst() );
-                        if (getMaxX)  maxX = Math.max( maxX, points.get( points.size() - 1 ).getFirst() );
-                        for (Pair<Double,Double> point : points) {
-                            if (getMinY)  minY = Math.min( minY, point.getSecond() );
-                            if (getMaxY)  maxY = Math.max( maxY, point.getSecond() );
+                        if (points.size() == 1) {
+                            minX = points.get( 0 ).getFirst() - 0.1d;
+                            maxX = points.get( 0 ).getFirst() + 0.1d;
+                            minY = points.get( 0 ).getSecond() - 0.1d;
+                            maxY = points.get( 0 ).getSecond() + 0.1d;
+                        } else {
+                            if (getMinX)  minX = Math.min( minX, points.get( 0 ).getFirst() );
+                            if (getMaxX)  maxX = Math.max( maxX, points.get( points.size() - 1 ).getFirst() );
+                            for (Pair<Double,Double> point : points) {
+                                if (getMinY)  minY = Math.min( minY, point.getSecond() );
+                                if (getMaxY)  maxY = Math.max( maxY, point.getSecond() );
+                            }
                         }
                     }
                 } catch ( ConcurrentModificationException e ) {}

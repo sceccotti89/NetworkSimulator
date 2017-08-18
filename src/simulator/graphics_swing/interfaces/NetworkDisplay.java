@@ -187,6 +187,8 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener, Compo
         }
         
         info.render( g2 );
+        
+        g2.dispose();
     }
 
     @Override
