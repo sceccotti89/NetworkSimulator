@@ -20,6 +20,7 @@ import simulator.events.Event;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.test.energy.EnergyModel.*;
 import simulator.utils.Time;
+import simulator.utils.Utils;
 
 public class EnergyCPU extends Device<Long,QueryInfo>
 {
@@ -85,6 +86,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
                 long timeBudget = cpuModel.getTimeBudget().getTimeMicroseconds()/1000;
                 String file = "PESOS_" + timeBudget + "_" + cpuModel.getMode();
                 file += (_cores == 1) ? "_distr" : "_mono";
+                Utils.checkDirectory( "Results/Coefficients" );
                 coeffWriter = new PrintWriter( "Results/Coefficients/" + file + "_Freq_Energy.txt", "UTF-8" );
             }
         } catch ( IOException e ) {

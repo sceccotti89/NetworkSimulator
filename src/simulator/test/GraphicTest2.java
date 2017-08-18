@@ -10,12 +10,6 @@ import simulator.graphics_swing.AnimationNetwork;
  {
      public static void main( final String[] args ) throws IOException
      {
-         /*Evaluator evaluator = new Evaluator( "log10(4) + asin(0.1)^2 * cos(0.1)^3" ); // 0.61194
-         evaluator.putVariable( "x", 0.1 );
-         evaluator.putVariable( "y", 0.1 );
-         System.out.println( evaluator.eval() );
-         System.exit( 0 );*/
-         
          Plotter plotter = new Plotter( "prova", 800, 600 );
          plotter.addPlot( "/home/stefano/test.txt", null, "test.txt" );
          plotter.setVisible( true );

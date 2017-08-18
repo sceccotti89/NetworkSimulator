@@ -348,10 +348,10 @@ public class EnergyTest
         model.loadModel();
         
         //testDistributedSingleNode( model );
-        //testDistributedMultipleNodes( model );
+        testDistributedMultipleNodes( model );
         //testNodeMulticore( model );
         //testDistributedMulticore( model );
-        testNetworkAnimation( model );
+        //testNetworkAnimation( model );
     }
     
     public static void testNetworkAnimation( final CPUEnergyModel model ) throws Exception
@@ -545,25 +545,24 @@ public class EnergyTest
 
     public static void testDistributedMultipleNodes( final CPUEnergyModel model ) throws IOException
     {
-        // TODO Per adesso uso soltanto 2 switch, poi ce ne vorranno 5
         /*
-                                   / switch_0  / switch_2
-                                  /  dynamic  /  dynamic
-               1000Mb,0ms        /           /
+                                   / node_0   / node_2
+                                  / dynamic  / dynamic
+               1000Mb,0ms        /          /
         client ---------- switch  ----------
-          0ms               0ms  \           \
-                                  \           \
-                                   \ switch_1  \ switch_3
-                                     dynamic     dynamic
+          0ms               0ms  \          \
+                                  \          \
+                                   \ node_1  \ node_3
+                                    dynamic   dynamic
         
-                   / node_i_0  / node_i_2
-                  /  dynamic  /  dynamic
-                 /           /
-        switch_i  ----------
-          0ms    \           \
-                  \           \
-                   \ node_i_2  \ node_i_3
-                     dynamic     dynamic
+                  / core_i_0  / core_i_2
+                 /  dynamic  /  dynamic
+                /           /
+        node_i  ----------
+          0ms   \           \
+                 \           \
+                  \ core_i_2  \ core_i_3
+                    dynamic     dynamic
         */
         
         NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_multiNode.json" );
@@ -584,14 +583,14 @@ public class EnergyTest
         net.addAgent( switchAgent );
         client.connect( switchAgent );
         
-        final int SWITCHES = 2;
-        List<EnergyCPU> cpus = new ArrayList<>( CPU_CORES * SWITCHES );
+        final int NODES = 5;
+        List<EnergyCPU> cpus = new ArrayList<>( NODES * CPU_CORES );
         Plotter plotter = new Plotter( model.getModelType( false ), 800, 600 );
         
         String modelType = model.getModelType( true );
         
         // Add the switch nodes.
-        for (int i = 0; i < SWITCHES; i++) {
+        for (int i = 0; i < NODES; i++) {
             anyGen = new AnycastGenerator( Time.INFINITE,
                                            new Packet( 20, SizeUnit.BYTE ),
                                            new Packet( 20, SizeUnit.BYTE ) );
@@ -636,7 +635,7 @@ public class EnergyTest
         double totalEnergy = 0;
         double totalIdleEnergy = 0;
         int totalQueries = 0;
-        for (int i = 0; i < CPU_CORES * SWITCHES; i++) {
+        for (int i = 0; i < NODES * CPU_CORES; i++) {
             EnergyCPU cpu = cpus.get( i );
             totalEnergy += cpu.getResultSampled( Global.ENERGY_SAMPLING );
             totalIdleEnergy += cpu.getResultSampled( Global.IDLE_ENERGY_SAMPLING );

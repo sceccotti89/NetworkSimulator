@@ -993,6 +993,7 @@ public class Plotter
             }
             
             if (!settings._settedByUser) {
+                // Set the range of the plotter.
                 settings._range.minX = Math.min( settings._range.minX, range.minX );
                 settings._range.maxX = Math.max( settings._range.maxX, range.maxX );
                 settings._range.minY = Math.min( settings._range.minY, range.minY );
@@ -1119,7 +1120,7 @@ public class Plotter
             
             return new Range( maxPoints, minX, maxX, minY, maxY );
         }
-
+        
         @Override
         protected void paintComponent( final Graphics g )
         {
