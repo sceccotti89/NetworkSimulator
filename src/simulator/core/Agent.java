@@ -249,7 +249,7 @@ public abstract class Agent
     
     /**
      * Returns the percentage of node utilization.</br>
-     * By default it returns the size of the event queue.</br>
+     * By default it returns the size of the associated event queue.</br>
      * In case of any attached device an override of this method is suggested.
      * 
      * @param time    time when the queue is checked.
