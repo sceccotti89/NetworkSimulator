@@ -6,6 +6,7 @@ package simulator.graphics.plotter;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 
 import javax.swing.ButtonGroup;
@@ -40,6 +41,11 @@ public class PlotterMenuBar extends JMenuBar implements ActionListener
         file.add( new_project );
         new_project.setName( "0" );
         new_project.addActionListener( this );
+        
+        JMenuItem new_file = new JMenuItem( "Save as file.." );
+        file.add( new_file );
+        new_file.setName( "1" );
+        new_file.addActionListener( this );
 
         add( file );
         file.addSeparator();
@@ -48,31 +54,29 @@ public class PlotterMenuBar extends JMenuBar implements ActionListener
         JMenu edit = new JMenu( "Edit" );
         showFPS = new JCheckBoxMenuItem( "Show FPS" );
         edit.add( showFPS );
-        showFPS.setName( "1" );
+        showFPS.setName( "2" );
         showFPS.addActionListener( this );
         
         showGrid = new JCheckBoxMenuItem( "Show Grid" );
         edit.add( showGrid );
-        showGrid.setName( "2" );
+        showGrid.setName( "3" );
         showGrid.addActionListener( this );
         
         updateSelectedValue();
         
         JMenuItem addPlot = new JMenuItem( "Add plot" );
         edit.add( addPlot );
-        addPlot.setName( "3" );
+        addPlot.setName( "4" );
         addPlot.addActionListener( this );
         
         JMenuItem makePlot = new JMenuItem( "Make plot" );
         edit.add( makePlot );
-        makePlot.setName( "4" );
+        makePlot.setName( "5" );
         makePlot.addActionListener( this );
         
         JMenu theme = new JMenu( "Theme" );
         ButtonGroup group = new ButtonGroup();
         edit.add( theme );
-        theme.setName( "5" );
-        theme.addActionListener( this );
         theme.addSeparator();
         
         JRadioButtonMenuItem white = new JRadioButtonMenuItem( "White" );
@@ -154,16 +158,53 @@ public class PlotterMenuBar extends JMenuBar implements ActionListener
                 //f.setFileFilter( filter );
                 f.showSaveDialog( plotter.getFrame() );
                 break;
+            
+            case( 1 ): // Save as file.
+                f = new JFileChooser() {
+                    /** Generated serial ID. */
+                    private static final long serialVersionUID = 4540638898219035335L;
 
-            case( 1 ): // Show FPS
+                    @Override
+                    public void approveSelection()
+                    {
+                        File f = getSelectedFile();
+                        if (f.exists() && getDialogType() == SAVE_DIALOG) {
+                            int result = JOptionPane.showConfirmDialog( this, "The file exists, overwrite?",
+                                                                              "Existing file", JOptionPane.YES_NO_OPTION );
+                            switch (result) {
+                                case JOptionPane.YES_OPTION:
+                                    super.approveSelection();
+                                    return;
+                                case JOptionPane.NO_OPTION:
+                                    return;
+                                case JOptionPane.CLOSED_OPTION:
+                                    return;
+                            }
+                        }
+                        super.approveSelection();
+                    }        
+                };
+            
+                if (f.showSaveDialog( plotter.getFrame() ) == JFileChooser.APPROVE_OPTION) {
+                    String dir  = f.getCurrentDirectory().getAbsolutePath();
+                    String file = f.getSelectedFile().getName();
+                    try {
+                        plotter.savePlot( dir, file );
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+                break;
+
+            case( 2 ): // Show FPS.
                 plotter.showFPS( item.isSelected() );
                 break;
             
-            case( 2 ): // Show grid
+            case( 3 ): // Show grid.
                 plotter.showGrid( item.isSelected() );
                 break;
             
-            case( 3 ): // Add plot.
+            case( 4 ): // Add plot.
                 f = new JFileChooser( Utils.RESULTS_DIR );
                 if (f.showOpenDialog( plotter.getFrame() ) == JFileChooser.APPROVE_OPTION) {
                     String dir  = f.getCurrentDirectory().getAbsolutePath();
@@ -177,12 +218,10 @@ public class PlotterMenuBar extends JMenuBar implements ActionListener
                 }
                 break;
             
-            case( 4 ): // Make plot.
+            case( 5 ): // Make plot.
                 // Open a dialog to edit the plotter settings.
                 JDialog makePlot = new MakePlotDialog( plotter.getFrame(), plotter );
                 makePlot.setVisible( true );
-                break;
-            case( 5 ): // Theme
                 break;
             case( 6 ): // Theme => White
                 item.setSelected( true );

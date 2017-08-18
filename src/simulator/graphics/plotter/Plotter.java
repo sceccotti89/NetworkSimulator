@@ -31,6 +31,7 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -239,6 +240,10 @@ public class Plotter
         plotter.addPlot( plot.points, plot.color,plot.line , plot.title );
     }
     
+    public void savePlot( final String dir, final String file ) throws IOException {
+        plotter.savePlot( dir, file );
+    }
+
     public void setVisible( final boolean visible )
     {
         menuBar.updateSelectedValue();
@@ -625,6 +630,17 @@ public class Plotter
             add( box );
         }
         
+        public void savePlot( final String dir, final String file ) throws IOException
+        {
+            FileWriter fw = new FileWriter( dir + "/" + file );
+            for (Plot plot : _plots) {
+                for (Pair<Double,Double> point : plot.points) {
+                    fw.write( point.getFirst() + " " + point.getSecond() + "\n" );
+                }
+            }
+            fw.close();
+        }
+
         private void removePlot( final int index ) {
             Plot plot = _plots.remove( index );
             remove( plot.box );
@@ -852,6 +868,10 @@ public class Plotter
             g.setStroke( new BasicStroke( 1f ) );
             g.setColor( (theme == Theme.BLACK) ? Color.WHITE : Color.BLACK );
             
+            if (range.maxPoints == 1) {
+                range.maxPoints = 2;
+            }
+            
             // Get the number of ticks.
             int xNumTicks = Math.min( range.maxPoints, settings._xNumTicks );
             final float xTicksOffset = xLength / xNumTicks;
@@ -860,12 +880,14 @@ public class Plotter
             int yNumTicks = Math.min( range.maxPoints, settings._yNumTicks );
             final float yTicksOffset = yLength / yNumTicks;
             float yTickPosition = yTicksOffset;
+            // Offset of the X axis from the grid.
+            final float OFFSET_Y_XAXIS = 3;
             
             if (xNumTicks > 0) {
                 float xTick = (float) plotLocation.getX();
                 double xValue = range.minX;
                 String xTickValue = stringValue( scaleX( xValue ), true );
-                g.drawString( xTickValue, xTick - getWidth( xTickValue, g )/2, plotLocation.y + getHeight( xTickValue, g ) );
+                g.drawString( xTickValue, xTick - getWidth( xTickValue, g )/2, plotLocation.y + getHeight( xTickValue, g ) + OFFSET_Y_XAXIS );
             }
             
             // Draw the lines with the respective X and Y values of the tick.
@@ -881,7 +903,7 @@ public class Plotter
                     
                     double xValue = range.minX + (range.getXRange() / xNumTicks) * (i+1);
                     String xTickValue = stringValue( scaleX( xValue ), true );
-                    g.drawString( xTickValue, xTick - getWidth( xTickValue, g )/2, plotLocation.y + getHeight( xTickValue, g ) );
+                    g.drawString( xTickValue, xTick - getWidth( xTickValue, g )/2, plotLocation.y + getHeight( xTickValue, g ) + OFFSET_Y_XAXIS );
                 }
                 
                 xTickPosition += xTicksOffset;

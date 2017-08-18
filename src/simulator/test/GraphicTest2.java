@@ -17,6 +17,7 @@ import simulator.graphics_swing.AnimationNetwork;
          System.exit( 0 );*/
          
          Plotter plotter = new Plotter( "prova", 800, 600 );
+         plotter.addPlot( "/home/stefano/test.txt", null, "test.txt" );
          plotter.setVisible( true );
          
          AnimationNetwork an = new AnimationNetwork( 800, 600, "prova" );
@@ -28,6 +29,6 @@ import simulator.graphics_swing.AnimationNetwork;
          //an.addNode( 100, 200, 3, Color.red );
          //an.addLink(  );
          
-         //TODO an.start();
+         an.start();
      }
  } 
