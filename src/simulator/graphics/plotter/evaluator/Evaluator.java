@@ -10,7 +10,6 @@ public class Evaluator
     
     public Evaluator( final String expression ) {
         Expr e = FunctionParser.parse( expression );
-        System.out.println( "EXPR FINALE: " + e );
         interpreter = new FunctionInterpreter( e );
     }
     
