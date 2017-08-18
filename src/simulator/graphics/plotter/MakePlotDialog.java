@@ -23,6 +23,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -111,6 +112,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
         JPanel panel = new JPanel();
         JTextField fieldText = new JTextField( "Function", 6 );
         fieldText.setEditable( false );
+        fieldText.setFocusable( false );
         fieldText.setHorizontalAlignment( JTextField.CENTER );
         fieldText.setBorder( null );
         panel.add( fieldText );
@@ -233,9 +235,11 @@ public class MakePlotDialog extends JDialog implements ActionListener
     {
         final int BI_WIDTH  = 155;
         final int BI_HEIGHT =  15;
-        BufferedImage lineImage = new BufferedImage( BI_WIDTH, BI_HEIGHT, BufferedImage.TYPE_INT_RGB );
+        BufferedImage lineImage = new BufferedImage( BI_WIDTH, BI_HEIGHT,
+                                                     BufferedImage.TYPE_INT_RGB );
         Graphics2D g = (Graphics2D) lineImage.createGraphics();
-        g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+        g.setRenderingHint( RenderingHints.KEY_ANTIALIASING,
+                            RenderingHints.VALUE_ANTIALIAS_ON );
         g.setColor( button.getBackground() );
         g.fillRect( 0, 0, BI_WIDTH, BI_HEIGHT );
         g.setColor( plot.color );
@@ -371,20 +375,33 @@ public class MakePlotDialog extends JDialog implements ActionListener
         return panel;
     }
     
+    private void showErrorDialog( final String error )
+    {
+        JOptionPane.showMessageDialog( this, error, "error",
+                                       JOptionPane.ERROR_MESSAGE );
+    }
+    
     private void saveAndExit() throws EvaluationException
     {
         // Create the function using the expression in the text field.
         Evaluator evaluator = new Evaluator( functionField.getText() );
-        //final FunctionParser parser = new FunctionParser( functionField.getText() );
         
         double from = Double.parseDouble( fromField.getText() );
         double to   = Double.parseDouble( toField.getText() );
         double jump = Double.parseDouble( jumpField.getText() );
+        
+        if (to < from) {
+            showErrorDialog( "Ending point cannot be less then the starting one." );
+            return;
+        }
+        
+        if (jump == 0) {
+            showErrorDialog( "Jump value cannot be 0." );
+            return;
+        }
+        
         plot.points = new ArrayList<>();
         for (double x = from; x <= to; x += jump) {
-            //String function = functionField.getText().replaceAll( "x", "(#{x})" );
-            //evaluator.putVariable( "x", x + "" );
-            //double y = Double.parseDouble( evaluator.evaluate( function ) );
             evaluator.putVariable( "x", x );
             double y = evaluator.eval();
             plot.points.add( new Pair<>( x, y ) );
@@ -407,6 +424,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
         if (e.getActionCommand().equals( "Save" )) {
             try {
                 saveAndExit();
+                return;
             } catch (EvaluationException e1) {
                 e1.printStackTrace();
             }

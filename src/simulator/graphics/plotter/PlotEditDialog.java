@@ -251,6 +251,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
     {
         if (e.getActionCommand().equals( "Save" )) {
             saveAndExit();
+            return;
         }
         
         dispose();
