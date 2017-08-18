@@ -289,6 +289,7 @@ public class Plotter
             throw new IllegalArgumentException( "from (" + from + ") cannot be greater than to (" + to + ")." );
         }
         
+        settings._settedByUser = true;
         if (axis == Axis.X) {
             settings._range.minX = from;
             settings._range.maxX = to;
@@ -383,6 +384,7 @@ public class Plotter
     
     public static  class PlotterSettings
     {
+        public boolean _settedByUser = false;
         public int xTickInterval = 1;
         public int yTickInterval = 1;
         public int _xNumTicks = Integer.MAX_VALUE;
@@ -840,6 +842,7 @@ public class Plotter
             g.setColor( (theme == Theme.BLACK) ? Color.WHITE : Color.BLACK );
             
             boolean drawCircle = true;
+            int pointInfo = -1;
             Pair<Double,Double> point;
             Point p = new Point( plotLocation.x, plotLocation.y );
             if (plot.points.size() > 0) {
@@ -851,9 +854,7 @@ public class Plotter
                 Ellipse2D circle = new Ellipse2D.Double( x - pointRadius/2, y - pointRadius/2, pointRadius, pointRadius );
                 if (circle.contains( mouse.x, mouse.y )) {
                     drawCircle = false;
-                    g.setColor( (theme == Theme.BLACK) ? Color.WHITE : Color.GRAY );
-                    g.drawOval( (int) circle.getX(), (int) circle.getY(), pointRadius, pointRadius );
-                    addPointInfo( point, circle.getCenterX(), circle.getCenterY(), g );
+                    pointInfo = 0;
                 }
             }
             
@@ -891,9 +892,7 @@ public class Plotter
                         Ellipse2D circle = new Ellipse2D.Double( x - pointRadius/2, y - pointRadius/2, pointRadius, pointRadius );
                         if (circle.contains( mouse.x, mouse.y )) {
                             drawCircle = false;
-                            g.setColor( (theme == Theme.BLACK) ? Color.WHITE : Color.GRAY );
-                            g.drawOval( (int) circle.getX(), (int) circle.getY(), pointRadius, pointRadius );
-                            addPointInfo( point, circle.getCenterX(), circle.getCenterY(), g );
+                            pointInfo = i;
                         }
                     }
                 }
@@ -902,6 +901,18 @@ public class Plotter
             }
             
             g.setClip( new Rectangle( 0, 0, getWidth(), getHeight() ) );
+            
+            // Draw the info associated with the selected point.
+            if (pointInfo >= 0) {
+                point = plot.points.get( pointInfo );
+                double x = plotLocation.getX() + ((point.getFirst() - range.minX) * (xLength / range.getXRange()));
+                double y = plotLocation.getY() - ((point.getSecond() - range.minY) * (yLength / range.getYRange()));
+                Ellipse2D circle = new Ellipse2D.Double( x - pointRadius/2, y - pointRadius/2, pointRadius, pointRadius );
+                g.setStroke( new BasicStroke( 2f ) );
+                g.setColor( (theme == Theme.BLACK) ? Color.WHITE : Color.GRAY );
+                g.drawOval( (int) circle.getX(), (int) circle.getY(), pointRadius, pointRadius );
+                addPointInfo( point, circle.getCenterX(), circle.getCenterY(), g );
+            }
             
             return !drawCircle;
         }
@@ -979,6 +990,13 @@ public class Plotter
                 }
                 
                 yTickPosition += yTicksOffset;
+            }
+            
+            if (!settings._settedByUser) {
+                settings._range.minX = Math.min( settings._range.minX, range.minX );
+                settings._range.maxX = Math.max( settings._range.maxX, range.maxX );
+                settings._range.minY = Math.min( settings._range.minY, range.minY );
+                settings._range.maxY = Math.max( settings._range.maxY, range.maxY );
             }
         }
 
