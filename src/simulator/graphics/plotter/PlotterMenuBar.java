@@ -159,7 +159,7 @@ public class PlotterMenuBar extends JMenuBar implements ActionListener
                 f.showSaveDialog( plotter.getFrame() );
                 break;
             
-            case( 1 ): // Save as file.
+            case( 1 ): // Save all the plots in a single file.
                 f = new JFileChooser() {
                     /** Generated serial ID. */
                     private static final long serialVersionUID = 4540638898219035335L;

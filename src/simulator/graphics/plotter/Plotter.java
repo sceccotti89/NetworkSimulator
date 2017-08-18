@@ -42,8 +42,10 @@ import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
@@ -574,7 +576,7 @@ public class Plotter
                 
                 @Override
                 public void focusGained( final FocusEvent e ) {
-                    box.setBackground( new Color( 100,100,100,120 ) );
+                    box.setBackground( new Color( 100, 100, 100, 120 ) );
                 }
             } );
             box.addMouseListener( new MouseListener() {
@@ -602,6 +604,51 @@ public class Plotter
                         final int index = idx;
                         
                         JPopupMenu menu = new JPopupMenu( "Menu Plot" );
+                        
+                        JMenuItem new_file = new JMenuItem( "Save as file" );
+                        new_file.addActionListener( new ActionListener() {
+                            @Override
+                            public void actionPerformed( final ActionEvent e ) {
+                                JFileChooser f = new JFileChooser() {
+                                    /** Generated serial ID. */
+                                    private static final long serialVersionUID = 768969466487289338L;
+                                    
+                                    @Override
+                                    public void approveSelection()
+                                    {
+                                        File f = getSelectedFile();
+                                        if (f.exists() && getDialogType() == SAVE_DIALOG) {
+                                            int result = JOptionPane.showConfirmDialog( this, "The file exists, overwrite?",
+                                                                                              "Existing file", JOptionPane.YES_NO_OPTION );
+                                            switch (result) {
+                                                case JOptionPane.YES_OPTION:
+                                                    super.approveSelection();
+                                                    return;
+                                                case JOptionPane.NO_OPTION:
+                                                    return;
+                                                case JOptionPane.CLOSED_OPTION:
+                                                    return;
+                                            }
+                                        }
+                                        super.approveSelection();
+                                    }        
+                                };
+                                
+                                f.setSelectedFile( new File( text ) );
+                            
+                                if (f.showSaveDialog( getFrame() ) == JFileChooser.APPROVE_OPTION) {
+                                    String dir  = f.getCurrentDirectory().getAbsolutePath();
+                                    String file = f.getSelectedFile().getName();
+                                    try {
+                                        savePlot( dir, file );
+                                    } catch (IOException e1) {
+                                        e1.printStackTrace();
+                                    }
+                                }
+                            }
+                        } );
+                        menu.add( new_file );
+                        
                         JMenuItem modify = new JMenuItem( "Modify" );
                         modify.addActionListener( new ActionListener() {
                             @Override
