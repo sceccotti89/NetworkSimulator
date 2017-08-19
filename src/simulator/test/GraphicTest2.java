@@ -3,16 +3,15 @@ package simulator.test;
  
  import java.io.IOException;
 
-import simulator.graphics.plotter.Plotter;
 import simulator.graphics_swing.AnimationNetwork;
  
  public class GraphicTest2
  {
      public static void main( final String[] args ) throws IOException
      {
-         Plotter plotter = new Plotter( "prova", 800, 600 );
-         plotter.addPlot( "/home/stefano/test.txt", null, "test.txt" );
-         plotter.setVisible( true );
+         //Plotter plotter = new Plotter( "prova", 800, 600 );
+         //plotter.addPlot( "C:\\Users\\Stefano\\Desktop\\5.txt", null, "5.txt" );
+         //plotter.setVisible( true );
          
          AnimationNetwork an = new AnimationNetwork( 800, 600, "prova" );
          an.setTimer( 90 );

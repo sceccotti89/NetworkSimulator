@@ -375,10 +375,8 @@ public class MakePlotDialog extends JDialog implements ActionListener
         return panel;
     }
     
-    private void showErrorDialog( final String error )
-    {
-        JOptionPane.showMessageDialog( this, error, "error",
-                                       JOptionPane.ERROR_MESSAGE );
+    private void showErrorDialog( final String error ) {
+        JOptionPane.showMessageDialog( this, error, "error", JOptionPane.ERROR_MESSAGE );
     }
     
     private void saveAndExit() throws EvaluationException

@@ -83,6 +83,12 @@ public class Plotter
     private Theme theme = Theme.BLACK;
     
     
+    private boolean XticksSettedByTheUser = false;
+    private boolean YticksSettedByTheUser = false;
+    // Max number of ticks drawn, unless specified by the user.
+    private static final int MAX_TICKS = 30;
+    
+    
     public enum Axis{ X, Y };
     public enum Theme{ WHITE, BLACK };
     public enum Line { UNIFORM, DASHED };
@@ -268,9 +274,11 @@ public class Plotter
         if (axis == Axis.X) {
             settings._xNumTicks = ticks;
             settings.xTickInterval = interval;
+            XticksSettedByTheUser = true;
         } else {
             settings._yNumTicks = ticks;
             settings.yTickInterval = interval;
+            YticksSettedByTheUser = true;
         }
         return this;
     }
@@ -396,7 +404,8 @@ public class Plotter
     
     public static class Range
     {
-        private int maxPoints;
+        private int maxXPoints;
+        private int maxYPoints;
         private double minX = Double.MAX_VALUE, maxX = Double.MIN_VALUE;
         private double minY = Double.MAX_VALUE, maxY = Double.MIN_VALUE;
         
@@ -404,11 +413,12 @@ public class Plotter
             // Empty constructor.
         }
         
-        public Range( final int maxPoints,
+        public Range( final int maxXPoints, final int maxYPoints,
                       final double minX, final double maxX,
                       final double minY, final double maxY )
         {
-            this.maxPoints = maxPoints;
+            this.maxXPoints = maxXPoints;
+            this.maxYPoints = maxYPoints;
             this.minX = minX;
             this.maxX = maxX;
             this.minY = minY;
@@ -926,16 +936,20 @@ public class Plotter
             g.setStroke( new BasicStroke( 1f ) );
             g.setColor( (theme == Theme.BLACK) ? Color.WHITE : Color.BLACK );
             
-            if (range.maxPoints == 1) {
-                range.maxPoints = 2;
+            if (range.maxXPoints == 1) {
+                range.maxXPoints = 2;
+            }
+            
+            if (range.maxYPoints == 1) {
+                range.maxYPoints = 2;
             }
             
             // Get the number of ticks.
-            int xNumTicks = Math.min( range.maxPoints, settings._xNumTicks );
+            int xNumTicks = Math.min( range.maxXPoints, settings._xNumTicks );
             final float xTicksOffset = xLength / xNumTicks;
             float xTickPosition = xTicksOffset;
             
-            int yNumTicks = Math.min( range.maxPoints, settings._yNumTicks );
+            int yNumTicks = Math.min( range.maxYPoints, settings._yNumTicks );
             final float yTicksOffset = yLength / yNumTicks;
             float yTickPosition = yTicksOffset;
             // Offset of the X axis from the grid.
@@ -1072,10 +1086,10 @@ public class Plotter
         {
             double maxX = settings._range.maxX, maxY = settings._range.maxY;
             double minX = settings._range.minX, minY = settings._range.minY;
-            boolean getMinX = minX == Double.MAX_VALUE;
-            boolean getMaxX = maxX == Double.MIN_VALUE;
-            boolean getMinY = minY == Double.MAX_VALUE;
-            boolean getMaxY = maxY == Double.MIN_VALUE;
+            boolean getMinX = (minX == Double.MAX_VALUE);
+            boolean getMaxX = (maxX == Double.MIN_VALUE);
+            boolean getMinY = (minY == Double.MAX_VALUE);
+            boolean getMaxY = (maxY == Double.MIN_VALUE);
             
             for (Plot plot : _plots) {
                 try {
@@ -1095,13 +1109,13 @@ public class Plotter
                             }
                         }
                     }
-                } catch ( ConcurrentModificationException e ) {}
+                } catch ( ConcurrentModificationException e ) {
+                    // Empty body.
+                }
             }
             
-            //System.out.println( "MIN_X: " + minX + ", MAX_X: " + maxX );
-            //System.out.println( "MIN_Y: " + minY + ", MAX_Y: " + maxY );
-            
-            int maxPoints = 0;
+            int maxXPoints = 0;
+            int maxYPoints = 0;
             for (Plot plot : _plots) {
                 List<Pair<Double,Double>> points = plot.points;
                 int rangePoints = 0;
@@ -1113,12 +1127,31 @@ public class Plotter
                             rangePoints++;
                         }
                     }
-                } catch ( ConcurrentModificationException e ) {}
+                } catch ( ConcurrentModificationException e ) {
+                    // Empty body.
+                }
                 
-                maxPoints = Math.max( maxPoints, rangePoints );
+                maxXPoints = Math.max( maxXPoints, rangePoints );
+                maxYPoints = Math.max( maxYPoints, rangePoints );
             }
             
-            return new Range( maxPoints, minX, maxX, minY, maxY );
+            if (!XticksSettedByTheUser) {
+                maxXPoints = Math.min( maxXPoints, MAX_TICKS );
+                settings._xNumTicks = maxXPoints;
+            }
+            if (!YticksSettedByTheUser) {
+                maxYPoints = Math.min( maxYPoints, MAX_TICKS );
+                settings._yNumTicks = maxYPoints;
+            }
+            
+            if (minY == maxY) {
+                if (minY != 0) {
+                    minY = Math.max( 0, minY - 0.1d );
+                }
+                maxY += 0.1d;
+            }
+            
+            return new Range( maxXPoints, maxYPoints, minX, maxX, minY, maxY );
         }
         
         @Override

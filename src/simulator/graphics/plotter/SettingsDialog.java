@@ -16,6 +16,7 @@ import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -147,28 +148,73 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
         return panel;
     }
     
+    private void showErrorDialog( final String error ) {
+        JOptionPane.showMessageDialog( this, error, "error", JOptionPane.ERROR_MESSAGE );
+    }
+    
     private void saveValues()
     {
         // Save the inserted values.
         int index = 0;
+        double value;
+        double min = 0;
         for (JTextField field : fields) {
             if (!field.getText().isEmpty()) {
+                value = Double.parseDouble( field.getText() );
                 switch (index) {
-                    case( 0 ): settings._xNumTicks = Integer.parseInt( field.getText() ); break;
-                    case( 1 ): settings.xTickInterval = Integer.parseInt( field.getText() ); break;
-                    case( 2 ): settings._yNumTicks = Integer.parseInt( field.getText() ); break;
-                    case( 3 ): settings.yTickInterval = Integer.parseInt( field.getText() ); break;
-                    case( 4 ): settings._range.setMinX( Double.parseDouble( field.getText() ) ); break;
-                    case( 5 ): settings._range.setMaxX( Double.parseDouble( field.getText() ) ); break;
-                    case( 6 ): settings._range.setMinY( Double.parseDouble( field.getText() ) ); break;
-                    case( 7 ): settings._range.setMaxY( Double.parseDouble( field.getText() ) ); break;
-                    case( 8 ): settings.xScale = Double.parseDouble( field.getText() ); break;
-                    case( 9 ): settings.yScale = Double.parseDouble( field.getText() ); break;
+                    case( 0 ):
+                        if (value <= 0) { showErrorDialog( "Number of X ticks must be greater then 0." ); return; }
+                        settings._xNumTicks = (int) value; break;
+                    case( 1 ):
+                        if (value <= 0) { showErrorDialog( "X intervals must be greater then 0." ); return; }
+                        settings.xTickInterval = (int) value; break;
+                    case( 2 ):
+                        if (value <= 0) { showErrorDialog( "Number of Y ticks must be greater then 0." ); return; }
+                        settings._yNumTicks = (int) value; break;
+                    case( 3 ):
+                        if (value <= 0) { showErrorDialog( "Y intervals must be greater then 0." ); return; }
+                        settings.yTickInterval = (int) value; break;
+                    case( 4 ):
+                        if (value < 0) { showErrorDialog( "X minimum range cannot be less then 0." ); return; }
+                        settings._range.setMinX( min = value ); break;
+                    case( 5 ):
+                        if (value <= 0) { showErrorDialog( "X maximum range cannot be less then 0." ); return; }
+                        if (value < min) { showErrorDialog( "X maximum range cannot be less then the minimum one." ); return; }
+                        settings._range.setMaxX( value ); break;
+                    case( 6 ):
+                        if (value <= 0) { showErrorDialog( "Y minimum range cannot be less then 0." ); return; }
+                        settings._range.setMinY( min = value ); break;
+                    case( 7 ):
+                        if (value <= 0) { showErrorDialog( "Y maximum range cannot be less then 0." ); return; }
+                        if (value < min) { showErrorDialog( "Y maximum range cannot be less then the minimum one." ); return; }
+                        settings._range.setMaxY( value ); break;
+                    case( 8 ):
+                        if (value <= 0) { showErrorDialog( "X scale cannot be less or equal then 0." ); return; }
+                        settings.xScale = value; break;
+                    case( 9 ):
+                        if (value <= 0) { showErrorDialog( "Y scale cannot be less or equal then 0." ); return; }
+                        settings.yScale = value; break;
+                }
+            } else {
+                switch (index) {
+                    case( 0 ): showErrorDialog( "X ticks value cannot be empty." ); return;
+                    case( 1 ): showErrorDialog( "X ticks interval cannot be empty." ); return;
+                    case( 2 ): showErrorDialog( "Y ticks value cannot be empty." ); return;
+                    case( 3 ): showErrorDialog( "Y ticks interval cannot be empty." ); return;
+                    case( 4 ): showErrorDialog( "Min X range cannot be empty." ); return;
+                    case( 5 ): showErrorDialog( "Max X range cannot be empty." ); return;
+                    case( 6 ): showErrorDialog( "Min Y range cannot be empty." ); return;
+                    case( 7 ): showErrorDialog( "Max Y range cannot be empty." ); return;
+                    case( 8 ): showErrorDialog( "X scale cannot be empty." ); return;
+                    case( 9 ): showErrorDialog( "Y scale cannot be empty." ); return;
                 }
             }
             
             index++;
         }
+        
+        dispose();
+        setVisible( false );
     }
     
     @Override
@@ -176,6 +222,7 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
     {
         if (e.getActionCommand().equals( "Save" )) {
             saveValues();
+            return;
         }
         
         dispose();
