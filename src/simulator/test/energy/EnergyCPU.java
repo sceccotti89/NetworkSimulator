@@ -520,10 +520,6 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         {
             double size = queryQueue.size();
             if (size == 0) return 0;
-            if (queryQueue.get( 0 ).getEndTime().compareTo( time ) <= 0)
-                System.out.println( "TIME: " + time + ", CORE: " + coreId +
-                                    ", START: " + currentQuery.getStartTime() + 
-                                    ", END: "   + currentQuery.getEndTime() );
             if (queryQueue.get( 0 ).getEndTime().compareTo( time ) <= 0) size--;
             return size;
         }

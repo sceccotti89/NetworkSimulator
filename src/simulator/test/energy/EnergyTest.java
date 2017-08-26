@@ -329,7 +329,7 @@ public class EnergyTest
     
     public static void main( final String[] args ) throws Exception
     {
-        Utils.VERBOSE = false;
+        //Utils.VERBOSE = false;
         
         execute( Mode.TIME_CONSERVATIVE,  500 );
         //execute( Mode.TIME_CONSERVATIVE, 1000 );
