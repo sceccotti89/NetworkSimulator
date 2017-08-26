@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -447,15 +446,6 @@ public abstract class Device<E,P>
     }
     
     /**
-     * Returns a set of names of all the added samplers.
-     * 
-     * @return an unmodifiable set of strings.
-    */
-    public Set<String> getAllSamplings() {
-        return Collections.unmodifiableSet( samplings.keySet() );
-    }
-    
-    /**
      * Returns the list of values sampled by the requested sampler.
      * 
      * @param sampler    the requested sampler
@@ -463,7 +453,8 @@ public abstract class Device<E,P>
      * @return {@code null} if the requested sampler is not present,
      *         its list of values otherwise.
     */
-    public List<Pair<Double,Double>> getSampledValues( final String sampler ) {
+    public List<Pair<Double,Double>> getSampledValues( final String sampler )
+    {
         if (!samplings.containsKey( sampler )) {
             return null;
         } else {
