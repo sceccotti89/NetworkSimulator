@@ -213,8 +213,6 @@ public class NetworkTest
         client.connect( server );
         
         sim.start( new Time( 1, TimeUnit.HOURS ) );
-        
-        sim.stop();
     }
     
     public static void example1() throws IOException, SimulatorException
@@ -243,8 +241,6 @@ public class NetworkTest
         client.connect( server );
         
         sim.start( new Time( 1, TimeUnit.HOURS ) );
-        
-        sim.stop();
     }
     
     public static void example2() throws IOException, SimulatorException
@@ -279,8 +275,6 @@ public class NetworkTest
         client2.connect( client1 );
         
         sim.start( new Time( 1, TimeUnit.HOURS ) );
-        
-        sim.stop();
     }
     
     public static void example3() throws IOException, SimulatorException
@@ -325,8 +319,6 @@ public class NetworkTest
         client2.connect( server2 );
         
         sim.start( new Time( 1, TimeUnit.HOURS ) );
-        
-        sim.stop();
     }
     
     public static void example4() throws IOException, SimulatorException
@@ -358,8 +350,6 @@ public class NetworkTest
         client.connect( server );
         
         sim.start( new Time( 1, TimeUnit.HOURS ) );
-        
-        sim.stop();
     }
     
     public static void example5() throws IOException, SimulatorException
@@ -391,8 +381,6 @@ public class NetworkTest
         client.connect( server );
         
         sim.start( new Time( 1, TimeUnit.HOURS ) );
-        
-        sim.stop();
     }
     
     public static void example6() throws IOException, SimulatorException
@@ -444,8 +432,6 @@ public class NetworkTest
         client.connect( Switch );
         
         sim.start( new Time( 1, TimeUnit.HOURS ) );
-        
-        sim.stop();
     }
     
     public static void example7() throws IOException, SimulatorException
@@ -498,9 +484,7 @@ public class NetworkTest
         
         client.connect( Switch );
         
-        //sim.start( new Time( 1, TimeUnit.HOURS ) );
-        
-        sim.stop();
+        sim.start( new Time( 1, TimeUnit.HOURS ) );
     }
     
     public static void testNetworkAnimation() throws Exception
@@ -532,8 +516,6 @@ public class NetworkTest
         }
         
         sim.start( new Time( 1, TimeUnit.HOURS ) );
-        
-        sim.stop();
         
         // Show the animation.
         AnimationNetwork an = new AnimationNetwork( 800, 600, "Distributed Network" );

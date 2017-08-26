@@ -410,8 +410,6 @@ public class EnergyTest
         
         sim.start( new Time( 1, TimeUnit.HOURS ) );
         
-        sim.stop();
-        
         double totalEnergy = 0;
         double totalIdleEnergy = 0;
         int totalQueries = 0;
@@ -498,8 +496,6 @@ public class EnergyTest
         plotter.setVisible( true );
         
         sim.start( new Time( 24, TimeUnit.HOURS ) );
-        
-        sim.stop();
         
         double totalEnergy = 0;
         double totalIdleEnergy = 0;
@@ -630,8 +626,6 @@ public class EnergyTest
         
         sim.start( new Time( 24, TimeUnit.HOURS ) );
         
-        sim.stop();
-        
         double totalEnergy = 0;
         double totalIdleEnergy = 0;
         int totalQueries = 0;
@@ -722,8 +716,6 @@ public class EnergyTest
         plotter.setVisible( true );
         
         sim.start( new Time( 24, TimeUnit.HOURS ) );
-        
-        sim.stop();
 
         Utils.LOGGER.debug( model.getModelType( false ) + " - Total energy:      " + cpu.getResultSampled( Global.ENERGY_SAMPLING ) + "J" );
         Utils.LOGGER.debug( model.getModelType( false ) + " - Total Idle energy: " + cpu.getResultSampled( Global.IDLE_ENERGY_SAMPLING ) + "J" );
@@ -825,8 +817,6 @@ public class EnergyTest
         plotter.setVisible( true );
         
         sim.start( new Time( 24, TimeUnit.HOURS ) );
-        
-        sim.stop();
         
         double totalEnergy = 0;
         double totalIdleEnergy = 0;
