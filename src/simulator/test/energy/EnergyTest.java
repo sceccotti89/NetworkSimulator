@@ -347,8 +347,8 @@ public class EnergyTest
             model = new PESOSmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" );
         model.loadModel();
         
-        //testDistributedSingleNode( model );
-        testDistributedMultipleNodes( model );
+        testDistributedSingleNode( model );
+        //testDistributedMultipleNodes( model );
         //testNodeMulticore( model );
         //testDistributedMulticore( model );
         //testNetworkAnimation( model );
@@ -497,7 +497,7 @@ public class EnergyTest
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         plotter.setVisible( true );
         
-        sim.start( new Time( 1, TimeUnit.HOURS ) );
+        sim.start( new Time( 24, TimeUnit.HOURS ) );
         
         sim.stop();
         
