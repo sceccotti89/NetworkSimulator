@@ -29,6 +29,9 @@ import simulator.utils.Utils;
 
 public class Simulator
 {
+    private double elapsedTime = 0d;
+    private double currentTime = 0d;
+    
     private Map<Long,NetworkTopology> _networks;
     private Map<Long,EventScheduler> _evtSchedulers;
     
@@ -137,6 +140,8 @@ public class Simulator
     {
         Utils.LOGGER.info( "Simulation start!" );
         
+        currentTime = System.currentTimeMillis();
+        
         // Start each network in parallel.
         List<SimulatorExecution> simExes = new ArrayList<>( _evtSchedulers.size() );
         for (EventScheduler evtScheduler : _evtSchedulers.values()) {
@@ -158,18 +163,23 @@ public class Simulator
     
     public void pause()
     {
-        // TODO
+        elapsedTime += System.currentTimeMillis() - currentTime;
+        // TODO crea un evento in modo che se letto rimanga in attesa del resume.
         throw new UnsupportedOperationException( "Not yet implemented." );
     }
     
     public void resume()
     {
-        // TODO
+        currentTime = System.currentTimeMillis();
+        // TODO crea e aggiunge l'evento resume in modo che riparta.
         throw new UnsupportedOperationException( "Not yet implemented." );
     }
     
     public void stop()
     {
+        elapsedTime += System.currentTimeMillis() - currentTime;
+        System.out.println( "Simulations completed in " + (elapsedTime/1000d) + " seconds!" );
+        
         for (NetworkTopology net : _networks.values()) {
             net.shutdown();
         }
