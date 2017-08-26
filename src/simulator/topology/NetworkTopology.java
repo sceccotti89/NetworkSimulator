@@ -283,7 +283,7 @@ public class NetworkTopology
     }
     
     /**
-     * Sets the file use to keep tracks of the generated events.
+     * Sets the file used to keep tracks of the generated events.
      * 
      * @param eventsFile    name of the file.
     */
