@@ -29,8 +29,7 @@ import simulator.utils.Utils;
 
 public class Simulator
 {
-    private double elapsedTime = 0d;
-    private double currentTime = 0d;
+    private long currentTime = 0L;
     
     private Map<Long,NetworkTopology> _networks;
     private Map<Long,EventScheduler> _evtSchedulers;
@@ -65,7 +64,7 @@ public class Simulator
         }
     }
     
-    public static List<NetworkTopology> build( final String filename ) throws IOException
+    private static List<NetworkTopology> build( final String filename ) throws IOException
     {
         List<NetworkTopology> networks = new ArrayList<>();
         
@@ -159,9 +158,20 @@ public class Simulator
                 e.printStackTrace();
             }
         }
+        
+        long elapsedTime = System.currentTimeMillis() - currentTime;
+        long hours   =  elapsedTime/3600000L;
+        long minutes = (elapsedTime - hours*3600000L)/60000L;
+        long seconds = (elapsedTime - hours*3600000L - minutes*60000L)/1000L;
+        long millis  =  elapsedTime - hours*3600000L - minutes*60000L - seconds*1000L;
+        Utils.LOGGER.info( "Simulation completed in " + hours + "h:" + minutes + "m:" + seconds + "s:" + millis + "ms" );
+        
+        for (NetworkTopology net : _networks.values()) {
+            net.shutdown();
+        }
     }
     
-    public void pause()
+    /*public void pause()
     {
         elapsedTime += System.currentTimeMillis() - currentTime;
         // TODO crea un evento in modo che se letto rimanga in attesa del resume.
@@ -178,12 +188,16 @@ public class Simulator
     public void stop()
     {
         elapsedTime += System.currentTimeMillis() - currentTime;
-        System.out.println( "Simulations completed in " + (elapsedTime/1000d) + " seconds!" );
+        long hours   =  elapsedTime/3600000L;
+        long minutes = (elapsedTime - hours*3600000L)/60000L;
+        long seconds = (elapsedTime - hours*3600000L - minutes*60000L)/1000L;
+        long millis  =  elapsedTime - hours*3600000L - minutes*60000L - seconds*1000L;
+        Utils.LOGGER.info( "Simulation completed in " + hours + "h:" + minutes + "m:" + seconds + "s:" + millis + "ms" );
         
         for (NetworkTopology net : _networks.values()) {
             net.shutdown();
         }
-    }
+    }*/
     
     private static class SimulatorExecution extends Thread
     {
