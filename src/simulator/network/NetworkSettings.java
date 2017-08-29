@@ -50,7 +50,7 @@ public class NetworkSettings
         
         _routingProtocols = new ArrayList<>();
         // By default every node executes the RIP protocol.
-        //_routingProtocols.add( new RIP( net, agent ) );
+        // TODO _routingProtocols.add( new RIP( net, agent ) );
         
         subnetMask = "255.255.255.0";
         MACaddress = MACAddressFactory.getMACaddress();

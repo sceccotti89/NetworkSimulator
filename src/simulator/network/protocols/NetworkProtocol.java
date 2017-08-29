@@ -4,12 +4,15 @@
 
 package simulator.network.protocols;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import simulator.core.Agent;
 import simulator.events.Event;
 import simulator.events.Packet;
 import simulator.events.impl.ProtocolEvent;
+import simulator.network.NetworkLayer;
 import simulator.topology.NetworkNode;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Time;
@@ -21,6 +24,7 @@ public abstract class NetworkProtocol
     protected Time time;
     protected int layer;
     protected int port;
+    protected Map<NetworkLayer,NetworkProtocol> protocols;
     
     
     
@@ -29,6 +33,7 @@ public abstract class NetworkProtocol
         this.time = new Time( 0, TimeUnit.MICROSECONDS );
         this.net = net;
         this.agent = agent;
+        protocols = new HashMap<>( NetworkLayer.STACK_LENGTH );
     }
     
     protected void setLayer( final int layer ) {

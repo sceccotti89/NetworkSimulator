@@ -22,8 +22,7 @@ public class RIP extends NetworkProtocol
     public RIP( final NetworkTopology net, final Agent agent ) {
         super( net, agent );
         setLayer( NetworkLayer.APPLICATION.getIndex() );
-        setPort( 520 );
-        // TODO devo trovare un modo per dirgli che mi serve UDP: creare una map in cui ci schiocco i protocolli??
+        protocols.put( NetworkLayer.TRANSPORT, new UDP( net, agent, 520 ) );
     }
     
     @Override
@@ -36,7 +35,7 @@ public class RIP extends NetworkProtocol
     public ProtocolEvent getEvent()
     {
         // TODO generare un pacchetto contenente il contenuto della propria tabella di routing.
-        makePacket();
+        //makePacket();
         ProtocolEvent event = new ProtocolEvent( time.clone(), agent, getID() );
         time.addTime( UPDATE_TIME );
         return event;
