@@ -17,7 +17,8 @@ public class OSPF extends NetworkProtocol
     public OSPF( final NetworkTopology net, final Agent agent ) {
         super( net, agent );
         setLayer( NetworkLayer.NETWORK.getIndex() );
-        // TODO Auto-generated constructor stub
+        // TODO viene incapsulato direttamente in un pacchetto IP con protocollo 89.
+        
     }
     
     @Override
