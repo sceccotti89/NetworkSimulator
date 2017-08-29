@@ -5,6 +5,7 @@
 package simulator.topology;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -287,7 +288,12 @@ public class NetworkTopology
      * 
      * @param eventsFile    name of the file.
     */
-    public void setTrackingEvent( final String eventsFile ) throws FileNotFoundException {
+    public void setTrackingEvent( final String eventsFile ) throws FileNotFoundException
+    {
+        File file = new File( eventsFile );
+        if (!file.exists()) {
+            file.getParentFile().mkdirs();
+        }
         eventsWriter = new PrintWriter( eventsFile );
     }
 

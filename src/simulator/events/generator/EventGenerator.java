@@ -73,6 +73,8 @@ public abstract class EventGenerator
         _destinations = new ArrayList<>();
         
         _toAnswer = new LinkedList<>();
+        
+        // TODO assegnare il protocollo di comunicazione.
     }
     
     /**

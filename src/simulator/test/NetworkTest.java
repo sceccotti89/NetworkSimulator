@@ -16,7 +16,6 @@ import simulator.events.generator.EventGenerator;
 import simulator.events.impl.RequestEvent;
 import simulator.exception.SimulatorException;
 import simulator.graphics.AnimationNetwork;
-import simulator.network.NetworkLayer;
 import simulator.network.NetworkSettings;
 import simulator.network.protocols.RIP;
 import simulator.topology.NetworkTopology;
@@ -462,7 +461,7 @@ public class NetworkTest
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         NetworkSettings settings = net.getNode( 0 ).getNetworkSettings();
-        settings.setNetworkProtocol( new RIP( net, client ), NetworkLayer.NETWORK );
+        settings.setNetworkProtocol( new RIP( net, client ) );
         
         SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
                                                       Packet.DYNAMIC,
@@ -489,7 +488,7 @@ public class NetworkTest
     
     public static void testNetworkAnimation() throws Exception
     {
-        NetworkTopology net = new NetworkTopology( "Topology/Topology_test.json" );
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_animation_test.json" );
         net.setTrackingEvent( "./Results/packets.txt" );
         System.out.println( net.toString() );
         
@@ -519,7 +518,7 @@ public class NetworkTest
         
         // Show the animation.
         AnimationNetwork an = new AnimationNetwork( 800, 600, "Distributed Network" );
-        an.loadSimulation( "Topology/Topology_test.json", "./Results/packets.txt" );
+        an.loadSimulation( "Topology/Topology_animation_test.json", "./Results/packets.txt" );
         an.setTargetFrameRate( 90 );
         an.setForceExit( false );
         an.start();

@@ -4,15 +4,16 @@
 
 package simulator.network;
 
-/** The ISO/OSI stack layers. */
-public enum NetworkLayer {
-    APPLICATION( 0 ),
-    PRESENTATION( 1 ),
-    SESSION( 2 ),
-    TRANSPORT( 3 ),
-    NETWORK( 4 ),
-    DATA_LINK( 5 ),
-    PHYSICAL( 6 );
+/** The OSI stack model. */
+public enum NetworkLayer
+{
+    APPLICATION( 7 ),
+    PRESENTATION( 6 ),
+    SESSION( 5 ),
+    TRANSPORT( 4 ),
+    NETWORK( 3 ),
+    DATA_LINK( 2 ),
+    PHYSICAL( 1 );
     
     private int index;
     

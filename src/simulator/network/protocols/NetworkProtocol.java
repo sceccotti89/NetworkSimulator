@@ -19,6 +19,8 @@ public abstract class NetworkProtocol
     protected final NetworkTopology net;
     protected final Agent agent;
     protected Time time;
+    protected int layer;
+    protected int port;
     
     
     
@@ -27,6 +29,22 @@ public abstract class NetworkProtocol
         this.time = new Time( 0, TimeUnit.MICROSECONDS );
         this.net = net;
         this.agent = agent;
+    }
+    
+    protected void setLayer( final int layer ) {
+        this.layer = layer;
+    }
+    
+    public int getLayer() {
+        return layer;
+    }
+    
+    protected void setPort( final int port ) {
+        this.port = port;
+    }
+    
+    public int getPort() {
+        return port;
     }
     
     /**

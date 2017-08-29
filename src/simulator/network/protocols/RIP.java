@@ -10,6 +10,7 @@ import simulator.core.Agent;
 import simulator.events.Event;
 import simulator.events.Packet;
 import simulator.events.impl.ProtocolEvent;
+import simulator.network.NetworkLayer;
 import simulator.topology.NetworkNode;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Time;
@@ -20,7 +21,9 @@ public class RIP extends NetworkProtocol
     
     public RIP( final NetworkTopology net, final Agent agent ) {
         super( net, agent );
-        // TODO Auto-generated constructor stub
+        setLayer( NetworkLayer.APPLICATION.getIndex() );
+        setPort( 520 );
+        // TODO devo trovare un modo per dirgli che mi serve UDP: creare una map in cui ci schiocco i protocolli??
     }
     
     @Override
@@ -30,9 +33,10 @@ public class RIP extends NetworkProtocol
     }
     
     @Override
-    public ProtocolEvent getEvent() {
+    public ProtocolEvent getEvent()
+    {
         // TODO generare un pacchetto contenente il contenuto della propria tabella di routing.
-        //makePacket();
+        makePacket();
         ProtocolEvent event = new ProtocolEvent( time.clone(), agent, getID() );
         time.addTime( UPDATE_TIME );
         return event;

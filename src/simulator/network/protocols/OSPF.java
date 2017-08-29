@@ -8,6 +8,7 @@ import simulator.core.Agent;
 import simulator.events.Event;
 import simulator.events.Packet;
 import simulator.events.impl.ProtocolEvent;
+import simulator.network.NetworkLayer;
 import simulator.topology.NetworkNode;
 import simulator.topology.NetworkTopology;
 
@@ -15,6 +16,7 @@ public class OSPF extends NetworkProtocol
 {
     public OSPF( final NetworkTopology net, final Agent agent ) {
         super( net, agent );
+        setLayer( NetworkLayer.NETWORK.getIndex() );
         // TODO Auto-generated constructor stub
     }
     

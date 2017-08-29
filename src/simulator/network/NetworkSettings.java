@@ -157,9 +157,10 @@ public class NetworkSettings
         return _routingProtocols;
     }
     
-    public NetworkSettings setNetworkProtocol( final NetworkProtocol protocol,
-                                               final NetworkLayer layer ) {
-        _netProtocols.set( layer.getIndex(), protocol );
+    public NetworkSettings setNetworkProtocol( final NetworkProtocol protocol ) {
+        // TODO se aggiungo un protocollo tipo RIP, il quale usa solo UDP, non posso settare TCP
+        // TODO devo quindi far si che ci sia un controllo del tipo di protocollo da utilizzare.
+        _netProtocols.set( protocol.getLayer(), protocol );
         return this;
     }
     
