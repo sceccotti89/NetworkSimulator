@@ -4,23 +4,16 @@
 
 package simulator.network.protocols;
 
-import simulator.core.Agent;
 import simulator.events.Event;
 import simulator.events.Packet;
 import simulator.events.impl.ProtocolEvent;
+import simulator.network.protocols.NetworkProtocol.TransportLayerProtocol;
 import simulator.topology.NetworkNode;
-import simulator.topology.NetworkTopology;
 
-public class UDP extends NetworkProtocol
+public class UDP extends TransportLayerProtocol
 {
-    public UDP( final NetworkTopology net, final Agent agent ) {
-        super( net, agent );
-    }
-    
-    public UDP( final NetworkTopology net, final Agent agent, final int port )
-    {
-        super( net, agent );
-        setPort( port );
+    public UDP( final int sourcePort, final int destPort ) {
+        super( sourcePort, destPort );
     }
     
     @Override

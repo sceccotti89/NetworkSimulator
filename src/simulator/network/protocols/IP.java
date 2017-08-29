@@ -4,38 +4,47 @@
 
 package simulator.network.protocols;
 
-import simulator.core.Agent;
 import simulator.events.Event;
 import simulator.events.Packet;
 import simulator.events.impl.ProtocolEvent;
+import simulator.network.protocols.NetworkProtocol.NetworkLayerProtocol;
 import simulator.topology.NetworkNode;
 import simulator.utils.SizeUnit;
 
-public abstract class IP extends NetworkProtocol
+public abstract class IP extends NetworkLayerProtocol
 {
-    public IP( final Agent agent ) {
-        super( null, agent );
+    protected String sourceAddress;
+    protected String destAddress;
+    protected String protocolID;
+    
+    public IP( final String sourceAddress, final String destAddress ) {
+        this.sourceAddress = sourceAddress;
+        this.destAddress = destAddress;
+    }
+    
+    public void setProtocolID( final int protocolID ) {
+        this.protocolID = protocolID + "";
     }
 
     public static class IPv4 extends IP
     {
         private static final String VERSION = "VER";
-        private static final String HEADER_LENGTH = "HLEN";
+        private static final String HEADER_LENGTH = "H_LEN";
         private static final String TYPE_OF_SERVICE = "TOS";
-        private static final String TOTAL_LENGTH = "TLEN";
+        private static final String TOTAL_LENGTH = "TOT_LEN";
         private static final String IDENTIFICATION = "IDE";
         private static final String FLAGS = "FLAGS";
         private static final String FRAGMENT_OFFSET = "FRAG_OFF";
         private static final String TIME_TO_LIVE = "TTL";
         private static final String PROTOCOL = "PROT";
-        private static final String HEADER_CHECKSUM = "HCHECK";
+        private static final String HEADER_CHECKSUM = "H_CHECK";
         private static final String SOURCE_ADDRESS = "SOURCE";
         private static final String DESTINATION_ADDRESS = "DESTINATION";
         private static final String OPTIONS = "OPTS";
         private static final String PADDING = "PAD";
         
-        public IPv4( final Agent agent ) {
-            super( agent );
+        public IPv4( final String sourceAddress, final String destAddress ) {
+            super( sourceAddress, destAddress );
         }
         
         @Override
@@ -50,7 +59,8 @@ public abstract class IP extends NetworkProtocol
         }
         
         @Override
-        public Packet makePacket() {
+        public Packet makePacket()
+        {
             // Size of the packet is [20 - 65.535].
             Packet packet = new Packet( 20, SizeUnit.BYTE );
             packet.addContent( VERSION, "" );
@@ -61,10 +71,10 @@ public abstract class IP extends NetworkProtocol
             packet.addContent( FLAGS, "" );
             packet.addContent( FRAGMENT_OFFSET, "" );
             packet.addContent( TIME_TO_LIVE, "" );
-            packet.addContent( PROTOCOL, "" );
+            packet.addContent( PROTOCOL, protocolID );
             packet.addContent( HEADER_CHECKSUM, "" );
-            packet.addContent( SOURCE_ADDRESS, "" );
-            packet.addContent( DESTINATION_ADDRESS, "" );
+            packet.addContent( SOURCE_ADDRESS, sourceAddress );
+            packet.addContent( DESTINATION_ADDRESS, destAddress );
             packet.addContent( OPTIONS, "" );
             packet.addContent( PADDING, "" );
             return packet;
@@ -94,8 +104,8 @@ public abstract class IP extends NetworkProtocol
         private static final String SOURCE_ADDRESS = "SOURCE";
         private static final String DESTINATION_ADDRESS = "DESTINATION";
         
-        public IPv6( final Agent agent ) {
-            super( agent );
+        public IPv6( final String sourceAddress, final String destAddress ) {
+            super( sourceAddress, destAddress );
         }
         
         @Override

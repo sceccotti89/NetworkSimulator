@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import simulator.events.Event;
@@ -38,6 +39,8 @@ public abstract class Agent
     
     private boolean _parallelTransmission = false;
     
+    private List<Integer> _availablePorts;
+    
     
     
     
@@ -64,8 +67,14 @@ public abstract class Agent
         
         _time = new Time( 0, TimeUnit.MICROSECONDS );
         
-        if (_evGenerator != null)
+        if (_evGenerator != null) {
             _evGenerator.setAgent( this );
+        }
+        
+        _availablePorts = new ArrayList<>( 64511 );
+        for (int i = 0; i < 64511; i++) {
+            _availablePorts.add( i+1024 );
+        }
     }
     
     public void connect( final Agent destination )
@@ -259,9 +268,41 @@ public abstract class Agent
     }
     
     /**
+     * Sets a port as available.
+     * 
+     * @param port    the available port.
+    */
+    public void setAvailablePort( final int port )
+    {
+        int index;
+        for (index = 0; index < _availablePorts.size(); index++) {
+            if (_availablePorts.get( index ) > port) {
+                break;
+            }
+        }
+        _availablePorts.add( index, port );
+    }
+    
+    /**
+     * Returns a random available port.
+     * 
+     * @return an available port, or {@code null} if there's none.
+    */
+    public Integer getAvailablePort() {
+        if (_availablePorts.isEmpty()) {
+            return null;
+        } else {
+            // Random port generator.
+            Random rand = new Random( 64511 );
+            return _availablePorts.remove( rand.nextInt( 64511 ) );
+        }
+    }
+    
+    /**
      * Method used to close all the resources opened by this agent.
     */
-    public void shutdown() {
+    public void shutdown()
+    {
         for (Device<?,?> device : _devices.values()) {
             try {
                 device.shutdown();

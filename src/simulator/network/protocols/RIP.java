@@ -11,18 +11,20 @@ import simulator.events.Event;
 import simulator.events.Packet;
 import simulator.events.impl.ProtocolEvent;
 import simulator.network.NetworkLayer;
+import simulator.network.protocols.NetworkProtocol.ApplicationLayerProtocol;
 import simulator.topology.NetworkNode;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Time;
 
-public class RIP extends NetworkProtocol
+public class RIP extends ApplicationLayerProtocol
 {
     private static final Time UPDATE_TIME = new Time( 30, TimeUnit.SECONDS );
     
-    public RIP( final NetworkTopology net, final Agent agent ) {
+    public RIP( final NetworkTopology net, final Agent agent )
+    {
         super( net, agent );
         setLayer( NetworkLayer.APPLICATION.getIndex() );
-        protocols.put( NetworkLayer.TRANSPORT, new UDP( net, agent, 520 ) );
+        protocols.put( NetworkLayer.TRANSPORT, new UDP( agent.getAvailablePort(), 520 ) );
     }
     
     @Override

@@ -46,7 +46,7 @@ public class NetworkSettings
             _netProtocols.add( null );
         }
         // By default the IP version is the 4th.
-        _netProtocols.set( NetworkLayer.NETWORK.getIndex(), new IPv4( agent ) );
+        _netProtocols.set( NetworkLayer.NETWORK.getIndex(), new IPv4( getIPv4address(), "" ) );
         
         _routingProtocols = new ArrayList<>();
         // By default every node executes the RIP protocol.

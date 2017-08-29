@@ -86,4 +86,43 @@ public abstract class NetworkProtocol
      * Returns the ID of this protocol.
     */
     public abstract String getID();
+    
+    
+    
+    
+    // =========== ABSTRACT IMPLEMENTATION OF THE TCP/IP NETWORK PROTOCOLS =========== //
+    
+    
+    public static abstract class ApplicationLayerProtocol extends NetworkProtocol
+    {
+        public ApplicationLayerProtocol( final NetworkTopology net, final Agent agent ) {
+            super( net, agent );
+        }
+    }
+    
+    public static abstract class TransportLayerProtocol extends NetworkProtocol
+    {
+        public TransportLayerProtocol( final NetworkTopology net, final Agent agent ) {
+            super( net, agent );
+        }
+        
+        public TransportLayerProtocol( final int sourcePort, final int destPort ) {
+            super( null, null );
+            setPort( sourcePort );
+        }
+    }
+    
+    public static abstract class NetworkLayerProtocol extends NetworkProtocol
+    {
+        public NetworkLayerProtocol() {
+            super( null, null );
+        }
+    }
+    
+    public static abstract class LinkLayerProtocol extends NetworkProtocol
+    {
+        public LinkLayerProtocol( final NetworkTopology net, final Agent agent ) {
+            super( net, agent );
+        }
+    }
 }
