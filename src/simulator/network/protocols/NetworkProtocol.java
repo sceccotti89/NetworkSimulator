@@ -19,7 +19,8 @@ import simulator.utils.Time;
 public abstract class NetworkProtocol
 {
     protected final NetworkTopology net;
-    protected final Agent agent;
+    protected Agent source;
+    protected Agent dest;
     protected Time time;
     protected int layer;
     protected int port;
@@ -27,12 +28,16 @@ public abstract class NetworkProtocol
     
     
     
-    public NetworkProtocol( final NetworkTopology net, final Agent agent )
+    public NetworkProtocol( final NetworkTopology net, final Agent source )
     {
         time = new Time( 0, TimeUnit.MICROSECONDS );
         this.net = net;
-        this.agent = agent;
+        this.source = source;
         protocols = new HashMap<>( NetworkLayer.STACK_LENGTH );
+    }
+    
+    public void setDestination( final Agent dest ) {
+        this.dest = dest;
     }
     
     protected void setLayer( final int layer ) {

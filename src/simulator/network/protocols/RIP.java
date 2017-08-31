@@ -20,11 +20,11 @@ public class RIP extends ApplicationLayerProtocol implements RoutingProtocol
 {
     private static final Time UPDATE_TIME = new Time( 30, TimeUnit.SECONDS );
     
-    public RIP( final NetworkTopology net, final Agent agent )
+    public RIP( final NetworkTopology net, final Agent source )
     {
-        super( net, agent );
+        super( net, source );
         setLayer( NetworkLayer.APPLICATION.getIndex() );
-        protocols.put( NetworkLayer.TRANSPORT, new UDP( agent.getAvailablePort(), 520 ) );
+        protocols.put( NetworkLayer.TRANSPORT, new UDP( source.getAvailablePort(), 520 ) );
     }
     
     @Override
@@ -38,7 +38,7 @@ public class RIP extends ApplicationLayerProtocol implements RoutingProtocol
     {
         // TODO generare un pacchetto contenente il contenuto della propria tabella di routing.
         //makePacket();
-        ProtocolEvent event = new ProtocolEvent( time.clone(), agent, getID() );
+        ProtocolEvent event = new ProtocolEvent( time.clone(), source, getID() );
         time.addTime( UPDATE_TIME );
         return event;
     }

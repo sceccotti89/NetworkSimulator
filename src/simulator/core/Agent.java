@@ -29,15 +29,14 @@ public abstract class Agent
     private EventScheduler _evtScheduler;
     private EventHandler _evtHandler = null;
     protected EventGenerator _evGenerator;
+    private List<Event> _eventQueue;
+    
+    private boolean _parallelTransmission = false;
     protected List<Agent> _destinations;
     
     private Time _time;
     
     private Map<String,Device<?,?>> _devices;
-    
-    private List<Event> _eventQueue;
-    
-    private boolean _parallelTransmission = false;
     
     private List<Integer> _availablePorts;
     
@@ -46,6 +45,7 @@ public abstract class Agent
     
     public Agent( final NetworkNode node ) {
         this( node.getId() );
+        setNode( node );
     }
     
     public Agent( final long id ) {
@@ -54,6 +54,7 @@ public abstract class Agent
     
     public Agent( final NetworkNode node, final EventGenerator evGenerator ) {
         this( node.getId(), evGenerator );
+        setNode( node );
     }
     
     public Agent( final long id, final EventGenerator evGenerator )
@@ -241,6 +242,14 @@ public abstract class Agent
                 events.addAll( genEvents );
             }
         }
+        
+        // TODO rimuovere dalla lista events gli evento che hanno un time superiore a quello limite?
+        /*for (int i = events.size() - 1; i >= 0; i--) {
+            Event event = events.get( i );
+            if (event.getTime().compareTo( _evtScheduler.getTimeDuration() ) > 0) {
+                events.remove( i );
+            }
+        }*/
         
         return (events.isEmpty() ? null : events);
     }

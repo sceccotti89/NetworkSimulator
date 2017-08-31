@@ -16,14 +16,12 @@ import simulator.topology.NetworkTopology;
 
 public class OSPF extends TransportLayerProtocol implements RoutingProtocol
 {
-    public OSPF( final NetworkTopology net, final Agent agent )
+    public OSPF( final NetworkTopology net, final Agent source )
     {
-        super( net, agent );
+        super( net, source );
         setLayer( NetworkLayer.TRANSPORT.getIndex() );
         // TODO utilizza un indirizzo broadcast (capire quale) per trasmettere le informazioni
-        IP ip = new IPv4( agent.getNode().getNetworkSettings().getIPv4address(), "" );
-        ip.setProtocolID( 89 );
-        protocols.put( NetworkLayer.NETWORK, ip );
+        protocols.put( NetworkLayer.NETWORK, new IPv4( 89 ) );
     }
     
     @Override

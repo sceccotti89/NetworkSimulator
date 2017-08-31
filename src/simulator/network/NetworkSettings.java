@@ -8,8 +8,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import simulator.network.protocols.IP.IPv4;
-import simulator.core.Agent;
 import simulator.network.protocols.NetworkProtocol;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Utils;
@@ -25,7 +23,6 @@ public class NetworkSettings
     */
     public static enum IPversion { IPv4, IPv6 };
     
-    private List<NetworkProtocol> _netProtocols;
     private List<NetworkProtocol> _routingProtocols;
     
     private String IPv4public;
@@ -39,18 +36,9 @@ public class NetworkSettings
     
     
     
-    public NetworkSettings( final NetworkTopology net, final Agent agent )
+    public NetworkSettings( final NetworkTopology net )
     {
-        _netProtocols = new ArrayList<>( NetworkLayer.STACK_LENGTH );
-        for (int i = 0; i < NetworkLayer.STACK_LENGTH; i++) {
-            _netProtocols.add( null );
-        }
-        // By default the IP version is the 4th.
-        _netProtocols.set( NetworkLayer.NETWORK.getIndex(), new IPv4( getIPv4address(), "" ) );
-        
         _routingProtocols = new ArrayList<>();
-        // By default every node executes the RIP protocol.
-        // TODO _routingProtocols.add( new RIP( net, agent ) );
         
         subnetMask = "255.255.255.0";
         MACaddress = MACAddressFactory.getMACaddress();
@@ -148,24 +136,21 @@ public class NetworkSettings
         return "fe80::" + ip.replace( "-", "::" ).toLowerCase();
     }
     
+    /**
+     * Add a protocol used to transmit messages to a destination node
+     * using a certain routing strategy.
+     * 
+     * @param protocol    the routing protocol
+    */
     public NetworkSettings addRoutingProtocol( final NetworkProtocol protocol ) {
+        // TODO se aggiungo un protocollo tipo RIP, il quale usa solo UDP, non posso settare TCP
+        // TODO devo quindi far si che ci sia un controllo del tipo di protocollo da utilizzare.
         _routingProtocols.add( protocol );
         return this;
     }
     
     public List<NetworkProtocol> getRoutingProtocols() {
         return _routingProtocols;
-    }
-    
-    public NetworkSettings setNetworkProtocol( final NetworkProtocol protocol ) {
-        // TODO se aggiungo un protocollo tipo RIP, il quale usa solo UDP, non posso settare TCP
-        // TODO devo quindi far si che ci sia un controllo del tipo di protocollo da utilizzare.
-        _netProtocols.set( protocol.getLayer(), protocol );
-        return this;
-    }
-    
-    public List<NetworkProtocol> getNetworkProtocols() {
-        return _netProtocols;
     }
     
     @Override

@@ -174,6 +174,15 @@ public class Time implements Comparable<Time>
         return time;
     }
     
+    public void printTime()
+    {
+        long hours   =  time/3600000000L;
+        long minutes = (time - hours*3600000000L)/60000000L;
+        long seconds = (time - hours*3600000000L - minutes*60000000L)/1000000L;
+        long millis  =  time - hours*3600000000L - minutes*60000000L - seconds*1000000L;
+        System.out.println( "Simulation completed in " + hours + "h:" + minutes + "m:" + seconds + "s:" + millis + "ms" );
+    }
+    
     @Override
     public String toString() {
         return Long.toString( time );

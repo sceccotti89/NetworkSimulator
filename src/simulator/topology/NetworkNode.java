@@ -59,8 +59,8 @@ public class NetworkNode
         
         _xPos = xPos;
         _yPos = yPos;
-        _agent = new Switch( _id );
-        _settings = new NetworkSettings( net, _agent );
+        _settings = new NetworkSettings( net );
+        _agent = new Switch( this, net );
     }
     
     public long getId() {

@@ -12,13 +12,10 @@ import simulator.utils.SizeUnit;
 
 public abstract class IP extends NetworkLayerProtocol
 {
-    protected String sourceAddress;
-    protected String destAddress;
     protected String protocolID;
     
-    public IP( final String sourceAddress, final String destAddress ) {
-        this.sourceAddress = sourceAddress;
-        this.destAddress = destAddress;
+    public IP( final int protocolID ) {
+        setProtocolID( protocolID );
     }
     
     public void setProtocolID( final int protocolID ) {
@@ -42,8 +39,8 @@ public abstract class IP extends NetworkLayerProtocol
         private static final String OPTIONS = "OPTS";
         private static final String PADDING = "PAD";
         
-        public IPv4( final String sourceAddress, final String destAddress ) {
-            super( sourceAddress, destAddress );
+        public IPv4( final int protocolID ) {
+            super( protocolID );
         }
         
         @Override
@@ -67,8 +64,8 @@ public abstract class IP extends NetworkLayerProtocol
             packet.addContent( TIME_TO_LIVE, "" );
             packet.addContent( PROTOCOL, protocolID );
             packet.addContent( HEADER_CHECKSUM, "" );
-            packet.addContent( SOURCE_ADDRESS, sourceAddress );
-            packet.addContent( DESTINATION_ADDRESS, destAddress );
+            packet.addContent( SOURCE_ADDRESS, source.getNode().getNetworkSettings().getIPv4address() );
+            packet.addContent( DESTINATION_ADDRESS, dest.getNode().getNetworkSettings().getIPv4address() );
             packet.addContent( OPTIONS, "" );
             packet.addContent( PADDING, "" );
             return packet;
@@ -98,8 +95,8 @@ public abstract class IP extends NetworkLayerProtocol
         private static final String SOURCE_ADDRESS = "SOURCE";
         private static final String DESTINATION_ADDRESS = "DESTINATION";
         
-        public IPv6( final String sourceAddress, final String destAddress ) {
-            super( sourceAddress, destAddress );
+        public IPv6( final int next_header ) {
+            super( next_header );
         }
         
         @Override
@@ -109,17 +106,18 @@ public abstract class IP extends NetworkLayerProtocol
         }
         
         @Override
-        public Packet makePacket() {
+        public Packet makePacket()
+        {
             // Size of the packet is [20 - 65.535].
             Packet packet = new Packet( 20, SizeUnit.BYTE );
             packet.addContent( VERSION, "" );
             packet.addContent( TRAFFIC_CLASS, "" );
             packet.addContent( FLOW_LABEL, "" );
             packet.addContent( PAYLOAD_LENGTH, "" );
-            packet.addContent( NEXT_HEADER, "" );
+            packet.addContent( NEXT_HEADER, "" + protocolID );
             packet.addContent( HOP_LIMIT, "" );
-            packet.addContent( SOURCE_ADDRESS, "" );
-            packet.addContent( DESTINATION_ADDRESS, "" );
+            packet.addContent( SOURCE_ADDRESS, source.getNode().getNetworkSettings().getIPv6address() );
+            packet.addContent( DESTINATION_ADDRESS, dest.getNode().getNetworkSettings().getIPv6address() );
             return packet;
         }
     

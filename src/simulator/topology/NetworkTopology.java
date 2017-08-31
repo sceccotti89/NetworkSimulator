@@ -153,7 +153,7 @@ public class NetworkTopology
         agents.put( agent.getId(), agent );
     }
     
-    public void addAgents( final List<Agent> agents )
+    public void addAgents( final Agent... agents )
     {
         for (Agent agent : agents) {
             addAgent( agent );

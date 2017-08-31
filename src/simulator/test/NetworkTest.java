@@ -16,8 +16,6 @@ import simulator.events.generator.EventGenerator;
 import simulator.events.impl.RequestEvent;
 import simulator.exception.SimulatorException;
 import simulator.graphics.AnimationNetwork;
-import simulator.network.NetworkSettings;
-import simulator.network.protocols.RIP;
 import simulator.topology.NetworkTopology;
 import simulator.utils.SizeUnit;
 import simulator.utils.Time;
@@ -460,8 +458,6 @@ public class NetworkTest
                                                          new Packet( 20, SizeUnit.KILOBYTE ) );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
-        NetworkSettings settings = net.getNode( 0 ).getNetworkSettings();
-        settings.setNetworkProtocol( new RIP( net, client ) );
         
         SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
                                                       Packet.DYNAMIC,
