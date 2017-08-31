@@ -59,15 +59,6 @@ public abstract class NetworkProtocol
     }
     
     /**
-     * Returns the next node starting from the current one.
-     * 
-     * @param destID    destination node identifier.
-     * 
-     * @return the next node in the graph.
-    */
-    //public abstract NetworkNode getNextNode( final long destID );
-    
-    /**
      * Returns an object representing an event sent by this protocol,</br>
      * for instance a packet containing the distance to the own neighbours.</br>
      * NOTE: it can be {@code null}.
