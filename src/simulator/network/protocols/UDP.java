@@ -8,18 +8,11 @@ import simulator.events.Event;
 import simulator.events.Packet;
 import simulator.events.impl.ProtocolEvent;
 import simulator.network.protocols.NetworkProtocol.TransportLayerProtocol;
-import simulator.topology.NetworkNode;
 
 public class UDP extends TransportLayerProtocol
 {
     public UDP( final int sourcePort, final int destPort ) {
         super( sourcePort, destPort );
-    }
-    
-    @Override
-    public NetworkNode getNextNode( final long destID ) {
-        // TODO Auto-generated method stub
-        return null;
     }
     
     @Override

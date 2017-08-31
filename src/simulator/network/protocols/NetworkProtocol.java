@@ -13,7 +13,6 @@ import simulator.events.Event;
 import simulator.events.Packet;
 import simulator.events.impl.ProtocolEvent;
 import simulator.network.NetworkLayer;
-import simulator.topology.NetworkNode;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Time;
 
@@ -30,7 +29,7 @@ public abstract class NetworkProtocol
     
     public NetworkProtocol( final NetworkTopology net, final Agent agent )
     {
-        this.time = new Time( 0, TimeUnit.MICROSECONDS );
+        time = new Time( 0, TimeUnit.MICROSECONDS );
         this.net = net;
         this.agent = agent;
         protocols = new HashMap<>( NetworkLayer.STACK_LENGTH );
@@ -53,13 +52,20 @@ public abstract class NetworkProtocol
     }
     
     /**
+     * Returns the stack of protocols needed by the current one.
+    */
+    public Map<NetworkLayer,NetworkProtocol> getStack() {
+        return protocols;
+    }
+    
+    /**
      * Returns the next node starting from the current one.
      * 
      * @param destID    destination node identifier.
      * 
      * @return the next node in the graph.
     */
-    public abstract NetworkNode getNextNode( final long destID );
+    //public abstract NetworkNode getNextNode( final long destID );
     
     /**
      * Returns an object representing an event sent by this protocol,</br>

@@ -16,7 +16,7 @@ import simulator.topology.NetworkNode;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Time;
 
-public class RIP extends ApplicationLayerProtocol
+public class RIP extends ApplicationLayerProtocol implements RoutingProtocol
 {
     private static final Time UPDATE_TIME = new Time( 30, TimeUnit.SECONDS );
     

@@ -8,7 +8,6 @@ import simulator.events.Event;
 import simulator.events.Packet;
 import simulator.events.impl.ProtocolEvent;
 import simulator.network.protocols.NetworkProtocol.NetworkLayerProtocol;
-import simulator.topology.NetworkNode;
 import simulator.utils.SizeUnit;
 
 public abstract class IP extends NetworkLayerProtocol
@@ -45,11 +44,6 @@ public abstract class IP extends NetworkLayerProtocol
         
         public IPv4( final String sourceAddress, final String destAddress ) {
             super( sourceAddress, destAddress );
-        }
-        
-        @Override
-        public NetworkNode getNextNode( final long destID ) {
-            return null;
         }
         
         @Override
@@ -106,11 +100,6 @@ public abstract class IP extends NetworkLayerProtocol
         
         public IPv6( final String sourceAddress, final String destAddress ) {
             super( sourceAddress, destAddress );
-        }
-        
-        @Override
-        public NetworkNode getNextNode( final long destID ) {
-            return null;
         }
         
         @Override

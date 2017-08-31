@@ -14,7 +14,7 @@ import simulator.network.protocols.NetworkProtocol.TransportLayerProtocol;
 import simulator.topology.NetworkNode;
 import simulator.topology.NetworkTopology;
 
-public class OSPF extends TransportLayerProtocol
+public class OSPF extends TransportLayerProtocol implements RoutingProtocol
 {
     public OSPF( final NetworkTopology net, final Agent agent )
     {
