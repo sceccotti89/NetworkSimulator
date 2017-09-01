@@ -23,6 +23,7 @@ import simulator.core.Agent;
 import simulator.events.EventScheduler;
 import simulator.events.impl.ExternalEvent;
 import simulator.exception.SimulatorException;
+import simulator.network.element.Switch;
 
 public class NetworkTopology
 {
@@ -51,13 +52,12 @@ public class NetworkTopology
 	public NetworkTopology( final String filename ) throws IOException
     {
 	    netID = getNextID();
+	    agents = new HashMap<>();
         try { build( filename ); }
         catch( IOException e ) {
             System.err.println( "File '" + filename + "' not found." );
             throw e;
         }
-        
-        agents = new HashMap<>();
     }
     
     /**
@@ -106,7 +106,10 @@ public class NetworkTopology
             
             NetworkNode _node = new NetworkNode( this, id, name, delay, xPos, yPos );
             addNode( _node );
-            _node.toString();
+            
+            // By default the agent is a switch.
+            _node.setAgent( new Switch( _node, this ) );
+            addAgent( _node.getAgent() );
         }
         
         // Get the list of links.
@@ -135,7 +138,8 @@ public class NetworkTopology
         return netID;
     }
     
-    public void setEventScheduler( final EventScheduler evtScheduler ) {
+    public void setEventScheduler( final EventScheduler evtScheduler )
+    {
         this.evtScheduler = evtScheduler;
         evtScheduler.setNetwork( this );
         for (Agent agent : agents.values()) {

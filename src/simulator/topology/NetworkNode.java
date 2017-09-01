@@ -10,7 +10,6 @@ import simulator.core.Agent;
 import simulator.events.Event;
 import simulator.events.Packet;
 import simulator.network.NetworkSettings;
-import simulator.network.element.Switch;
 import simulator.network.protocols.NetworkProtocol;
 import simulator.utils.Time;
 
@@ -60,7 +59,6 @@ public class NetworkNode
         _xPos = xPos;
         _yPos = yPos;
         _settings = new NetworkSettings( net );
-        _agent = new Switch( this, net );
     }
     
     public long getId() {

@@ -47,13 +47,16 @@ public class EventScheduler
     }
     
     /**
-     * Get simulation time in microseconds.
-     * @return
+     * Gets simulation time in microseconds.
     */
     public Time getTime() {
         return _time;
     }
     
+    public Time getTimeDuration() {
+        return _duration.clone();
+    }
+
     public void doAllEvents()
     {
         Event e;
