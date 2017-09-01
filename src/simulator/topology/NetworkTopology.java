@@ -51,8 +51,8 @@ public class NetworkTopology
 	
     public NetworkTopology( final String filename ) throws IOException
     {
-	    netID = getNextID();
-	    agents = new HashMap<>();
+        netID = getNextID();
+        agents = new HashMap<>();
         try { build( filename ); }
         catch( IOException e ) {
             System.err.println( "File '" + filename + "' not found." );
