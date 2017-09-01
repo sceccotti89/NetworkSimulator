@@ -61,7 +61,7 @@ public class NetworkTopology
     }
     
     /**
-     * Builds the network topology
+     * Builds the network topology.
      * 
      * @param filename  name of the file where nodes and links are loaded from
     */
@@ -81,7 +81,7 @@ public class NetworkTopology
     }
     
     /**
-     * Builds the network topology
+     * Builds the network topology.
      * 
      * @param filename  name of the file where nodes and links are loaded from
     */
@@ -188,7 +188,7 @@ public class NetworkTopology
     private void insertLink( final NetworkLink link )
     {
         List<NetworkLink> sLinks = links.get( link.getSourceId() );
-        if(sLinks == null) sLinks = new ArrayList<NetworkLink>();
+        if (sLinks == null) sLinks = new ArrayList<NetworkLink>();
         sLinks.add( link );
         links.put( link.getSourceId(), sLinks );
     }
@@ -264,7 +264,7 @@ public class NetworkTopology
     }
     
     /**
-     * This method permits to add some "external" event to modify the current network
+     * This method permits to add an "external" event to modify the current network
      * topology during the simulation, adding or removing links or nodes, at some fixed time
      * specified in the event.
      * 
