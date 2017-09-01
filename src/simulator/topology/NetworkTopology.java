@@ -49,7 +49,7 @@ public class NetworkTopology
         agents = new HashMap<>();
     }
 	
-	public NetworkTopology( final String filename ) throws IOException
+    public NetworkTopology( final String filename ) throws IOException
     {
 	    netID = getNextID();
 	    agents = new HashMap<>();
