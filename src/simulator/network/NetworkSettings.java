@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import simulator.network.protocols.NetworkProtocol;
+import simulator.network.protocols.RoutingProtocol;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Utils;
 
@@ -142,9 +143,8 @@ public class NetworkSettings
      * 
      * @param protocol    the routing protocol
     */
-    public NetworkSettings addRoutingProtocol( final NetworkProtocol protocol ) {
-        // TODO se aggiungo un protocollo tipo RIP, il quale usa solo UDP, non posso settare TCP
-        // TODO devo quindi far si che ci sia un controllo del tipo di protocollo da utilizzare.
+    public <T extends NetworkProtocol & RoutingProtocol>
+            NetworkSettings addRoutingProtocol( final T protocol ) {
         _routingProtocols.add( protocol );
         return this;
     }
