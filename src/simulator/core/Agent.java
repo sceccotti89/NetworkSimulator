@@ -51,6 +51,8 @@ public abstract class Agent
         this( id, null );
     }
     
+    // TODO rimuovere l'eventGenerator dal costruttore?
+    
     public Agent( final NetworkNode node, final EventGenerator evGenerator ) {
         this( node.getId(), evGenerator );
         setNode( node );
@@ -129,7 +131,7 @@ public abstract class Agent
     }
     
     /**
-     * Returns the requested events generator.
+     * Returns the requested event generator.
      * 
      * @param index    index of the requested event generator.
     */
