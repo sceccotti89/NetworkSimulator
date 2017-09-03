@@ -70,7 +70,7 @@ public class NetworkTest
         public double getNodeUtilization( final Time time )
         {
             double utilization = 0;
-            for (Agent agent : _destinations) {
+            for (Agent agent : _evGenerators.get( 0 ).getDestinations()) {
                 utilization += agent.getNodeUtilization( time );
             }
             return utilization;
@@ -207,7 +207,7 @@ public class NetworkTest
         Agent server = new ServerAgent( 1 );
         net.addAgent( server );
         
-        client.connect( server );
+        client.getEventGenerator( 0 ).connect( server );
         
         sim.start( new Time( 1, TimeUnit.HOURS ) );
     }
@@ -235,7 +235,7 @@ public class NetworkTest
         Agent server = new ServerAgent( 2 );
         net.addAgent( server );
         
-        client.connect( server );
+        client.getEventGenerator( 0 ).connect( server );
         
         sim.start( new Time( 1, TimeUnit.HOURS ) );
     }
@@ -268,8 +268,8 @@ public class NetworkTest
         Agent client2 = new ClientAgent( 2, generator2 );
         net.addAgent( client2 );
         
-        client1.connect( client2 );
-        client2.connect( client1 );
+        client1.getEventGenerator( 0 ).connect( client2 );
+        client2.getEventGenerator( 0 ).connect( client1 );
         
         sim.start( new Time( 1, TimeUnit.HOURS ) );
     }
@@ -312,8 +312,8 @@ public class NetworkTest
         Agent server2 = new ServerAgent( 5 );
         net.addAgent( server2 );
         
-        client1.connect( server1 );
-        client2.connect( server2 );
+        client1.getEventGenerator( 0 ).connect( server1 );
+        client2.getEventGenerator( 0 ).connect( server2 );
         
         sim.start( new Time( 1, TimeUnit.HOURS ) );
     }
@@ -344,7 +344,7 @@ public class NetworkTest
         Agent server = new ResponseServerAgent( 2, generator2 );
         net.addAgent( server );
         
-        client.connect( server );
+        client.getEventGenerator( 0 ).connect( server );
         
         sim.start( new Time( 1, TimeUnit.HOURS ) );
     }
@@ -375,7 +375,7 @@ public class NetworkTest
         Agent server = new ResponseServerAgent( 2, generator2 );
         net.addAgent( server );
         
-        client.connect( server );
+        client.getEventGenerator( 0 ).connect( server );
         
         sim.start( new Time( 1, TimeUnit.HOURS ) );
     }
@@ -423,10 +423,10 @@ public class NetworkTest
                                                                      new Packet( 20, SizeUnit.KILOBYTE ) );
         Agent Switch = new ClientAgent( 1, switchGenerator );
         net.addAgent( Switch );
-        Switch.connect( server1 );
-        Switch.connect( server2 );
+        Switch.getEventGenerator( 0 ).connect( server1 );
+        Switch.getEventGenerator( 0 ).connect( server2 );
         
-        client.connect( Switch );
+        client.getEventGenerator( 0 ).connect( Switch );
         
         sim.start( new Time( 1, TimeUnit.HOURS ) );
     }
@@ -474,10 +474,10 @@ public class NetworkTest
                                                                      new Packet( 20, SizeUnit.KILOBYTE ) );
         Agent Switch = new ClientAgent( 1, switchGenerator );
         net.addAgent( Switch );
-        Switch.connect( server1 );
-        Switch.connect( server2 );
+        Switch.getEventGenerator( 0 ).connect( server1 );
+        Switch.getEventGenerator( 0 ).connect( server2 );
         
-        client.connect( Switch );
+        client.getEventGenerator( 0 ).connect( Switch );
         
         sim.start( new Time( 1, TimeUnit.HOURS ) );
     }
@@ -502,12 +502,12 @@ public class NetworkTest
         Agent switchAgent = new SwitchAgent( 1, anyGen );
         net.addAgent( switchAgent );
         
-        client.connect( switchAgent );
+        client.getEventGenerator( 0 ).connect( switchAgent );
         for (int i = 0; i < CPU_CORES; i++) {
             Agent agentCore = new ServerAgent( 2 + i );
             net.addAgent( agentCore );
             
-            switchAgent.connect( agentCore );
+            switchAgent.getEventGenerator( 0 ).connect( agentCore );
         }
         
         sim.start( new Time( 1, TimeUnit.HOURS ) );

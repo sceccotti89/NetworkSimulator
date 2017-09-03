@@ -28,11 +28,10 @@ public abstract class Agent
     
     private EventScheduler _evtScheduler;
     private EventHandler _evtHandler = null;
-    protected EventGenerator _evGenerator;
+    protected List<EventGenerator> _evGenerators;
     private List<Event> _eventQueue;
     
     private boolean _parallelTransmission = false;
-    protected List<Agent> _destinations;
     
     private Time _time;
     
@@ -60,16 +59,15 @@ public abstract class Agent
     public Agent( final long id, final EventGenerator evGenerator )
     {
         _id = id;
-        _evGenerator = evGenerator;
-        _destinations = new ArrayList<>();
         _devices = new HashMap<>();
         
         _eventQueue = new ArrayList<>();
         
         _time = new Time( 0, TimeUnit.MICROSECONDS );
         
-        if (_evGenerator != null) {
-            _evGenerator.setAgent( this );
+        _evGenerators = new ArrayList<>();
+        if (evGenerator != null) {
+            addEventGenerator( evGenerator );
         }
         
         _availablePorts = new ArrayList<>( 64511 );
@@ -78,24 +76,17 @@ public abstract class Agent
         }
     }
     
-    public void connect( final Agent destination )
-    {
-        _destinations.add( destination );
-        _evGenerator.connect( destination );
-    }
-    
-    public void connectAll( final List<Agent> destinations )
-    {
-        _destinations.addAll( destinations );
-        _evGenerator.connectAll( destinations );
-    }
-    
     public long getId() {
         return _id;
     }
     
     public NetworkNode getNode() {
         return _node;
+    }
+    
+    public void addEventGenerator( final EventGenerator evGenerator ) {
+        _evGenerators.add( evGenerator );
+        evGenerator.setAgent( this );
     }
     
     public void addDevice( final Device<?,?> device ) {
@@ -126,10 +117,6 @@ public abstract class Agent
         node.setAgent( this );
     }
     
-    public List<Agent> getDestinations() {
-        return _destinations;
-    }
-    
     public void setEventScheduler( final EventScheduler evtScheduler ) {
         _evtScheduler = evtScheduler;
         for (Device<?,?> device : _devices.values()) {
@@ -142,7 +129,16 @@ public abstract class Agent
     }
     
     /**
-     * Put an input event into the queue.
+     * Returns the requested events generator.
+     * 
+     * @param index    index of the requested event generator.
+    */
+    public EventGenerator getEventGenerator( final int index ) {
+        return _evGenerators.get( index );
+    }
+
+    /**
+     * Puts an input event into the queue.
      * 
      * @param e    the input event
     */
@@ -151,7 +147,7 @@ public abstract class Agent
     }
     
     /**
-     * Remove an event from the queue.
+     * Removes an event from the queue.
      * 
      * @param event    the event to remove
      * 
@@ -163,7 +159,7 @@ public abstract class Agent
     }
     
     /**
-     * Remove an event from the queue.
+     * Removes an event from the queue.
      * 
      * @param index    position of the event to remove
      * 
@@ -177,7 +173,7 @@ public abstract class Agent
     }
     
     /**
-     * Cheks if the current event can be executed.</br>
+     * Checks if the current event can be executed.</br>
      * In presence of any device an override of this method is suggested.</br>
      * NOTE: this method sets also the time of the event, in case the given one can't be executed.
      * 
@@ -244,8 +240,8 @@ public abstract class Agent
             }
         }
         
-        if (_evGenerator != null) {
-            List<Event> genEvents = _evGenerator.generate( t, e );
+        for (EventGenerator evGenerator : _evGenerators) {
+            List<Event> genEvents = evGenerator.generate( t, e );
             if (genEvents != null) {
                 events.addAll( genEvents );
             }

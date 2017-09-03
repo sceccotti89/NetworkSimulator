@@ -74,7 +74,8 @@ public abstract class EventGenerator
         
         _toAnswer = new LinkedList<>();
         
-        // TODO assegnare il protocollo di comunicazione (meglio ancora un NetworkSettings??).
+        // TODO assegnare il protocollo di comunicazione (crearne anche il metodo).
+        
     }
     
     /**
@@ -115,6 +116,10 @@ public abstract class EventGenerator
             connect( dest );
         }
         return this;
+    }
+    
+    public List<Agent> getDestinations() {
+        return _destinations;
     }
     
     public EventGenerator setWaitReponse( final boolean flag )

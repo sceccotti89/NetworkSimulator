@@ -181,7 +181,7 @@ public class EnergyTest
         
         public void computeIdleEnergy( final long sourceId, final Time time )
         {
-            for (Agent dest : _destinations) {
+            for (Agent dest : _evGenerators.get( 0 ).getDestinations()) {
                 if (dest.getNode().getId() != sourceId) {
                     EnergyCPU cpu = dest.getDevice( new EnergyCPU() );
                     if (cpu != null) {
@@ -199,7 +199,7 @@ public class EnergyTest
         public double getNodeUtilization( final Time time )
         {
             double utilization = 0;
-            for (Agent agent : _destinations) {
+            for (Agent agent : _evGenerators.get( 0 ).getDestinations()) {
                 utilization += agent.getNodeUtilization( time );
             }
             return utilization;
@@ -376,7 +376,7 @@ public class EnergyTest
         
         String modelType = model.getModelType( true );
         
-        client.connect( switchAgent );
+        client.getEventGenerator( 0 ).connect( switchAgent );
         
         final int CPU_CORES = 4;
         List<EnergyCPU> cpus = new ArrayList<>( CPU_CORES );
@@ -396,7 +396,7 @@ public class EnergyTest
             agentCore.addDevice( cpu );
             net.addAgent( agentCore );
             
-            switchAgent.connect( agentCore );
+            switchAgent.getEventGenerator( 0 ).connect( agentCore );
             
             plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), null, "Node " + i + " " + model.getModelType( true ) );
         }
@@ -462,7 +462,7 @@ public class EnergyTest
                                                       new Packet( 20, SizeUnit.BYTE ) );
         Agent switchAgent = new SwitchAgent( 1, anyGen );
         net.addAgent( switchAgent );
-        client.connect( switchAgent );
+        client.getEventGenerator( 0 ).connect( switchAgent );
         
         String modelType = model.getModelType( true );
         
@@ -483,7 +483,7 @@ public class EnergyTest
             agentCore.addDevice( cpu );
             net.addAgent( agentCore );
             
-            switchAgent.connect( agentCore );
+            switchAgent.getEventGenerator( 0 ).connect( agentCore );
             
             plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), null, "Node " + i + " " + model.getModelType( true ) );
         }
@@ -577,7 +577,7 @@ public class EnergyTest
                                                       new Packet( 20, SizeUnit.BYTE ) );
         Agent switchAgent = new SwitchAgent( 1, anyGen );
         net.addAgent( switchAgent );
-        client.connect( switchAgent );
+        client.getEventGenerator( 0 ).connect( switchAgent );
         
         final int NODES = 5;
         List<EnergyCPU> cpus = new ArrayList<>( NODES * CPU_CORES );
@@ -592,7 +592,7 @@ public class EnergyTest
                                            new Packet( 20, SizeUnit.BYTE ) );
             Agent switchNode = new SwitchAgent( i * CPU_CORES + 2 + i, anyGen );
             net.addAgent( switchNode );
-            switchAgent.connect( switchNode );
+            switchAgent.getEventGenerator( 0 ).connect( switchNode );
             
             // Add the CPU nodes to each switch.
             for (int j = 0; j < CPU_CORES; j++) {
@@ -611,7 +611,7 @@ public class EnergyTest
                 agentCore.addDevice( cpu );
                 net.addAgent( agentCore );
                 
-                switchNode.connect( agentCore );
+                switchNode.getEventGenerator( 0 ).connect( agentCore );
                 
                 plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), null, "Node " + id + " " + model.getModelType( true ) );
             }
@@ -704,7 +704,7 @@ public class EnergyTest
         server.setParallelTransmission( false ).addDevice( cpu );
         net.addAgent( server );
         
-        client.connect( server );
+        client.getEventGenerator( 0 ).connect( server );
         
         Plotter plotter = new Plotter( model.getModelType( false ), 800, 600 );
         plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), null, model.getModelType( false ) );
@@ -782,7 +782,7 @@ public class EnergyTest
                                                       new Packet( 20, SizeUnit.BYTE ) );
         Agent switchAgent = new SwitchAgent( 1, anyGen );
         net.addAgent( switchAgent );
-        client.connect( switchAgent );
+        client.getEventGenerator( 0 ).connect( switchAgent );
         
         final int CPU_NODES = 2;
         String modelType = model.getModelType( true );
@@ -804,7 +804,7 @@ public class EnergyTest
             agentCore.addDevice( cpu );
             net.addAgent( agentCore );
             
-            switchAgent.connect( agentCore );
+            switchAgent.getEventGenerator( 0 ).connect( agentCore );
             
             plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), null, "Node " + i + " " + model.getModelType( true ) );
         }
