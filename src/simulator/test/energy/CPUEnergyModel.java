@@ -574,7 +574,7 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
          * @param mode           PESOS modality (see {@linkplain CPUEnergyModel.Mode Mode}).
          * @param frequencies    file containing a list of available frequencies.
          * 
-         * @throws IOException if the file of frequencies doesn't exits or is malformed.
+         * @throws IOException if the file of frequencies doesn't exists or is malformed.
         */
         public PESOSmodel( final long time_budget, final Mode mode, final String frequencies ) throws IOException {
             this( time_budget, mode, readFrequencies( frequencies ) );
@@ -594,7 +594,7 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
          * @param mode           PESOS modality (see {@linkplain CPUEnergyModel.Mode Mode}).
          * @param frequencies    file containing a list of available frequencies.
          * 
-         * @throws IOException if the file of frequencies doesn't exits or is malformed.
+         * @throws IOException if the file of frequencies doesn't exists or is malformed.
         */
         public PERFmodel( final long time_budget, final Mode mode, final String frequencies ) throws IOException {
             this( time_budget, mode, readFrequencies( frequencies ) );
