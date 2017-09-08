@@ -26,6 +26,7 @@ public class NetworkSettings
     
     private List<NetworkProtocol> _routingProtocols;
     
+    private String loopback = "127.0.0.1";
     private String IPv4public;
     private String IPv4private;
     private String IPv6;
@@ -125,7 +126,7 @@ public class NetworkSettings
         
         // Create groups of 4 hexadecimal digits of the height 16-bit pieces of the address.
         int count = 0;
-        for(int index = ip.indexOf( '-' ); index >= 0 && index < ip.length(); index = ip.indexOf( '-', index + 1 )) {
+        for (int index = ip.indexOf( '-' ); index >= 0 && index < ip.length(); index = ip.indexOf( '-', index + 1 )) {
             if (count % 2 == 0) {
                 ip = ip.substring( 0, index ) + ip.substring( index + 1 );
                 count = 1;
@@ -164,6 +165,7 @@ public class NetworkSettings
                "IPv4 private address ....: " + IPv4private + "\n" +
                "IPv6 address ............: " + IPv6 + "\n" +
                "IPv6 Link Local address .: " + IPv6LinkLocal + "\n" +
+               "Loopback.................: " + loopback + "\n" +
                "MAC address .............: " + MACaddress + "\n" +
                "Subnet mask .............: " + subnetMask;
     }
