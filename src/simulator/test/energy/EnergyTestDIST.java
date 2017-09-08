@@ -223,54 +223,6 @@ public class EnergyTestDIST
         }
     }
     
-    /*private static class CoreAgent extends Agent implements EventHandler
-    {
-        public CoreAgent( final long id, final EventGenerator evtGenerator )
-        {
-            super( id );
-            addEventGenerator( evtGenerator );
-            addEventHandler( this );
-        }
-        
-        @Override
-        public void addEventOnQueue( final Event e )
-        {
-            Packet p = e.getPacket();
-            EnergyCPU cpu = getDevice( new EnergyCPU() );
-            CPUEnergyModel model = (CPUEnergyModel) cpu.getModel();
-            QueryInfo query = model.getQuery( p.getContent( Global.QUERY_ID ) );
-            query.setEvent( e );
-            query.setArrivalTime( e.getArrivalTime() );
-            cpu.addQuery( cpu.selectCore( e.getArrivalTime() ), query );
-        }
-        
-        @Override
-        public Time handle( final Event e, final EventType type )
-        {
-            EnergyCPU cpu = getDevice( new EnergyCPU() );
-            if (e instanceof ResponseEvent) {
-                if (type == EventType.GENERATED) {
-                    QueryInfo query = cpu.getLastQuery();
-                    query.setEvent( e );
-                } else { // EventType.SENT event.
-                    // Set the time of the cpu as (at least) the time of the sending event.
-                    cpu.setTime( e.getTime() );
-                    cpu.checkQueryCompletion( e.getTime() );
-                }
-            } else {
-                // Compute the time to complete the query.
-                return cpu.timeToCompute( null );
-            }
-            
-            return null;
-        }
-        
-        @Override
-        public double getNodeUtilization( final Time time ) {
-            return getDevice( new EnergyCPU() ).getUtilization( time );
-        }
-    }*/
-    
     
     
     
