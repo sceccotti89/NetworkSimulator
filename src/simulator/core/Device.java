@@ -24,12 +24,12 @@ import simulator.utils.Utils;
 
 /**
  * Class representing a generic device (e.g. CPU, RAM, etc.).</br>
- * You can associate a proper cost model for the evaluation of time and energy consumption,
+ * You can associate a proper cost model for the evaluation of, e.g., the energy consumption,
  * when {@linkplain #timeToCompute(Task) timeToCompute} is called.</br>
  * In case a model will not be associated just set {@code Object}
  * for the {@linkplain E} and {@linkplain P} parameters.</br>
  * With the {@linkplain #addSampler(String, Time, Sampling, String) addSampler} method a new sampler
- * is added to this device, associated with a unique identier used to retrieve its results.
+ * is added to this device, associated with a unique identifier used to retrieve its results.
  * 
  * @param <E>    type of the value returned by the {@link Model#eval(Object...) eval} method
  *               of the associated model.
