@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 import simulator.core.Agent;
 import simulator.core.Device.Sampler.Sampling;
 import simulator.core.Simulator;
-import simulator.core.Task;
 import simulator.events.Event;
 import simulator.events.EventHandler;
 import simulator.events.Packet;
@@ -31,7 +30,7 @@ import simulator.utils.SizeUnit;
 import simulator.utils.Time;
 import simulator.utils.Utils;
 
-public class EnergyTest
+public class EnergyTestMONO
 {
     private static final int CPU_CORES = 4;
     
@@ -224,7 +223,7 @@ public class EnergyTest
         }
     }
     
-    private static class CoreAgent extends Agent implements EventHandler
+    /*private static class CoreAgent extends Agent implements EventHandler
     {
         public CoreAgent( final long id, final EventGenerator evtGenerator )
         {
@@ -248,8 +247,8 @@ public class EnergyTest
         @Override
         public Time handle( final Event e, final EventType type )
         {
+            EnergyCPU cpu = getDevice( new EnergyCPU() );
             if (e instanceof ResponseEvent) {
-                EnergyCPU cpu = getDevice( new EnergyCPU() );
                 if (type == EventType.GENERATED) {
                     QueryInfo query = cpu.getLastQuery();
                     query.setEvent( e );
@@ -260,10 +259,7 @@ public class EnergyTest
                 }
             } else {
                 // Compute the time to complete the query.
-                EnergyCPU cpu = getDevice( new EnergyCPU() );
-                Task task = new Task();
-                task.addContent( Global.EVENT_ID, e.getId() );
-                return cpu.timeToCompute( task );
+                return cpu.timeToCompute( null );
             }
             
             return null;
@@ -273,7 +269,7 @@ public class EnergyTest
         public double getNodeUtilization( final Time time ) {
             return getDevice( new EnergyCPU() ).getUtilization( time );
         }
-    }
+    }*/
     
     
     
@@ -305,23 +301,28 @@ public class EnergyTest
         @Override
         public Time handle( final Event e, final EventType type )
         {
+            EnergyCPU cpu = getDevice( new EnergyCPU() );
             if (e instanceof ResponseEvent) {
-                EnergyCPU cpu = getDevice( new EnergyCPU() );
                 if (type == EventType.GENERATED) {
                     QueryInfo query = cpu.getLastQuery();
                     query.setEvent( e );
-                } else {
+                } else { // EventType.SENT event.
                     // Set the time of the cpu as (at least) the time of the sending event.
                     cpu.setTime( e.getTime() );
                     cpu.checkQueryCompletion( e.getTime() );
                 }
             } else {
                 // Compute the time to complete the query.
-                EnergyCPU cpu = getDevice( new EnergyCPU() );
                 return cpu.timeToCompute( null );
             }
             
             return null;
+        }
+        
+        // TODO questa funzione e' in prova. Se mi accorgo che qualcosa non torna riutilizzo l'Agent.
+        @Override
+        public double getNodeUtilization( final Time time ) {
+            return getDevice( new EnergyCPU() ).getUtilization( time );
         }
     }
     
@@ -351,11 +352,8 @@ public class EnergyTest
             model = new PESOSmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" );
         model.loadModel();
         
-        testDistributedSingleNode( model );
-        //testDistributedMultipleNodes( model );
-        //testNodeMulticore( model );
-        //testDistributedMulticore( model );
-        //testNetworkAnimation( model );
+        //testMultiCore( model );
+        testSingleCore( model );
     }
     
     public static void testNetworkAnimation( final CPUEnergyModel model ) throws Exception
@@ -396,7 +394,7 @@ public class EnergyTest
             EventGenerator sink = new SinkGenerator( Time.INFINITE,
                                                      new Packet( 20, SizeUnit.MEGABYTE ),
                                                      new Packet( 20, SizeUnit.MEGABYTE ) );
-            Agent agentCore = new CoreAgent( 2 + i, sink );
+            Agent agentCore = new MulticoreAgent( 2 + i, sink );
             agentCore.addDevice( cpu );
             net.addAgent( agentCore );
             
@@ -436,9 +434,94 @@ public class EnergyTest
         an.start();
     }
     
-    public static void testDistributedSingleNode( final CPUEnergyModel model ) throws Exception
+    public static void testMultiCore( final CPUEnergyModel model ) throws IOException
     {
         /*
+                   1000Mb,0ms
+        client <---------------> server
+          0ms                    dynamic
+        */
+        
+        EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/PESOS/cpu_frequencies.txt" );
+        cpu.setModel( model );
+        
+        String modelType = model.getModelType( true );
+        
+        cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
+        cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
+        cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
+        
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_mono_multiCore.json" );
+        System.out.println( net.toString() );
+        
+        Simulator sim = new Simulator( net );
+        
+        EventGenerator generator = new ClientGenerator( new Packet( 40, SizeUnit.BYTE ),
+                                                        new Packet( 40, SizeUnit.BYTE ),
+                                                        model );
+        Agent client = new ClientAgent( 0, generator );
+        net.addAgent( client );
+        
+        EventGenerator sink = new SinkGenerator( Time.INFINITE,
+                                                 new Packet( 40, SizeUnit.BYTE ),
+                                                 new Packet( 20, SizeUnit.BYTE ) );
+        
+        Agent server = new MulticoreAgent( 1, sink );
+        server.setParallelTransmission( false ).addDevice( cpu );
+        net.addAgent( server );
+        
+        client.getEventGenerator( 0 ).connect( server );
+        
+        Plotter plotter = new Plotter( "MONO MULTI_CORE - " + model.getModelType( false ), 800, 600 );
+        plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), null, model.getModelType( false ) );
+        plotter.setAxisName( "Time (h)", "Energy (J)" );
+        plotter.setTicks( Axis.Y, 10 );
+        plotter.setTicks( Axis.X, 24, 2 );
+        plotter.setRange( Axis.Y, 0, 4350 );
+        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
+        plotter.setVisible( true );
+        
+        sim.start( new Time( 24, TimeUnit.HOURS ) );
+
+        Utils.LOGGER.debug( model.getModelType( false ) + " - Total energy:      " + cpu.getResultSampled( Global.ENERGY_SAMPLING ) + "J" );
+        Utils.LOGGER.debug( model.getModelType( false ) + " - Total Idle energy: " + cpu.getResultSampled( Global.IDLE_ENERGY_SAMPLING ) + "J" );
+        
+        System.out.println( "QUERIES: " + cpu.getExecutedQueries() );
+        
+        // PARAMETERS                        0.03 0.03 0.01
+        //              COEFFICIENTS           QUERY_FILE            NORMALIZED             PARAMETER              MATTEO                  IDLE 0
+        //
+        // TIME CONSERVATIVE 500ms
+        // TARGET:    601670.0000000000
+        // SIMULATOR: 754304.0207093941    594471.46526191400    477342.23502861796     541913.46662896510 (10%)     528119.30975986700
+        // IDLE:      196257.8677944194     75247.89537985546     75247.89537980038      71066.81117570659            75247.89537980038    36100 Joule in meno
+        
+        // TIME CONSERVATIVE 1000ms
+        // TARGET:    443730.0000000000
+        // SIMULATOR: 647974.3624506982    468742.25049613975    293876.55404496676     436421.00188829670 (5%)      396748.66580365730
+        // IDLE:      159577.0287529062     61183.97035269940     61183.97035269940      58061.62555988143            61183.97035273697
+        
+        // ENERGY CONSERVATIVE 500ms
+        // TARGET:    531100.0000000000
+        // SIMULATOR: 719986.3432093372    548442.27624212660    401489.20500958500     503171.36868913420 (5%)      481063.69885676424
+        // IDLE:      178953.7990861060     68613.28364962358     68613.28364962358      64970.61726727840            68613.28364967453
+        
+        // ENERGY CONSERVATIVE 1000ms
+        // TARGET:    412060.0000000000
+        // SIMULATOR: 642008.7743643910    458369.63022473130    270107.72210220364     427332.62510339730 (5%)
+        // IDLE:      152041.1380861678     58294.60892807464     58294.60892807464      55344.06185887506
+        
+        // PERF
+        // TARGET:     790400.000000000
+        // SIMULATOR: 1145401.600324196    992317.15024121070    940141.72685316140     862323.60355950530 (10%)    954884.43320349800
+        // IDLE:       247582.811710984     94926.56637327410     94926.56637327410      82491.18617838359           75247.89537980030     60560 Joule in meno
+    }
+    
+    public static void testSingleCore( final CPUEnergyModel model ) throws Exception
+    {
+        /*
+        Links have 0ms of latency and "infinite" bandwith since they act as "cpu cores".
+        
                                    / node0    / node2
                                   / dynamic  / dynamic
                1000Mb,0ms        /          /
@@ -449,7 +532,7 @@ public class EnergyTest
                                     dynamic    dynamic
         */
         
-        NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_singleNode.json" );
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_mono_singleCore.json" );
         net.setTrackingEvent( "./Results/packets2.txt" );
         System.out.println( net.toString() );
         
@@ -471,7 +554,7 @@ public class EnergyTest
         String modelType = model.getModelType( true );
         
         List<EnergyCPU> cpus = new ArrayList<>( CPU_CORES );
-        Plotter plotter = new Plotter( model.getModelType( false ), 800, 600 );
+        Plotter plotter = new Plotter( "MONO SINGLE_CORE - " + model.getModelType( false ), 800, 600 );
         for (int i = 0; i < CPU_CORES; i++) {
             EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/PESOS/cpu_frequencies.txt" );
             cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
@@ -483,7 +566,7 @@ public class EnergyTest
             EventGenerator sink = new SinkGenerator( Time.INFINITE,
                                                      new Packet( 20, SizeUnit.BYTE ),
                                                      new Packet( 20, SizeUnit.BYTE ) );
-            Agent agentCore = new CoreAgent( 2 + i, sink );
+            Agent agentCore = new MulticoreAgent( 2 + i, sink );
             agentCore.addDevice( cpu );
             net.addAgent( agentCore );
             
@@ -541,321 +624,5 @@ public class EnergyTest
         // TARGET:     790400.000000000
         // SIMULATOR: 1145401.600324196    992317.15024121070    940141.72685316140
         // IDLE:       247582.811710984     94926.56637327410     94926.56637327410
-    }
-
-    public static void testDistributedMultipleNodes( final CPUEnergyModel model ) throws IOException
-    {
-        /*
-                                   / node_0   / node_2
-                                  / dynamic  / dynamic
-               1000Mb,0ms        /          /
-        client ---------- switch  ----------
-          0ms               0ms  \          \
-                                  \          \
-                                   \ node_1  \ node_3
-                                    dynamic   dynamic
-        
-                  / core_i_0  / core_i_2
-                 /  dynamic  /  dynamic
-                /           /
-        node_i  ----------
-          0ms   \           \
-                 \           \
-                  \ core_i_2  \ core_i_3
-                    dynamic     dynamic
-        */
-        
-        NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_multiNode.json" );
-        System.out.println( net.toString() );
-        
-        Simulator sim = new Simulator( net );
-        
-        EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
-                                                        new Packet( 20, SizeUnit.BYTE ),
-                                                        model );
-        Agent client = new ClientAgent( 0, generator );
-        net.addAgent( client );
-        
-        EventGenerator anyGen = new AnycastGenerator( Time.INFINITE,
-                                                      new Packet( 20, SizeUnit.BYTE ),
-                                                      new Packet( 20, SizeUnit.BYTE ) );
-        Agent switchAgent = new SwitchAgent( 1, anyGen );
-        net.addAgent( switchAgent );
-        client.getEventGenerator( 0 ).connect( switchAgent );
-        
-        final int NODES = 5;
-        List<EnergyCPU> cpus = new ArrayList<>( NODES * CPU_CORES );
-        Plotter plotter = new Plotter( model.getModelType( false ), 800, 600 );
-        
-        String modelType = model.getModelType( true );
-        
-        // Add the switch nodes.
-        for (int i = 0; i < NODES; i++) {
-            anyGen = new AnycastGenerator( Time.INFINITE,
-                                           new Packet( 20, SizeUnit.BYTE ),
-                                           new Packet( 20, SizeUnit.BYTE ) );
-            Agent switchNode = new SwitchAgent( i * CPU_CORES + 2 + i, anyGen );
-            net.addAgent( switchNode );
-            switchAgent.getEventGenerator( 0 ).connect( switchNode );
-            
-            // Add the CPU nodes to each switch.
-            for (int j = 0; j < CPU_CORES; j++) {
-                EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/PESOS/cpu_frequencies.txt" );
-                cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
-                cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
-                cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
-                cpu.setModel( model );
-                cpus.add( cpu );
-                
-                EventGenerator sink = new SinkGenerator( Time.INFINITE,
-                                                         new Packet( 20, SizeUnit.BYTE ),
-                                                         new Packet( 20, SizeUnit.BYTE ) );
-                long id = i * (CPU_CORES + 1) + 3 + j;
-                Agent agentCore = new CoreAgent( id, sink );
-                agentCore.addDevice( cpu );
-                net.addAgent( agentCore );
-                
-                switchNode.getEventGenerator( 0 ).connect( agentCore );
-                
-                plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), null, "Node " + id + " " + model.getModelType( true ) );
-            }
-        }
-        
-        plotter.setAxisName( "Time (h)", "Energy (J)" );
-        plotter.setTicks( Axis.Y, 10 );
-        plotter.setTicks( Axis.X, 24, 2 );
-        plotter.setRange( Axis.Y, 0, 1800 );
-        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
-        plotter.setVisible( true );
-        
-        sim.start( new Time( 24, TimeUnit.HOURS ) );
-        
-        double totalEnergy = 0;
-        double totalIdleEnergy = 0;
-        int totalQueries = 0;
-        for (int i = 0; i < NODES * CPU_CORES; i++) {
-            EnergyCPU cpu = cpus.get( i );
-            totalEnergy += cpu.getResultSampled( Global.ENERGY_SAMPLING );
-            totalIdleEnergy += cpu.getResultSampled( Global.IDLE_ENERGY_SAMPLING );
-            Utils.LOGGER.info( "CPU " + i + ", Energy consumed: " + cpu.getResultSampled( Global.ENERGY_SAMPLING ) + "J" );
-            totalQueries += cpu.getExecutedQueries();
-        }
-        Utils.LOGGER.info( model.getModelType( false ) + " - Total energy:      " + totalEnergy + "J" );
-        Utils.LOGGER.info( model.getModelType( false ) + " - Total idle energy: " + totalIdleEnergy + "J" );
-        System.out.println( "QUERIES: " + totalQueries );
-        
-        //             COEFFICIENTS          QUERY_FILE            NORMALIZED
-        //
-        // TIME CONSERVATIVE 500ms
-        // TARGET:    601670.0000000000
-        // SIMULATOR: 
-        // IDLE:      
-        
-        // TIME CONSERVATIVE 1000ms
-        // TARGET:    443730.0000000000
-        // SIMULATOR: 
-        // IDLE:      
-        
-        // ENERGY CONSERVATIVE 500ms
-        // TARGET:    531100.0000000000
-        // SIMULATOR: 
-        // IDLE:      
-        
-        // ENERGY CONSERVATIVE 1000ms
-        // TARGET:    412060.0000000000
-        // SIMULATOR: 
-        // IDLE:      
-        
-        // PERF
-        // TARGET:     790400.000000000
-        // SIMULATOR:                ??    1104635.5244105107    
-        // IDLE:                     ??    207244.94054257227    
-    }
-
-    public static void testNodeMulticore( final CPUEnergyModel model ) throws IOException
-    {
-        /*
-                   1000Mb,0ms
-        client <---------------> server
-          0ms                    DYNAMIC
-        */
-        
-        EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/PESOS/cpu_frequencies.txt" );
-        cpu.setModel( model );
-        
-        String modelType = model.getModelType( true );
-        
-        cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
-        cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
-        cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
-        
-        NetworkTopology net = new NetworkTopology( "Topology/Topology_mono_multicore.json" );
-        System.out.println( net.toString() );
-        
-        Simulator sim = new Simulator( net );
-        
-        EventGenerator generator = new ClientGenerator( new Packet( 40, SizeUnit.BYTE ),
-                                                        new Packet( 40, SizeUnit.BYTE ),
-                                                        model );
-        Agent client = new ClientAgent( 0, generator );
-        net.addAgent( client );
-        
-        EventGenerator sink = new SinkGenerator( Time.INFINITE,
-                                                 new Packet( 40, SizeUnit.BYTE ),
-                                                 new Packet( 20, SizeUnit.BYTE ) );
-        
-        Agent server = new MulticoreAgent( 1, sink );
-        server.setParallelTransmission( false ).addDevice( cpu );
-        net.addAgent( server );
-        
-        client.getEventGenerator( 0 ).connect( server );
-        
-        Plotter plotter = new Plotter( model.getModelType( false ), 800, 600 );
-        plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), null, model.getModelType( false ) );
-        plotter.setAxisName( "Time (h)", "Energy (J)" );
-        plotter.setTicks( Axis.Y, 10 );
-        plotter.setTicks( Axis.X, 24, 2 );
-        plotter.setRange( Axis.Y, 0, 4350 );
-        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
-        plotter.setVisible( true );
-        
-        sim.start( new Time( 24, TimeUnit.HOURS ) );
-
-        Utils.LOGGER.debug( model.getModelType( false ) + " - Total energy:      " + cpu.getResultSampled( Global.ENERGY_SAMPLING ) + "J" );
-        Utils.LOGGER.debug( model.getModelType( false ) + " - Total Idle energy: " + cpu.getResultSampled( Global.IDLE_ENERGY_SAMPLING ) + "J" );
-        
-        System.out.println( "QUERIES: " + cpu.getExecutedQueries() );
-        
-        // PARAMETERS                        0.03 0.03 0.01
-        //              COEFFICIENTS           QUERY_FILE            NORMALIZED             PARAMETER              MATTEO                  IDLE 0
-        //
-        // TIME CONSERVATIVE 500ms
-        // TARGET:    601670.0000000000
-        // SIMULATOR: 754304.0207093941    594471.46526191400    477342.23502861796     541913.46662896510 (10%)     528119.30975986700
-        // IDLE:      196257.8677944194     75247.89537985546     75247.89537980038      71066.81117570659            75247.89537980038    36100 Joule in meno
-        
-        // TIME CONSERVATIVE 1000ms
-        // TARGET:    443730.0000000000
-        // SIMULATOR: 647974.3624506982    468742.25049613975    293876.55404496676     436421.00188829670 (5%)      396748.66580365730
-        // IDLE:      159577.0287529062     61183.97035269940     61183.97035269940      58061.62555988143            61183.97035273697
-        
-        // ENERGY CONSERVATIVE 500ms
-        // TARGET:    531100.0000000000
-        // SIMULATOR: 719986.3432093372    548442.27624212660    401489.20500958500     503171.36868913420 (5%)      481063.69885676424
-        // IDLE:      178953.7990861060     68613.28364962358     68613.28364962358      64970.61726727840            68613.28364967453
-        
-        // ENERGY CONSERVATIVE 1000ms
-        // TARGET:    412060.0000000000
-        // SIMULATOR: 642008.7743643910    458369.63022473130    270107.72210220364     427332.62510339730 (5%)
-        // IDLE:      152041.1380861678     58294.60892807464     58294.60892807464      55344.06185887506
-        
-        // PERF
-        // TARGET:     790400.000000000
-        // SIMULATOR: 1145401.600324196    992317.15024121070    940141.72685316140     862323.60355950530 (10%)    954884.43320349800
-        // IDLE:       247582.811710984     94926.56637327410     94926.56637327410      82491.18617838359           75247.89537980030     60560 Joule in meno
-    }
-    
-    public static void testDistributedMulticore( final CPUEnergyModel model ) throws IOException
-    {
-        // TODO Per adesso utilizzo soltanto 2 nodi, ciascuno con 4 core.
-        /*
-        TODO i link dallo switch ai vari nodi sono per adesso di 1Gb/s e 0 ms di latenza.
-                                   / node0    / node2
-                                  / dynamic  / dynamic
-               1000Mb,0ms        /          /
-        client ---------- switch  ---------
-          0ms               0ms  \          \
-                                  \          \
-                                   \ node1    \ node3
-                                    dynamic    dynamic
-        */
-        
-        NetworkTopology net = new NetworkTopology( "Topology/Topology_multicore.json" );
-        System.out.println( net.toString() );
-        
-        Simulator sim = new Simulator( net );
-        
-        EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
-                                                        new Packet( 20, SizeUnit.BYTE ),
-                                                        model );
-        Agent client = new ClientAgent( 0, generator );
-        net.addAgent( client );
-        
-        EventGenerator anyGen = new AnycastGenerator( Time.INFINITE,
-                                                      new Packet( 20, SizeUnit.BYTE ),
-                                                      new Packet( 20, SizeUnit.BYTE ) );
-        Agent switchAgent = new SwitchAgent( 1, anyGen );
-        net.addAgent( switchAgent );
-        client.getEventGenerator( 0 ).connect( switchAgent );
-        
-        final int CPU_NODES = 2;
-        String modelType = model.getModelType( true );
-        
-        List<EnergyCPU> cpus = new ArrayList<>( CPU_CORES );
-        Plotter plotter = new Plotter( model.getModelType( false ), 800, 600 );
-        for (int i = 0; i < CPU_NODES; i++) {
-            EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/PESOS/cpu_frequencies.txt" );
-            cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
-            cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
-            cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
-            cpu.setModel( model );
-            cpus.add( cpu );
-            
-            EventGenerator sink = new SinkGenerator( Time.INFINITE,
-                                                     new Packet( 20, SizeUnit.BYTE ),
-                                                     new Packet( 20, SizeUnit.BYTE ) );
-            Agent agentCore = new CoreAgent( CPU_NODES + i, sink );
-            agentCore.addDevice( cpu );
-            net.addAgent( agentCore );
-            
-            switchAgent.getEventGenerator( 0 ).connect( agentCore );
-            
-            plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), null, "Node " + i + " " + model.getModelType( true ) );
-        }
-        
-        plotter.setAxisName( "Time (h)", "Energy (J)" );
-        plotter.setTicks( Axis.Y, 10 );
-        plotter.setTicks( Axis.X, 24, 2 );
-        plotter.setRange( Axis.Y, 0, 1800 );
-        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
-        plotter.setVisible( true );
-        
-        sim.start( new Time( 24, TimeUnit.HOURS ) );
-        
-        double totalEnergy = 0;
-        double totalIdleEnergy = 0;
-        int totalQueries = 0;
-        for (int i = 0; i < 2; i++) {
-            EnergyCPU cpu = cpus.get( i );
-            totalEnergy += cpu.getResultSampled( Global.ENERGY_SAMPLING );
-            totalIdleEnergy += cpu.getResultSampled( Global.IDLE_ENERGY_SAMPLING );
-            Utils.LOGGER.info( "CPU " + i + ", Energy consumed: " + cpu.getResultSampled( Global.ENERGY_SAMPLING ) + "J" );
-            totalQueries += cpu.getExecutedQueries();
-        }
-        Utils.LOGGER.info( model.getModelType( false ) + " - Total energy:      " + totalEnergy + "J" );
-        Utils.LOGGER.info( model.getModelType( false ) + " - Total idle energy: " + totalIdleEnergy + "J" );
-        System.out.println( "QUERIES: " + totalQueries );
-        
-         //             COEFFICIENTS          QUERY_FILE            NORMALIZED
-         //
-         // TIME CONSERVATIVE 500ms
-         // SIMULATOR: 
-         // IDLE:      
-         
-         // TIME CONSERVATIVE 1000ms
-         // SIMULATOR: 
-         // IDLE:      
-         
-         // ENERGY CONSERVATIVE 500ms
-         // SIMULATOR: 
-         // IDLE:      
-         
-         // ENERGY CONSERVATIVE 1000ms
-         // SIMULATOR:  
-         // IDLE:       
-         
-         // PERF
-         // SIMULATOR:  
-         // IDLE:       
     }
 }

@@ -341,7 +341,9 @@ public class NetworkTopology
             agent.shutdown();
         }
         evtScheduler.shutdown();
-        eventsWriter.close();
+        if (eventsWriter != null) {
+            eventsWriter.close();
+        }
     }
     
     private static final long getNextID() {
