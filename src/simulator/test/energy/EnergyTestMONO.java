@@ -352,8 +352,9 @@ public class EnergyTestMONO
             model = new PESOSmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" );
         model.loadModel();
         
-        //testMultiCore( model );
-        testSingleCore( model );
+        testMultiCore( model );
+        //testSingleCore( model );
+        //testNetworkAnimation( model );
     }
     
     public static void testNetworkAnimation( final CPUEnergyModel model ) throws Exception
@@ -380,7 +381,6 @@ public class EnergyTestMONO
         
         client.getEventGenerator( 0 ).connect( switchAgent );
         
-        final int CPU_CORES = 4;
         List<EnergyCPU> cpus = new ArrayList<>( CPU_CORES );
         Plotter plotter = new Plotter( model.getModelType( false ), 800, 600 );
         for (int i = 0; i < CPU_CORES; i++) {
