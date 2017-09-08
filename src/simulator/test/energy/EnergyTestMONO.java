@@ -319,7 +319,7 @@ public class EnergyTestMONO
             return null;
         }
         
-        // TODO questa funzione e' in prova. Se mi accorgo che qualcosa non torna riutilizzo l'Agent.
+        // TODO questa funzione e' in prova. Se mi accorgo che qualcosa non torna riutilizzo il CoreAgent.
         @Override
         public double getNodeUtilization( final Time time ) {
             return getDevice( new EnergyCPU() ).getUtilization( time );
