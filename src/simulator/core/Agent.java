@@ -47,18 +47,7 @@ public abstract class Agent
         setNode( node );
     }
     
-    public Agent( final long id ) {
-        this( id, null );
-    }
-    
-    // TODO rimuovere l'eventGenerator dal costruttore?
-    
-    public Agent( final NetworkNode node, final EventGenerator evGenerator ) {
-        this( node.getId(), evGenerator );
-        setNode( node );
-    }
-    
-    public Agent( final long id, final EventGenerator evGenerator )
+    public Agent( final long id )
     {
         _id = id;
         _devices = new HashMap<>();
@@ -68,9 +57,6 @@ public abstract class Agent
         _time = new Time( 0, TimeUnit.MICROSECONDS );
         
         _evGenerators = new ArrayList<>();
-        if (evGenerator != null) {
-            addEventGenerator( evGenerator );
-        }
         
         _availablePorts = new ArrayList<>( 64511 );
         for (int i = 0; i < 64511; i++) {

@@ -74,7 +74,7 @@ public abstract class EventGenerator
         
         _toAnswer = new LinkedList<>();
         
-        // TODO assegnare il protocollo di comunicazione (crearne anche il metodo).
+        // TODO assegnare i protocolli di comunicazione ad ogni livello (crearne anche il metodo).
         
     }
     

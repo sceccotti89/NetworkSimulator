@@ -62,8 +62,10 @@ public class NetworkTest
     
     private static class SwitchAgent extends Agent
     {
-        public SwitchAgent( final long id, final EventGenerator evGenerator ) {
-            super( id, evGenerator );
+        public SwitchAgent( final long id, final EventGenerator evGenerator )
+        {
+            super( id );
+            addEventGenerator( evGenerator );
         }
         
         @Override
@@ -141,7 +143,8 @@ public class NetworkTest
     {
         public ClientAgent( final long id, final EventGenerator evGenerator )
         {
-            super( id, evGenerator );
+            super( id );
+            addEventGenerator( evGenerator );
         }
     }
     
@@ -157,7 +160,8 @@ public class NetworkTest
     {
         public ResponseServerAgent( final long id, final EventGenerator generator )
         {
-            super( id, generator );
+            super( id );
+            addEventGenerator( generator );
         }
     }
     
@@ -165,7 +169,8 @@ public class NetworkTest
     {
         public ServerTestAgent( final long id, final EventGenerator generator )
         {
-            super( id, generator );
+            super( id );
+            addEventGenerator( generator );
         }
     }
     

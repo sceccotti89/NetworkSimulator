@@ -109,7 +109,8 @@ public class EnergyTest
     {
         public ClientAgent( final long id, final EventGenerator evGenerator )
         {
-            super( id, evGenerator );
+            super( id );
+            addEventGenerator( evGenerator );
         }
     }
     
@@ -164,7 +165,8 @@ public class EnergyTest
     private static class SwitchAgent extends Agent implements EventHandler
     {
         public SwitchAgent( final long id, final EventGenerator evGenerator ) {
-            super( id, evGenerator );
+            super( id );
+            addEventGenerator( evGenerator );
             addEventHandler( this );
         }
 
@@ -224,9 +226,10 @@ public class EnergyTest
     
     private static class CoreAgent extends Agent implements EventHandler
     {
-        public CoreAgent( final long id, final EventGenerator evtGen )
+        public CoreAgent( final long id, final EventGenerator evtGenerator )
         {
-            super( id, evtGen );
+            super( id );
+            addEventGenerator( evtGenerator );
             addEventHandler( this );
         }
         
@@ -279,9 +282,10 @@ public class EnergyTest
     
     private static class MulticoreAgent extends Agent implements EventHandler
     {
-        public MulticoreAgent( final long id, final EventGenerator evGenerator )
+        public MulticoreAgent( final long id, final EventGenerator evtGenerator )
         {
-            super( id, evGenerator );
+            super( id );
+            addEventGenerator( evtGenerator );
             addEventHandler( this );
         }
         
