@@ -109,7 +109,7 @@ public abstract class Device<E,P>
     }
     
     /**
-     * Assign the model for the evaluation of the time and energy cost.
+     * Assign the cost model.
     */
     public void setModel( final Model<E,P> model ) {
         _model = model;
