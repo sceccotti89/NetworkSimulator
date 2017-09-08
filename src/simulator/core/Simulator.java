@@ -96,7 +96,7 @@ public class Simulator
      * Adds a new network. This network will be executed in parallel with respect to
      * all the others, with no default communication mechanisms.</br>
      * To let the networks communicate with each other just create a link in one of the
-     * two networks, or both if it's duplex.
+     * two networks, or both if it's simplex.
      * 
      * @param net    the new network to add.
     */
