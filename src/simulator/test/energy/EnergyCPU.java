@@ -24,17 +24,17 @@ import simulator.utils.Utils;
 
 public class EnergyCPU extends Device<Long,QueryInfo>
 {
-    private double _cores;
-    private int _contexts;
-    private long lastSelectedCore = -1;
-    private QueryInfo lastQuery;
-    private EnergyModel energyModel;
-    private Map<Long,Core> coresMap;
+    protected double _cores;
+    protected int _contexts;
+    protected long lastSelectedCore = -1;
+    protected QueryInfo lastQuery;
+    protected EnergyModel energyModel;
+    protected Map<Long,Core> coresMap;
     
     private static final long QUEUE_CHECK = TimeUnit.SECONDS.toMicros( 1 );
     
     // TODO File usati per testing
-    private static PrintWriter coeffWriter;
+    protected static PrintWriter coeffWriter;
     
     
     

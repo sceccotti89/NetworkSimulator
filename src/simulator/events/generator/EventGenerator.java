@@ -35,8 +35,8 @@ public abstract class EventGenerator
     protected boolean _delayResponse = false;
     protected Time    _departureTime;
     protected long    _packetsInFly = 0;
-    protected long    _initMaxPacketsInFly;
-    protected long    _maxPacketsInFly = 0;
+    protected long    _initMaxPacketsInFlight;
+    protected long    _maxPacketsInFlight = 0;
     
     // Used for multiple destinations.
     private boolean _isMulticasted = false;
@@ -48,9 +48,21 @@ public abstract class EventGenerator
     
     
     
+    /**
+     * Creates a new event generator.
+     * 
+     * @param duration              time (in ms) of life of the generator.
+     * @param departureTime         time (in ms) to wait before sending a packet.
+     * @param maxPacketsInFlight    maximum number of packets in flight.
+     * @param reqPacket             the request packet.
+     * @param resPacket             the response packet.
+     * @param isActive              {@code TRUE} let this generator to send events in any moment, {@code FALSE} otherwise.
+     * @param delayResponse         {@code TRUE} if the answer to the source is sent after the reception of a message as a reponse of an outgoing packet, {@code FALSE} to send it immediately.
+     * @param waitResponse          {@code TRUE} let this generator to wait the response of any sent message before sending the next one, {@code FALSE} otherwise.
+    */
     public EventGenerator( final Time duration,
                            final Time departureTime,
-                           final long maxPacketsInFly,
+                           final long maxPacketsInFlight,
                            final Packet reqPacket,
                            final Packet resPacket,
                            final boolean isActive,
@@ -59,16 +71,16 @@ public abstract class EventGenerator
     {
         _time = new Time( 0, TimeUnit.MICROSECONDS );
         
-        _duration        = duration;
-        _maxPacketsInFly = maxPacketsInFly;
-        _reqPacket       = reqPacket;
-        _resPacket       = resPacket;
-        _departureTime   = departureTime;
-        _activeGenerator = isActive;
-        _delayResponse   = delayResponse;
-        _waitResponse    = waitResponse;
+        _duration           = duration;
+        _maxPacketsInFlight = maxPacketsInFlight;
+        _reqPacket          = reqPacket;
+        _resPacket          = resPacket;
+        _departureTime      = departureTime;
+        _activeGenerator    = isActive;
+        _delayResponse      = delayResponse;
+        _waitResponse       = waitResponse;
         
-        _initMaxPacketsInFly = _maxPacketsInFly;
+        _initMaxPacketsInFlight = _maxPacketsInFlight;
         
         _destinations = new ArrayList<>();
         
@@ -81,7 +93,7 @@ public abstract class EventGenerator
     /**
      * Set the communication as a multicast.</br>
      * This is usefull in case of sending several copies of the input message to multiple destinations.</br>
-     * You can also override the {@linkplain #selectDestination()} method to generate its own next destination node.
+     * The {@linkplain #selectDestination()} method could be overrided to generate a proper next destination node.
      * 
      * @param multicasted    {@code true} if the output transmission is considered as a multicast,
      *                       {@code false} otherwise
@@ -92,7 +104,7 @@ public abstract class EventGenerator
     {
         _isMulticasted = multicasted;
         if (multicasted) {
-            _maxPacketsInFly = _initMaxPacketsInFly * _destinations.size();
+            _maxPacketsInFlight = _initMaxPacketsInFlight * _destinations.size();
             _optimizedMulticast = optimized;
         }
         return this;
@@ -106,7 +118,7 @@ public abstract class EventGenerator
     {
         _destinations.add( to );
         if (_isMulticasted) {
-            _maxPacketsInFly = _initMaxPacketsInFly * _destinations.size();
+            _maxPacketsInFlight = _initMaxPacketsInFlight * _destinations.size();
         }
         return this;
     }
@@ -138,10 +150,6 @@ public abstract class EventGenerator
     
     public boolean isActive() {
         return _activeGenerator;
-    }
-    
-    public boolean waitForResponse() {
-        return _waitResponse;
     }
     
     /**
@@ -222,7 +230,7 @@ public abstract class EventGenerator
     */
     final public List<Event> generate( final Time t, final Event e )
     {
-        if (t != null && (waitForResponse() || _delayResponse)) {
+        if (t != null && (_waitResponse || _delayResponse)) {
             setTime( t );
         }
         
@@ -286,7 +294,7 @@ public abstract class EventGenerator
     private List<Event> sendRequest( final Event e )
     {
         List<Event> events = null;
-        if (_packetsInFly < _maxPacketsInFly) {
+        if (_packetsInFly < _maxPacketsInFlight) {
             // Prepare the request packet.
             Packet reqPacket = makePacket( e );
             if (reqPacket != null) {
@@ -304,7 +312,7 @@ public abstract class EventGenerator
                     Agent dest = _destinations.get( _nextDestIndex = selectDestination( e.getArrivalTime() ) );
                     Event request = new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() );
                     events = Collections.singletonList( request );
-                    _continueToSend = _isMulticasted && _packetsInFly < _maxPacketsInFly;
+                    _continueToSend = _isMulticasted && _packetsInFly < _maxPacketsInFlight;
                 }
             }
         }

@@ -44,17 +44,54 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
     
     private List<Long> _frequencies;
     
-    // PESOS evaluation mode.
-    private Mode mode;
+    // Energy evaluation mode.
+    private Type type;
+    
+    
+    /**
+     * Types of energy model:
+     * <p><lu>
+     * <li>PESOS
+     * <li>PERF
+     * <li>CONS
+     * </lu>
+    */
+    public enum Type
+    {
+        PESOS( "PESOS" ),
+        PERF( "PERF" ),
+        CONS( "CONS" );
+        
+        private Mode mode;
+        private String name;
+        
+        private Type( final String name ) {
+            this.name = name;
+        }
+        
+        public void setMode( final Mode mode ) {
+            this.mode = mode;
+        }
+        
+        public Mode getMode() {
+            return mode;
+        }
+        
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
     
     /**
      * Types of PESOS modality:
      * <p><lu>
-     * <li>TIME_CONSERVATIVE:   consumes more energy, reducing the tail latency
-     * <li>ENERGY_CONSERVATIVE: consumes less energy at a higher tail latency
+     * <li>TIME_CONSERVATIVE:   consumes more energy, reducing the tail latency.
+     * <li>ENERGY_CONSERVATIVE: consumes less energy at a higher tail latency.
      * </lu>
     */
-    public enum Mode {
+    public enum Mode
+    {
         TIME_CONSERVATIVE( "TC" ),
         ENERGY_CONSERVATIVE( "EC" );
         
@@ -98,26 +135,26 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
      * Create a new PESOS model.
      * 
      * @param time_budget    time limit to complete a query (in ms).
-     * @param mode           PESOS modality (see {@linkplain CPUEnergyModel.Mode Mode}).
+     * @param type           type of model (see {@linkplain CPUEnergyModel.Type Type}).
      * @param frequencies    file containing a list of available frequencies.
      * 
      * @throws IOException if the file of frequencies doesn't exits or is malformed.
     */
-    public CPUEnergyModel( final long time_budget, final Mode mode, final String frequencies ) throws IOException {
-        this( time_budget, mode, readFrequencies( frequencies ) );
+    public CPUEnergyModel( final long time_budget, final Type type, final String frequencies ) throws IOException {
+        this( time_budget, type, readFrequencies( frequencies ) );
     }
     
     /**
      * Create a new PESOS model.
      * 
      * @param time_budget    time limit to complete a query (in ms).
-     * @param mode           PESOS modality (see {@linkplain CPUEnergyModel.Mode Mode}).
+     * @param type           type of model (see {@linkplain CPUEnergyModel.Type Type}).
      * @param frequencies    list of available frequencies.
     */
-    public CPUEnergyModel( final long time_budget, final Mode mode, final List<Long> frequencies )
+    public CPUEnergyModel( final long time_budget, final Type type, final List<Long> frequencies )
     {
         timeBudget = new Time( time_budget, TimeUnit.MILLISECONDS );
-        this.mode = mode;
+        this.type = type;
         // Order the frequencies from higher to lower.
         Collections.sort( _frequencies = frequencies, Collections.reverseOrder() );
     }
@@ -152,22 +189,23 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
     @Override
     public void loadModel() throws IOException
     {
-        if (mode != null) loadRegressors();
+        if (type.getMode() != null) loadRegressors();
         loadPostingsPredictors();
         loadEffectiveTimeEnergy();
     }
     
-    public String getModelType( final boolean delimeters ) {
-        if (mode == null) {
-            return "PERF";
-        } else {
+    public String getModelType( final boolean delimeters )
+    {
+        if (type == Type.PESOS) {
             if (delimeters) return "PESOS_" + getMode() + "_" + getTimeBudget().getTimeMicroseconds()/1000L + "ms";
             else return "PESOS (" + getMode() + ", t = " + getTimeBudget().getTimeMicroseconds()/1000L + "ms)";
+        } else {
+            return type.toString();
         }
     }
     
     public Mode getMode() {
-        return mode;
+        return type.getMode();
     }
 
     public Time getTimeBudget() {
@@ -197,7 +235,7 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
     
     private void loadRegressors() throws IOException
     {
-        FileReader fReader = new FileReader( (mode == Mode.TIME_CONSERVATIVE) ?
+        FileReader fReader = new FileReader( (type.getMode() == Mode.TIME_CONSERVATIVE) ?
                                                     REGRESSORS_TIME_CONSERVATIVE :
                                                     REGRESSORS_ENERGY_CONSERVATIVE );
         BufferedReader regressorReader = new BufferedReader( fReader );
@@ -244,22 +282,33 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
     
     /**
      * Evaluate the input parameter to decide which is the "best" frequency
-     * to complete the current task.
+     * to complete the current queue of queries.
      * 
      * @param now       time of evaluation.
-     * @param params    list of parameters.
+     * @param queries   list of parameters.
      * 
      * @return the "best" frequency, expressed in KHz.
     */
     @Override
-    public Long eval( final Time now, final QueryInfo... params )
+    public Long eval( final Time now, final QueryInfo... queries )
     {
         //Utils.LOGGER.debug( "Time: " + now + " => length: " + params.length );
-        if (mode == null) return _frequencies.get( 0 );
-        else return getFrequency( now, params );
+        switch ( type ) {
+            case PESOS: return getPESOSfrequency( now, queries );
+            case PERF:  return _frequencies.get( 0 );
+            case CONS:  return getCONSfrequency( queries );
+        }
+        return null;
+    }
+    
+    private long getCONSfrequency( final QueryInfo[] queries )
+    {
+        // TODO eseguire l'assegnazione della frequenza per CONS in base ai 2 tipi
+        
+        return 0L;
     }
 
-    private long getFrequency( final Time now, final QueryInfo[] queries )
+    private long getPESOSfrequency( final Time now, final QueryInfo[] queries )
     {
         QueryInfo currentQuery = queries[0];
         
@@ -568,7 +617,7 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
     public static class PESOSmodel extends CPUEnergyModel
     {
         /**
-         * Create a new PESOS model.
+         * Creates a new PESOS model.
          * 
          * @param time_budget    time limit to complete a query (in ms).
          * @param mode           PESOS modality (see {@linkplain CPUEnergyModel.Mode Mode}).
@@ -581,31 +630,50 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
         }
         
         public PESOSmodel( final long time_budget, final Mode mode, final List<Long> frequencies ) {
-            super( time_budget, mode, frequencies );
+            super( time_budget, getType( mode ), frequencies );
+        }
+        
+        private static Type getType( final Mode mode )
+        {
+            Type type = Type.PESOS;
+            type.setMode( mode );
+            return type;
         }
     }
     
     public static class PERFmodel extends CPUEnergyModel
     {
         /**
-         * Create a new PESOS model.
+         * Creates a new PERF model.
          * 
-         * @param time_budget    time limit to complete a query (in ms).
-         * @param mode           PESOS modality (see {@linkplain CPUEnergyModel.Mode Mode}).
          * @param frequencies    file containing a list of available frequencies.
          * 
          * @throws IOException if the file of frequencies doesn't exists or is malformed.
         */
-        public PERFmodel( final long time_budget, final Mode mode, final String frequencies ) throws IOException {
-            this( time_budget, mode, readFrequencies( frequencies ) );
+        public PERFmodel( final String frequencies ) throws IOException {
+            this( readFrequencies( frequencies ) );
         }
         
         public PERFmodel( final List<Long> frequencies ) {
-            super( frequencies );
+            super( 0L, Type.PERF, frequencies );
+        }
+    }
+    
+    public static class CONSmodel extends CPUEnergyModel
+    {
+        /**
+         * Creates a new CONS model.
+         * 
+         * @param frequencies    file containing a list of available frequencies.
+         * 
+         * @throws IOException if the file of frequencies doesn't exists or is malformed.
+        */
+        public CONSmodel( final String frequencies ) throws IOException {
+            this( readFrequencies( frequencies ) );
         }
         
-        public PERFmodel( final long time_budget, final Mode mode, final List<Long> frequencies ) {
-            super( frequencies );
+        public CONSmodel( final List<Long> frequencies ) {
+            super( 0L, Type.PERF, frequencies );
         }
     }
 }

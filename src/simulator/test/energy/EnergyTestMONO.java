@@ -300,7 +300,7 @@ public class EnergyTestMONO
     {
         CPUEnergyModel model;
         if (mode == null)
-            model = new PERFmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" );
+            model = new PERFmodel( "Models/PESOS/cpu_frequencies.txt" );
         else
             model = new PESOSmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" );
         model.loadModel();

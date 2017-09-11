@@ -148,7 +148,7 @@ public class EnergyTestDIST
             int nextDestination = -1;
             for (int i = 0; i < _destinations.size(); i++) {
                 Agent agent = _destinations.get( i );
-                //EnergyCPU2 device = agent.getDevice( new EnergyCPU2() );
+                //EnergyCPU device = agent.getDevice( new EnergyCPU() );
                 //double nodeUtilization = device.getUtilization( time );
                 double nodeUtilization = agent.getNodeUtilization( time );
                 if (nodeUtilization < minUtilization) {
@@ -158,6 +158,33 @@ public class EnergyTestDIST
             }
             
             return nextDestination;
+        }
+    }
+    
+    private static class MulticastGenerator extends EventGenerator
+    {
+        public MulticastGenerator( final Time duration,
+                                   final Packet reqPacket,
+                                   final Packet resPacket ) {
+            super( duration, Time.ZERO, Utils.INFINITE, reqPacket, resPacket, false, true, false );
+            setMulticast( true, true );
+        }
+        
+        @Override
+        public Time computeDepartureTime( final Event e ) {
+            // Empty method.
+            return null;
+        }
+        
+        @Override
+        public Packet makePacket( final Event e )
+        {
+            if (e instanceof RequestEvent) {
+                return super.makePacket( e );
+            } else {
+                // New request from client: clone the packet.
+                return e.getPacket().clone();
+            }
         }
     }
     
@@ -299,7 +326,7 @@ public class EnergyTestDIST
     {
         CPUEnergyModel model;
         if (mode == null)
-            model = new PERFmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" );
+            model = new PERFmodel( "Models/PESOS/cpu_frequencies.txt" );
         else
             model = new PESOSmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" );
         model.loadModel();
@@ -462,9 +489,9 @@ public class EnergyTestDIST
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        EventGenerator anyGen = new AnycastGenerator( Time.INFINITE,
-                                                      new Packet( 20, SizeUnit.BYTE ),
-                                                      new Packet( 20, SizeUnit.BYTE ) );
+        EventGenerator anyGen = new MulticastGenerator( Time.INFINITE,
+                                                        new Packet( 20, SizeUnit.BYTE ),
+                                                        new Packet( 20, SizeUnit.BYTE ) );
         Agent switchAgent = new SwitchAgent( 1, anyGen );
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
@@ -496,7 +523,7 @@ public class EnergyTestDIST
         plotter.setAxisName( "Time (h)", "Energy (J)" );
         plotter.setTicks( Axis.Y, 10 );
         plotter.setTicks( Axis.X, 24, 2 );
-        plotter.setRange( Axis.Y, 0, 1800 );
+        plotter.setRange( Axis.Y, 0, 5800 );
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         plotter.setVisible( true );
         
