@@ -9,21 +9,32 @@ import java.io.IOException;
 import simulator.utils.Time;
 
 /**
- * Interface representing a generic model.
+ * Class representing a generic model.
  * 
  * @param <E>    type of the evaluated parameters,
  *               returned by the {@linkplain #eval(Object...) eval} method.
  * @param <P>    type of input parameters of the {@linkplain #eval(Object...) eval} method.
 */
-public interface Model<E,P>
+public abstract class Model<E,P>
 {
-    /**
-     * Load the model.
-    */
-    public void loadModel() throws IOException;
+    protected Device<?,?> _device;
     
     /**
-     * Evaluate the input parameters.
+     * Loads the model.
+    */
+    public abstract void loadModel() throws IOException;
+    
+    /**
+     * Sets the associated device.
+     * 
+     * @param device    the associated device.
+    */
+    public void setDevice( final Device<?,?> device ) {
+        _device = device;
+    }
+    
+    /**
+     * Evaluates the input parameters.
      * 
      * @param now       the current time
      * @param params    list of input parameters
@@ -31,5 +42,5 @@ public interface Model<E,P>
      * @return object representing the evaluation of the input parameter.
     */
     @SuppressWarnings("unchecked")
-    public E eval( final Time now, final P... params );
+    public abstract E eval( final Time now, final P... params );
 }

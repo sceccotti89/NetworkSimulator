@@ -19,6 +19,7 @@ import simulator.core.Task;
 import simulator.events.Event;
 import simulator.test.energy.CPUEnergyModel.Mode;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
+import simulator.test.energy.CPUEnergyModel.Type;
 import simulator.test.energy.EnergyModel.*;
 import simulator.utils.Time;
 import simulator.utils.Utils;
@@ -27,6 +28,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
 {
     protected double _cores;
     protected int _contexts;
+    protected long currentCoreId = -1;
     protected long lastSelectedCore = -1;
     protected QueryInfo lastQuery;
     protected EnergyModel energyModel;
@@ -66,10 +68,10 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             coresMap.put( i, new Core( this, i, getMaxFrequency() ) );
         }
         
-        setEnergyModel( new QueryEnergyModel() );
+        //setEnergyModel( new QueryEnergyModel() );
         //setEnergyModel( new CoefficientEnergyModel() );
         //setEnergyModel( new NormalizedEnergyModel() );
-        //setEnergyModel( new ParameterEnergyModel() );
+        setEnergyModel( new ParameterEnergyModel() );
     }
     
     @Override
@@ -81,12 +83,11 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         
         try {
             CPUEnergyModel cpuModel = (CPUEnergyModel) model;
-            cpuModel.setCPU( this );
-            if (cpuModel.getMode() == null) {
+            if (cpuModel.getType() == Type.PERF) {
                 coeffWriter = new PrintWriter( "Results/Coefficients/PERF_Freq_Energy.txt", "UTF-8" );
             } else {
                 String file;
-                if (cpuModel.getMode() == Mode.PESOS_ENERGY_CONSERVATIVE || cpuModel.getMode() == Mode.PESOS_TIME_CONSERVATIVE) {
+                if (cpuModel.getType() == Type.PESOS) {
                     long timeBudget = cpuModel.getTimeBudget().getTimeMicroseconds()/1000;
                     file = "PESOS_" + timeBudget + "_" + cpuModel.getMode();
                 } else {
@@ -160,6 +161,14 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         return lastSelectedCore = id;
     }
     
+    public double getCPUcores() {
+        return _cores;
+    }
+    
+    public Long getCurrentCoreId() {
+        return currentCoreId;
+    }
+    
     public long getLastSelectedCore() {
         return lastSelectedCore;
     }
@@ -178,7 +187,17 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     private void evalFrequency( final Time time, final Core core )
     {
         Model<Long,QueryInfo> model = getModel();
-        List<QueryInfo> queue = core.getQueue();
+        List<QueryInfo> queue;
+        CPUEnergyModel cpuModel = (CPUEnergyModel) model;
+        if (cpuModel.getType() == Type.CONS && cpuModel.getMode() == Mode.CONS_LOAD) {
+            // CONS LOAD requires all the queues in the server.
+            queue = new ArrayList<>( 512 );
+            for (Core c : coresMap.values()) {
+                queue.addAll( c.getQueue() );
+            }
+        } else { // PERF and PESOS.
+            queue = core.getQueue();
+        }
         
         // Set the time of the cores as (at least) the last query arrival time.
         QueryInfo query = queue.get( queue.size() - 1 );
@@ -186,6 +205,11 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         
         if (core.getFirstQueryInQueue().getStartTime().getTimeMicroseconds() == 44709952703L)
             System.out.println( "EVALUATING FREQUENCY AT: " + time );
+        
+        // These 2 statements are necessary because the CONS model needs to access the CPU informations
+        // and since the model is shared among different CPUs (in the distributed version) the assignment is mandatory.
+        currentCoreId = core.getId();
+        model.setDevice( this );
         
         // Evaluate the "best" frequency to use.
         long frequency = model.eval( time, queue.toArray( new QueryInfo[0] ) );
@@ -502,7 +526,8 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         {
             double idleEnergy = 0;
             if (idleTime > 0) {
-                if (((CPUEnergyModel) cpu.getModel()).getMode() == null || idleTimeInterval + idleTime < QUEUE_CHECK) {
+                CPUEnergyModel cpuModel = (CPUEnergyModel) cpu.getModel();
+                if (cpuModel.getType() != Type.PESOS || idleTimeInterval + idleTime < QUEUE_CHECK) {
                     idleEnergy = cpu.energyModel.getIdleEnergy( frequency, idleTime );
                     idleTimeInterval += idleTime;
                     writeResult( frequency, idleEnergy );

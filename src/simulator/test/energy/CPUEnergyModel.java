@@ -23,7 +23,7 @@ import simulator.utils.Pair;
 import simulator.utils.Time;
 import simulator.utils.Utils;
 
-public class CPUEnergyModel implements Model<Long,QueryInfo>
+public class CPUEnergyModel extends Model<Long,QueryInfo>
 {
     private static final String SEPARATOR = "=";
     
@@ -46,8 +46,6 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
     
     // Energy evaluation mode.
     private Type type;
-    
-    private EnergyCPU cpu;
     
     private static final double CONS_ALPHA = 0.8;
     private static final double CONS_BETA = 0.2; // 0.2 and 0.6 are the 2 configurations.
@@ -184,10 +182,6 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
         loadEffectiveTimeEnergy();
     }
     
-    public void setCPU( final EnergyCPU cpu ) {
-        this.cpu = cpu;
-    }
-    
     public String getModelType( final boolean delimeters )
     {
         if (type == Type.PESOS) {
@@ -200,6 +194,10 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
                 return type.toString();
             }
         }
+    }
+    
+    public Type getType() {
+        return type;
     }
     
     public Mode getMode() {
@@ -303,29 +301,34 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
         return _frequencies.get( 0 );
     }
     
-    // TODO per adesso la lista di query e' soltanto del core in questione, non di tutto il server.
     private long getCONSfrequency( final QueryInfo[] queries )
     {
+        double utilization = 0;
+        EnergyCPU cpu = (EnergyCPU) _device;
+        
         if (type.getMode() == Mode.CONS_CONSERVATIVE) {
             // TODO completare
-            return _frequencies.get( 0 ); // FIXME questa riga e' fittizia
-        } else { // CONS LOAD.
-            double l = queries.length/4d;
-            if (l >= CONS_ALPHA) {
-                return _frequencies.get( 0 ); // Maximum frequency.
-            }
-            
-            // TODO non sono sicuro che "getLastSelectedCore" funzioni
-            int freqIdx = getFrequencyIndex( cpu.getCore( cpu.getLastSelectedCore() ).getFrequency() );
-            if (l <= CONS_BETA) { // Step down the frequency.
-                return _frequencies.get( Math.max( _frequencies.size(), freqIdx + 1 ) );
-            } else {
-                return _frequencies.get( freqIdx );
-            }
+            //double lambda = cpu.getFrequencyArrival();
+            //double mu     = cpu.getFrequencyDeparture();
+            //utilization   = lambda/(mu * cpu.getCPUcores());
+        } else { // CONS LOAD frequency evaluation.
+            utilization = queries.length/cpu.getCPUcores();
+        }
+        
+        if (utilization >= CONS_ALPHA) {
+            return _frequencies.get( 0 ); // Maximum frequency.
+        }
+        
+        int freqIdx = getFrequencyIndex( cpu.getCore( cpu.getCurrentCoreId() ).getFrequency() );
+        if (utilization <= CONS_BETA) { // Step down the frequency.
+            return _frequencies.get( Math.min( _frequencies.size() - 1, freqIdx + 1 ) );
+        } else {
+            return _frequencies.get( freqIdx );
         }
     }
     
-    private int getFrequencyIndex( final long frequency ) {
+    private int getFrequencyIndex( final long frequency )
+    {
         for (int i = 0; i < _frequencies.size(); i++) {
             if (_frequencies.get( i ) == frequency) {
                 return i;
@@ -333,7 +336,7 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
         }
         return -1;
     }
-
+    
     private long getPESOSfrequency( final Time now, final QueryInfo[] queries )
     {
         QueryInfo currentQuery = queries[0];

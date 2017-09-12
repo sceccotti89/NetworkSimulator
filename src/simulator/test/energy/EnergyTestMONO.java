@@ -291,27 +291,40 @@ public class EnergyTestMONO
     {
         //Utils.VERBOSE = false;
         
-        execute( Type.CONS, Mode.CONS_CONSERVATIVE, 0 );
-        //execute( Type.CONS, Mode.CONS_LOAD, 0 );
+        //loadModel( Type.CONS, Mode.CONS_CONSERVATIVE );
+        loadModel( Type.CONS, Mode.CONS_LOAD );
         
-        //execute( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
-        //execute( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );
-        //execute( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
-        //execute( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
+        //loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
+        //loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );
+        //loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
+        //loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
         
-        //execute( Type.PERF, null, 0 );
+        //loadModel( Type.PERF, null );
     }
     
-    private static void execute( final Type type, final Mode mode, final long timeBudget ) throws Exception
+    protected static void loadModel( final Type type, final Mode mode, final long timeBudget ) throws Exception
+    {
+        // PESOS loading model.
+        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" );
+        model.loadModel();
+        execute( model );
+    }
+    
+    protected static void loadModel( final Type type, final Mode mode ) throws Exception
     {
         CPUEnergyModel model = null;
         switch ( type ) {
-            case PESOS: model = new PESOSmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" ); break;
             case PERF:  model = new PERFmodel( "Models/PESOS/cpu_frequencies.txt" ); break;
             case CONS:  model = new CONSmodel( mode, "Models/PESOS/cpu_frequencies.txt" ); break;
+            default:    break;
         }
         model.loadModel();
         
+        execute( model );
+    }
+    
+    private static void execute( final CPUEnergyModel model ) throws IOException
+    {
         testMultiCore( model );
         //testSingleCore( model );
         //testNetworkAnimation( model );
@@ -475,6 +488,11 @@ public class EnergyTestMONO
         // TARGET:     790400.000000000
         // SIMULATOR: 1145401.600324196    992317.15024121070    940141.72685316140     862323.60355950530 (10%)    954884.43320349800
         // IDLE:       247582.811710984     94926.56637327410     94926.56637327410      82491.18617838359           75247.89537980030     60560 Joule in meno
+        
+        // CONS (per adesso LOAD)
+        // TARGET:    575000.0000000000
+        // SIMULATOR: 992317.1502406223                                                 862323.60355952530
+        // IDLE:       94926.5663733480                                                  82491.18617838345
     }
     
     public static void testSingleCore( final CPUEnergyModel model ) throws Exception
