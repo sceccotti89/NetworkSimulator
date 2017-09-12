@@ -222,7 +222,7 @@ public abstract class Device<E,P>
     }
 
     /**
-     * Returns the time spent to compute the input task.</br>
+     * Returns the time spent to compute the given task.</br>
      * NOTE: time is expressed in microseconds.
      * 
      * @param task    the input task

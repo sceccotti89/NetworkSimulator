@@ -292,11 +292,13 @@ public class EnergyTestMONO
         //Utils.VERBOSE = false;
         
         execute( Type.CONS, Mode.CONS_CONSERVATIVE, 0 );
+        //execute( Type.CONS, Mode.CONS_LOAD, 0 );
         
         //execute( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
         //execute( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );
         //execute( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
         //execute( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
+        
         //execute( Type.PERF, null, 0 );
     }
     
@@ -304,9 +306,9 @@ public class EnergyTestMONO
     {
         CPUEnergyModel model = null;
         switch ( type ) {
-            case PESOS: model = new PESOSmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" );
-            case PERF:  model = new PERFmodel( "Models/PESOS/cpu_frequencies.txt" );
-            case CONS:  model = new CONSmodel( "Models/PESOS/cpu_frequencies.txt" );
+            case PESOS: model = new PESOSmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" ); break;
+            case PERF:  model = new PERFmodel( "Models/PESOS/cpu_frequencies.txt" ); break;
+            case CONS:  model = new CONSmodel( mode, "Models/PESOS/cpu_frequencies.txt" ); break;
         }
         model.loadModel();
         

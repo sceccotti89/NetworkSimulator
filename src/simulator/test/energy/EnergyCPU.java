@@ -17,6 +17,7 @@ import simulator.core.Device;
 import simulator.core.Model;
 import simulator.core.Task;
 import simulator.events.Event;
+import simulator.test.energy.CPUEnergyModel.Mode;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.test.energy.EnergyModel.*;
 import simulator.utils.Time;
@@ -74,17 +75,23 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     @Override
     public void setModel( final Model<Long,QueryInfo> model )
     {
-        // TODO RIMUOVERE TUTTO QUESTO METODO DOPO I TEST
+        // TODO RIMUOVERE IL WRITER DOPO I TEST
         if (coeffWriter != null)
             coeffWriter.close();
         
         try {
             CPUEnergyModel cpuModel = (CPUEnergyModel) model;
+            cpuModel.setCPU( this );
             if (cpuModel.getMode() == null) {
                 coeffWriter = new PrintWriter( "Results/Coefficients/PERF_Freq_Energy.txt", "UTF-8" );
             } else {
-                long timeBudget = cpuModel.getTimeBudget().getTimeMicroseconds()/1000;
-                String file = "PESOS_" + timeBudget + "_" + cpuModel.getMode();
+                String file;
+                if (cpuModel.getMode() == Mode.PESOS_ENERGY_CONSERVATIVE || cpuModel.getMode() == Mode.PESOS_TIME_CONSERVATIVE) {
+                    long timeBudget = cpuModel.getTimeBudget().getTimeMicroseconds()/1000;
+                    file = "PESOS_" + timeBudget + "_" + cpuModel.getMode();
+                } else {
+                    file = "CONS_" + cpuModel.getMode();
+                }
                 file += (_cores == 1) ? "_distr" : "_mono";
                 Utils.checkDirectory( "Results/Coefficients" );
                 coeffWriter = new PrintWriter( "Results/Coefficients/" + file + "_Freq_Energy.txt", "UTF-8" );
@@ -155,6 +162,10 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     
     public long getLastSelectedCore() {
         return lastSelectedCore;
+    }
+    
+    public Core getCore( final long index ) {
+        return coresMap.get( index );
     }
     
     /**
