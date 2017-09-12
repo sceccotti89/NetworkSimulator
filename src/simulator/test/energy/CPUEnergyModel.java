@@ -306,8 +306,10 @@ public class CPUEnergyModel extends Model<Long,QueryInfo>
         double utilization = 0;
         EnergyCPU cpu = (EnergyCPU) _device;
         
+        // TODO La frequenza da settare e' di tutta la CPU o del core??
+        
         if (type.getMode() == Mode.CONS_CONSERVATIVE) {
-            // TODO completare
+            // TODO completare: i valori delle frequenze di invio e arrivo vanno prese di tutto il server o di quel core??
             //double lambda = cpu.getFrequencyArrival();
             //double mu     = cpu.getFrequencyDeparture();
             //utilization   = lambda/(mu * cpu.getCPUcores());
