@@ -121,7 +121,7 @@ public class ResultPlotting
     public static void main( final String argv[] ) throws IOException
     {
         final long time_budget = 500;
-        final Mode mode        = Mode.TIME_CONSERVATIVE;
+        final Mode mode        = Mode.PESOS_TIME_CONSERVATIVE;
         
         //plotEnergy( time_budget, mode.toString() );
         plotTailLatency( time_budget, mode.toString() );

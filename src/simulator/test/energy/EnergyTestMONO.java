@@ -21,10 +21,12 @@ import simulator.events.impl.ResponseEvent;
 import simulator.graphics.AnimationNetwork;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
+import simulator.test.energy.CPUEnergyModel.CONSmodel;
 import simulator.test.energy.CPUEnergyModel.Mode;
 import simulator.test.energy.CPUEnergyModel.PERFmodel;
 import simulator.test.energy.CPUEnergyModel.PESOSmodel;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
+import simulator.test.energy.CPUEnergyModel.Type;
 import simulator.topology.NetworkTopology;
 import simulator.utils.SizeUnit;
 import simulator.utils.Time;
@@ -289,20 +291,23 @@ public class EnergyTestMONO
     {
         //Utils.VERBOSE = false;
         
-        execute( Mode.TIME_CONSERVATIVE,  500 );
-        //execute( Mode.TIME_CONSERVATIVE, 1000 );
-        //execute( Mode.ENERGY_CONSERVATIVE,  500 );
-        //execute( Mode.ENERGY_CONSERVATIVE, 1000 );
-        //execute( null, 0 );
+        execute( Type.CONS, Mode.CONS_CONSERVATIVE, 0 );
+        
+        //execute( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
+        //execute( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );
+        //execute( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
+        //execute( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
+        //execute( Type.PERF, null, 0 );
     }
     
-    private static void execute( final Mode mode, final long timeBudget ) throws Exception
+    private static void execute( final Type type, final Mode mode, final long timeBudget ) throws Exception
     {
-        CPUEnergyModel model;
-        if (mode == null)
-            model = new PERFmodel( "Models/PESOS/cpu_frequencies.txt" );
-        else
-            model = new PESOSmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" );
+        CPUEnergyModel model = null;
+        switch ( type ) {
+            case PESOS: model = new PESOSmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" );
+            case PERF:  model = new PERFmodel( "Models/PESOS/cpu_frequencies.txt" );
+            case CONS:  model = new CONSmodel( "Models/PESOS/cpu_frequencies.txt" );
+        }
         model.loadModel();
         
         testMultiCore( model );

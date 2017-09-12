@@ -33,7 +33,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     
     private static final long QUEUE_CHECK = TimeUnit.SECONDS.toMicros( 1 );
     
-    // TODO File usati per testing
+    // TODO File usato per testing
     protected static PrintWriter coeffWriter;
     
     
@@ -74,7 +74,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     @Override
     public void setModel( final Model<Long,QueryInfo> model )
     {
-        // TODO RIMUOVERE TUTTO DOPO I TEST
+        // TODO RIMUOVERE TUTTO QUESTO METODO DOPO I TEST
         if (coeffWriter != null)
             coeffWriter.close();
         
@@ -263,7 +263,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     
     @Override
     public Double getResultSampled( final String sampler ) {
-        // TODO RIMUOVERE DOPO I TEST
+        // TODO RIMUOVERE LA PROSSIMA RIGA DOPO I TEST
         coeffWriter.close();
         return super.getResultSampled( sampler );
     }

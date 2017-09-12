@@ -1091,8 +1091,8 @@ public class Plotter
             boolean getMinY = (minY == Double.MAX_VALUE);
             boolean getMaxY = (maxY == Double.MIN_VALUE);
             
-            // FIXME testare come mai non visualizza MIN e MAX durante la simulazione
-            System.out.println( "MIX_X: " + getMinX + " MAX_X: " + getMaxX );
+            // FIXME durante la simulazione il min e max della X si aggiornano costantemente
+            // FIXME dovrei rifletterlo anche nel setting.
             
             for (Plot plot : _plots) {
                 try {

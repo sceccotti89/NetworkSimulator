@@ -315,10 +315,10 @@ public class EnergyTestDIST
     {
         //Utils.VERBOSE = false;
         
-        execute( Mode.TIME_CONSERVATIVE,  500 );
-        //execute( Mode.TIME_CONSERVATIVE, 1000 );
-        //execute( Mode.ENERGY_CONSERVATIVE,  500 );
-        //execute( Mode.ENERGY_CONSERVATIVE, 1000 );
+        execute( Mode.PESOS_TIME_CONSERVATIVE,  500 );
+        //execute( Mode.PESOS_TIME_CONSERVATIVE, 1000 );
+        //execute( Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
+        //execute( Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
         //execute( null, 0 );
     }
     

@@ -84,16 +84,19 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
     }
     
     /**
-     * Types of PESOS modality:
+     * PESOS and CONS modality:
      * <p><lu>
-     * <li>TIME_CONSERVATIVE:   consumes more energy, reducing the tail latency.
-     * <li>ENERGY_CONSERVATIVE: consumes less energy at a higher tail latency.
+     * <li>PESOS_TIME_CONSERVATIVE:   consumes more energy, reducing the tail latency.
+     * <li>PESOS_ENERGY_CONSERVATIVE: consumes less energy at a higher tail latency.
      * </lu>
     */
     public enum Mode
     {
-        TIME_CONSERVATIVE( "TC" ),
-        ENERGY_CONSERVATIVE( "EC" );
+        CONS_CONSERVATIVE( "CONSERVATIVE" ),
+        // TODO aggiungere l'altro tipo di CONS
+        
+        PESOS_TIME_CONSERVATIVE( "TC" ),
+        PESOS_ENERGY_CONSERVATIVE( "EC" );
         
         private final String name;
         private Mode( final String name ) {
@@ -189,7 +192,10 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
     @Override
     public void loadModel() throws IOException
     {
-        if (type.getMode() != null) loadRegressors();
+        if (type.getMode() == Mode.PESOS_ENERGY_CONSERVATIVE ||
+            type.getMode() == Mode.PESOS_TIME_CONSERVATIVE) {
+            loadRegressors();
+        }
         loadPostingsPredictors();
         loadEffectiveTimeEnergy();
     }
@@ -235,7 +241,7 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
     
     private void loadRegressors() throws IOException
     {
-        FileReader fReader = new FileReader( (type.getMode() == Mode.TIME_CONSERVATIVE) ?
+        FileReader fReader = new FileReader( (type.getMode() == Mode.PESOS_TIME_CONSERVATIVE) ?
                                                     REGRESSORS_TIME_CONSERVATIVE :
                                                     REGRESSORS_ENERGY_CONSERVATIVE );
         BufferedReader regressorReader = new BufferedReader( fReader );
@@ -303,9 +309,14 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
     
     private long getCONSfrequency( final QueryInfo[] queries )
     {
-        // TODO eseguire l'assegnazione della frequenza per CONS in base ai 2 tipi
+        // TODO completare
+        if (type.getMode() == Mode.CONS_CONSERVATIVE) {
+            
+        } else {
+            
+        }
         
-        return 0L;
+        return _frequencies.get( 0 ); // FIXME questa riga e' fittizia
     }
 
     private long getPESOSfrequency( final Time now, final QueryInfo[] queries )
@@ -673,7 +684,7 @@ public class CPUEnergyModel implements Model<Long,QueryInfo>
         }
         
         public CONSmodel( final List<Long> frequencies ) {
-            super( 0L, Type.PERF, frequencies );
+            super( 0L, Type.CONS, frequencies );
         }
     }
 }
