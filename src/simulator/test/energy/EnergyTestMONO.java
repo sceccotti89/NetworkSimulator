@@ -15,6 +15,7 @@ import simulator.core.Simulator;
 import simulator.events.Event;
 import simulator.events.EventHandler;
 import simulator.events.Packet;
+import simulator.events.generator.CBRGenerator;
 import simulator.events.generator.EventGenerator;
 import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
@@ -209,6 +210,23 @@ public class EnergyTestMONO
         }
     }
     
+    protected static class ServerConsGenerator extends CBRGenerator
+    {
+        public static final Time interval = new Time( 1, TimeUnit.SECONDS );
+        
+        public ServerConsGenerator( final Time duration, final Packet reqPacket, final Packet resPacket ) {
+            super( duration, interval, reqPacket, resPacket );
+        }
+        
+        @Override
+        public Packet makePacket( final Event e )
+        {
+            Packet packet = _reqPacket.clone();
+            packet.addContent( Global.CONS_CTRL_EVT, "" );
+            return packet;
+        }
+    }
+    
     private static class SinkGenerator extends EventGenerator
     {
         public SinkGenerator( final Time duration,
@@ -244,37 +262,47 @@ public class EnergyTestMONO
         {
             Packet p = e.getPacket();
             EnergyCPU cpu = getDevice( new EnergyCPU() );
-            CPUEnergyModel model = (CPUEnergyModel) cpu.getModel();
-            QueryInfo query = model.getQuery( p.getContent( Global.QUERY_ID ) );
-            //System.out.println( "RECEIVED QUERY: " + p.getContent( Global.QUERY_ID ) );
-            query.setEvent( e );
-            query.setArrivalTime( e.getArrivalTime() );
-            cpu.addQuery( cpu.selectCore( e.getArrivalTime() ), query );
+            
+            if (p.getContent( Global.CONS_CTRL_EVT ) != null) {
+                //System.out.println( "OTTENUTO EVENTO DI CONTROLLO CONS" );
+                cpu.evalCONSfrequency();
+            } else {
+                CPUEnergyModel model = (CPUEnergyModel) cpu.getModel();
+                QueryInfo query = model.getQuery( p.getContent( Global.QUERY_ID ) );
+                //System.out.println( "RECEIVED QUERY: " + p.getContent( Global.QUERY_ID ) );
+                query.setEvent( e );
+                query.setArrivalTime( e.getArrivalTime() );
+                cpu.addQuery( cpu.selectCore( e.getArrivalTime() ), query );
+            }
         }
         
         @Override
         public Time handle( final Event e, final EventType type )
         {
-            EnergyCPU cpu = getDevice( new EnergyCPU() );
-            if (e instanceof ResponseEvent) {
-                if (type == EventType.GENERATED) {
-                    QueryInfo query = cpu.getLastQuery();
-                    query.setEvent( e );
-                } else { // EventType.SENT event.
-                    // Set the time of the cpu as (at least) the time of the sending event.
-                    cpu.setTime( e.getTime() );
-                    cpu.checkQueryCompletion( e.getTime() );
-                }
+            Packet p = e.getPacket();
+            if (p.getContent( Global.CONS_CTRL_EVT ) != null) {
+                //System.out.println( "HANDLING EVENTO DI CONTROLLO CONS" );
+                return Time.ZERO;
             } else {
-                // Compute the time to complete the query.
-                return cpu.timeToCompute( null );
+                EnergyCPU cpu = getDevice( new EnergyCPU() );
+                if (e instanceof ResponseEvent) {
+                    if (type == EventType.GENERATED) {
+                        QueryInfo query = cpu.getLastQuery();
+                        query.setEvent( e );
+                    } else { // EventType.SENT event.
+                        // Set the time of the cpu as (at least) the time of the sending event.
+                        cpu.setTime( e.getTime() );
+                        cpu.checkQueryCompletion( e.getTime() );
+                    }
+                } else {
+                    // Compute the time to complete the query.
+                    return cpu.timeToCompute( null );
+                }
             }
             
             return null;
         }
         
-        // TODO questa funzione e' in prova. Se mi accorgo che qualcosa non torna riutilizzo il CoreAgent.
-        // TODO basta copiare questa classe e rimuovere questa funzione.
         @Override
         public double getNodeUtilization( final Time time ) {
             return getDevice( new EnergyCPU() ).getUtilization( time );
@@ -291,26 +319,30 @@ public class EnergyTestMONO
     {
         //Utils.VERBOSE = false;
         
-        //loadModel( Type.CONS, Mode.CONS_CONSERVATIVE );
-        loadModel( Type.CONS, Mode.CONS_LOAD );
+        CPUEnergyModel model = loadModel( Type.CONS, Mode.CONS_CONSERVATIVE );
+        //CPUEnergyModel model = loadModel( Type.CONS, Mode.CONS_LOAD );
         
-        //loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
-        //loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );
-        //loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
-        //loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
+        //CPUEnergyModel model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
+        //CPUEnergyModel model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );
+        //CPUEnergyModel model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
+        //CPUEnergyModel model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
         
-        //loadModel( Type.PERF, null );
+        //CPUEnergyModel model = loadModel( Type.PERF, null );
+        
+        testMultiCore( model );
+        //testSingleCore( model );
+        //testNetworkAnimation( model );
     }
     
-    protected static void loadModel( final Type type, final Mode mode, final long timeBudget ) throws Exception
+    protected static CPUEnergyModel loadModel( final Type type, final Mode mode, final long timeBudget ) throws Exception
     {
         // PESOS loading model.
         CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" );
         model.loadModel();
-        execute( model );
+        return model;
     }
     
-    protected static void loadModel( final Type type, final Mode mode ) throws Exception
+    protected static CPUEnergyModel loadModel( final Type type, final Mode mode ) throws Exception
     {
         CPUEnergyModel model = null;
         switch ( type ) {
@@ -319,15 +351,7 @@ public class EnergyTestMONO
             default:    break;
         }
         model.loadModel();
-        
-        execute( model );
-    }
-    
-    private static void execute( final CPUEnergyModel model ) throws IOException
-    {
-        testMultiCore( model );
-        //testSingleCore( model );
-        //testNetworkAnimation( model );
+        return model;
     }
     
     public static void testNetworkAnimation( final CPUEnergyModel model ) throws Exception
@@ -407,13 +431,15 @@ public class EnergyTestMONO
         an.start();
     }
     
-    public static void testMultiCore( final CPUEnergyModel model ) throws IOException
+    public static void testMultiCore( final CPUEnergyModel model ) throws Exception
     {
         /*
                    1000Mb,0ms
         client <---------------> server
           0ms                    dynamic
         */
+        
+        final Time duration = new Time( 24, TimeUnit.HOURS );
         
         EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/PESOS/cpu_frequencies.txt" );
         cpu.setModel( model );
@@ -440,6 +466,10 @@ public class EnergyTestMONO
                                                  new Packet( 20, SizeUnit.BYTE ) );
         
         Agent server = new MulticoreAgent( 1, sink );
+        EventGenerator evtGen = new ServerConsGenerator( duration, new Packet( 1, SizeUnit.BYTE ),
+                                                                   new Packet( 1, SizeUnit.BYTE ) );
+        evtGen.connect( server );
+        server.addEventGenerator( evtGen );
         server.setParallelTransmission( false ).addDevice( cpu );
         net.addAgent( server );
         
@@ -454,7 +484,7 @@ public class EnergyTestMONO
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         plotter.setVisible( true );
         
-        sim.start( new Time( 24, TimeUnit.HOURS ) );
+        sim.start( duration );
 
         Utils.LOGGER.debug( model.getModelType( false ) + " - Total energy:      " + cpu.getResultSampled( Global.ENERGY_SAMPLING ) + "J" );
         Utils.LOGGER.debug( model.getModelType( false ) + " - Total Idle energy: " + cpu.getResultSampled( Global.IDLE_ENERGY_SAMPLING ) + "J" );
@@ -489,7 +519,13 @@ public class EnergyTestMONO
         // SIMULATOR: 1145401.600324196    992317.15024121070    940141.72685316140     862323.60355950530 (10%)    954884.43320349800
         // IDLE:       247582.811710984     94926.56637327410     94926.56637327410      82491.18617838359           75247.89537980030     60560 Joule in meno
         
-        // CONS (per adesso LOAD e in ogni caso e' in TODO)
+        // TODO Il modello CONS e' ancora UNDER-CONSTRUCTION
+        // CONS CONSERVATIVE
+        // TARGET:    575000.0000000000
+        // SIMULATOR:                                                                   
+        // IDLE:                                                                         
+        
+        // CONS LOAD
         // TARGET:    575000.0000000000
         // SIMULATOR: 992317.1502406223                                                 862323.60355952530
         // IDLE:       94926.5663733480                                                  82491.18617838345
@@ -538,7 +574,7 @@ public class EnergyTestMONO
             cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
             cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
             cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
-            cpu.setModel( model );
+            cpu.setModel( model.clone() );
             cpus.add( cpu );
             
             EventGenerator sink = new SinkGenerator( Time.INFINITE,

@@ -21,7 +21,6 @@ import simulator.events.impl.ResponseEvent;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
 import simulator.test.energy.CPUEnergyModel.Mode;
-import simulator.test.energy.CPUEnergyModel.PERFmodel;
 import simulator.test.energy.CPUEnergyModel.PESOSmodel;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.topology.NetworkTopology;
@@ -319,16 +318,11 @@ public class EnergyTestDIST
         //execute( Mode.PESOS_TIME_CONSERVATIVE, 1000 );
         //execute( Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
         //execute( Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
-        //execute( null, 0 );
     }
     
     private static void execute( final Mode mode, final long timeBudget ) throws Exception
     {
-        CPUEnergyModel model;
-        if (mode == null)
-            model = new PERFmodel( "Models/PESOS/cpu_frequencies.txt" );
-        else
-            model = new PESOSmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" );
+        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" );
         model.loadModel();
         
         testMultiCore( model );

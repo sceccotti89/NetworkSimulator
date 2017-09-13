@@ -20,7 +20,8 @@ import simulator.events.Event;
 import simulator.test.energy.CPUEnergyModel.Mode;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.test.energy.CPUEnergyModel.Type;
-import simulator.test.energy.EnergyModel.*;
+import simulator.test.energy.EnergyModel.ParameterEnergyModel;
+import simulator.test.energy.EnergyTestMONO.ServerConsGenerator;
 import simulator.utils.Time;
 import simulator.utils.Utils;
 
@@ -28,11 +29,17 @@ public class EnergyCPU extends Device<Long,QueryInfo>
 {
     protected double _cores;
     protected int _contexts;
-    protected long currentCoreId = -1;
+    protected long currentCoreId = -1;// TODO se a cons non servono i core questo lo posso rimuovere
     protected long lastSelectedCore = -1;
     protected QueryInfo lastQuery;
     protected EnergyModel energyModel;
     protected Map<Long,Core> coresMap;
+    
+    // Parameters used by CONS.
+    private int queriesSentPerInterval = 0;
+    private int queriesReceivedPerInterval = 0;
+    private double freqArrivals = 0d;
+    private double freqDepartures = 0d;
     
     private static final long QUEUE_CHECK = TimeUnit.SECONDS.toMicros( 1 );
     
@@ -102,6 +109,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         }
         
         super.setModel( model );
+        model.setDevice( this );
     }
     
     public void setEnergyModel( final EnergyModel model ) {
@@ -113,10 +121,14 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         Core core = coresMap.get( coreId );
         core.addQuery( q );
         
+        queriesReceivedPerInterval++;
         //System.out.println( "AGGIUNTA QUERY " + q.getId() + " TO CORE: " + coreId );
         
-        // Evaluate the new core frequency.
-        evalFrequency( q.getArrivalTime(), core );
+        CPUEnergyModel model = (CPUEnergyModel) getModel();
+        if (model.getType() == Type.PESOS) {
+            // Evaluate the new core frequency.
+            evalFrequency( q.getArrivalTime(), core );
+        }
     }
     
     @Override
@@ -177,8 +189,57 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         return coresMap.get( index );
     }
     
+    public void evalCONSparameters()
+    {
+        // TODO dovrebbe dividere per il tempo di osservazione?? oppure basta ottenere il numero come intero?
+        freqArrivals = queriesReceivedPerInterval/ServerConsGenerator.interval.getTimeMicroseconds();
+        freqDepartures = queriesSentPerInterval/ServerConsGenerator.interval.getTimeMicroseconds();
+        
+        queriesReceivedPerInterval = 0;
+        queriesSentPerInterval = 0;
+        
+        evalCONSfrequency();
+    }
+    
     /**
-     * Evaluate which is the "best" frequency to use
+     * Evaluate which is the "best" frequency
+     * to process the remaining tasks for the CONS model.
+     * 
+     * @param time    time of evaluation.
+     * @param core    core to which assign the evaluated frequency.
+    */
+    public void evalCONSfrequency()
+    {
+        List<QueryInfo> queue = new ArrayList<>( 512 );
+        CPUEnergyModel model = (CPUEnergyModel) getModel();
+        if (model.getMode() == Mode.CONS_LOAD) {
+            // CONS LOAD requires all the queues in the server.
+            for (Core c : coresMap.values()) {
+                queue.addAll( c.getQueue() );
+            }
+        } else {
+            // TODO nella versione conservative mi sa che non serve la coda.
+        }
+        
+        // These statement is necessary only if CONS model needs to access the cores informations
+        //currentCoreId = core.getId();
+        
+        // Evaluate the "best" frequency to use.
+        //TODO long frequency = model.eval( null, queue.toArray( new QueryInfo[0] ) );
+        //TODO a chi devo settare la frequenza?? al singolo core o a tutti quanti
+        //core.setFrequency( time, frequency );
+    }
+    
+    public double getFrequencyArrivals() {
+        return freqArrivals;
+    }
+    
+    public double getFrequencyDepartures() {
+        return freqDepartures;
+    }
+    
+    /**
+     * Evaluate which is the "best" frequency
      * to process the remaining tasks.
      * 
      * @param time    time of evaluation.
@@ -187,17 +248,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     private void evalFrequency( final Time time, final Core core )
     {
         Model<Long,QueryInfo> model = getModel();
-        List<QueryInfo> queue;
-        CPUEnergyModel cpuModel = (CPUEnergyModel) model;
-        if (cpuModel.getType() == Type.CONS && cpuModel.getMode() == Mode.CONS_LOAD) {
-            // CONS LOAD requires all the queues in the server.
-            queue = new ArrayList<>( 512 );
-            for (Core c : coresMap.values()) {
-                queue.addAll( c.getQueue() );
-            }
-        } else { // PERF and PESOS.
-            queue = core.getQueue();
-        }
+        List<QueryInfo> queue = core.getQueue();
         
         // Set the time of the cores as (at least) the last query arrival time.
         QueryInfo query = queue.get( queue.size() - 1 );
@@ -280,7 +331,9 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     public void checkQueryCompletion( final Time time )
     {
         for (Core core : coresMap.values()) {
-            core.checkQueryCompletion( time );
+            if (core.checkQueryCompletion( time )) {
+                queriesSentPerInterval++;
+            }
         }
     }
     
@@ -455,14 +508,20 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             }
         }
         
-        public void checkQueryCompletion( final Time time )
+        public boolean checkQueryCompletion( final Time time )
         {
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
                 addQueryOnSampling();
                 if (hasMoreQueries()) {
-                    cpu.evalFrequency( time, this );
+                    CPUEnergyModel model = (CPUEnergyModel) cpu.getModel();
+                    if (model.getType() == Type.PESOS) {
+                        cpu.evalFrequency( time, this );
+                    }
                     cpu.computeTime( getFirstQueryInQueue(), this );
                 }
+                return true;
+            } else {
+                return false;
             }
         }
         

@@ -133,7 +133,9 @@ public abstract class Event implements Comparable<Event>
             
             // Prepare and schedule the response event.
             _dest.setTime( _arrivalTime );
-            evtScheduler.schedule( _dest.fireEvent( _time, this ) );
+            if (_source.getId() != _dest.getId()) {
+                evtScheduler.schedule( _dest.fireEvent( _time, this ) );
+            }
         } else {
             Time time = _time.clone();
             long nextNode = net.nextNode( nodeId, _dest.getId() ).getId();

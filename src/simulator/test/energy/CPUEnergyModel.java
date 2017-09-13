@@ -23,7 +23,7 @@ import simulator.utils.Pair;
 import simulator.utils.Time;
 import simulator.utils.Utils;
 
-public class CPUEnergyModel extends Model<Long,QueryInfo>
+public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cloneable
 {
     private static final String SEPARATOR = "=";
     
@@ -42,7 +42,7 @@ public class CPUEnergyModel extends Model<Long,QueryInfo>
     // Map used to store the predictors for the evaluation of the "best" frequency.
     private Map<String,Double> regressors;
     
-    private List<Long> _frequencies;
+    protected List<Long> _frequencies;
     
     // Energy evaluation mode.
     private Type type;
@@ -306,16 +306,17 @@ public class CPUEnergyModel extends Model<Long,QueryInfo>
         double utilization = 0;
         EnergyCPU cpu = (EnergyCPU) _device;
         
-        // TODO La frequenza da settare e' di tutta la CPU o del core??
+        // TODO La frequenza da analizzare e' di tutta la CPU o del singolo core??
         
         if (type.getMode() == Mode.CONS_CONSERVATIVE) {
-            // TODO completare: i valori delle frequenze di invio e arrivo vanno prese di tutto il server o di quel core??
-            //double lambda = cpu.getFrequencyArrival();
-            //double mu     = cpu.getFrequencyDeparture();
-            //utilization   = lambda/(mu * cpu.getCPUcores());
+            double lambda = cpu.getFrequencyArrivals();
+            double mu     = cpu.getFrequencyDepartures();
+            utilization   = lambda/(mu * cpu.getCPUcores());
         } else { // CONS LOAD frequency evaluation.
             utilization = queries.length/cpu.getCPUcores();
         }
+        
+        System.out.println( "UTILIZATION: " + utilization );
         
         if (utilization >= CONS_ALPHA) {
             return _frequencies.get( 0 ); // Maximum frequency.
@@ -453,6 +454,13 @@ public class CPUEnergyModel extends Model<Long,QueryInfo>
         }
         
         return _frequencies.get( 0 ); 
+    }
+    
+    public abstract CPUEnergyModel cloneModel();
+    
+    @Override
+    protected CPUEnergyModel clone() {
+        return cloneModel();
     }
     
     public static class QueryInfo
@@ -661,8 +669,12 @@ public class CPUEnergyModel extends Model<Long,QueryInfo>
         }
         
         public PESOSmodel( final long time_budget, final Mode mode, final List<Long> frequencies ) {
+            this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, frequencies );
+        }
+        
+        public PESOSmodel( final Time time_budget, final Mode mode, final List<Long> frequencies ) {
             super( getType( mode ), frequencies );
-            timeBudget = new Time( time_budget, TimeUnit.MILLISECONDS );
+            timeBudget = time_budget;
         }
         
         private static Type getType( final Mode mode )
@@ -670,6 +682,17 @@ public class CPUEnergyModel extends Model<Long,QueryInfo>
             Type type = Type.PESOS;
             type.setMode( mode );
             return type;
+        }
+        
+        public CPUEnergyModel cloneModel()
+        {
+            Collections.sort( _frequencies, Collections.reverseOrder() );
+            List<Long> freqs = new ArrayList<>( _frequencies );
+            PESOSmodel model = new PESOSmodel( timeBudget.clone(), getMode(), freqs );
+            try { model.loadModel(); }
+            catch ( IOException e ) { e.printStackTrace(); }
+            Collections.sort( _frequencies );
+            return model;
         }
     }
     
@@ -688,6 +711,17 @@ public class CPUEnergyModel extends Model<Long,QueryInfo>
         
         public PERFmodel( final List<Long> frequencies ) {
             super( Type.PERF, frequencies );
+        }
+        
+        public CPUEnergyModel cloneModel()
+        {
+            Collections.sort( _frequencies, Collections.reverseOrder() );
+            List<Long> freqs = new ArrayList<>( _frequencies );
+            PERFmodel model = new PERFmodel( freqs );
+            try { model.loadModel(); }
+            catch ( IOException e ) { e.printStackTrace(); }
+            Collections.sort( _frequencies );
+            return model;
         }
     }
     
@@ -713,6 +747,17 @@ public class CPUEnergyModel extends Model<Long,QueryInfo>
             Type type = Type.CONS;
             type.setMode( mode );
             return type;
+        }
+        
+        public CPUEnergyModel cloneModel()
+        {
+            Collections.sort( _frequencies, Collections.reverseOrder() );
+            List<Long> freqs = new ArrayList<>( _frequencies );
+            CONSmodel model = new CONSmodel( getMode(), freqs );
+            try { model.loadModel(); }
+            catch ( IOException e ) { e.printStackTrace(); }
+            Collections.sort( _frequencies );
+            return model;
         }
     }
 }
