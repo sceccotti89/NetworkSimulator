@@ -319,8 +319,8 @@ public class EnergyTestMONO
     {
         //Utils.VERBOSE = false;
         
-        CPUEnergyModel model = loadModel( Type.CONS, Mode.CONS_CONSERVATIVE );
-        //CPUEnergyModel model = loadModel( Type.CONS, Mode.CONS_LOAD );
+        //CPUEnergyModel model = loadModel( Type.CONS, Mode.CONS_CONSERVATIVE );
+        CPUEnergyModel model = loadModel( Type.CONS, Mode.CONS_LOAD );
         
         //CPUEnergyModel model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
         //CPUEnergyModel model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );

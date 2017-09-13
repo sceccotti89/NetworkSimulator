@@ -174,8 +174,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     @Override
     public void loadModel() throws IOException
     {
-        if (type.getMode() == Mode.PESOS_ENERGY_CONSERVATIVE ||
-            type.getMode() == Mode.PESOS_TIME_CONSERVATIVE) {
+        if (type == Type.PESOS) {
             loadRegressors();
         }
         loadPostingsPredictors();
