@@ -264,7 +264,6 @@ public class EnergyTestMONO
             EnergyCPU cpu = getDevice( new EnergyCPU() );
             
             if (p.getContent( Global.CONS_CTRL_EVT ) != null) {
-                //System.out.println( "OTTENUTO EVENTO DI CONTROLLO CONS" );
                 cpu.evalCONSfrequency();
             } else {
                 CPUEnergyModel model = (CPUEnergyModel) cpu.getModel();
@@ -281,7 +280,6 @@ public class EnergyTestMONO
         {
             Packet p = e.getPacket();
             if (p.getContent( Global.CONS_CTRL_EVT ) != null) {
-                //System.out.println( "HANDLING EVENTO DI CONTROLLO CONS" );
                 return Time.ZERO;
             } else {
                 EnergyCPU cpu = getDevice( new EnergyCPU() );
