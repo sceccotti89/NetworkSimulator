@@ -12,8 +12,8 @@ import java.util.concurrent.TimeUnit;
 
 import simulator.core.Agent;
 import simulator.events.Event;
-import simulator.events.Packet;
 import simulator.events.EventHandler.EventType;
+import simulator.events.Packet;
 import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
 import simulator.utils.Time;
@@ -33,6 +33,7 @@ public abstract class EventGenerator
     protected boolean _activeGenerator = false;
     protected boolean _waitResponse = true;
     protected boolean _delayResponse = false;
+    protected boolean _makeAnswer = true;
     protected Time    _departureTime;
     protected long    _packetsInFly = 0;
     protected long    _initMaxPacketsInFlight;
@@ -140,6 +141,11 @@ public abstract class EventGenerator
         return this;
     }
     
+    public EventGenerator makeAnswer( final boolean flag ) {
+        _makeAnswer = flag;
+        return this;
+    }
+    
     public Time getTime() {
         return _time.clone();
     }
@@ -228,8 +234,12 @@ public abstract class EventGenerator
      * 
      * @return the new events list, or {@code null} if the time is expired.
     */
-    final public List<Event> generate( final Time t, final Event e )
+    public List<Event> generate( final Time t, final Event e )
     {
+        if (!_makeAnswer) {
+            return null;
+        }
+        
         if (t != null && (_waitResponse || _delayResponse)) {
             setTime( t );
         }
@@ -246,7 +256,6 @@ public abstract class EventGenerator
             return null; // No more events from this generator.
         
         List<Event> events = null;
-        
         if (e instanceof RequestEvent) {
             if (_delayResponse) {
                 // Prepare and send the new request packet to the next node.

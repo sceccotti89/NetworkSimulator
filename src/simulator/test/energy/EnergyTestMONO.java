@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -210,7 +211,7 @@ public class EnergyTestMONO
         }
     }
     
-    protected static class ServerConsGenerator extends CBRGenerator
+    public static class ServerConsGenerator extends CBRGenerator
     {
         public static final Time interval = new Time( 1, TimeUnit.SECONDS );
         
@@ -225,6 +226,15 @@ public class EnergyTestMONO
             packet.addContent( Global.CONS_CTRL_EVT, "" );
             return packet;
         }
+        
+        /*@Override
+        public List<Event> generate( final Time t, final Event e )
+        {
+            setTime( getTime().addTime( interval ) );
+            Packet packet = makePacket( null );
+            RequestEvent event = new RequestEvent( getTime(), _agent, _destinations.get( 0 ), packet );
+            return Collections.singletonList( event );
+        }*/
     }
     
     private static class SinkGenerator extends EventGenerator
@@ -264,7 +274,7 @@ public class EnergyTestMONO
             EnergyCPU cpu = getDevice( new EnergyCPU() );
             
             if (p.getContent( Global.CONS_CTRL_EVT ) != null) {
-                cpu.evalCONSfrequency();
+                cpu.evalCONSfrequency( e.getArrivalTime() );
             } else {
                 CPUEnergyModel model = (CPUEnergyModel) cpu.getModel();
                 QueryInfo query = model.getQuery( p.getContent( Global.QUERY_ID ) );
@@ -294,6 +304,9 @@ public class EnergyTestMONO
                     }
                 } else {
                     // Compute the time to complete the query.
+                    if (e.getArrivalTime().getTimeMicroseconds() == 82667000L) {
+                        System.out.println( "ANALIZZO IL TEMPO DELLA QUERY.." );
+                    }
                     return cpu.timeToCompute( null );
                 }
             }
@@ -344,8 +357,8 @@ public class EnergyTestMONO
     {
         CPUEnergyModel model = null;
         switch ( type ) {
-            case PERF:  model = new PERFmodel( "Models/PESOS/cpu_frequencies.txt" ); break;
-            case CONS:  model = new CONSmodel( mode, "Models/PESOS/cpu_frequencies.txt" ); break;
+            case PERF:  model = new PERFmodel( "Models/cpu_frequencies.txt" ); break;
+            case CONS:  model = new CONSmodel( mode, "Models/cpu_frequencies.txt" ); break;
             default:    break;
         }
         model.loadModel();
@@ -464,10 +477,12 @@ public class EnergyTestMONO
                                                  new Packet( 20, SizeUnit.BYTE ) );
         
         Agent server = new MulticoreAgent( 1, sink );
-        EventGenerator evtGen = new ServerConsGenerator( duration, new Packet( 1, SizeUnit.BYTE ),
-                                                                   new Packet( 1, SizeUnit.BYTE ) );
-        evtGen.connect( server );
-        server.addEventGenerator( evtGen );
+        if (model.getType() == Type.CONS) {
+            EventGenerator evtGen = new ServerConsGenerator( duration, new Packet( 1, SizeUnit.BYTE ),
+                                                                       new Packet( 1, SizeUnit.BYTE ) );
+            evtGen.connect( server );
+            server.addEventGenerator( evtGen );
+        }
         server.setParallelTransmission( false ).addDevice( cpu );
         net.addAgent( server );
         

@@ -18,6 +18,8 @@ public class SinkGenerator extends EventGenerator
         super( duration, Time.ZERO, maxPacketsInFly,
                reqPacket, resPacket,
                false, false, true );
+        
+        makeAnswer( false );
     }
     
     @Override

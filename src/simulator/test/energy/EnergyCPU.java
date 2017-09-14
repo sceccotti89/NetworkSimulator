@@ -17,11 +17,11 @@ import simulator.core.Device;
 import simulator.core.Model;
 import simulator.core.Task;
 import simulator.events.Event;
+import simulator.test.energy.CPUEnergyModel.CONSmodel;
 import simulator.test.energy.CPUEnergyModel.Mode;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.test.energy.CPUEnergyModel.Type;
 import simulator.test.energy.EnergyModel.ParameterEnergyModel;
-import simulator.test.energy.EnergyTestMONO.ServerConsGenerator;
 import simulator.utils.Time;
 import simulator.utils.Utils;
 
@@ -98,6 +98,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
                     long timeBudget = cpuModel.getTimeBudget().getTimeMicroseconds()/1000;
                     file = "PESOS_" + timeBudget + "_" + cpuModel.getMode();
                 } else {
+                    setFrequency( _frequencies.get( 0 ) );
                     file = "CONS_" + cpuModel.getMode();
                 }
                 file += (_cores == 1) ? "_distr" : "_mono";
@@ -189,16 +190,15 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         return coresMap.get( index );
     }
     
-    public void evalCONSparameters()
+    public void evalCONSparameters( final Time time )
     {
-        // TODO dovrebbe dividere per il tempo di osservazione?? oppure basta ottenere il numero come intero?
-        freqArrivals = queriesReceivedPerInterval/ServerConsGenerator.interval.getTimeMicroseconds();
-        freqDepartures = queriesSentPerInterval/ServerConsGenerator.interval.getTimeMicroseconds();
+        freqArrivals   = queriesReceivedPerInterval;
+        freqDepartures = queriesSentPerInterval;
         
         queriesReceivedPerInterval = 0;
         queriesSentPerInterval = 0;
         
-        evalCONSfrequency();
+        evalCONSfrequency( time );
     }
     
     /**
@@ -206,11 +206,10 @@ public class EnergyCPU extends Device<Long,QueryInfo>
      * to process the remaining tasks for the CONS model.
      * 
      * @param time    time of evaluation.
-     * @param core    core to which assign the evaluated frequency.
     */
-    public void evalCONSfrequency()
+    public void evalCONSfrequency( final Time time )
     {
-        List<QueryInfo> queue = new ArrayList<>( 512 );
+        List<QueryInfo> queue = new ArrayList<>();
         CPUEnergyModel model = (CPUEnergyModel) getModel();
         if (model.getMode() == Mode.CONS_LOAD) {
             // CONS LOAD requires all the queues in the server.
@@ -221,13 +220,15 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             // TODO nella versione conservative mi sa che non serve la coda.
         }
         
-        // These statement is necessary only if CONS model needs to access the cores informations
+        // These statement is necessary only if CONS model needs to access the single core informations
         //currentCoreId = core.getId();
         
         // Evaluate the "best" frequency to use.
-        //TODO long frequency = model.eval( null, queue.toArray( new QueryInfo[0] ) );
-        //TODO a chi devo settare la frequenza?? al singolo core o a tutti quanti
-        //core.setFrequency( time, frequency );
+        long frequency = model.eval( null, queue.toArray( new QueryInfo[0] ) );
+        for (Core core : coresMap.values()) {
+            //TODO a chi devo settare la frequenza: al singolo core o a tutti quanti??
+            core.setFrequency( time, frequency );
+        }
     }
     
     public double getFrequencyArrivals() {
@@ -290,9 +291,16 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         long frequency = core.getFrequency();
         query.setFrequency( frequency );
         
+        for (Core c : coresMap.values())
+            System.out.println( "CORE TIME: " + c.getTime() );
+        
         Time computeTime = query.getTime( frequency );
         Time startTime   = core.getTime();
         Time endTime     = startTime.clone().addTime( computeTime );
+        CPUEnergyModel model = (CPUEnergyModel) getModel();
+        if (model.getType() == Type.CONS) {
+            endTime.min( startTime.clone().addTime( CONSmodel.interval ) );
+        }
         query.setTimeToComplete( startTime, endTime );
         
         if (query.getStartTime().getTimeMicroseconds() == 44709952703L)
@@ -461,6 +469,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         public void setFrequency( final Time time, final long newFrequency )
         {
             if (frequency != newFrequency) {
+                System.out.println( "TIME: " + time + ", NEW: " + newFrequency + ", OLD: " + frequency + ", QUERY: " + currentQuery );
                 if (currentQuery != null) {
                     /*if (newFrequency < frequency) {
                         // FIXME abbassamento frequenza PESOS.
@@ -484,7 +493,8 @@ public class EnergyCPU extends Device<Long,QueryInfo>
                                                                    newFrequency,
                                                                    currentQuery.getTime( newFrequency ),
                                                                    false );
-                    currentQuery.updateTimeEnergy( time, newFrequency, energy );
+                    CPUEnergyModel model = (CPUEnergyModel) cpu.getModel();
+                    currentQuery.updateTimeEnergy( model.getType() == Type.CONS, time, newFrequency, energy );
                     writeResult( frequency, currentQuery.getElapsedEnergy() );
                     this.time = currentQuery.getEndTime();
                     updateEventTime( currentQuery, this.time );

@@ -228,10 +228,15 @@ public abstract class Agent
             }
         }
         
+        int index = 0;
         for (EventGenerator evGenerator : _evGenerators) {
             List<Event> genEvents = evGenerator.generate( t, e );
             if (genEvents != null) {
                 events.addAll( genEvents );
+            }
+            // TODO debug
+            if (getId() == 1) {
+                System.out.println( "TIME: " + getTime() + ", INDEX: " + (index++) + ", GEN_EVENTS: " + genEvents );
             }
         }
         

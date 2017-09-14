@@ -131,11 +131,13 @@ public abstract class Event implements Comparable<Event>
             _time.addTime( getTcalc( node, _dest ) );
             _dest.removeEventFromQueue( 0 );
             
-            // Prepare and schedule the response event.
             _dest.setTime( _arrivalTime );
             if (_source.getId() != _dest.getId()) {
+                // Prepare and schedule the response event.
                 evtScheduler.schedule( _dest.fireEvent( _time, this ) );
-            }
+            }/* else {
+                evtScheduler.schedule( _source.fireEvent( _time, null ) );
+            }*/
         } else {
             Time time = _time.clone();
             long nextNode = net.nextNode( nodeId, _dest.getId() ).getId();

@@ -70,6 +70,7 @@ public class EventScheduler
             } else {
                 // FIXME in caso di eventi da parte di altre reti c'e' il rischio che alcuni eventi
                 // FIXME arrivino in tempi diversi tra di loro.
+                System.out.println( "TIME: " + _time + ", EVENT: " + e );
                 throw new TimeException( "You can't go back in time!" );
             }
             
