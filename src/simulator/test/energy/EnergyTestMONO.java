@@ -546,6 +546,8 @@ public class EnergyTestMONO
                                     dynamic    dynamic
         */
         
+        final Time duration = new Time( 24, TimeUnit.HOURS );
+        
         NetworkTopology net = new NetworkTopology( "Topology/Topology_mono_singleCore.json" );
         net.setTrackingEvent( "./Results/packets2.txt" );
         System.out.println( net.toString() );
@@ -586,6 +588,13 @@ public class EnergyTestMONO
             
             switchAgent.getEventGenerator( 0 ).connect( agentCore );
             
+            if (model.getType() == Type.CONS) {
+                EventGenerator evtGen = new ServerConsGenerator( duration, new Packet( 1, SizeUnit.BYTE ),
+                                                                           new Packet( 1, SizeUnit.BYTE ) );
+                evtGen.connect( agentCore );
+                agentCore.addEventGenerator( evtGen );
+            }
+            
             plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), null, "Node " + i + " " + model.getModelType( true ) );
         }
         
@@ -596,7 +605,7 @@ public class EnergyTestMONO
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         plotter.setVisible( true );
         
-        sim.start( new Time( 24, TimeUnit.HOURS ) );
+        sim.start( duration );
         
         double totalEnergy = 0;
         double totalIdleEnergy = 0;

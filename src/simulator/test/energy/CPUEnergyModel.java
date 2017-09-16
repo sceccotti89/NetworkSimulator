@@ -297,7 +297,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     }
     
     private long getPERFfrequency() {
-        return _frequencies.get( 0 );
+        return _device.getMaxFrequency();
     }
     
     private long getCONSfrequency( final QueryInfo[] queries )
@@ -314,7 +314,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }
         
         if (utilization >= CONS_ALPHA) {
-            return _frequencies.get( 0 ); // Maximum frequency.
+            return _device.getMaxFrequency();
         }
         
         //int freqIdx = getFrequencyIndex( cpu.getCore( 0 ).getFrequency() );
