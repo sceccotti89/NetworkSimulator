@@ -135,9 +135,10 @@ public abstract class Event implements Comparable<Event>
             if (_source.getId() != _dest.getId()) {
                 // Prepare and schedule the response event.
                 evtScheduler.schedule( _dest.fireEvent( _time, this ) );
-            }/* else {
+            } else {
+                // Prepare and schedule a new source event.
                 evtScheduler.schedule( _source.fireEvent( _time, null ) );
-            }*/
+            }
         } else {
             Time time = _time.clone();
             long nextNode = net.nextNode( nodeId, _dest.getId() ).getId();

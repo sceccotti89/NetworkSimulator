@@ -192,8 +192,15 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         return coresMap.get( index );
     }
     
+    /**
+     * Evaluates the CONS parameters.
+     * 
+     * @param time    time of evaluation.
+    */
     public void evalCONSparameters( final Time time )
     {
+        computeIdleEnergy( time );
+        
         CPUEnergyModel model = (CPUEnergyModel) getModel();
         if (model.getMode() == Mode.CONS_LOAD) {
             freqArrivals   = queriesReceivedPerInterval;
@@ -207,25 +214,25 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     }
     
     /**
-     * Evaluate which is the "best" frequency
+     * Evaluates which is the "best" frequency
      * to process the remaining tasks for the CONS model.
      * 
      * @param time    time of evaluation.
     */
     private void evalCONSfrequency( final Time time )
     {
-        //System.out.println( "evaluating at: " + time );
+        //System.out.println( "Evaluating at: " + time );
         List<QueryInfo> queue;
         CPUEnergyModel model = (CPUEnergyModel) getModel();
-        if (model.getMode() == Mode.CONS_LOAD) {
+        if (model.getMode() == Mode.CONS_CONSERVATIVE) {
+            // TODO nella versione conservative mi sa che non serve la coda.
+            queue = new ArrayList<>( 0 );
+        } else {
             // CONS LOAD requires all the queues in the server.
             queue = new ArrayList<>( 512 );
             for (Core c : coresMap.values()) {
                 queue.addAll( c.getQueue() );
             }
-        } else {
-            // TODO nella versione conservative mi sa che non serve la coda.
-            queue = new ArrayList<>( 1 );
         }
         
         // These statement is necessary only if CONS model needs to access the single core informations
@@ -248,7 +255,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     }
     
     /**
-     * Evaluate which is the "best" frequency
+     * Evaluates which is the "best" frequency
      * to process the remaining tasks.
      * 
      * @param time    time of evaluation.
