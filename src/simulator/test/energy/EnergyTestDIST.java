@@ -385,7 +385,7 @@ public class EnergyTestDIST
             
             // Add the CPU nodes to each switch.
             for (int j = 0; j < NODES; j++) {
-                EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/PESOS/cpu_frequencies.txt" );
+                EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/cpu_frequencies.txt" );
                 cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
                 cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
                 cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
@@ -495,7 +495,7 @@ public class EnergyTestDIST
         List<EnergyCPU> cpus = new ArrayList<>( NODES );
         Plotter plotter = new Plotter( "DISTR MULTI_CORE - " + model.getModelType( false ), 800, 600 );
         for (int i = 0; i < NODES; i++) {
-            EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/PESOS/cpu_frequencies.txt" );
+            EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/cpu_frequencies.txt" );
             cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
             cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
             cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );

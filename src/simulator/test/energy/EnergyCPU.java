@@ -21,7 +21,7 @@ import simulator.test.energy.CPUEnergyModel.CONSmodel;
 import simulator.test.energy.CPUEnergyModel.Mode;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.test.energy.CPUEnergyModel.Type;
-import simulator.test.energy.EnergyModel.NormalizedEnergyModel;
+import simulator.test.energy.EnergyModel.ParameterEnergyModel;
 import simulator.utils.Time;
 import simulator.utils.Utils;
 
@@ -78,8 +78,8 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         
         //setEnergyModel( new QueryEnergyModel() );
         //setEnergyModel( new CoefficientEnergyModel() );
-        setEnergyModel( new NormalizedEnergyModel() );
-        //setEnergyModel( new ParameterEnergyModel() );
+        //setEnergyModel( new NormalizedEnergyModel() );
+        setEnergyModel( new ParameterEnergyModel() );
     }
     
     @Override
