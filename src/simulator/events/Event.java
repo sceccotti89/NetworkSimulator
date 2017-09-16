@@ -136,7 +136,7 @@ public abstract class Event implements Comparable<Event>
                 // Prepare and schedule the response event.
                 evtScheduler.schedule( _dest.fireEvent( _time, this ) );
             } else {
-                // Prepare and schedule a new source event.
+                // Prepare a new self-event.
                 evtScheduler.schedule( _source.fireEvent( _time, null ) );
             }
         } else {

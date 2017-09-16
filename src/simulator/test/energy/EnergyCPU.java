@@ -199,6 +199,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     */
     public void evalCONSparameters( final Time time )
     {
+        //System.out.println( "Evaluating at: " + time );
         computeIdleEnergy( time );
         
         CPUEnergyModel model = (CPUEnergyModel) getModel();
@@ -221,7 +222,6 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     */
     private void evalCONSfrequency( final Time time )
     {
-        //System.out.println( "Evaluating at: " + time );
         List<QueryInfo> queue;
         CPUEnergyModel model = (CPUEnergyModel) getModel();
         if (model.getMode() == Mode.CONS_CONSERVATIVE) {
