@@ -81,6 +81,7 @@ public class EventScheduler
     public void schedule( final Event event )
     {
         if (event != null) {
+            //System.out.println( "1 - SCHEDULING: " + event );
             long nodeId = -1;
             if (event.getDestination() != null) {
                 nodeId = event.getDestination().getNode().getId();
@@ -91,12 +92,14 @@ public class EventScheduler
             } else {
                 changeScheduler( nodeId, event );
             }
+            //System.out.println( "EVENTS: " + _events );
         }
     }
     
     public void schedule( final List<Event> events )
     {
         if (events != null) {
+            //System.out.println( "2 - SCHEDULING: " + events );
             long nodeId = -1;
             if (events.get( 0 ).getDestination() != null) {
                 nodeId = events.get( 0 ).getDestination().getNode().getId();
@@ -106,6 +109,7 @@ public class EventScheduler
             } else {
                 changeScheduler( nodeId, events );
             }
+            //System.out.println( "EVENTS: " + _events );
         }
     }
     

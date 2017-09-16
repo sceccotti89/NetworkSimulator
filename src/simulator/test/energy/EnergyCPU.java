@@ -21,7 +21,7 @@ import simulator.test.energy.CPUEnergyModel.CONSmodel;
 import simulator.test.energy.CPUEnergyModel.Mode;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.test.energy.CPUEnergyModel.Type;
-import simulator.test.energy.EnergyModel.ParameterEnergyModel;
+import simulator.test.energy.EnergyModel.NormalizedEnergyModel;
 import simulator.utils.Time;
 import simulator.utils.Utils;
 
@@ -70,6 +70,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         _cores = Math.max( 1, cores );
         _contexts = contexts;
         
+        setFrequency( getMaxFrequency() );
         coresMap = new HashMap<>( cores );
         for (long i = 0; i < cores; i++) {
             coresMap.put( i, new Core( this, i, getMaxFrequency() ) );
@@ -77,8 +78,8 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         
         //setEnergyModel( new QueryEnergyModel() );
         //setEnergyModel( new CoefficientEnergyModel() );
-        //setEnergyModel( new NormalizedEnergyModel() );
-        setEnergyModel( new ParameterEnergyModel() );
+        setEnergyModel( new NormalizedEnergyModel() );
+        //setEnergyModel( new ParameterEnergyModel() );
     }
     
     @Override
@@ -98,7 +99,6 @@ public class EnergyCPU extends Device<Long,QueryInfo>
                     long timeBudget = cpuModel.getTimeBudget().getTimeMicroseconds()/1000;
                     file = "PESOS_" + timeBudget + "_" + cpuModel.getMode();
                 } else {
-                    setFrequency( _frequencies.get( 0 ) );
                     file = "CONS_" + cpuModel.getMode();
                 }
                 file += (_cores == 1) ? "_distr" : "_mono";
@@ -124,6 +124,8 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         
         queriesReceivedPerInterval++;
         //System.out.println( "AGGIUNTA QUERY " + q.getId() + " TO CORE: " + coreId );
+        // Set the time of the cores as (at least) the last query arrival time.
+        setTime( q.getArrivalTime() );
         
         CPUEnergyModel model = (CPUEnergyModel) getModel();
         if (model.getType() == Type.PESOS) {
@@ -192,11 +194,14 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     
     public void evalCONSparameters( final Time time )
     {
-        freqArrivals   = queriesReceivedPerInterval;
-        freqDepartures = queriesSentPerInterval;
-        
-        queriesReceivedPerInterval = 0;
-        queriesSentPerInterval = 0;
+        CPUEnergyModel model = (CPUEnergyModel) getModel();
+        if (model.getMode() == Mode.CONS_LOAD) {
+            freqArrivals   = queriesReceivedPerInterval;
+            freqDepartures = queriesSentPerInterval;
+            
+            queriesReceivedPerInterval = 0;
+            queriesSentPerInterval = 0;
+        }
         
         evalCONSfrequency( time );
     }
@@ -207,17 +212,20 @@ public class EnergyCPU extends Device<Long,QueryInfo>
      * 
      * @param time    time of evaluation.
     */
-    public void evalCONSfrequency( final Time time )
+    private void evalCONSfrequency( final Time time )
     {
-        List<QueryInfo> queue = new ArrayList<>();
+        //System.out.println( "evaluating at: " + time );
+        List<QueryInfo> queue;
         CPUEnergyModel model = (CPUEnergyModel) getModel();
         if (model.getMode() == Mode.CONS_LOAD) {
             // CONS LOAD requires all the queues in the server.
+            queue = new ArrayList<>( 512 );
             for (Core c : coresMap.values()) {
                 queue.addAll( c.getQueue() );
             }
         } else {
             // TODO nella versione conservative mi sa che non serve la coda.
+            queue = new ArrayList<>( 1 );
         }
         
         // These statement is necessary only if CONS model needs to access the single core informations
@@ -251,17 +259,11 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         Model<Long,QueryInfo> model = getModel();
         List<QueryInfo> queue = core.getQueue();
         
-        // Set the time of the cores as (at least) the last query arrival time.
-        QueryInfo query = queue.get( queue.size() - 1 );
-        setTime( query.getArrivalTime() );
-        
         if (core.getFirstQueryInQueue().getStartTime().getTimeMicroseconds() == 44709952703L)
             System.out.println( "EVALUATING FREQUENCY AT: " + time );
         
-        // These 2 statements are necessary because the CONS model needs to access the CPU informations
-        // and since the model is shared among different CPUs (in the distributed version) the assignment is mandatory.
-        currentCoreId = core.getId();
-        model.setDevice( this );
+        // These statement is necessary in case the CONS model needs to access the core informations
+        //currentCoreId = core.getId();
         
         // Evaluate the "best" frequency to use.
         long frequency = model.eval( time, queue.toArray( new QueryInfo[0] ) );
@@ -291,22 +293,23 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         long frequency = core.getFrequency();
         query.setFrequency( frequency );
         
-        for (Core c : coresMap.values())
-            System.out.println( "CORE TIME: " + c.getTime() );
-        
         Time computeTime = query.getTime( frequency );
-        Time startTime   = core.getTime();
-        Time endTime     = startTime.clone().addTime( computeTime );
         CPUEnergyModel model = (CPUEnergyModel) getModel();
         if (model.getType() == Type.CONS) {
-            endTime.min( startTime.clone().addTime( CONSmodel.interval ) );
+            computeTime.min( CONSmodel.interval );
         }
+        Time startTime   = core.getTime();
+        Time endTime     = startTime.clone().addTime( computeTime );
         query.setTimeToComplete( startTime, endTime );
+        
+        //if (query.getArrivalTime().getTimeMicroseconds() == 2000000) {
+        //    System.out.println( "START: " + startTime );
+        //}
         
         if (query.getStartTime().getTimeMicroseconds() == 44709952703L)
             System.out.println( "CORE: " + core.getId() + ", EXECUTING QUERY: " + query.getId() + ", START_TIME: " + startTime + ", COMPUTE_TIME: " + computeTime + ", END_TIME: " + endTime + ", QUEUE: " + core.getQueue() );
         
-        computeEnergyConsumption( core, query );
+        computeEnergyConsumption( core, query, computeTime );
         core.setCompletedQuery( query );
         
         core.updateEventTime( query, query.getEndTime() );
@@ -314,13 +317,17 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         return computeTime;
     }
     
-    private void computeEnergyConsumption( final Core core, final QueryInfo query )
+    private void computeEnergyConsumption( final Core core, final QueryInfo query, final Time computeTime )
     {
         long frequency = core.getFrequency();
         double energy = query.getEnergy( frequency );
+        CPUEnergyModel model = (CPUEnergyModel) getModel();
+        if (model.getType() == Type.CONS) {
+            long time = query.getTime( frequency ).getTimeMicroseconds();
+            double energyUnit = energy/time;
+            energy = energyUnit * computeTime.getTimeMicroseconds();
+        }
         
-        // Subtract the idle energy spent by the other cores during the execution of the query.
-        Time computeTime = query.getTime( frequency );
         energy = energyModel.computeEnergy( energy, frequency, computeTime, false );
         query.setEnergyConsumption( energy );
         
@@ -469,7 +476,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         public void setFrequency( final Time time, final long newFrequency )
         {
             if (frequency != newFrequency) {
-                System.out.println( "TIME: " + time + ", NEW: " + newFrequency + ", OLD: " + frequency + ", QUERY: " + currentQuery );
+                //System.out.println( "TIME: " + time + ", NEW: " + newFrequency + ", OLD: " + frequency + ", QUERY: " + currentQuery );
                 if (currentQuery != null) {
                     /*if (newFrequency < frequency) {
                         // FIXME abbassamento frequenza PESOS.

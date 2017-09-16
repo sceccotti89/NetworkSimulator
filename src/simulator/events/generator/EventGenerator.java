@@ -16,6 +16,7 @@ import simulator.events.EventHandler.EventType;
 import simulator.events.Packet;
 import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
+import simulator.test.energy.EnergyTestMONO.ServerConsGenerator;
 import simulator.utils.Time;
 import simulator.utils.Utils;
 
@@ -234,7 +235,7 @@ public abstract class EventGenerator
      * 
      * @return the new events list, or {@code null} if the time is expired.
     */
-    public List<Event> generate( final Time t, final Event e )
+    public final List<Event> generate( final Time t, final Event e )
     {
         if (!_makeAnswer) {
             return null;
@@ -254,6 +255,17 @@ public abstract class EventGenerator
         _time.addTime( departureTime );
         if (_time.compareTo( _duration ) > 0)
             return null; // No more events from this generator.
+        
+        //if (this instanceof ServerConsGenerator) {
+        //    System.out.println( "GENERO UN NUOVO EVENTO AL TEMPO: " + _time + ", EVENT: " + e );
+        //}
+        
+        if (_activeGenerator) {
+            update();
+            Event event = new ResponseEvent( _time, _agent, null, null );
+            event.setArrivalTime( _time );
+            return sendRequest( event );
+        }
         
         List<Event> events = null;
         if (e instanceof RequestEvent) {
@@ -282,12 +294,16 @@ public abstract class EventGenerator
                     }
                 }
             } else {
-                if (_activeGenerator || _continueToSend) {
+                if (_continueToSend) {
                     Event event = new ResponseEvent( _time, _agent, null, null );
                     event.setArrivalTime( _time );
                     events = sendRequest( event );
                 }
             }
+        }
+        
+        if (this instanceof ServerConsGenerator) {
+            System.out.println( "EVENTI GENERATI: " + events );
         }
         
         return events;

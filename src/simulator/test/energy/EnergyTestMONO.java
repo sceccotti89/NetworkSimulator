@@ -5,7 +5,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -75,7 +74,7 @@ public class EnergyTestMONO
                 QueryInfo query = model.getQuery( queryID );
                 if (query.isAvailable()) {
                     packet.addContent( Global.QUERY_ID, queryID );
-                    //System.out.println( "New Query: " + packet.getContent( Global.QUERY_ID ) );
+                    //System.out.println( "New Query: " + queryID );
                     break;
                 }
             }
@@ -152,7 +151,7 @@ public class EnergyTestMONO
             int nextDestination = -1;
             for (int i = 0; i < _destinations.size(); i++) {
                 Agent agent = _destinations.get( i );
-                //EnergyCPU2 device = agent.getDevice( new EnergyCPU2() );
+                //EnergyCPU device = agent.getDevice( new EnergyCPU() );
                 //double nodeUtilization = device.getUtilization( time );
                 double nodeUtilization = agent.getNodeUtilization( time );
                 if (nodeUtilization < minUtilization) {
@@ -213,7 +212,7 @@ public class EnergyTestMONO
     
     public static class ServerConsGenerator extends CBRGenerator
     {
-        public static final Time interval = new Time( 1, TimeUnit.SECONDS );
+        public static final Time interval = new Time( 2, TimeUnit.SECONDS );
         
         public ServerConsGenerator( final Time duration, final Packet reqPacket, final Packet resPacket ) {
             super( duration, interval, reqPacket, resPacket );
@@ -226,15 +225,6 @@ public class EnergyTestMONO
             packet.addContent( Global.CONS_CTRL_EVT, "" );
             return packet;
         }
-        
-        /*@Override
-        public List<Event> generate( final Time t, final Event e )
-        {
-            setTime( getTime().addTime( interval ) );
-            Packet packet = makePacket( null );
-            RequestEvent event = new RequestEvent( getTime(), _agent, _destinations.get( 0 ), packet );
-            return Collections.singletonList( event );
-        }*/
     }
     
     private static class SinkGenerator extends EventGenerator
@@ -274,7 +264,7 @@ public class EnergyTestMONO
             EnergyCPU cpu = getDevice( new EnergyCPU() );
             
             if (p.getContent( Global.CONS_CTRL_EVT ) != null) {
-                cpu.evalCONSfrequency( e.getArrivalTime() );
+                cpu.evalCONSparameters( e.getTime() );
             } else {
                 CPUEnergyModel model = (CPUEnergyModel) cpu.getModel();
                 QueryInfo query = model.getQuery( p.getContent( Global.QUERY_ID ) );
@@ -288,11 +278,12 @@ public class EnergyTestMONO
         @Override
         public Time handle( final Event e, final EventType type )
         {
+            EnergyCPU cpu = getDevice( new EnergyCPU() );
             Packet p = e.getPacket();
             if (p.getContent( Global.CONS_CTRL_EVT ) != null) {
+                cpu.computeIdleEnergy( e.getTime() );
                 return Time.ZERO;
             } else {
-                EnergyCPU cpu = getDevice( new EnergyCPU() );
                 if (e instanceof ResponseEvent) {
                     if (type == EventType.GENERATED) {
                         QueryInfo query = cpu.getLastQuery();
@@ -304,9 +295,6 @@ public class EnergyTestMONO
                     }
                 } else {
                     // Compute the time to complete the query.
-                    if (e.getArrivalTime().getTimeMicroseconds() == 82667000L) {
-                        System.out.println( "ANALIZZO IL TEMPO DELLA QUERY.." );
-                    }
                     return cpu.timeToCompute( null );
                 }
             }
@@ -504,44 +492,44 @@ public class EnergyTestMONO
         
         System.out.println( "QUERIES: " + cpu.getExecutedQueries() );
         
-        // PARAMETERS                        0.03 0.03 0.01
-        //              COEFFICIENTS           QUERY_FILE            NORMALIZED             PARAMETER              MATTEO                  IDLE 0
+        // PARAMETERS                                                                    0.03 0.03 0.01
+        //              COEFFICIENTS           QUERY_FILE            NORMALIZED             PARAMETER                      MATTEO               IDLE 0
         //
         // TIME CONSERVATIVE 500ms
-        // TARGET:    601670.0000000000
-        // SIMULATOR: 754304.0207093941    594471.46526191400    477342.23502861796     541913.46662896510 (10%)     528119.30975986700
-        // IDLE:      196257.8677944194     75247.89537985546     75247.89537980038      71066.81117570659            75247.89537980038    36100 Joule in meno
+        // TARGET:     601670.0000000000
+        // SIMULATOR:  754304.0207093941    594471.46526191400    477342.23502861796     541913.46662896510 (10%)     528119.30975986700
+        // IDLE:       196257.8677944194     75247.89537985546     75247.89537980038      71066.81117570659            75247.89537980038    36100 Joule in meno
         
         // TIME CONSERVATIVE 1000ms
-        // TARGET:    443730.0000000000
-        // SIMULATOR: 647974.3624506982    468742.25049613975    293876.55404496676     436421.00188829670 (5%)      396748.66580365730
-        // IDLE:      159577.0287529062     61183.97035269940     61183.97035269940      58061.62555988143            61183.97035273697
+        // TARGET:     443730.0000000000
+        // SIMULATOR:  647974.3624506982    468742.25049613975    293876.55404496676     436421.00188829670 (5%)      396748.66580365730
+        // IDLE:       159577.0287529062     61183.97035269940     61183.97035269940      58061.62555988143            61183.97035273697
         
         // ENERGY CONSERVATIVE 500ms
-        // TARGET:    531100.0000000000
-        // SIMULATOR: 719986.3432093372    548442.27624212660    401489.20500958500     503171.36868913420 (5%)      481063.69885676424
-        // IDLE:      178953.7990861060     68613.28364962358     68613.28364962358      64970.61726727840            68613.28364967453
+        // TARGET:     531100.0000000000
+        // SIMULATOR:  719986.3432093372    548442.27624212660    401489.20500958500     503171.36868913420 (5%)      481063.69885676424
+        // IDLE:       178953.7990861060     68613.28364962358     68613.28364962358      64970.61726727840            68613.28364967453
         
         // ENERGY CONSERVATIVE 1000ms
-        // TARGET:    412060.0000000000
-        // SIMULATOR: 642008.7743643910    458369.63022473130    270107.72210220364     427332.62510339730 (5%)
-        // IDLE:      152041.1380861678     58294.60892807464     58294.60892807464      55344.06185887506
+        // TARGET:     412060.0000000000
+        // SIMULATOR:  642008.7743643910    458369.63022473130    270107.72210220364     427332.62510339730 (5%)
+        // IDLE:       152041.1380861678     58294.60892807464     58294.60892807464      55344.06185887506
         
         // PERF
-        // TARGET:     790400.000000000
-        // SIMULATOR: 1145401.600324196    992317.15024121070    940141.72685316140     862323.60355950530 (10%)    954884.43320349800
-        // IDLE:       247582.811710984     94926.56637327410     94926.56637327410      82491.18617838359           75247.89537980030     60560 Joule in meno
+        // TARGET:     790400.0000000000
+        // SIMULATOR: 1145401.6003241960    992317.15024121070    940141.72685316140     862323.60355950530 (10%)    954884.43320349800
+        // IDLE:       247582.8117109840     94926.56637327410     94926.56637327410      82491.18617838359           75247.89537980030     60560 Joule in meno
         
-        // TODO Il modello CONS e' ancora UNDER-CONSTRUCTION
+        // TODO Il modello CONS e' ancora UNDER-CONSTRUCTION in attesa che Matteo mi faccia sapere.
         // CONS CONSERVATIVE
-        // TARGET:    575000.0000000000
-        // SIMULATOR:                                                                   
-        // IDLE:                                                                         
+        // TARGET:     575000.0000000000
+        // SIMULATOR: 1145353.8794958994   992319.83618124100     940147.59312404550    862325.93764213070
+        // IDLE:       247589.8170507211    94929.25231439981      94929.25231439981     82493.52026112343
         
         // CONS LOAD
-        // TARGET:    575000.0000000000
-        // SIMULATOR: 992317.1502406223                                                 862323.60355952530
-        // IDLE:       94926.5663733480                                                  82491.18617838345
+        // TARGET:     575000.0000000000
+        // SIMULATOR: 1129104.5697142933   957595.52696902930     903262.12456165670    835025.74858196790
+        // IDLE:       245887.1772758127    94276.43741790277      94276.43741790277     82304.51853677392
     }
     
     public static void testSingleCore( final CPUEnergyModel model ) throws Exception

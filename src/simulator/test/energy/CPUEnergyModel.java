@@ -317,8 +317,8 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             return _frequencies.get( 0 ); // Maximum frequency.
         }
         
-        int freqIdx = getFrequencyIndex( cpu.getCore( 0 ).getFrequency() );
-        //TODO int freqIdx = getFrequencyIndex( cpu.getFrequency() );
+        //int freqIdx = getFrequencyIndex( cpu.getCore( 0 ).getFrequency() );
+        int freqIdx = getFrequencyIndex( cpu.getFrequency() );
         if (utilization <= CONS_BETA) { // Step down the frequency.
             return _frequencies.get( Math.min( _frequencies.size() - 1, freqIdx + 1 ) );
         } else {
@@ -559,10 +559,6 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             this.startTime    = startTime;
             this.currentTime  = startTime;
             this.endTime      = endTime;
-            
-            if (arrivalTime.getTimeMicroseconds() == 82667000L) {
-                System.out.println( "START_TIME: " + startTime + ", END_TIME: " + endTime );
-            }
         }
         
         public void setEnergyConsumption( final double energy ) {
@@ -586,8 +582,13 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             long newQueryDuration  = newCompletionTime - (long) (newCompletionTime * percentageCompleted);
             //System.out.println( "NEW QUERY DURATION: " + newCompletionTime + ", REAL: " + newQueryDuration );
             Time newEndTime        = time.clone().addTime( newQueryDuration, TimeUnit.MICROSECONDS );
-            if (cons) {
-                newEndTime.min( time.clone().addTime( CONSmodel.interval ) );
+            
+            // Update the ending time due to the cons model.
+            if (cons && newEndTime.clone().subTime( startTime ).compareTo( CONSmodel.interval ) > 0) {
+                Time maxTime = startTime.clone().addTime( CONSmodel.interval );
+                Time exceedTime = newEndTime.clone().subTime( maxTime );
+                newQueryDuration -= exceedTime.getTimeMicroseconds();
+                newEndTime.setTime( maxTime );
             }
             
             double timeElapsed   = time.getTimeMicroseconds() - currentTime.getTimeMicroseconds();
@@ -596,9 +597,9 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             double newEnergy     = energyUnitNew * newQueryDuration;
             //System.out.println( "PERCENTAGE: " + percentageCompleted + ", ENERGY_ELAPSED: " + elapsedEnergy );
             //System.out.println( "NEW_ENERGY: " + energy + ", NEW_ENERGY_REAL: " + newEnergy );
-            //PesosCPU2.writeResult( _frequency, elapsedEnergy, false );
+            //EnergyCPU.writeResult( _frequency, elapsedEnergy, false );
             
-            System.out.println( "ARRIVAL: " + arrivalTime + ", OLD TIME: " + endTime + ", NEW: " + newEndTime );
+            //System.out.println( "ARRIVAL: " + arrivalTime + ", OLD TIME: " + endTime + ", NEW: " + newEndTime );
             
             energyConsumption += elapsedEnergy + newEnergy - lastEnergy;
             previousEnergy = elapsedEnergy;
@@ -654,7 +655,8 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         
         @Override
         public String toString() {
-            return getId() + "";
+            return "{ID: " + getId() + ", Arrival: " + arrivalTime +
+                   ", Start: " + startTime + ", End: " + endTime + "}";
         }
     }
     
