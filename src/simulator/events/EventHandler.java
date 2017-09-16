@@ -4,7 +4,6 @@
 
 package simulator.events;
 
-import simulator.events.impl.RequestEvent;
 import simulator.topology.NetworkNode;
 import simulator.utils.Time;
 
@@ -23,8 +22,7 @@ public interface EventHandler
     
     /**
      * Invoked when a specific event for which this handler is registered happens.</br>
-     * In case of {@link RequestEvent} event this method must provide a consistent time
-     * to handle the given event. The simplest implementation is to return the time associated
+     *  The simplest implementation is to return the time associated
      * to the {@link NetworkNode} ({@link NetworkNode#getTcalc() getTcalc()} method),
      * ensuring that it's NOT {@link Time#DYNAMIC dynamic}.
      * 
