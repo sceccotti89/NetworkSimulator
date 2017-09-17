@@ -256,10 +256,6 @@ public abstract class EventGenerator
         if (_time.compareTo( _duration ) > 0)
             return null; // No more events from this generator.
         
-        //if (this instanceof ServerConsGenerator) {
-        //    System.out.println( "GENERO UN NUOVO EVENTO AL TEMPO: " + _time + ", EVENT: " + e );
-        //}
-        
         if (_activeGenerator) {
             update();
             Event event = new ResponseEvent( _time, _agent, null, null );

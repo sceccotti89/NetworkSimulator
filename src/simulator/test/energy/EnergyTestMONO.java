@@ -317,15 +317,16 @@ public class EnergyTestMONO
     {
         //Utils.VERBOSE = false;
         
-        //CPUEnergyModel model = loadModel( Type.CONS, Mode.CONS_CONSERVATIVE );
-        CPUEnergyModel model = loadModel( Type.CONS, Mode.CONS_LOAD );
+        CPUEnergyModel model = null;
+        //model = loadModel( Type.CONS, Mode.CONS_CONSERVATIVE );
+        model = loadModel( Type.CONS, Mode.CONS_LOAD );
         
-        //CPUEnergyModel model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
-        //CPUEnergyModel model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );
-        //CPUEnergyModel model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
-        //CPUEnergyModel model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
+        //model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
+        //model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );
+        //model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
+        //model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
         
-        //CPUEnergyModel model = loadModel( Type.PERF, null );
+        //model = loadModel( Type.PERF, null );
         
         testMultiCore( model );
         //testSingleCore( model );
@@ -527,8 +528,8 @@ public class EnergyTestMONO
         
         // CONS LOAD
         // TARGET:     575000.0000000000
-        // SIMULATOR: 1129104.5697142933    957595.52696902930    903262.12456165670     830833.96226713380
-        // IDLE:       245887.1772758127     94276.43741790277     94276.43741790277      82298.30404033360
+        // SIMULATOR: 1129104.5697142933    957595.52696902930    903262.12456165670     830814.56004989450
+        // IDLE:       245887.1772758127     94276.43741790277     94276.43741790277      82298.04971695630
     }
     
     public static void testSingleCore( final CPUEnergyModel model ) throws Exception

@@ -220,24 +220,19 @@ public abstract class Agent
             events.add( protocol.getEvent() );
         }
         
+        for (EventGenerator evGenerator : _evGenerators) {
+            List<Event> genEvents = evGenerator.generate( t, e );
+            if (genEvents != null) {
+                events.addAll( genEvents );
+            }
+        }
+        
         // Removes all the events whose time is higher than the simulation time.
         for (int i = events.size() - 1; i >= 0; i--) {
             Event event = events.get( i );
             if (event.getTime().compareTo( _evtScheduler.getTimeDuration() ) > 0) {
                 events.remove( i );
             }
-        }
-        
-        //int index = 0;
-        for (EventGenerator evGenerator : _evGenerators) {
-            List<Event> genEvents = evGenerator.generate( t, e );
-            if (genEvents != null) {
-                events.addAll( genEvents );
-            }
-            // TODO debug
-            /*if (getId() == 1) {
-                System.out.println( "TIME: " + getTime() + ", INDEX: " + (index++) + ", GEN_EVENTS: " + genEvents );
-            }*/
         }
         
         return (events.isEmpty() ? null : events);

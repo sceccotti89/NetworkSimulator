@@ -290,9 +290,10 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     {
         lastQuery = query;
         
-        // If this is not the next query to compute, returns the maximum time (MAX - arrival).
+        // If this is not the next query to compute, returns the maximum time (SIM_TIME - arrival).
         if (!core.isNextQuery( query )) {
-            Time time = new Time( Long.MAX_VALUE, TimeUnit.MICROSECONDS );
+            //Time time = new Time( Long.MAX_VALUE, TimeUnit.MICROSECONDS );
+            Time time = _evtScheduler.getTimeDuration();
             query.setTimeToComplete( Time.ZERO, time.clone() );
             return time.subTime( query.getArrivalTime() );
         }
@@ -308,10 +309,6 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         Time startTime   = core.getTime();
         Time endTime     = startTime.clone().addTime( computeTime );
         query.setTimeToComplete( startTime, endTime );
-        
-        //if (query.getArrivalTime().getTimeMicroseconds() == 2000000) {
-        //    System.out.println( "START: " + startTime );
-        //}
         
         if (query.getStartTime().getTimeMicroseconds() == 44709952703L)
             System.out.println( "CORE: " + core.getId() + ", EXECUTING QUERY: " + query.getId() + ", START_TIME: " + startTime + ", COMPUTE_TIME: " + computeTime + ", END_TIME: " + endTime + ", QUEUE: " + core.getQueue() );
@@ -373,7 +370,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     
     @Override
     public Double getResultSampled( final String sampler ) {
-        // TODO RIMUOVERE LA PROSSIMA RIGA DOPO I TEST
+        // TODO RIMUOVERE QUESTO METODO DOPO I TEST
         coeffWriter.close();
         return super.getResultSampled( sampler );
     }

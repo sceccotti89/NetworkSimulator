@@ -128,6 +128,8 @@ public abstract class Event implements Comparable<Event>
         } else {
             executeIntermediate( evtScheduler, net, node );
         }
+        
+        evtScheduler.schedule( _source.fireEvent( _time, null ) );
     }
     
     private void executeDestination( final EventScheduler evtScheduler, final NetworkTopology net, final NetworkNode node )
@@ -143,10 +145,10 @@ public abstract class Event implements Comparable<Event>
         if (_source.getId() != _dest.getId()) {
             // Prepare and schedule the response event.
             evtScheduler.schedule( _dest.fireEvent( _time, this ) );
-        } else {
+        }/* else {
             // Prepare a new self-event.
             evtScheduler.schedule( _source.fireEvent( _time, null ) );
-        }
+        }*/
     }
     
     private void executeIntermediate( final EventScheduler evtScheduler, final NetworkTopology net, final NetworkNode node )
@@ -208,7 +210,7 @@ public abstract class Event implements Comparable<Event>
             _source.setTime( time );
         }
         
-        evtScheduler.schedule( _source.fireEvent( time, null ) );
+        //evtScheduler.schedule( _source.fireEvent( time, null ) );
     }
     
     private Time getTcalc( final NetworkNode node, final Agent agent )
