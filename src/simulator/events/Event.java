@@ -124,80 +124,91 @@ public abstract class Event implements Comparable<Event>
         }
         
         if (nodeId == _dest.getId()) {
-            //Utils.LOGGER.debug( "[" + _time + "] Reached destination node: " + node );
-            setArrivalTime( _time.clone() );
-            _dest.addEventOnQueue( this );
-            
-            _time.addTime( getTcalc( node, _dest ) );
-            _dest.removeEventFromQueue( 0 );
-            
-            _dest.setTime( _arrivalTime );
-            if (_source.getId() != _dest.getId()) {
-                // Prepare and schedule the response event.
-                evtScheduler.schedule( _dest.fireEvent( _time, this ) );
-            } else {
-                // Prepare a new self-event.
-                evtScheduler.schedule( _source.fireEvent( _time, null ) );
-            }
+            executeDestination( evtScheduler, net, node );
         } else {
-            Time time = _time.clone();
-            long nextNode = net.nextNode( nodeId, _dest.getId() ).getId();
-            NetworkLink link = net.getLink( nodeId, nextNode );
-            if (link != null && link.isActive()) {
-                /*if (nodeId == _source.getId()) {
-                    Utils.LOGGER.debug( "[" + _time + "] Starting from node: " + node );
-                }*/
-                
-                if (link.checkErrorLink()) {
-                    //System.out.println( "[" + _time + "] Packet lost due to an error in the link." );
-                    // TODO utilizzare i vari protocolli per la gestione dell'errore (tipo ICMPv6).
-                } else {
-                    _currentNodeId = link.getDestId();
-                    long delay = 0;
-                    Agent agent = node.getAgent();
-                    if (nodeId != _source.getId()) {
-                        //Utils.LOGGER.debug( "[" + _time + "] Reached intermediate node: " + node );
-                        delay = getTcalc( node, node.getAgent() ).getTimeMicroseconds();
-                        // Add event on queue only for nodes different from source.
-                        agent.addEventOnQueue( this );
-                    }
-                    
-                    // Starting time is the current time + Tcalc of the node.
-                    Time startTime = _time.clone().addTime( delay, TimeUnit.MICROSECONDS );
-                    
-                    // If the transmission is not in parallel add the corresponding delay.
-                    if (!agent.parallelTransmission()) {
-                        long Ttrasm = link.getTtrasm( _packet.getSizeInBits() );
-                        time.addTime( Ttrasm, TimeUnit.MICROSECONDS );
-                        delay += Ttrasm;
-                    }
-                    
-                    // Here delay is the sum of Tcal (only for intermediate nodes) and Ttrasm.
-                    _time.addTime( delay, TimeUnit.MICROSECONDS );
-                    
-                    agent.setTime( agent.getTime().addTime( delay, TimeUnit.MICROSECONDS ) );
-                    if (agent.getEventHandler() != null) {
-                        agent.getEventHandler().handle( this, EventType.SENT );
-                    }
-                    if (nodeId != _source.getId()) {
-                        agent.removeEventFromQueue( 0 );
-                    }
-                    
-                    // The link propagation time is added here.
-                    _time.addTime( link.getTprop(), TimeUnit.MICROSECONDS );
-                    
-                    // Track the current event.
-                    net.trackEvent( nodeId + " " + startTime + " " + nextNode + " " + _time + " " + (this instanceof RequestEvent ? 1 : -1) );
-                    
-                    // Push-back the modified event into the queue.
-                    evtScheduler.schedule( this );
+            executeIntermediate( evtScheduler, net, node );
+        }
+    }
+    
+    private void executeDestination( final EventScheduler evtScheduler, final NetworkTopology net, final NetworkNode node )
+    {
+        //Utils.LOGGER.debug( "[" + _time + "] Reached destination node: " + node );
+        setArrivalTime( _time.clone() );
+        _dest.addEventOnQueue( this );
+        
+        _time.addTime( getTcalc( node, _dest ) );
+        _dest.removeEventFromQueue( 0 );
+        
+        _dest.setTime( _arrivalTime );
+        if (_source.getId() != _dest.getId()) {
+            // Prepare and schedule the response event.
+            evtScheduler.schedule( _dest.fireEvent( _time, this ) );
+        } else {
+            // Prepare a new self-event.
+            evtScheduler.schedule( _source.fireEvent( _time, null ) );
+        }
+    }
+    
+    private void executeIntermediate( final EventScheduler evtScheduler, final NetworkTopology net, final NetworkNode node )
+    {
+        long nodeId = node.getId();
+        Time time = _time.clone();
+        long nextNode = net.nextNode( nodeId, _dest.getId() ).getId();
+        NetworkLink link = net.getLink( nodeId, nextNode );
+        if (link != null && link.isActive()) {
+            /*if (nodeId == _source.getId()) {
+                Utils.LOGGER.debug( "[" + _time + "] Starting from node: " + node );
+            }*/
+            
+            if (link.checkErrorLink()) {
+                //System.out.println( "[" + _time + "] Packet lost due to an error in the link." );
+                // TODO Use network protocols to manage the error (i.e. ICMPv6).
+            } else {
+                _currentNodeId = link.getDestId();
+                long delay = 0;
+                Agent agent = node.getAgent();
+                if (nodeId != _source.getId()) {
+                    //Utils.LOGGER.debug( "[" + _time + "] Reached intermediate node: " + node );
+                    delay = getTcalc( node, node.getAgent() ).getTimeMicroseconds();
+                    // Add event on queue only for nodes different from source.
+                    agent.addEventOnQueue( this );
                 }
                 
-                _source.setTime( time );
+                // Starting time is the current time + Tcalc of the node.
+                Time startTime = _time.clone().addTime( delay, TimeUnit.MICROSECONDS );
+                
+                // If the transmission is not in parallel add the corresponding delay.
+                if (!agent.parallelTransmission()) {
+                    long Ttrasm = link.getTtrasm( _packet.getSizeInBits() );
+                    time.addTime( Ttrasm, TimeUnit.MICROSECONDS );
+                    delay += Ttrasm;
+                }
+                
+                // Here delay is the sum of Tcal (only for intermediate nodes) and Ttrasm.
+                _time.addTime( delay, TimeUnit.MICROSECONDS );
+                
+                agent.setTime( agent.getTime().addTime( delay, TimeUnit.MICROSECONDS ) );
+                if (agent.getEventHandler() != null) {
+                    agent.getEventHandler().handle( this, EventType.SENT );
+                }
+                if (nodeId != _source.getId()) {
+                    agent.removeEventFromQueue( 0 );
+                }
+                
+                // The link propagation time is added here.
+                _time.addTime( link.getTprop(), TimeUnit.MICROSECONDS );
+                
+                // Track the current event.
+                net.trackEvent( nodeId + " " + startTime + " " + nextNode + " " + _time + " " + (this instanceof RequestEvent ? 1 : -1) );
+                
+                // Push-back the modified event into the queue.
+                evtScheduler.schedule( this );
             }
             
-            evtScheduler.schedule( _source.fireEvent( time, null ) );
+            _source.setTime( time );
         }
+        
+        evtScheduler.schedule( _source.fireEvent( time, null ) );
     }
     
     private Time getTcalc( final NetworkNode node, final Agent agent )
