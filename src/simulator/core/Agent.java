@@ -95,6 +95,23 @@ public abstract class Agent
         return _devices.values();
     }
     
+    /**
+     * Sets the time of the agent.</br>
+     * The internal time of the agent will be updated only if the input time is greater
+     * than the current one.
+     * 
+     * @param now    set the current time
+    */
+    public void setTime( final Time now )
+    {
+        if (now.compareTo( _time ) > 0) {
+            _time.setTime( now );
+            for (Device<?,?> device : getDevices()) {
+                device.setTime( now );
+            }
+        }
+    }
+
     public Time getTime() {
         return _time.clone();
     }
@@ -228,31 +245,15 @@ public abstract class Agent
         }
         
         // Removes all the events whose time is higher than the simulation time.
+        Time duration = _evtScheduler.getTimeDuration();
         for (int i = events.size() - 1; i >= 0; i--) {
             Event event = events.get( i );
-            if (event.getTime().compareTo( _evtScheduler.getTimeDuration() ) > 0) {
+            if (event.getTime().compareTo( duration ) > 0) {
                 events.remove( i );
             }
         }
         
         return (events.isEmpty() ? null : events);
-    }
-    
-    /**
-     * Sets the time of the agent.</br>
-     * The internal time of the agent will be updated only if the input time is greater
-     * than the current one.
-     * 
-     * @param now    set the current time
-    */
-    public void setTime( final Time now )
-    {
-        if (now.compareTo( _time ) > 0) {
-            _time.setTime( now );
-            for (Device<?,?> device : getDevices()) {
-                device.setTime( now );
-            }
-        }
     }
     
     /**
