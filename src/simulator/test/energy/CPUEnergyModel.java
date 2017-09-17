@@ -28,10 +28,14 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     private static final String SEPARATOR = "=";
     
     private static final String DIR = "Models/PESOS/MaxScore/";
-    private static final String POSTINGS_PREDICTORS            = DIR + "MaxScore.predictions.txt";
-    private static final String REGRESSORS_TIME_CONSERVATIVE   = DIR + "regressors_MaxScore.txt";
-    private static final String REGRESSORS_ENERGY_CONSERVATIVE = DIR + "regressors_normse_MaxScore.txt";
-    private static final String EFFECTIVE_TIME_ENERGY          = DIR + "MaxScore_time_energy.txt";
+    private static final String POSTINGS_PREDICTORS            = DIR + "predictions.txt";
+    private static final String REGRESSORS_TIME_CONSERVATIVE   = DIR + "regressors.txt";
+    private static final String REGRESSORS_ENERGY_CONSERVATIVE = DIR + "regressors_normse.txt";
+    private static final String EFFECTIVE_TIME_ENERGY          = DIR + "time_energy.txt";
+    
+    private String _postings;
+    private String _regressors;
+    private String _effective_time_energy;
     
     // Time limit to complete a query.
     protected Time timeBudget;
@@ -115,16 +119,6 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     
     
     
-    public CPUEnergyModel( final String frequencies ) throws IOException {
-        this( readFrequencies( frequencies ) );
-    }
-    
-    public CPUEnergyModel( final List<Long> frequencies )
-    {
-        // Order the frequencies from higher to lower.
-        Collections.sort( _frequencies = frequencies, Collections.reverseOrder() );
-    }
-    
     /**
      * Creates a new energy model.
      * 
@@ -133,15 +127,33 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
      * 
      * @throws IOException if the file of frequencies doesn't exits or is malformed.
     */
-    public CPUEnergyModel( final Type type, final String frequencies ) throws IOException {
+    public CPUEnergyModel( final Type type, final String frequencies, final String... files ) throws IOException {
         this( type, readFrequencies( frequencies ) );
     }
     
-    public CPUEnergyModel( final Type type, final List<Long> frequencies )
+    public CPUEnergyModel( final Type type, final List<Long> frequencies, final String... files )
     {
         this.type = type;
         // Order the frequencies from higher to lower.
         Collections.sort( _frequencies = frequencies, Collections.reverseOrder() );
+        
+        if (files.length == 0) {
+            _postings = POSTINGS_PREDICTORS;
+            _effective_time_energy = EFFECTIVE_TIME_ENERGY;
+            if (type == Type.PESOS) {
+                if (type.getMode() == Mode.PESOS_TIME_CONSERVATIVE) {
+                    _regressors = REGRESSORS_TIME_CONSERVATIVE;
+                } else {
+                    _regressors = REGRESSORS_ENERGY_CONSERVATIVE;
+                }
+            }
+        } else {
+            _postings = DIR + files[0];
+            _effective_time_energy = DIR + files[1];
+            if (files.length == 3) {
+                _regressors = DIR + files[2];
+            }
+        }
     }
     
     /**
@@ -211,7 +223,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     {
         queries = new HashMap<>( 1 << 14 );
         
-        FileReader fReader = new FileReader( POSTINGS_PREDICTORS );
+        FileReader fReader = new FileReader( _postings );
         BufferedReader predictorReader = new BufferedReader( fReader );
         
         String line = null;
@@ -230,9 +242,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     
     private void loadRegressors() throws IOException
     {
-        FileReader fReader = new FileReader( (type.getMode() == Mode.PESOS_TIME_CONSERVATIVE) ?
-                                                    REGRESSORS_TIME_CONSERVATIVE :
-                                                    REGRESSORS_ENERGY_CONSERVATIVE );
+        FileReader fReader = new FileReader( _regressors );
         BufferedReader regressorReader = new BufferedReader( fReader );
         
         regressors = new HashMap<>();
@@ -249,7 +259,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     
     private void loadEffectiveTimeEnergy() throws IOException
     {
-        FileReader fReader = new FileReader( EFFECTIVE_TIME_ENERGY );
+        FileReader fReader = new FileReader( _effective_time_energy );
         BufferedReader regressorReader = new BufferedReader( fReader );
         
         String line;
@@ -452,7 +462,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         return _frequencies.get( 0 ); 
     }
     
-    public abstract CPUEnergyModel cloneModel();
+    protected abstract CPUEnergyModel cloneModel();
     
     @Override
     protected CPUEnergyModel clone() {
@@ -671,16 +681,16 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
          * 
          * @throws IOException if the file of frequencies doesn't exists or is malformed.
         */
-        public PESOSmodel( final long time_budget, final Mode mode, final String frequencies ) throws IOException {
-            this( time_budget, mode, readFrequencies( frequencies ) );
+        public PESOSmodel( final long time_budget, final Mode mode, final String frequencies, final String... files ) throws IOException {
+            this( time_budget, mode, readFrequencies( frequencies ), files );
         }
         
-        public PESOSmodel( final long time_budget, final Mode mode, final List<Long> frequencies ) {
-            this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, frequencies );
+        public PESOSmodel( final long time_budget, final Mode mode, final List<Long> frequencies, final String... files ) {
+            this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, frequencies, files );
         }
         
-        public PESOSmodel( final Time time_budget, final Mode mode, final List<Long> frequencies ) {
-            super( getType( mode ), frequencies );
+        public PESOSmodel( final Time time_budget, final Mode mode, final List<Long> frequencies, final String... files ) {
+            super( getType( mode ), frequencies, files );
             timeBudget = time_budget;
         }
         

@@ -250,8 +250,14 @@ public abstract class Agent
      * 
      * @param now    set the current time
     */
-    public void setTime( final Time now ) {
-        _time.max( now );
+    public void setTime( final Time now )
+    {
+        if (now.compareTo( _time ) > 0) {
+            _time.setTime( now );
+            for (Device<?,?> device : getDevices()) {
+                device.setTime( now );
+            }
+        }
     }
     
     /**

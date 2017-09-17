@@ -139,7 +139,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     {
         // Set the time of the CPU cores.
         for (Core cpuCore : coresMap.values()) {
-            cpuCore.setTime( time.clone() );
+            cpuCore.setTime( time );
         }
     }
     
@@ -528,10 +528,14 @@ public class EnergyCPU extends Device<Long,QueryInfo>
                 // This is idle time.
                 long elapsedTime = time.getTimeMicroseconds() - this.time.getTimeMicroseconds();
                 idleTime += elapsedTime;
-                this.time = time;
+                this.time.setTime( time );
             }
         }
         
+        public Time getTime() {
+            return time.clone();
+        }
+
         public boolean checkQueryCompletion( final Time time )
         {
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
@@ -562,10 +566,6 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         
         public boolean hasMoreQueries() {
             return !queryQueue.isEmpty();
-        }
-        
-        public Time getTime() {
-            return time.clone();
         }
         
         public List<QueryInfo> getQueue() {

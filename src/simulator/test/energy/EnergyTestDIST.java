@@ -322,14 +322,11 @@ public class EnergyTestDIST
     
     private static void execute( final Mode mode, final long timeBudget ) throws Exception
     {
-        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" );
-        model.loadModel();
-        
-        testMultiCore( model );
-        //testSingleCore( model );
+        testMultiCore( timeBudget, mode );
+        //testSingleCore( timeBudget, mode );
     }
     
-    public static void testSingleCore( final CPUEnergyModel model ) throws IOException
+    public static void testSingleCore( final long timeBudget, final Mode mode ) throws IOException
     {
         /*
                                    / node_0   / node_2
@@ -356,6 +353,8 @@ public class EnergyTestDIST
         
         Simulator sim = new Simulator( net );
         
+        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt" );
+        model.loadModel();
         EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
                                                         new Packet( 20, SizeUnit.BYTE ),
                                                         model );
@@ -374,7 +373,7 @@ public class EnergyTestDIST
         
         String modelType = model.getModelType( true );
         
-        // Add the switch nodes.
+        // Add the CPU nodes.
         for (int i = 0; i < NODES; i++) {
             anyGen = new AnycastGenerator( Time.INFINITE,
                                            new Packet( 20, SizeUnit.BYTE ),
@@ -383,14 +382,24 @@ public class EnergyTestDIST
             net.addAgent( switchNode );
             switchAgent.getEventGenerator( 0 ).connect( switchNode );
             
-            // Add the CPU nodes to each switch.
+            // Add the core to each CPU node.
             for (int j = 0; j < NODES; j++) {
                 EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/cpu_frequencies.txt" );
                 cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
                 cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
                 cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
-                cpu.setModel( model );
                 cpus.add( cpu );
+                
+                // Add the PESOS model to the corresponding cpu.
+                if (mode == Mode.PESOS_TIME_CONSERVATIVE) {
+                    model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt",
+                                            "predictions_node"+i+".txt", "time_energy_node"+i+".txt", "regressors_node"+i+".txt" );
+                } else {
+                    model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt",
+                                            "predictions_node"+i+".txt", "time_energy_node"+i+".txt", "regressors_normse_node"+i+".txt" );
+                }
+                model.loadModel();
+                cpu.setModel( model );
                 
                 EventGenerator sink = new SinkGenerator( Time.INFINITE,
                                                          new Packet( 20, SizeUnit.BYTE ),
@@ -449,15 +458,10 @@ public class EnergyTestDIST
         // ENERGY CONSERVATIVE 1000ms
         // TARGET:    412060.0000000000
         // SIMULATOR: 
-        // IDLE:      
-        
-        // PERF
-        // TARGET:     790400.000000000
-        // SIMULATOR:                ??    1104635.5244105107    
-        // IDLE:                     ??    207244.94054257227    
+        // IDLE:         
     }
 
-    public static void testMultiCore( final CPUEnergyModel model ) throws Exception
+    public static void testMultiCore( final long timeBudget, final Mode mode ) throws Exception
     {
         /*
         FIXME I link dallo switch ai nodi hanno tutti una banda di 1Gb/s e 0 ms di latenza.
@@ -477,6 +481,8 @@ public class EnergyTestDIST
         
         Simulator sim = new Simulator( net );
         
+        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt" );
+        model.loadModel();
         EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
                                                         new Packet( 20, SizeUnit.BYTE ),
                                                         model );
@@ -499,8 +505,18 @@ public class EnergyTestDIST
             cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
             cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
             cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
-            cpu.setModel( model );
             cpus.add( cpu );
+            
+            // Add the PESOS model to the corresponding cpu.
+            if (mode == Mode.PESOS_TIME_CONSERVATIVE) {
+                model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt",
+                                        "predictions_node"+i+".txt", "time_energy_node"+i+".txt", "regressors_node"+i+".txt" );
+            } else {
+                model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt",
+                                        "predictions_node"+i+".txt", "time_energy_node"+i+".txt", "regressors_normse_node"+i+".txt" );
+            }
+            model.loadModel();
+            cpu.setModel( model );
             
             EventGenerator sink = new SinkGenerator( Time.INFINITE,
                                                      new Packet( 20, SizeUnit.BYTE ),
@@ -552,10 +568,6 @@ public class EnergyTestDIST
         // IDLE:      
         
         // ENERGY CONSERVATIVE 1000ms
-        // SIMULATOR:  
-        // IDLE:       
-        
-        // PERF
         // SIMULATOR:  
         // IDLE:       
     }

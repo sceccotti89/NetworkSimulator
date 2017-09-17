@@ -335,7 +335,7 @@ public class EnergyTestMONO
     protected static CPUEnergyModel loadModel( final Type type, final Mode mode, final long timeBudget ) throws Exception
     {
         // PESOS loading model.
-        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/PESOS/cpu_frequencies.txt" );
+        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt" );
         model.loadModel();
         return model;
     }
@@ -379,7 +379,7 @@ public class EnergyTestMONO
         List<EnergyCPU> cpus = new ArrayList<>( CPU_CORES );
         Plotter plotter = new Plotter( model.getModelType( false ), 800, 600 );
         for (int i = 0; i < CPU_CORES; i++) {
-            EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/PESOS/cpu_frequencies.txt" );
+            EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/cpu_frequencies.txt" );
             cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
             cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
             cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
