@@ -28,7 +28,7 @@ public abstract class Agent
     
     private EventScheduler _evtScheduler;
     private EventHandler _evtHandler = null;
-    protected List<EventGenerator> _evGenerators;
+    protected List<EventGenerator> _evtGenerators;
     private List<Event> _eventQueue;
     
     private boolean _parallelTransmission = false;
@@ -52,11 +52,10 @@ public abstract class Agent
         _id = id;
         _devices = new HashMap<>();
         
+        _evtGenerators = new ArrayList<>();
         _eventQueue = new ArrayList<>();
         
         _time = new Time( 0, TimeUnit.MICROSECONDS );
-        
-        _evGenerators = new ArrayList<>();
         
         _availablePorts = new ArrayList<>( 64511 );
         for (int i = 0; i < 64511; i++) {
@@ -73,7 +72,7 @@ public abstract class Agent
     }
     
     public void addEventGenerator( final EventGenerator evGenerator ) {
-        _evGenerators.add( evGenerator );
+        _evtGenerators.add( evGenerator );
         evGenerator.setAgent( this );
     }
     
@@ -139,7 +138,7 @@ public abstract class Agent
      * @param index    index of the requested event generator.
     */
     public EventGenerator getEventGenerator( final int index ) {
-        return _evGenerators.get( index );
+        return _evtGenerators.get( index );
     }
 
     /**
@@ -237,7 +236,7 @@ public abstract class Agent
             events.add( protocol.getEvent() );
         }
         
-        for (EventGenerator evGenerator : _evGenerators) {
+        for (EventGenerator evGenerator : _evtGenerators) {
             List<Event> genEvents = evGenerator.generate( t, e );
             if (genEvents != null) {
                 events.addAll( genEvents );
@@ -299,7 +298,7 @@ public abstract class Agent
     }
     
     /**
-     * Method used to close all the resources opened by this agent.
+     * Closes all the resources opened by this agent.
     */
     public void shutdown()
     {
