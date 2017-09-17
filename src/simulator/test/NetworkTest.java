@@ -72,7 +72,7 @@ public class NetworkTest
         public double getNodeUtilization( final Time time )
         {
             double utilization = 0;
-            for (Agent agent : _evGenerators.get( 0 ).getDestinations()) {
+            for (Agent agent : _evtGenerators.get( 0 ).getDestinations()) {
                 utilization += agent.getNodeUtilization( time );
             }
             return utilization;
