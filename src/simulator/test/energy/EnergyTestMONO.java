@@ -185,7 +185,7 @@ public class EnergyTestMONO
         
         public void computeIdleEnergy( final long sourceId, final Time time )
         {
-            for (Agent dest : _evGenerators.get( 0 ).getDestinations()) {
+            for (Agent dest : _evtGenerators.get( 0 ).getDestinations()) {
                 if (dest.getNode().getId() != sourceId) {
                     EnergyCPU cpu = dest.getDevice( new EnergyCPU() );
                     if (cpu != null) {
@@ -203,7 +203,7 @@ public class EnergyTestMONO
         public double getNodeUtilization( final Time time )
         {
             double utilization = 0;
-            for (Agent agent : _evGenerators.get( 0 ).getDestinations()) {
+            for (Agent agent : _evtGenerators.get( 0 ).getDestinations()) {
                 utilization += agent.getNodeUtilization( time );
             }
             return utilization;
