@@ -134,7 +134,7 @@ public abstract class Event implements Comparable<Event>
     
     private void executeDestination( final EventScheduler evtScheduler, final NetworkTopology net, final NetworkNode node )
     {
-        System.out.println( "[" + _time + "] Reached destination node: " + node );
+        //System.out.println( "[" + _time + "] Reached destination node: " + node );
         setArrivalTime( _time.clone() );
         _dest.addEventOnQueue( this );
         
@@ -158,9 +158,7 @@ public abstract class Event implements Comparable<Event>
         long nextNode = net.nextNode( nodeId, _dest.getId() ).getId();
         NetworkLink link = net.getLink( nodeId, nextNode );
         if (link != null && link.isActive()) {
-            if (nodeId == _source.getId()) {
-                System.out.println( "[" + _time + "] Starting from node: " + node );
-            }
+            //if (nodeId == _source.getId()) System.out.println( "[" + _time + "] Starting from node: " + node );
             
             if (link.checkErrorLink()) {
                 //System.out.println( "[" + _time + "] Packet lost due to an error in the link." );
@@ -170,7 +168,7 @@ public abstract class Event implements Comparable<Event>
                 long delay = 0;
                 Agent agent = node.getAgent();
                 if (nodeId != _source.getId()) {
-                    System.out.println( "[" + _time + "] Reached intermediate node: " + node );
+                    //System.out.println( "[" + _time + "] Reached intermediate node: " + node );
                     delay = getTcalc( node, node.getAgent() ).getTimeMicroseconds();
                     // Add event on queue only for nodes different from source.
                     agent.addEventOnQueue( this );
