@@ -216,7 +216,7 @@ public abstract class EventGenerator
      * Returns the departure time of the next event from this node.</br>
      * This method is called only if the specified departure time is
      * {@link simulator.utils.Time#DYNAMIC DYNAMIC}.</br>
-     * In case of fixed interval just return {@code null}.</br>
+     * In case of fixed departure time just return {@code null}.</br>
      * Returning {@code null} with dynamic time makes the generator to produce no event.
      * 
      * @param e    the input event
@@ -237,7 +237,7 @@ public abstract class EventGenerator
     */
     public final List<Event> generate( final Time t, final Event e )
     {
-        if (!_makeAnswer) {
+        if (!_makeAnswer || _time.compareTo( _duration ) > 0) {
             return null;
         }
         

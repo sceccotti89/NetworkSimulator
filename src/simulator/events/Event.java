@@ -129,12 +129,12 @@ public abstract class Event implements Comparable<Event>
             executeIntermediate( evtScheduler, net, node );
         }
         
-        evtScheduler.schedule( _source.fireEvent( _time, null ) );
+        //evtScheduler.schedule( _source.fireEvent( _time, null ) );
     }
     
     private void executeDestination( final EventScheduler evtScheduler, final NetworkTopology net, final NetworkNode node )
     {
-        //Utils.LOGGER.debug( "[" + _time + "] Reached destination node: " + node );
+        System.out.println( "[" + _time + "] Reached destination node: " + node );
         setArrivalTime( _time.clone() );
         _dest.addEventOnQueue( this );
         
@@ -145,10 +145,10 @@ public abstract class Event implements Comparable<Event>
         if (_source.getId() != _dest.getId()) {
             // Prepare and schedule the response event.
             evtScheduler.schedule( _dest.fireEvent( _time, this ) );
-        }/* else {
+        } else {
             // Prepare a new self-event.
             evtScheduler.schedule( _source.fireEvent( _time, null ) );
-        }*/
+        }
     }
     
     private void executeIntermediate( final EventScheduler evtScheduler, final NetworkTopology net, final NetworkNode node )
@@ -158,9 +158,9 @@ public abstract class Event implements Comparable<Event>
         long nextNode = net.nextNode( nodeId, _dest.getId() ).getId();
         NetworkLink link = net.getLink( nodeId, nextNode );
         if (link != null && link.isActive()) {
-            /*if (nodeId == _source.getId()) {
-                Utils.LOGGER.debug( "[" + _time + "] Starting from node: " + node );
-            }*/
+            if (nodeId == _source.getId()) {
+                System.out.println( "[" + _time + "] Starting from node: " + node );
+            }
             
             if (link.checkErrorLink()) {
                 //System.out.println( "[" + _time + "] Packet lost due to an error in the link." );
@@ -170,7 +170,7 @@ public abstract class Event implements Comparable<Event>
                 long delay = 0;
                 Agent agent = node.getAgent();
                 if (nodeId != _source.getId()) {
-                    //Utils.LOGGER.debug( "[" + _time + "] Reached intermediate node: " + node );
+                    System.out.println( "[" + _time + "] Reached intermediate node: " + node );
                     delay = getTcalc( node, node.getAgent() ).getTimeMicroseconds();
                     // Add event on queue only for nodes different from source.
                     agent.addEventOnQueue( this );
@@ -210,7 +210,7 @@ public abstract class Event implements Comparable<Event>
             _source.setTime( time );
         }
         
-        //evtScheduler.schedule( _source.fireEvent( time, null ) );
+        evtScheduler.schedule( _source.fireEvent( time, null ) );
     }
     
     private Time getTcalc( final NetworkNode node, final Agent agent )

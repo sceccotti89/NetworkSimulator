@@ -176,15 +176,15 @@ public class NetworkTest
     
     public static void main( final String argv[] ) throws Exception
     {
+        Utils.VERBOSE = false;
         //example0();
     	//example1();
     	//example2();
     	//example3();
         //example4();
         //example5();
-        //example6();
-        //example7();
-        testNetworkAnimation();
+        example6();
+        //testNetworkAnimation();
     	
     	System.out.println( "End of simulation." );
     }
@@ -386,57 +386,6 @@ public class NetworkTest
     }
     
     public static void example6() throws IOException, SimulatorException
-    {
-        /*
-        In case of multicast node it sends the request to all the possible destinations,
-        waits for all the answers and replay (in case) with just one message to the input node.
-        
-                                   / server1
-                        100Mb,2ms /  dynamic
-                70Mb,5ms         /
-        client ---------- switch
-         10ms               7ms  \
-                         80Mb,3ms \
-                                   \ server2
-                                       6ms
-        */
-        
-        NetworkTopology net = new NetworkTopology( "Topology/Topology_ex6.json" );
-        System.out.println( net.toString() );
-        
-        Simulator sim = new Simulator( net );
-        
-        ClientGenerator generator = new ClientGenerator( new Time( 2, TimeUnit.SECONDS ),
-                                                         1L,
-                                                         new Packet( 40, SizeUnit.KILOBYTE ),
-                                                         new Packet( 20, SizeUnit.KILOBYTE ) );
-        Agent client = new ClientAgent( 0, generator );
-        net.addAgent( client );
-        
-        SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
-                                                      Packet.DYNAMIC,
-                                                      Packet.DYNAMIC );
-        Agent server1 = new ResponseServerAgent( 2, generator2 );
-        net.addAgent( server1 );
-        
-        Agent server2 = new ResponseServerAgent( 3, generator2 );
-        net.addAgent( server2 );
-        
-        MulticastGenerator switchGenerator = new MulticastGenerator( new Time( 3, TimeUnit.SECONDS ),
-                                                                     1L,
-                                                                     new Packet( 40, SizeUnit.KILOBYTE ),
-                                                                     new Packet( 20, SizeUnit.KILOBYTE ) );
-        Agent Switch = new ClientAgent( 1, switchGenerator );
-        net.addAgent( Switch );
-        Switch.getEventGenerator( 0 ).connect( server1 );
-        Switch.getEventGenerator( 0 ).connect( server2 );
-        
-        client.getEventGenerator( 0 ).connect( Switch );
-        
-        sim.start( new Time( 1, TimeUnit.HOURS ) );
-    }
-    
-    public static void example7() throws IOException, SimulatorException
     {
         /*
         In case of multicast node it sends the request to all the possible destinations,
