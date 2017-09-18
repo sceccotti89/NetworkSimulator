@@ -136,12 +136,13 @@ public abstract class Event implements Comparable<Event>
     {
         //System.out.println( "[" + _time + "] Reached destination node: " + node );
         setArrivalTime( _time.clone() );
+        _dest.setTime( _arrivalTime );
+        
         _dest.addEventOnQueue( this );
         
         _time.addTime( getTcalc( node, _dest ) );
         _dest.removeEventFromQueue( 0 );
         
-        _dest.setTime( _arrivalTime );
         if (_source.getId() != _dest.getId()) {
             // Prepare and schedule the response event.
             evtScheduler.schedule( _dest.fireEvent( _time, this ) );

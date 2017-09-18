@@ -318,14 +318,14 @@ public class EnergyTestMONO
         //Utils.VERBOSE = false;
         
         CPUEnergyModel model = null;
-        model = loadModel( Type.CONS, null );
         
         //model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );
         //model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
         
-        //model = loadModel( Type.PERF, null );
+        //model = loadModel( Type.PERF );
+        model = loadModel( Type.CONS );
         
         testMultiCore( model );
         //testSingleCore( model );
@@ -340,12 +340,12 @@ public class EnergyTestMONO
         return model;
     }
     
-    protected static CPUEnergyModel loadModel( final Type type, final Mode mode ) throws Exception
+    protected static CPUEnergyModel loadModel( final Type type ) throws Exception
     {
         CPUEnergyModel model = null;
         switch ( type ) {
             case PERF:  model = new PERFmodel( "Models/cpu_frequencies.txt" ); break;
-            case CONS:  model = new CONSmodel( mode, "Models/cpu_frequencies.txt" ); break;
+            case CONS:  model = new CONSmodel( "Models/cpu_frequencies.txt" ); break;
             default:    break;
         }
         model.loadModel();
@@ -519,11 +519,10 @@ public class EnergyTestMONO
         // SIMULATOR: 1145401.6003241960    992317.15024121070    940141.72685316140     862323.60355950530 (10%)     954884.43320349800
         // IDLE:       247582.8117109840     94926.56637327410     94926.56637327410      82491.18617838359            75247.89537980030    60560 Joule in meno
         
-        // FIXME Il modello CONS e' ancora UNDER-CONSTRUCTION
-        // CONS CONSERVATIVE
+        // CONS
         // TARGET:     575000.0000000000
-        // SIMULATOR: 1145353.8794958994    992319.83618124100    940147.59312404550     862325.93764213070
-        // IDLE:       247589.8170507211     94929.25231439981     94929.25231439981      82493.52026112343
+        // SIMULATOR:  911862.87644774050   749175.27901627180    639790.48538287170     668200.88972794660 (16%)
+        // IDLE:       207028.73735399803    79377.59104444605     79377.59104444605      74412.69254638738
     }
     
     public static void testSingleCore( final CPUEnergyModel model ) throws Exception

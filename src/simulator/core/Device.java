@@ -194,7 +194,7 @@ public abstract class Device<E,P>
     }
     
     /**
-     * Returns the list of available frequencies for this device.
+     * Returns the list of available frequencies for this device in increasing order.
     */
     public List<Long> getFrequencies() {
         return new ArrayList<>( _frequencies );

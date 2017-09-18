@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 import simulator.core.Model;
 import simulator.events.Event;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
-import simulator.test.energy.EnergyCPU.Core;
+import simulator.test.energy.EnergyCPU.CONScore;
 import simulator.utils.Pair;
 import simulator.utils.Time;
 import simulator.utils.Utils;
@@ -711,24 +711,17 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
          * 
          * @throws IOException if the file of frequencies doesn't exists or is malformed.
         */
-        public CONSmodel( final Mode mode, final String frequencies ) throws IOException {
-            this( mode, readFrequencies( frequencies ) );
+        public CONSmodel( final String frequencies ) throws IOException {
+            this( readFrequencies( frequencies ) );
         }
         
-        public CONSmodel( final Mode mode, final List<Long> frequencies ) {
-            super( getType( mode ), frequencies );
-        }
-        
-        private static Type getType( final Mode mode )
-        {
-            Type type = Type.CONS;
-            type.setMode( mode );
-            return type;
+        public CONSmodel( final List<Long> frequencies ) {
+            super( Type.CONS, frequencies );
         }
         
         /**
          * Evaluate the input parameter to decide which is the "best" frequency
-         * to complete the current queue of queries.
+         * to complete the queued queries.
          * 
          * @param now       time of evaluation.
          * @param queries   list of parameters.
@@ -739,52 +732,26 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         public Long eval( final Time now, final QueryInfo... queries )
         {
             EnergyCPU cpu = (EnergyCPU) _device;
-            Core core = cpu.getCore( cpu.getCurrentCoreId() );
-            /*double utilization = 0;
-            double lambda = cpu.getFrequencyArrivals();
-            double mu     = cpu.getFrequencyDepartures();
-            utilization   = lambda/mu;
-            
-            if (utilization >= UP_THRESHOLD) {
-                return _device.getMaxFrequency();
-            }
-            
-            int freqIdx = getFrequencyIndex( core.getFrequency() );
-            if (utilization <= DOWN_THRESHOLD) { // Step down the frequency.
-                return _frequencies.get( Math.min( _frequencies.size() - 1, freqIdx + 1 ) );
-            } else {
-                return _frequencies.get( freqIdx );
-            }*/
-            
-            return controlCPUFrequency( core );
+            CONScore core = (CONScore) cpu.getCore( cpu.getCurrentCoreId() );
+            return controlCPUfrequency( core );
         }
         
-        /*private int getFrequencyIndex( final long frequency )
-        {
-            for (int i = 0; i < _frequencies.size(); i++) {
-                if (_frequencies.get( i ) == frequency) {
-                    return i;
-                }
-            }
-            return -1;
-        }*/
-        
-        private long controlCPUFrequency( final Core core )
+        private long controlCPUfrequency( final CONScore core )
         {
             double utilization = getUtilization( core );
+            //System.out.println( "#DVFS-CONSERVATIVE: Utilization is " + utilization );
             if (utilization >= UP_THRESHOLD || utilization <= DOWN_THRESHOLD) {
                 long targetFrequency = computeTargetFrequency( core );
-                System.out.println( "#DVFS-CONSERVATIVE: Target frequency is " + targetFrequency );
+                //System.out.println( "#DVFS-CONSERVATIVE: Target frequency is " + targetFrequency );
                 core.reset();
                 return targetFrequency;
             }
             
-            //System.err.println( "#DVFS-CONSERVATIVE: Utilization is " + utilization );
             core.reset();
             return core.getFrequency();
         }
         
-        private double getUtilization( final Core core )
+        private double getUtilization( final CONScore core )
         {
             double utilization;
             double serviceRate = core.getServiceRate();
@@ -803,20 +770,30 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             return utilization;
         }
         
-        private long computeTargetFrequency( final Core core )
+        private long getFrequencyGEQ( final long targetFrequency )
+        {
+            for (Long frequency : _device.getFrequencies()) {
+                if (frequency >= targetFrequency) {
+                    return frequency;
+                }
+            }
+            return _device.getMaxFrequency();
+        }
+        
+        private long computeTargetFrequency( final CONScore core )
         {
             double serviceRate       = core.getServiceRate();
             double targetServiceRate = core.getArrivalRate() / TARGET;
-                    
+            
             if (serviceRate == 0.0) {
                 if (targetServiceRate == 0.0) {
                     return _device.getMinFrequency();
                 } else {
                     return _device.getMaxFrequency();
                 }
-            } else { // FIXME quanto vale dvfs.getFrequency(0) ??? ritorna un indice??
-                //return (long) Math.ceil( dvfs.getFrequency(0) * (targetServiceRate / serviceRate) );
-                return _device.getMinFrequency();
+            } else {
+                //System.out.println( "SERVICE: " + serviceRate + ", TARGET: " + targetServiceRate + ", RATIO: " + (targetServiceRate / serviceRate) );
+                return getFrequencyGEQ( (long) Math.ceil( core.getFrequency() * (targetServiceRate / serviceRate) ) );
             }
         }
         
@@ -825,7 +802,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         {
             Collections.sort( _frequencies, Collections.reverseOrder() );
             List<Long> freqs = new ArrayList<>( _frequencies );
-            CONSmodel model = new CONSmodel( getMode(), freqs );
+            CONSmodel model = new CONSmodel( freqs );
             try { model.loadModel(); }
             catch ( IOException e ) { e.printStackTrace(); }
             Collections.sort( _frequencies );

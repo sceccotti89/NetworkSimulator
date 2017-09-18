@@ -64,9 +64,9 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         _contexts = contexts;
         
         setFrequency( getMaxFrequency() );
-        coresMap = new HashMap<>( cores );
-        for (long i = 0; i < cores; i++) {
-            coresMap.put( i, new Core( this, i, getMaxFrequency() ) );
+        coresMap = new HashMap<>( (int) _cores );
+        for (long i = 0; i < _cores; i++) {
+            //TODO coresMap.put( i, new Core( this, i, getMaxFrequency() ) );
         }
         
         //setEnergyModel( new QueryEnergyModel() );
@@ -82,8 +82,8 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         if (coeffWriter != null)
             coeffWriter.close();
         
+        CPUEnergyModel cpuModel = (CPUEnergyModel) model;
         try {
-            CPUEnergyModel cpuModel = (CPUEnergyModel) model;
             if (cpuModel.getType() == Type.PERF) {
                 coeffWriter = new PrintWriter( "Results/Coefficients/PERF_Freq_Energy.txt", "UTF-8" );
             } else {
@@ -102,6 +102,14 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             e.printStackTrace();
         }
         
+        for (long i = 0; i < _cores; i++) {
+            switch (cpuModel.getType()) {
+                case PESOS: coresMap.put( i, new PESOScore( this, i, getMaxFrequency() ) ); break;
+                case PERF:  coresMap.put( i, new PERFcore( this, i, getMaxFrequency() ) ); break;
+                case CONS:  coresMap.put( i, new CONScore( this, i, getMaxFrequency() ) ); break;
+            }
+        }
+        
         super.setModel( model );
         model.setDevice( this );
     }
@@ -117,7 +125,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         
         //System.out.println( "AGGIUNTA QUERY " + q.getId() + " TO CORE: " + coreId );
         // Set the time of the cores as (at least) the last query arrival time.
-        setTime( q.getArrivalTime() );
+        //setTime( q.getArrivalTime() );
         
         CPUEnergyModel model = (CPUEnergyModel) getModel();
         if (model.getType() == Type.PESOS) {
@@ -209,7 +217,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         // Evaluate the "best" frequency to use.
         for (Core core : coresMap.values()) {
             currentCoreId = core.getId();
-            long frequency = model.eval( null, (QueryInfo[]) null );
+            long frequency = model.eval( null );
             core.setFrequency( time, frequency );
         }
     }
@@ -361,22 +369,17 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     }
     
     // Core of the CPU.
-    public static class Core
+    protected static abstract class Core
     {
-        private long coreId;
+        protected long coreId;
         private Time time;
-        private List<QueryInfo> queryQueue;
-        private long frequency;
-        private QueryInfo currentQuery = null;
-        private long idleTime = 0;
-        private EnergyCPU cpu;
-        private long idleTimeInterval = 0;
+        protected List<QueryInfo> queryQueue;
+        protected long frequency;
+        protected QueryInfo currentQuery = null;
+        protected long idleTime = 0;
+        protected EnergyCPU cpu;
+        protected long idleTimeInterval = 0;
         private int queriesExecuted = 0;
-        
-        // Parameters used by CONS.
-        private double receivedQueries;
-        private double processedQueries;
-        private double cumulativeTime;
         
         // TODO implementare i context di ogni core della CPU (se proprio c'e' bisogno).
         
@@ -398,7 +401,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             return queriesExecuted;
         }
         
-        private void addQueryOnSampling()
+        protected void addQueryOnSampling()
         {
             Time startTime   = currentQuery.getStartTime();
             Time endTime     = currentQuery.getEndTime();
@@ -463,7 +466,6 @@ public class EnergyCPU extends Device<Long,QueryInfo>
                                                                    newFrequency,
                                                                    currentQuery.getTime( newFrequency ),
                                                                    false );
-                    
                     currentQuery.updateTimeEnergy( time, newFrequency, energy );
                     writeResult( frequency, currentQuery.getElapsedEnergy() );
                     this.time = currentQuery.getEndTime();
@@ -492,26 +494,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             return time.clone();
         }
 
-        public boolean checkQueryCompletion( final Time time )
-        {
-            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
-                // CONS parameters.
-                processedQueries++;
-                cumulativeTime += currentQuery.getCompletionTime();
-                
-                addQueryOnSampling();
-                if (hasMoreQueries()) {
-                    CPUEnergyModel model = (CPUEnergyModel) cpu.getModel();
-                    if (model.getType() == Type.PESOS) {
-                        cpu.evalFrequency( time, this );
-                    }
-                    cpu.computeTime( getFirstQueryInQueue(), this );
-                }
-                return true;
-            } else {
-                return false;
-            }
-        }
+        public abstract boolean checkQueryCompletion( final Time time );
         
         private void updateEventTime( final QueryInfo query, final Time time )
         {
@@ -540,12 +523,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             idleTime = 0;
         }
         
-        public void addQuery( final QueryInfo q )
-        {
-            q.setCoreId( coreId );
-            queryQueue.add( q );
-            receivedQueries++;
-        }
+        public abstract void addQuery( final QueryInfo q );
         
         public boolean isNextQuery( final QueryInfo query ) {
             return queryQueue.get( 0 ).equals( query );
@@ -567,12 +545,52 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             return idleTime;
         }
         
+        public abstract double getIdleEnergy();
+        
+        public double getUtilization( final Time time )
+        {
+            double size = queryQueue.size();
+            if (size == 0) return 0;
+            if (queryQueue.get( 0 ).getEndTime().compareTo( time ) <= 0) size--;
+            return size;
+        }
+    }
+    
+    private static class PESOScore extends Core
+    {
+        public PESOScore( final EnergyCPU cpu, final long coreId, final long initFrequency )
+        {
+            super( cpu, coreId, initFrequency );
+        }
+        
+        @Override
+        public void addQuery( final QueryInfo q )
+        {
+            q.setCoreId( coreId );
+            queryQueue.add( q );
+        }
+        
+        @Override
+        public boolean checkQueryCompletion( final Time time )
+        {
+            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+                addQueryOnSampling();
+                if (hasMoreQueries()) {
+                    cpu.evalFrequency( time, this );
+                    cpu.computeTime( getFirstQueryInQueue(), this );
+                }
+                return true;
+            } else {
+                return false;
+            }
+        }
+        
+        @Override
         public double getIdleEnergy()
         {
             double idleEnergy = 0;
             if (idleTime > 0) {
-                CPUEnergyModel cpuModel = (CPUEnergyModel) cpu.getModel();
-                if (cpuModel.getType() != Type.PESOS || idleTimeInterval + idleTime < QUEUE_CHECK) {
+                if (idleTimeInterval + idleTime < QUEUE_CHECK) {
                     idleEnergy = cpu.energyModel.getIdleEnergy( frequency, idleTime );
                     idleTimeInterval += idleTime;
                     writeResult( frequency, idleEnergy );
@@ -596,13 +614,88 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             
             return idleEnergy;
         }
+    }
+    
+    protected static class PERFcore extends Core
+    {
+        public PERFcore( final EnergyCPU cpu, final long coreId, final long initFrequency )
+        {
+            super( cpu, coreId, initFrequency );
+        }
         
-    // ==================================================== //
-    // ======================= CONS ======================= //
-    // ==================================================== //
+        @Override
+        public void addQuery( final QueryInfo q )
+        {
+            q.setCoreId( coreId );
+            queryQueue.add( q );
+        }
+        
+        @Override
+        public boolean checkQueryCompletion( final Time time )
+        {
+            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+                addQueryOnSampling();
+                if (hasMoreQueries()) {
+                    cpu.computeTime( getFirstQueryInQueue(), this );
+                }
+                return true;
+            } else {
+                return false;
+            }
+        }
+        
+        @Override
+        public double getIdleEnergy()
+        {
+            double idleEnergy = 0;
+            if (idleTime > 0) {
+                idleEnergy = cpu.energyModel.getIdleEnergy( frequency, idleTime );
+                idleTimeInterval += idleTime;
+                writeResult( frequency, idleEnergy );
+                idleTime = 0;
+            }
+            return idleEnergy;
+        }
+    }
+    
+    protected static class CONScore extends Core
+    {
+        private double receivedQueries;
+        private double processedQueries;
+        private double cumulativeTime;
+        
+        public CONScore( final EnergyCPU cpu, final long coreId, final long initFrequency )
+        {
+            super( cpu, coreId, initFrequency );
+        }
+        
+        @Override
+        public void addQuery( final QueryInfo q )
+        {
+            q.setCoreId( coreId );
+            queryQueue.add( q );
+            receivedQueries++;
+        }
+        
+        @Override
+        public boolean checkQueryCompletion( final Time time )
+        {
+            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+                processedQueries++;
+                cumulativeTime += currentQuery.getCompletionTime()/1000;
+                
+                addQueryOnSampling();
+                if (hasMoreQueries()) {
+                    cpu.computeTime( getFirstQueryInQueue(), this );
+                }
+                return true;
+            } else {
+                return false;
+            }
+        }
         
         public double getArrivalRate() {
-            return ((double) receivedQueries) / CONSmodel.PERIOD; //in ms!
+            return receivedQueries / CONSmodel.PERIOD; //in ms!
         }
         
         public double getServiceRate()
@@ -615,7 +708,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
                     serviceRate = 0;
                 }
             } else {
-                serviceRate = ((double) processedQueries) / cumulativeTime; //in ms!
+                serviceRate = processedQueries / cumulativeTime; //in ms!
             }
             
             return serviceRate;
@@ -629,16 +722,17 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             cumulativeTime = 0;
         }
         
-    // ================================================ //
-    // ================================================ //
-    // ================================================ //
-        
-        public double getUtilization( final Time time )
+        @Override
+        public double getIdleEnergy()
         {
-            double size = queryQueue.size();
-            if (size == 0) return 0;
-            if (queryQueue.get( 0 ).getEndTime().compareTo( time ) <= 0) size--;
-            return size;
+            double idleEnergy = 0;
+            if (idleTime > 0) {
+                idleEnergy = cpu.energyModel.getIdleEnergy( frequency, idleTime );
+                idleTimeInterval += idleTime;
+                writeResult( frequency, idleEnergy );
+                idleTime = 0;
+            }
+            return idleEnergy;
         }
     }
 }

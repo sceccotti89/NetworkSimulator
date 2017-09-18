@@ -100,8 +100,8 @@ public class ResultPlotting
         //                                                             "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_95th_Percentile.txt" );
         //List<Pair<Double,Double>> perfPercentiles = getPercentiles( "Results/Perf_Tail_Latency.log",
         //                                                            "Results/Perf_Tail_Latency_95th_Percentile.txt" );
-        List<Pair<Double,Double>> consPercentiles = getPercentiles( "Results/CONS_CONSERVATIVE_Tail_Latency.log",
-                                                                    "Results/CONS_CONSERVATIVE_Latency_95th_Percentile.txt" );
+        List<Pair<Double,Double>> consPercentiles = getPercentiles( "Results/CONS_Tail_Latency.log",
+                                                                    "Results/CONS_Latency_95th_Percentile.txt" );
         
         Plotter plotter = new Plotter( "Tail Latency 95-th Percentile", 800, 600 );
         plotter.setAxisName( "Time (h)", "95th-tile response time (ms)" );
