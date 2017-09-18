@@ -65,7 +65,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     {
         PESOS( "PESOS" ),
         PERF( "PERF" ),
-        CONS( "CONS CONSERVATIVE" );
+        CONS( "CONS" );
         
         private Mode mode;
         private String name;
@@ -194,11 +194,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             if (delimeters) return "PESOS_" + getMode() + "_" + getTimeBudget().getTimeMicroseconds()/1000L + "ms";
             else return "PESOS (" + getMode() + ", t = " + getTimeBudget().getTimeMicroseconds()/1000L + "ms)";
         } else {
-            if (type == Type.CONS) {
-                return "CONS_" + getMode();
-            } else {
-                return type.toString();
-            }
+            return type.toString();
         }
     }
     
