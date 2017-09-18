@@ -1,5 +1,5 @@
 
-package simulator.graphics_swing.interfaces;
+package simulator.graphics.animator_swing.interfaces;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -12,7 +12,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.metal.MetalSliderUI;
 
-import simulator.graphics_swing.AnimationNetwork;
+import simulator.graphics.animator_swing.AnimationNetwork;
 
 public class TimeAnimation extends JPanel implements ChangeListener, ComponentListener
 {

@@ -3,7 +3,7 @@ package simulator.test;
  
  import java.io.IOException;
 
-import simulator.graphics_swing.AnimationNetwork;
+import simulator.graphics.animator_swing.AnimationNetwork;
  
  public class GraphicTest2
  {

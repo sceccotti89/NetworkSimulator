@@ -1,4 +1,5 @@
-package simulator.graphics_swing.elements;
+
+package simulator.graphics.animator_swing.elements;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -6,7 +7,7 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 
-import simulator.graphics_swing.interfaces.NetworkDisplay;
+import simulator.graphics.animator_swing.interfaces.NetworkDisplay;
 
 public class Link
 {

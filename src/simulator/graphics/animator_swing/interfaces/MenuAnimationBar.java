@@ -1,5 +1,5 @@
 
-package simulator.graphics_swing.interfaces;
+package simulator.graphics.animator_swing.interfaces;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

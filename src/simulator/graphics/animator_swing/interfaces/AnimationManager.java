@@ -2,7 +2,7 @@
  * @author Stefano Ceccotti
 */
 
-package simulator.graphics_swing.interfaces;
+package simulator.graphics.animator_swing.interfaces;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
