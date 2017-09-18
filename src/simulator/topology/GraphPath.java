@@ -15,11 +15,15 @@ import java.util.Queue;
 public class GraphPath
 {
     /* Map of {nodeID, [predecessors]} */
-    private static Map<Long,NetworkNode[]> shortestPaths = new HashMap<>( 1 << 7 );
+    private Map<Long,NetworkNode[]> shortestPaths = new HashMap<>( 1 << 7 );
     
-    public static void computeAllSourcesShortestPath( final NetworkTopology net,
-                                                      final Map<Long,NetworkNode> nodes,
-                                                      final Map<Long,List<NetworkLink>> links )
+    public GraphPath() {
+        // Empty constructor.
+    }
+    
+    public void computeAllSourcesShortestPath( final NetworkTopology net,
+                                               final Map<Long,NetworkNode> nodes,
+                                               final Map<Long,List<NetworkLink>> links )
     {
         for (NetworkNode node : nodes.values()) {
             NetworkNode[] pred = getShortestPath( node.getId(), net, nodes, links );
@@ -27,10 +31,10 @@ public class GraphPath
         }
     }
     
-    public static NetworkNode[] getShortestPath( final long sourceId,
-                                                 final NetworkTopology net,
-                                                 final Map<Long,NetworkNode> nodes,
-                                                 final Map<Long,List<NetworkLink>> links )
+    public NetworkNode[] getShortestPath( final long sourceId,
+                                          final NetworkTopology net,
+                                          final Map<Long,NetworkNode> nodes,
+                                          final Map<Long,List<NetworkLink>> links )
     {
         NetworkNode[] pred = shortestPaths.get( sourceId );
         if (pred != null) {
@@ -42,10 +46,10 @@ public class GraphPath
         }
     }
     
-    private static NetworkNode[] computeShortestPath( final long sourceId,
-                                                      final NetworkTopology net,
-                                                      final Map<Long,NetworkNode> nodes,
-                                                      final Map<Long,List<NetworkLink>> links )
+    private NetworkNode[] computeShortestPath( final long sourceId,
+                                               final NetworkTopology net,
+                                               final Map<Long,NetworkNode> nodes,
+                                               final Map<Long,List<NetworkLink>> links )
     {
         int size = nodes.size();
         Map<Long, List<QueueNode>> neighbours = new HashMap<>( size );

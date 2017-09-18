@@ -31,6 +31,8 @@ public class NetworkTopology
 {
 	private Map<Long,NetworkNode> nodes = new HashMap<>( 32 );
 	private Map<Long,List<NetworkLink>> links = new HashMap<>( 32 );
+	@SuppressWarnings("deprecation")
+    private GraphPath gp = new GraphPath();
 	private Map<Long,Agent> agents;
 	
 	private static long nextID = 0;
@@ -311,7 +313,7 @@ public class NetworkTopology
     */
     @SuppressWarnings("deprecation")
     public void computeShortestPaths() {
-        GraphPath.computeAllSourcesShortestPath( this, nodes, links );
+        gp.computeAllSourcesShortestPath( this, nodes, links );
     }
     
     /**
@@ -326,7 +328,7 @@ public class NetworkTopology
     public NetworkNode nextNode( final long sourceId, final long destId )
     {
     	@SuppressWarnings("deprecation")
-        NetworkNode[] predecessors = GraphPath.getShortestPath( sourceId, this, nodes, links );
+        NetworkNode[] predecessors = gp.getShortestPath( sourceId, this, nodes, links );
     	NetworkNode currNode = nodes.get( destId ), nextNode = null;
     	while (predecessors[currNode.getIndex()] != null) {
     		nextNode = predecessors[currNode.getIndex()];

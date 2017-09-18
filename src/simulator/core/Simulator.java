@@ -26,6 +26,7 @@ import simulator.topology.NetworkNode;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Time;
 import simulator.utils.Utils;
+import simulator.utils.resources.ResourceLoader;
 
 public class Simulator
 {
@@ -50,7 +51,7 @@ public class Simulator
     
     public Simulator( final List<NetworkTopology> networks )
     {
-        PropertyConfigurator.configure( "Settings/log4j.properties" );
+        PropertyConfigurator.configure( ResourceLoader.getResourceAsStream( "Settings/log4j.properties" ) );
         BasicConfigurator.configure();
         
         _networks = new HashMap<>();

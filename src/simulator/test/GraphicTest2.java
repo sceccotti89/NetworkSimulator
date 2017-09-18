@@ -17,7 +17,7 @@ import simulator.graphics.animator_swing.AnimationNetwork;
          an.setTimer( 90 );
          
          //an.loadNetwork( "Topology/Topology_distributed_multiNode.json" );
-         an.loadSimulation( "Topology/Topology_distributed_singleNode.json", "data/File/Packets.txt" );
+         an.loadSimulation( "Topology/Topology_distributed_singleCore.json", "data/File/Packets.txt" );
          //an.loadSimulation( "Topology/Topology_multicore.json", "Results/packets.txt" );
         
          //an.addNode( 100, 200, 3, Color.red );
