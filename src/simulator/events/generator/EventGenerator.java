@@ -16,7 +16,6 @@ import simulator.events.EventHandler.EventType;
 import simulator.events.Packet;
 import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
-import simulator.test.energy.EnergyTestMONO.ServerConsGenerator;
 import simulator.utils.Time;
 import simulator.utils.Utils;
 
@@ -296,10 +295,6 @@ public abstract class EventGenerator
                     events = sendRequest( event );
                 }
             }
-        }
-        
-        if (this instanceof ServerConsGenerator) {
-            System.out.println( "EVENTI GENERATI: " + events );
         }
         
         return events;
