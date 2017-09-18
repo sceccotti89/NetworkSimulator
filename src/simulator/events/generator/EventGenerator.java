@@ -227,7 +227,7 @@ public abstract class EventGenerator
     public abstract Time computeDepartureTime( final Event e );
     
     /**
-     * Generate a new list of events.</br>
+     * Generates a new list of events.</br>
      * NOTE: time and event can be {@code null}.
      * 
      * @param t    time of the simulator
@@ -306,7 +306,7 @@ public abstract class EventGenerator
     }
     
     /**
-     * Sends a new list of request messages.
+     * Generates a new list of request messages.
      * 
      * @param e    the current received event. It can be {@code null}.
      * 
@@ -355,7 +355,7 @@ public abstract class EventGenerator
     }
     
     /**
-     * Sends a new list of response messages.
+     * Generates a new list of response messages.
      * 
      * @param e     the current received event.
      * @param from  the source node

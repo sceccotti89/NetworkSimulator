@@ -18,7 +18,6 @@ import simulator.core.Model;
 import simulator.core.Task;
 import simulator.events.Event;
 import simulator.test.energy.CPUEnergyModel.CONSmodel;
-import simulator.test.energy.CPUEnergyModel.Mode;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.test.energy.CPUEnergyModel.Type;
 import simulator.test.energy.EnergyModel.ParameterEnergyModel;
@@ -29,17 +28,11 @@ public class EnergyCPU extends Device<Long,QueryInfo>
 {
     protected double _cores;
     protected int _contexts;
-    protected long currentCoreId = -1;// TODO se a cons non servono i core questo lo posso rimuovere
+    protected long currentCoreId = -1;
     protected long lastSelectedCore = -1;
     protected QueryInfo lastQuery;
     protected EnergyModel energyModel;
     protected Map<Long,Core> coresMap;
-    
-    // Parameters used by CONS.
-    private int queriesSentPerInterval = 0;
-    private int queriesReceivedPerInterval = 0;
-    private double freqArrivals = 0d;
-    private double freqDepartures = 0d;
     
     private static final long QUEUE_CHECK = TimeUnit.SECONDS.toMicros( 1 );
     
@@ -122,7 +115,6 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         Core core = coresMap.get( coreId );
         core.addQuery( q );
         
-        queriesReceivedPerInterval++;
         //System.out.println( "AGGIUNTA QUERY " + q.getId() + " TO CORE: " + coreId );
         // Set the time of the cores as (at least) the last query arrival time.
         setTime( q.getArrivalTime() );
@@ -201,16 +193,6 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     {
         //System.out.println( "Evaluating at: " + time );
         computeIdleEnergy( time );
-        
-        CPUEnergyModel model = (CPUEnergyModel) getModel();
-        if (model.getMode() == Mode.CONS_LOAD) {
-            freqArrivals   = queriesReceivedPerInterval;
-            freqDepartures = queriesSentPerInterval;
-            
-            queriesReceivedPerInterval = 0;
-            queriesSentPerInterval = 0;
-        }
-        
         evalCONSfrequency( time );
     }
     
@@ -222,36 +204,14 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     */
     private void evalCONSfrequency( final Time time )
     {
-        List<QueryInfo> queue;
         CPUEnergyModel model = (CPUEnergyModel) getModel();
-        if (model.getMode() == Mode.CONS_CONSERVATIVE) {
-            // TODO nella versione conservative mi sa che non serve la coda.
-            queue = new ArrayList<>( 0 );
-        } else {
-            // CONS LOAD requires all the queues in the server.
-            queue = new ArrayList<>( 512 );
-            for (Core c : coresMap.values()) {
-                queue.addAll( c.getQueue() );
-            }
-        }
-        
-        // These statement is necessary only if CONS model needs to access the single core informations
-        //currentCoreId = core.getId();
         
         // Evaluate the "best" frequency to use.
-        long frequency = model.eval( null, queue.toArray( new QueryInfo[0] ) );
         for (Core core : coresMap.values()) {
-            //TODO a chi devo settare la frequenza: al singolo core o a tutti quanti??
+            currentCoreId = core.getId();
+            long frequency = model.eval( null, (QueryInfo[]) null );
             core.setFrequency( time, frequency );
         }
-    }
-    
-    public double getFrequencyArrivals() {
-        return freqArrivals;
-    }
-    
-    public double getFrequencyDepartures() {
-        return freqDepartures;
     }
     
     /**
@@ -302,10 +262,6 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         query.setFrequency( frequency );
         
         Time computeTime = query.getTime( frequency );
-        CPUEnergyModel model = (CPUEnergyModel) getModel();
-        if (model.getType() == Type.CONS) {
-            computeTime.min( CONSmodel.interval );
-        }
         Time startTime   = core.getTime();
         Time endTime     = startTime.clone().addTime( computeTime );
         query.setTimeToComplete( startTime, endTime );
@@ -350,9 +306,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     public void checkQueryCompletion( final Time time )
     {
         for (Core core : coresMap.values()) {
-            if (core.checkQueryCompletion( time )) {
-                queriesSentPerInterval++;
-            }
+            core.checkQueryCompletion( time );
         }
     }
     
@@ -418,6 +372,11 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         private EnergyCPU cpu;
         private long idleTimeInterval = 0;
         private int queriesExecuted = 0;
+        
+        // Parameters used by CONS.
+        private double receivedQueries;
+        private double processedQueries;
+        private double cumulativeTime;
         
         // TODO implementare i context di ogni core della CPU (se proprio c'e' bisogno).
         
@@ -504,8 +463,8 @@ public class EnergyCPU extends Device<Long,QueryInfo>
                                                                    newFrequency,
                                                                    currentQuery.getTime( newFrequency ),
                                                                    false );
-                    CPUEnergyModel model = (CPUEnergyModel) cpu.getModel();
-                    currentQuery.updateTimeEnergy( model.getType() == Type.CONS, time, newFrequency, energy );
+                    
+                    currentQuery.updateTimeEnergy( time, newFrequency, energy );
                     writeResult( frequency, currentQuery.getElapsedEnergy() );
                     this.time = currentQuery.getEndTime();
                     updateEventTime( currentQuery, this.time );
@@ -536,6 +495,10 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         public boolean checkQueryCompletion( final Time time )
         {
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+                // CONS parameters.
+                processedQueries++;
+                cumulativeTime += currentQuery.getCompletionTime();
+                
                 addQueryOnSampling();
                 if (hasMoreQueries()) {
                     CPUEnergyModel model = (CPUEnergyModel) cpu.getModel();
@@ -577,9 +540,11 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             idleTime = 0;
         }
         
-        public void addQuery( final QueryInfo q ) {
+        public void addQuery( final QueryInfo q )
+        {
             q.setCoreId( coreId );
             queryQueue.add( q );
+            receivedQueries++;
         }
         
         public boolean isNextQuery( final QueryInfo query ) {
@@ -631,6 +596,42 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             
             return idleEnergy;
         }
+        
+    // ==================================================== //
+    // ======================= CONS ======================= //
+    // ==================================================== //
+        
+        public double getArrivalRate() {
+            return ((double) receivedQueries) / CONSmodel.PERIOD; //in ms!
+        }
+        
+        public double getServiceRate()
+        {
+            double serviceRate;
+            if (cumulativeTime == 0) {
+                if (processedQueries != 0) {
+                    serviceRate = Double.MAX_VALUE;
+                } else {
+                    serviceRate = 0;
+                }
+            } else {
+                serviceRate = ((double) processedQueries) / cumulativeTime; //in ms!
+            }
+            
+            return serviceRate;
+        }
+        
+        /** Method used by the cons model. */
+        public void reset()
+        {
+            receivedQueries = 0;
+            processedQueries = 0;
+            cumulativeTime = 0;
+        }
+        
+    // ================================================ //
+    // ================================================ //
+    // ================================================ //
         
         public double getUtilization( final Time time )
         {

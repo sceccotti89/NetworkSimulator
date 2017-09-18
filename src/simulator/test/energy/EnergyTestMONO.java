@@ -212,10 +212,10 @@ public class EnergyTestMONO
     
     public static class ServerConsGenerator extends CBRGenerator
     {
-        public static final Time interval = new Time( 2, TimeUnit.SECONDS );
+        public static final Time PERIOD = new Time( CONSmodel.PERIOD, TimeUnit.MILLISECONDS );
         
         public ServerConsGenerator( final Time duration, final Packet reqPacket, final Packet resPacket ) {
-            super( duration, interval, reqPacket, resPacket );
+            super( duration, PERIOD, reqPacket, resPacket );
         }
         
         @Override
@@ -318,8 +318,7 @@ public class EnergyTestMONO
         //Utils.VERBOSE = false;
         
         CPUEnergyModel model = null;
-        //model = loadModel( Type.CONS, Mode.CONS_CONSERVATIVE );
-        model = loadModel( Type.CONS, Mode.CONS_LOAD );
+        model = loadModel( Type.CONS, null );
         
         //model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );
@@ -520,16 +519,11 @@ public class EnergyTestMONO
         // SIMULATOR: 1145401.6003241960    992317.15024121070    940141.72685316140     862323.60355950530 (10%)     954884.43320349800
         // IDLE:       247582.8117109840     94926.56637327410     94926.56637327410      82491.18617838359            75247.89537980030    60560 Joule in meno
         
-        // TODO Il modello CONS e' ancora UNDER-CONSTRUCTION in attesa che Matteo mi faccia sapere.
+        // FIXME Il modello CONS e' ancora UNDER-CONSTRUCTION
         // CONS CONSERVATIVE
         // TARGET:     575000.0000000000
         // SIMULATOR: 1145353.8794958994    992319.83618124100    940147.59312404550     862325.93764213070
         // IDLE:       247589.8170507211     94929.25231439981     94929.25231439981      82493.52026112343
-        
-        // CONS LOAD
-        // TARGET:     575000.0000000000
-        // SIMULATOR: 1129104.5697142933    957595.52696902930    903262.12456165670     830807.23343050780
-        // IDLE:       245887.1772758127     94276.43741790277     94276.43741790277      82298.21354567209
     }
     
     public static void testSingleCore( final CPUEnergyModel model ) throws Exception
