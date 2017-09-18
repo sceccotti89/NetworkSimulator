@@ -465,8 +465,9 @@ public class EnergyTestMONO
         
         Agent server = new MulticoreAgent( 1, sink );
         if (model.getType() == Type.CONS) {
-            EventGenerator evtGen = new ServerConsGenerator( duration, new Packet( 1, SizeUnit.BYTE ),
-                                                                       new Packet( 1, SizeUnit.BYTE ) );
+            EventGenerator evtGen = new ServerConsGenerator( duration,
+                                                             new Packet( 1, SizeUnit.BYTE ),
+                                                             new Packet( 1, SizeUnit.BYTE ) );
             evtGen.connect( server );
             server.addEventGenerator( evtGen );
         }
