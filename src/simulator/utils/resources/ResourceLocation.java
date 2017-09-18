@@ -9,7 +9,7 @@ import java.net.URL;
 
 /**
  * A location from which resources can be loaded
- */
+*/
 public interface ResourceLocation
 {
     /**

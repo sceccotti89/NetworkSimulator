@@ -12,7 +12,7 @@ import java.net.URL;
 
 /**
  * A resource loading location that searches somewhere on the classpath.
- */
+*/
 public class FileSystemLocation implements ResourceLocation
 {
     /** The root of the file system to search. */
@@ -23,8 +23,7 @@ public class FileSystemLocation implements ResourceLocation
      * 
      * @param root The root of the file system to search
     */
-    public FileSystemLocation( final File root )
-    {
+    public FileSystemLocation( final File root ) {
         this.root = root;
     }
     
@@ -34,16 +33,16 @@ public class FileSystemLocation implements ResourceLocation
     public URL getResource( final String ref )
     {
         try {
-            File file = new File(root, ref);
+            File file = new File( root, ref );
             if (!file.exists()) {
-                file = new File(ref);
+                file = new File( ref );
             }
             if (!file.exists()) {
                 return null;
             }
             
             return file.toURI().toURL();
-        } catch (IOException e) {
+        } catch ( IOException e ) {
             return null;
         }
     }
@@ -54,12 +53,12 @@ public class FileSystemLocation implements ResourceLocation
     public InputStream getResourceAsStream( final String ref )
     {
         try {
-            File file = new File(root, ref);
+            File file = new File( root, ref );
             if (!file.exists()) {
-                file = new File(ref);
+                file = new File( ref );
             }
-            return new FileInputStream(file);
-        } catch (IOException e) {
+            return new FileInputStream( file );
+        } catch ( IOException e ) {
             return null;
         }
     }

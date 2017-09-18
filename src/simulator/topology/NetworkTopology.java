@@ -7,8 +7,9 @@ package simulator.topology;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,6 +25,7 @@ import simulator.events.EventScheduler;
 import simulator.events.impl.ExternalEvent;
 import simulator.exception.SimulatorException;
 import simulator.network.element.Switch;
+import simulator.utils.resources.ResourceLoader;
 
 public class NetworkTopology
 {
@@ -67,12 +69,14 @@ public class NetworkTopology
     */
     private void build( final String filename ) throws IOException
     {
-        BufferedReader br = new BufferedReader( new FileReader( filename ) );
+        InputStream stream = ResourceLoader.getResourceAsStream( filename );
+        BufferedReader br = new BufferedReader( new InputStreamReader( stream ) );
         StringBuilder content = new StringBuilder( 512 );
         
         String nextLine = null;
-        while((nextLine = br.readLine()) != null)
+        while ((nextLine = br.readLine()) != null) {
             content.append( nextLine.trim() );
+        }
         
         JSONObject settings = new JSONObject( content.toString() );
         build( settings );
@@ -96,7 +100,7 @@ public class NetworkTopology
         // Get the list of nodes.
         JSONArray nodes = settings.getJSONArray( "nodes" );
         int length = nodes.length();
-        for(int i = 0; i < length; i++) {
+        for (int i = 0; i < length; i++) {
             JSONObject node = nodes.getJSONObject( i );
             long id         = node.getLong( NetworkNode.ID );
             String name     = node.getString( NetworkNode.NAME );
@@ -115,7 +119,7 @@ public class NetworkTopology
         // Get the list of links.
         JSONArray links = settings.getJSONArray( "links" );
         length = links.length();
-        for(int i = 0; i < length; i++) {
+        for (int i = 0; i < length; i++) {
             JSONObject link = links.getJSONObject( i );
             long fromId     = link.getLong( NetworkLink.FROM_ID );
             long destId     = link.getLong( NetworkLink.DEST_ID );
