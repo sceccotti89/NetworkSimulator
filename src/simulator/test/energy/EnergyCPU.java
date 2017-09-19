@@ -65,9 +65,6 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         
         setFrequency( getMaxFrequency() );
         coresMap = new HashMap<>( (int) _cores );
-        for (long i = 0; i < _cores; i++) {
-            //TODO coresMap.put( i, new Core( this, i, getMaxFrequency() ) );
-        }
         
         //setEnergyModel( new QueryEnergyModel() );
         //setEnergyModel( new CoefficientEnergyModel() );
@@ -318,7 +315,8 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         }
     }
     
-    public void computeIdleEnergy( final Time time ) {
+    public void computeIdleEnergy( final Time time )
+    {
         //System.out.println( "INPUT_TIME: " + time );
         for (Core core : coresMap.values()) {
             core.setTime( time );
@@ -337,7 +335,8 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         return super.getResultSampled( sampler );
     }
     
-    public int getExecutedQueries() {
+    public int getExecutedQueries()
+    {
         int qe = 0;
         for (Core core : coresMap.values()) {
             qe += core.getExecutedQueries();
