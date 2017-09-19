@@ -337,10 +337,10 @@ public class EnergyTestMONO
         // PESOS loading model.
         CPUEnergyModel model;
         if (mode == Mode.PESOS_TIME_CONSERVATIVE) {
-            model = new PESOSmodel( timeBudget, mode, "Models/MONOLITHIC/PESOS/MaxScore/",
+            model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/",
                                     "predictions.txt", "time_energy.txt", "regressors.txt" );
         } else {
-            model = new PESOSmodel( timeBudget, mode, "Models/MONOLITHIC/PESOS/MaxScore/",
+            model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/",
                                     "predictions.txt", "time_energy.txt", "regressors_normse.txt" );
         }
         model.loadModel();
@@ -351,9 +351,9 @@ public class EnergyTestMONO
     {
         CPUEnergyModel model = null;
         switch ( type ) {
-            case PERF:  model = new PERFmodel( "Models/MONOLITHIC/PESOS/MaxScore/",
+            case PERF:  model = new PERFmodel( "Models/Monolithic/PESOS/MaxScore/",
                                                "predictions.txt", "time_energy.txt" ); break;
-            case CONS:  model = new CONSmodel( "Models/MONOLITHIC/PESOS/MaxScore/",
+            case CONS:  model = new CONSmodel( "Models/Monolithic/PESOS/MaxScore/",
                                                "predictions.txt", "time_energy.txt" ); break;
             default:    break;
         }

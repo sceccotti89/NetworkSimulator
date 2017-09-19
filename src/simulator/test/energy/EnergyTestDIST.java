@@ -421,7 +421,7 @@ public class EnergyTestDIST
         
         Simulator sim = new Simulator( net );
         
-        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/MONOLITHIC/PESOS/MaxScore/",
+        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/",
                                                                  "predictions.txt", "time_energy.txt", "regressors.txt" );
         model.loadModel();
         EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
@@ -460,7 +460,7 @@ public class EnergyTestDIST
                 cpus.add( cpu );
                 
                 // Add the PESOS model to the corresponding cpu.
-                final String directory = "Models/DISTRIBUTED/Node_" + (i+1) + "/PESOS/MaxScore/";
+                final String directory = "Models/Distributed/Node_" + (i+1) + "/PESOS/MaxScore/";
                 if (mode == Mode.PESOS_TIME_CONSERVATIVE) {
                     model = new PESOSmodel( timeBudget, mode, directory,
                                             "predictions.txt", "time_energy.txt", "regressors.txt" );
@@ -551,7 +551,7 @@ public class EnergyTestDIST
         
         Simulator sim = new Simulator( net );
         
-        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/MONOLITHIC/PESOS/MaxScore/",
+        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/",
                                                                  "predictions.txt", "time_energy.txt", "regressors.txt" );
         model.loadModel();
         EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
@@ -579,7 +579,7 @@ public class EnergyTestDIST
             cpus.add( cpu );
             
             // Add the PESOS model to the corresponding cpu.
-            final String directory = "Models/DISTRIBUTED/Node_" + (i+1) + "/PESOS/MaxScore/";
+            final String directory = "Models/Distributed/Node_" + (i+1) + "/PESOS/MaxScore/";
             if (mode == Mode.PESOS_TIME_CONSERVATIVE) {
                 model = new PESOSmodel( timeBudget, mode, directory,
                                         "predictions.txt", "time_energy.txt", "regressors.txt" );
