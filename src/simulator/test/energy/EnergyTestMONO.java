@@ -319,12 +319,12 @@ public class EnergyTestMONO
         
         CPUEnergyModel model = null;
         
-        //model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
+        model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );
         //model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
         
-        model = loadModel( Type.PERF );
+        //model = loadModel( Type.PERF );
         //model = loadModel( Type.CONS );
         
         testMultiCore( model );

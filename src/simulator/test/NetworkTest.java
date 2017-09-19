@@ -177,19 +177,19 @@ public class NetworkTest
     public static void main( final String argv[] ) throws Exception
     {
         Utils.VERBOSE = false;
-        //example0();
-    	//example1();
-    	//example2();
-    	//example3();
-        //example4();
-        //example5();
+    	example1();
+    	example2();
+    	example3();
+        example4();
+        example5();
         example6();
+        example7();
         //testNetworkAnimation();
     	
     	System.out.println( "End of simulation." );
     }
     
-    public static void example0() throws IOException, SimulatorException
+    public static void example1() throws IOException, SimulatorException
     {
         /*
                70Mb,5ms
@@ -197,7 +197,7 @@ public class NetworkTest
          10ms             5ms
         */
         
-        NetworkTopology net = new NetworkTopology( "Topology/Topology_ex0.json" );
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_ex1.json" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -217,7 +217,7 @@ public class NetworkTest
         sim.start( new Time( 1, TimeUnit.HOURS ) );
     }
     
-    public static void example1() throws IOException, SimulatorException
+    public static void example2() throws IOException, SimulatorException
     {
         /*
                70Mb,5ms         50Mb,3ms
@@ -225,7 +225,7 @@ public class NetworkTest
          10ms             7ms              5ms
         */
         
-    	NetworkTopology net = new NetworkTopology( "Topology/Topology_ex1.json" );
+    	NetworkTopology net = new NetworkTopology( "Topology/Topology_ex2.json" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -245,7 +245,7 @@ public class NetworkTest
         sim.start( new Time( 1, TimeUnit.HOURS ) );
     }
     
-    public static void example2() throws IOException, SimulatorException
+    public static void example3() throws IOException, SimulatorException
     {
         /*
                 70Mb,5ms         50Mb,3ms
@@ -254,7 +254,7 @@ public class NetworkTest
         */
         
     	// Use 2 active generators, in a bi-directional graph.
-    	NetworkTopology net = new NetworkTopology( "Topology/Topology_ex2.json" );
+    	NetworkTopology net = new NetworkTopology( "Topology/Topology_ex3.json" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -279,7 +279,7 @@ public class NetworkTest
         sim.start( new Time( 1, TimeUnit.HOURS ) );
     }
     
-    public static void example3() throws IOException, SimulatorException
+    public static void example4() throws IOException, SimulatorException
     {
         /*
         client1 \                              / server1
@@ -292,7 +292,7 @@ public class NetworkTest
          10ms									   5ms
         */
         
-    	NetworkTopology net = new NetworkTopology( "Topology/Topology_ex3.json" );
+    	NetworkTopology net = new NetworkTopology( "Topology/Topology_ex4.json" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -323,7 +323,7 @@ public class NetworkTest
         sim.start( new Time( 1, TimeUnit.HOURS ) );
     }
     
-    public static void example4() throws IOException, SimulatorException
+    public static void example5() throws IOException, SimulatorException
     {
         /*
                 70Mb,5ms          50Mb,3ms
@@ -331,7 +331,7 @@ public class NetworkTest
          10ms              7ms               5ms
         */
         
-        NetworkTopology net = new NetworkTopology( "Topology/Topology_ex4.json" );
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_ex5.json" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -354,7 +354,7 @@ public class NetworkTest
         sim.start( new Time( 1, TimeUnit.HOURS ) );
     }
     
-    public static void example5() throws IOException, SimulatorException
+    public static void example6() throws IOException, SimulatorException
     {
         /*
                 70Mb,5ms          50Mb,3ms
@@ -362,7 +362,7 @@ public class NetworkTest
          10ms              7ms               5ms
         */
         
-        NetworkTopology net = new NetworkTopology( "Topology/Topology_ex5.json" );
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_ex6.json" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -385,7 +385,7 @@ public class NetworkTest
         sim.start( new Time( 1, TimeUnit.HOURS ) );
     }
     
-    public static void example6() throws IOException, SimulatorException
+    public static void example7() throws IOException, SimulatorException
     {
         /*
         In case of multicast node it sends the request to all the possible destinations,
@@ -401,7 +401,7 @@ public class NetworkTest
                                        6ms
         */
         
-        NetworkTopology net = new NetworkTopology( "Topology/Topology_ex6.json" );
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_ex7.json" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );

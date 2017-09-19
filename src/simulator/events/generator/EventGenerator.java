@@ -35,8 +35,8 @@ public abstract class EventGenerator
     protected boolean _delayResponse = false;
     protected boolean _makeAnswer = true;
     protected Time    _departureTime;
-    protected long    _packetsInFly = 0;
-    protected long    _initMaxPacketsInFlight;
+    protected long    _packetsInFlight = 0;
+    private long      _initMaxPacketsInFlight;
     protected long    _maxPacketsInFlight = 0;
     
     // Used for multiple destinations.
@@ -52,8 +52,8 @@ public abstract class EventGenerator
     /**
      * Creates a new event generator.
      * 
-     * @param duration              time (in ms) of life of the generator.
-     * @param departureTime         time (in ms) to wait before sending a packet.
+     * @param duration              time of life of the generator.
+     * @param departureTime         time to wait before sending a packet.
      * @param maxPacketsInFlight    maximum number of packets in flight.
      * @param reqPacket             the request packet.
      * @param resPacket             the response packet.
@@ -158,6 +158,10 @@ public abstract class EventGenerator
         return _activeGenerator;
     }
     
+    private boolean canSend() {
+        return _packetsInFlight < _maxPacketsInFlight;
+    }
+    
     /**
      * Update the internal state of the generator.</br>
      * This method is called everytime a new event arrive.</br>
@@ -165,7 +169,7 @@ public abstract class EventGenerator
      * extended to properly update the event generator.</br>
     */
     public void update() {
-        _packetsInFly--;
+        _packetsInFlight--;
     }
     
     public Packet getRequestPacket() {
@@ -232,7 +236,7 @@ public abstract class EventGenerator
      * @param t    time of the simulator
      * @param e    input event
      * 
-     * @return the new events list, or {@code null} if the time is expired.
+     * @return the new event list, or {@code null} if the time is expired.
     */
     public final List<Event> generate( final Time t, final Event e )
     {
@@ -255,8 +259,7 @@ public abstract class EventGenerator
         if (_time.compareTo( _duration ) > 0)
             return null; // No more events from this generator.
         
-        if (_activeGenerator) {
-            update();
+        if (_activeGenerator && canSend()) {
             Event event = new ResponseEvent( _time, _agent, null, null );
             event.setArrivalTime( _time );
             return sendRequest( event );
@@ -310,12 +313,12 @@ public abstract class EventGenerator
     private List<Event> sendRequest( final Event e )
     {
         List<Event> events = null;
-        if (_packetsInFly < _maxPacketsInFlight) {
+        if (canSend()) {
             // Prepare the request packet.
             Packet reqPacket = makePacket( e );
             if (reqPacket != null) {
                 if (_optimizedMulticast) {
-                    _packetsInFly = (_packetsInFly + _destinations.size()) % Utils.INFINITE;
+                    _packetsInFlight = (_packetsInFlight + _destinations.size()) % Utils.INFINITE;
                     events = new ArrayList<>( _destinations.size() );
                     for (int i = 0; i < _destinations.size(); i++) {
                         Agent dest = _destinations.get( _nextDestIndex = selectDestination( e.getArrivalTime() ) );
@@ -324,11 +327,11 @@ public abstract class EventGenerator
                         events.add( request );
                     }
                 } else {
-                    _packetsInFly = (_packetsInFly + 1) % Utils.INFINITE;
+                    _packetsInFlight = (_packetsInFlight + 1) % Utils.INFINITE;
                     Agent dest = _destinations.get( _nextDestIndex = selectDestination( e.getArrivalTime() ) );
                     Event request = new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() );
                     events = Collections.singletonList( request );
-                    _continueToSend = _isMulticasted && _packetsInFly < _maxPacketsInFlight;
+                    _continueToSend = _isMulticasted && canSend();
                 }
             }
         }
