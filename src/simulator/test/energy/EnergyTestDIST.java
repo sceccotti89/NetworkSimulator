@@ -51,8 +51,7 @@ public class EnergyTestDIST
         
         
         
-        public ClientGenerator( final Packet reqPacket, final Packet resPacket )
-                throws IOException
+        public ClientGenerator( final Packet reqPacket, final Packet resPacket ) throws IOException
         {
             super( Time.INFINITE, Time.DYNAMIC, Utils.INFINITE,
                    reqPacket, resPacket, true, false, false );
@@ -634,7 +633,7 @@ public class EnergyTestDIST
         // IDLE:      
         
         // ENERGY CONSERVATIVE 500ms
-         // 
+        // 
         // SIMULATOR: 
         // IDLE:      
         
