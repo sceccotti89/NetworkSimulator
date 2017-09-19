@@ -50,11 +50,11 @@ public class EnergyTestMONO
         private boolean closed = false;
         
         private long lastDeparture = 0;
-        private CPUEnergyModel model;
+        private ClientModel model;
         
         
         
-        public ClientGenerator( final Packet reqPacket, final Packet resPacket, final CPUEnergyModel model )
+        public ClientGenerator( final Packet reqPacket, final Packet resPacket )
                 throws IOException
         {
             super( Time.INFINITE, Time.DYNAMIC, Utils.INFINITE,
@@ -62,7 +62,8 @@ public class EnergyTestMONO
             
             // Open the associated file.
             queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
-            this.model = model;
+            model = new ClientModel();
+            model.loadModel();
         }
         
         @Override
@@ -71,8 +72,7 @@ public class EnergyTestMONO
             Packet packet = _reqPacket.clone();
             while (true) {
                 long queryID = RANDOM.nextInt( NUM_QUERIES ) + 1;
-                QueryInfo query = model.getQuery( queryID );
-                if (query.isAvailable()) {
+                if (model.isQueryAvailable( queryID )) {
                     packet.addContent( Global.QUERY_ID, queryID );
                     //System.out.println( "New Query: " + queryID );
                     break;
@@ -361,7 +361,7 @@ public class EnergyTestMONO
         return model;
     }
     
-    public static void testNetworkAnimation( final CPUEnergyModel model ) throws Exception
+    public static void testNetworkAnimation( final CPUEnergyModel model, final ClientModel clientModel ) throws Exception
     {
         NetworkTopology net = new NetworkTopology( "Topology/Topology_animation_test.json" );
         net.setTrackingEvent( "./Results/packets.txt" );
@@ -370,8 +370,7 @@ public class EnergyTestMONO
         Simulator sim = new Simulator( net );
         
         EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.MEGABYTE ),
-                                                        new Packet( 20, SizeUnit.MEGABYTE ),
-                                                        model );
+                                                        new Packet( 20, SizeUnit.MEGABYTE ) );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
@@ -463,8 +462,7 @@ public class EnergyTestMONO
         Simulator sim = new Simulator( net );
         
         EventGenerator generator = new ClientGenerator( new Packet( 40, SizeUnit.BYTE ),
-                                                        new Packet( 40, SizeUnit.BYTE ),
-                                                        model );
+                                                        new Packet( 40, SizeUnit.BYTE ) );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
@@ -565,8 +563,7 @@ public class EnergyTestMONO
         Simulator sim = new Simulator( net );
         
         EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
-                                                        new Packet( 20, SizeUnit.BYTE ),
-                                                        model );
+                                                        new Packet( 20, SizeUnit.BYTE ) );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         

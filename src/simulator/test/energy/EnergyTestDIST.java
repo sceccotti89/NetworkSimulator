@@ -47,11 +47,11 @@ public class EnergyTestDIST
         private boolean closed = false;
         
         private long lastDeparture = 0;
-        private CPUEnergyModel model;
+        private ClientModel model;
         
         
         
-        public ClientGenerator( final Packet reqPacket, final Packet resPacket, final CPUEnergyModel model )
+        public ClientGenerator( final Packet reqPacket, final Packet resPacket )
                 throws IOException
         {
             super( Time.INFINITE, Time.DYNAMIC, Utils.INFINITE,
@@ -59,7 +59,8 @@ public class EnergyTestDIST
             
             // Open the associated file.
             queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
-            this.model = model;
+            model = new ClientModel();
+            model.loadModel();
         }
         
         @Override
@@ -68,8 +69,7 @@ public class EnergyTestDIST
             Packet packet = _reqPacket.clone();
             while (true) {
                 long queryID = RANDOM.nextInt( NUM_QUERIES ) + 1;
-                QueryInfo query = model.getQuery( queryID );
-                if (query.isAvailable()) {
+                if (model.isQueryAvailable( queryID )) {
                     packet.addContent( Global.QUERY_ID, queryID );
                     //System.out.println( "New Query: " + packet.getContent( Global.QUERY_ID ) );
                     break;
@@ -340,8 +340,7 @@ public class EnergyTestDIST
                                                                  "predictions.txt", "time_energy.txt", "regressors.txt" );
         model.loadModel();
         EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
-                                                        new Packet( 20, SizeUnit.BYTE ),
-                                                        model );
+                                                        new Packet( 20, SizeUnit.BYTE ) );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
@@ -425,8 +424,7 @@ public class EnergyTestDIST
                                                                  "predictions.txt", "time_energy.txt", "regressors.txt" );
         model.loadModel();
         EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
-                                                        new Packet( 20, SizeUnit.BYTE ),
-                                                        model );
+                                                        new Packet( 20, SizeUnit.BYTE ) );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
@@ -438,7 +436,7 @@ public class EnergyTestDIST
         client.getEventGenerator( 0 ).connect( switchAgent );
         
         List<EnergyCPU> cpus = new ArrayList<>( NODES * CPU_CORES );
-        Plotter plotter = new Plotter( "DISTR SINGLE_CORE - " + model.getModelType( false ), 800, 600 );
+        Plotter plotter = new Plotter( "DISTRIBUTED SINGLE_CORE - " + model.getModelType( false ), 800, 600 );
         
         String modelType = model.getModelType( true );
         
@@ -510,22 +508,22 @@ public class EnergyTestDIST
         
         
         // TIME CONSERVATIVE 500ms
-        // TARGET:    
+        // 
         // SIMULATOR: 
         // IDLE:      
         
         // TIME CONSERVATIVE 1000ms
-        // TARGET:    
+        // 
         // SIMULATOR: 
         // IDLE:      
         
         // ENERGY CONSERVATIVE 500ms
-        // TARGET:    
+        // 
         // SIMULATOR: 
         // IDLE:      
         
         // ENERGY CONSERVATIVE 1000ms
-        // TARGET:    
+        // 
         // SIMULATOR: 
         // IDLE:         
     }
@@ -555,8 +553,7 @@ public class EnergyTestDIST
                                                                  "predictions.txt", "time_energy.txt", "regressors.txt" );
         model.loadModel();
         EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
-                                                        new Packet( 20, SizeUnit.BYTE ),
-                                                        model );
+                                                        new Packet( 20, SizeUnit.BYTE ) );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
@@ -570,7 +567,7 @@ public class EnergyTestDIST
         String modelType = model.getModelType( true );
         
         List<EnergyCPU> cpus = new ArrayList<>( NODES );
-        Plotter plotter = new Plotter( "DISTR MULTI_CORE - " + model.getModelType( false ), 800, 600 );
+        Plotter plotter = new Plotter( "DISTRIBUTED MULTI_CORE - " + model.getModelType( false ), 800, 600 );
         for (int i = 0; i < NODES; i++) {
             EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/cpu_frequencies.txt" );
             cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
@@ -627,18 +624,22 @@ public class EnergyTestDIST
         
         
         // TIME CONSERVATIVE 500ms
+        // 
         // SIMULATOR: 
         // IDLE:      
         
         // TIME CONSERVATIVE 1000ms
+        // 
         // SIMULATOR: 
         // IDLE:      
         
         // ENERGY CONSERVATIVE 500ms
+         // 
         // SIMULATOR: 
         // IDLE:      
         
         // ENERGY CONSERVATIVE 1000ms
+        // 
         // SIMULATOR:  
         // IDLE:       
     }

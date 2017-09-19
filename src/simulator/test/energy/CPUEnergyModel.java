@@ -5,8 +5,9 @@
 package simulator.test.energy;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -18,6 +19,7 @@ import simulator.test.energy.EnergyCPU.CONScore;
 import simulator.utils.Pair;
 import simulator.utils.Time;
 import simulator.utils.Utils;
+import simulator.utils.resources.ResourceLoader;
 
 public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cloneable
 {
@@ -116,9 +118,9 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     /**
      * Creates a new energy model.
      * 
-     * @param type           type of model (see {@linkplain CPUEnergyModel.Type Type}).
-     * @param dir            directory used to load the fiels.
-     * @param files          list of files used to load the model.
+     * @param type     type of model (see {@linkplain CPUEnergyModel.Type Type}).
+     * @param dir      directory used to load the fiels.
+     * @param files    list of files used to load the model.
      * 
      * @throws IOException if a file doesn't exists or is malformed.
     */
@@ -182,15 +184,15 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     {
         queries = new HashMap<>( 1 << 14 );
         
-        FileReader fReader = new FileReader( _postings );
-        BufferedReader predictorReader = new BufferedReader( fReader );
+        InputStream fReader = ResourceLoader.getResourceAsStream( _postings );
+        BufferedReader predictorReader = new BufferedReader( new InputStreamReader( fReader ) );
         
         String line = null;
         while ((line = predictorReader.readLine()) != null) {
             String[] values = line.split( "\\t+" );
-            long queryID = Long.parseLong( values[0] );
-            int terms    = Integer.parseInt( values[1] );
-            int postings = Integer.parseInt( values[2] );
+            long queryID    = Long.parseLong( values[0] );
+            int terms       = Integer.parseInt( values[1] );
+            int postings    = Integer.parseInt( values[2] );
             QueryInfo query = new QueryInfo( queryID, terms, postings );
             queries.put( queryID, query );
         }
@@ -201,8 +203,8 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     
     private void loadRegressors() throws IOException
     {
-        FileReader fReader = new FileReader( _regressors );
-        BufferedReader regressorReader = new BufferedReader( fReader );
+        InputStream fReader = ResourceLoader.getResourceAsStream( _regressors );
+        BufferedReader regressorReader = new BufferedReader( new InputStreamReader( fReader ) );
         
         regressors = new HashMap<>();
         
@@ -218,8 +220,8 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     
     private void loadEffectiveTimeEnergy() throws IOException
     {
-        FileReader fReader = new FileReader( _effective_time_energy );
-        BufferedReader regressorReader = new BufferedReader( fReader );
+        InputStream fReader = ResourceLoader.getResourceAsStream( _effective_time_energy );
+        BufferedReader regressorReader = new BufferedReader( new InputStreamReader( fReader ) );
         
         String line;
         while ((line = regressorReader.readLine()) != null) {
@@ -231,7 +233,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             for (int i = 1; i < values.length; i+=2) {
                 double qTime  = Double.parseDouble( values[i] );
                 double energy = Double.parseDouble( values[i+1] );
-                long time = Utils.getTimeInMicroseconds( qTime, TimeUnit.MILLISECONDS );
+                long time     = Utils.getTimeInMicroseconds( qTime, TimeUnit.MILLISECONDS );
                 query.setTimeAndEnergy( FREQUENCIES[index++], time, energy );
             }
         }
@@ -252,203 +254,6 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     @Override
     protected CPUEnergyModel clone() {
         return cloneModel();
-    }
-    
-    public static class QueryInfo
-    {
-        private long _id;
-        private long coreId;
-        
-        private boolean isAvailable = false;
-        
-        private int _terms;
-        private int _postings;
-        
-        private Event event;
-        private Time arrivalTime;
-        
-        private Time startTime = Time.ZERO;
-        private Time currentTime;
-        private Time endTime;
-        private long _frequency;
-        private double previousEnergy, lastEnergy;
-        private double energyConsumption;
-        
-        private Map<Long,Pair<Time,Double>> timeAndEnergyPerFrequency;
-        
-        
-        public QueryInfo( final long id ) {
-            _id = id;
-        }
-        
-        public QueryInfo( final long id, final int terms, final int postings )
-        {
-            _id = id;
-            _terms = terms;
-            _postings = postings;
-            timeAndEnergyPerFrequency = new HashMap<>();
-        }
-        
-        public long getId() {
-            return _id;
-        }
-        
-        public int getTerms() {
-            return _terms;
-        }
-        
-        public int getPostings() {
-            return _postings;
-        }
-        
-        public long getFrequency() {
-            return _frequency;
-        }
-        
-        public void setFrequency( final long frequency ) {
-            _frequency = frequency;
-        }
-        
-        public void setEvent( final Event event ) {
-            this.event = event;
-        }
-        
-        public Event getEvent() {
-            return event;
-        }
-        
-        public void setArrivalTime( final Time t ) {
-            arrivalTime = t;
-        }
-        
-        public Time getArrivalTime() {
-            return arrivalTime.clone();
-        }
-        
-        public void setCoreId( final long coreId ) {
-            this.coreId = coreId;
-        }
-        
-        public long getCoreId() {
-            return coreId;
-        }
-        
-        public Time getStartTime() {
-            return startTime.clone();
-        }
-        
-        public Time getEndTime() {
-            return endTime.clone();
-        }
-        
-        public double getElapsedEnergy() {
-            return previousEnergy;
-        }
-        
-        public double getLastEnergy() {
-            return lastEnergy;
-        }
-        
-        public void setTimeToComplete( final Time startTime, final Time endTime )
-        {
-            this.startTime    = startTime;
-            this.currentTime  = startTime;
-            this.endTime      = endTime;
-        }
-        
-        public void setEnergyConsumption( final double energy ) {
-            previousEnergy = lastEnergy = energy;
-            energyConsumption = energy;
-        }
-        
-        public void updateTimeEnergy( final Time time, final long newFrequency, final double energy )
-        {
-            //System.out.println( "\nSTO AGGIORNANDO: " + time );
-            //System.out.println( "FROM: " + currentTime + ", OLD_TO: " + endTime + ", ENERGY: " + lastEnergy );
-            //System.out.println( "TOTAL NEW TIME: " + getTime( newFrequency ) );
-            double timeFrequency    = getTime( _frequency ).getTimeMicroseconds();
-            double completionTime   = endTime.getTimeMicroseconds() - currentTime.getTimeMicroseconds();
-            double oldCompletedTime = timeFrequency - completionTime;
-            double completedTime    = (time.getTimeMicroseconds() - currentTime.getTimeMicroseconds()) + oldCompletedTime;
-            
-            double percentageCompleted = completedTime / timeFrequency;
-            
-            long newCompletionTime = getTime( newFrequency ).getTimeMicroseconds();
-            long newQueryDuration  = newCompletionTime - (long) (newCompletionTime * percentageCompleted);
-            //System.out.println( "NEW QUERY DURATION: " + newCompletionTime + ", REAL: " + newQueryDuration );
-            Time newEndTime        = time.clone().addTime( newQueryDuration, TimeUnit.MICROSECONDS );
-            
-            double timeElapsed   = time.getTimeMicroseconds() - currentTime.getTimeMicroseconds();
-            double elapsedEnergy = (lastEnergy / newCompletionTime) * timeElapsed;
-            double energyUnitNew = energy / newCompletionTime;
-            double newEnergy     = energyUnitNew * newQueryDuration;
-            //System.out.println( "PERCENTAGE: " + percentageCompleted + ", ENERGY_ELAPSED: " + elapsedEnergy );
-            //System.out.println( "NEW_ENERGY: " + energy + ", NEW_ENERGY_REAL: " + newEnergy );
-            //EnergyCPU.writeResult( _frequency, elapsedEnergy, false );
-            
-            //System.out.println( "ARRIVAL: " + arrivalTime + ", OLD TIME: " + endTime + ", NEW: " + newEndTime );
-            
-            energyConsumption += elapsedEnergy + newEnergy - lastEnergy;
-            previousEnergy = elapsedEnergy;
-            lastEnergy     = newEnergy;
-            currentTime    = time;
-            endTime        = newEndTime;
-            
-            //System.out.println( "CURRENT: " + time + ", NEW_END_TIME: " + endTime );
-            //System.out.println( "TOTAL_ENERGY: " + energyConsumption );
-            
-            setFrequency( newFrequency );
-        }
-        
-        public double getEnergyConsumption() {
-            return energyConsumption;
-        }
-        
-        public double getCompletionTime() {
-            return endTime.clone().subTime( startTime ).getTimeMicroseconds();
-        }
-
-        public void setTimeAndEnergy( final long frequency,
-                                      final long time,
-                                      final double energy ) {
-            setTimeAndEnergy( frequency, new Time( time, TimeUnit.MICROSECONDS ), energy );
-        }
-        
-        public void setTimeAndEnergy( final long frequency,
-                                      final Time time,
-                                      final double energy )
-        {
-            timeAndEnergyPerFrequency.put( frequency, new Pair<>( time, energy ) );
-            isAvailable = true;
-        }
-        
-        public double getEnergy( long frequency ) {
-            return timeAndEnergyPerFrequency.get( frequency ).getSecond();
-        }
-        
-        public Time getTime( long frequency ) {
-            return timeAndEnergyPerFrequency.get( frequency ).getFirst();
-        }
-        
-        public boolean isAvailable() {
-            return isAvailable;
-        }
-        
-        @Override
-        public QueryInfo clone()
-        {
-            QueryInfo query = new QueryInfo( _id, _terms, _postings );
-            if (arrivalTime != null) query.arrivalTime = arrivalTime.clone();
-            query.timeAndEnergyPerFrequency = timeAndEnergyPerFrequency;
-            query.isAvailable = isAvailable;
-            return query;
-        }
-        
-        @Override
-        public String toString() {
-            return "{ID: " + getId() + ", Arrival: " + arrivalTime +
-                   ", Start: " + startTime + ", End: " + endTime + "}";
-        }
     }
     
     public static class PESOSmodel extends CPUEnergyModel
@@ -620,8 +425,8 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         /**
          * Creates a new PERF model.
          * 
-         * @param directory      directory used to load the files.
-         * @param files          list of files used to load the model.
+         * @param directory    directory used to load the files.
+         * @param files        list of files used to load the model.
          * 
          * @throws IOException if a file doesn't exists or is malformed.
         */
@@ -663,8 +468,8 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         /**
          * Creates a new CONS model.
          * 
-         * @param directory      directory used to load the files.
-         * @param files          list of files used to load the model.
+         * @param directory    directory used to load the files.
+         * @param files        list of files used to load the model.
          * 
          * @throws IOException if a file doesn't exists or is malformed.
         */
@@ -754,6 +559,203 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             try { model.loadModel(); }
             catch ( IOException e ) { e.printStackTrace(); }
             return model;
+        }
+    }
+
+    public static class QueryInfo
+    {
+        private long _id;
+        private long coreId;
+        
+        private boolean isAvailable = false;
+        
+        private int _terms;
+        private int _postings;
+        
+        private Event event;
+        private Time arrivalTime;
+        
+        private Time startTime = Time.ZERO;
+        private Time currentTime;
+        private Time endTime;
+        private long _frequency;
+        private double previousEnergy, lastEnergy;
+        private double energyConsumption;
+        
+        private Map<Long,Pair<Time,Double>> timeAndEnergyPerFrequency;
+        
+        
+        public QueryInfo( final long id ) {
+            _id = id;
+        }
+        
+        public QueryInfo( final long id, final int terms, final int postings )
+        {
+            _id = id;
+            _terms = terms;
+            _postings = postings;
+            timeAndEnergyPerFrequency = new HashMap<>();
+        }
+        
+        public long getId() {
+            return _id;
+        }
+        
+        public int getTerms() {
+            return _terms;
+        }
+        
+        public int getPostings() {
+            return _postings;
+        }
+        
+        public long getFrequency() {
+            return _frequency;
+        }
+        
+        public void setFrequency( final long frequency ) {
+            _frequency = frequency;
+        }
+        
+        public void setEvent( final Event event ) {
+            this.event = event;
+        }
+        
+        public Event getEvent() {
+            return event;
+        }
+        
+        public void setArrivalTime( final Time t ) {
+            arrivalTime = t;
+        }
+        
+        public Time getArrivalTime() {
+            return arrivalTime.clone();
+        }
+        
+        public void setCoreId( final long coreId ) {
+            this.coreId = coreId;
+        }
+        
+        public long getCoreId() {
+            return coreId;
+        }
+        
+        public Time getStartTime() {
+            return startTime.clone();
+        }
+        
+        public Time getEndTime() {
+            return endTime.clone();
+        }
+        
+        public double getElapsedEnergy() {
+            return previousEnergy;
+        }
+        
+        public double getLastEnergy() {
+            return lastEnergy;
+        }
+        
+        public void setTimeToComplete( final Time startTime, final Time endTime )
+        {
+            this.startTime    = startTime;
+            this.currentTime  = startTime;
+            this.endTime      = endTime;
+        }
+        
+        public void setEnergyConsumption( final double energy ) {
+            previousEnergy = lastEnergy = energy;
+            energyConsumption = energy;
+        }
+        
+        public void updateTimeEnergy( final Time time, final long newFrequency, final double energy )
+        {
+            //System.out.println( "\nSTO AGGIORNANDO: " + time );
+            //System.out.println( "FROM: " + currentTime + ", OLD_TO: " + endTime + ", ENERGY: " + lastEnergy );
+            //System.out.println( "TOTAL NEW TIME: " + getTime( newFrequency ) );
+            double timeFrequency    = getTime( _frequency ).getTimeMicroseconds();
+            double completionTime   = endTime.getTimeMicroseconds() - currentTime.getTimeMicroseconds();
+            double oldCompletedTime = timeFrequency - completionTime;
+            double completedTime    = (time.getTimeMicroseconds() - currentTime.getTimeMicroseconds()) + oldCompletedTime;
+            
+            double percentageCompleted = completedTime / timeFrequency;
+            
+            long newCompletionTime = getTime( newFrequency ).getTimeMicroseconds();
+            long newQueryDuration  = newCompletionTime - (long) (newCompletionTime * percentageCompleted);
+            //System.out.println( "NEW QUERY DURATION: " + newCompletionTime + ", REAL: " + newQueryDuration );
+            Time newEndTime        = time.clone().addTime( newQueryDuration, TimeUnit.MICROSECONDS );
+            
+            double timeElapsed   = time.getTimeMicroseconds() - currentTime.getTimeMicroseconds();
+            double elapsedEnergy = (lastEnergy / newCompletionTime) * timeElapsed;
+            double energyUnitNew = energy / newCompletionTime;
+            double newEnergy     = energyUnitNew * newQueryDuration;
+            //System.out.println( "PERCENTAGE: " + percentageCompleted + ", ENERGY_ELAPSED: " + elapsedEnergy );
+            //System.out.println( "NEW_ENERGY: " + energy + ", NEW_ENERGY_REAL: " + newEnergy );
+            //EnergyCPU.writeResult( _frequency, elapsedEnergy, false );
+            
+            //System.out.println( "ARRIVAL: " + arrivalTime + ", OLD TIME: " + endTime + ", NEW: " + newEndTime );
+            
+            energyConsumption += elapsedEnergy + newEnergy - lastEnergy;
+            previousEnergy = elapsedEnergy;
+            lastEnergy     = newEnergy;
+            currentTime    = time;
+            endTime        = newEndTime;
+            
+            //System.out.println( "CURRENT: " + time + ", NEW_END_TIME: " + endTime );
+            //System.out.println( "TOTAL_ENERGY: " + energyConsumption );
+            
+            setFrequency( newFrequency );
+        }
+        
+        public double getEnergyConsumption() {
+            return energyConsumption;
+        }
+        
+        public double getCompletionTime() {
+            return endTime.clone().subTime( startTime ).getTimeMicroseconds();
+        }
+    
+        public void setTimeAndEnergy( final long frequency,
+                                      final long time,
+                                      final double energy ) {
+            setTimeAndEnergy( frequency, new Time( time, TimeUnit.MICROSECONDS ), energy );
+        }
+        
+        public void setTimeAndEnergy( final long frequency,
+                                      final Time time,
+                                      final double energy )
+        {
+            timeAndEnergyPerFrequency.put( frequency, new Pair<>( time, energy ) );
+            isAvailable = true;
+        }
+        
+        public double getEnergy( long frequency ) {
+            return timeAndEnergyPerFrequency.get( frequency ).getSecond();
+        }
+        
+        public Time getTime( long frequency ) {
+            return timeAndEnergyPerFrequency.get( frequency ).getFirst();
+        }
+        
+        public boolean isAvailable() {
+            return isAvailable;
+        }
+        
+        @Override
+        public QueryInfo clone()
+        {
+            QueryInfo query = new QueryInfo( _id, _terms, _postings );
+            if (arrivalTime != null) query.arrivalTime = arrivalTime.clone();
+            query.timeAndEnergyPerFrequency = timeAndEnergyPerFrequency;
+            query.isAvailable = isAvailable;
+            return query;
+        }
+        
+        @Override
+        public String toString() {
+            return "{ID: " + getId() + ", Arrival: " + arrivalTime +
+                   ", Start: " + startTime + ", End: " + endTime + "}";
         }
     }
 }
