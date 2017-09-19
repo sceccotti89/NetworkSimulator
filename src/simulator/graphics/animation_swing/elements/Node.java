@@ -1,5 +1,5 @@
 
-package simulator.graphics.animator_swing.elements;
+package simulator.graphics.animation_swing.elements;
 
 import java.awt.Color;
 import java.awt.Graphics2D;

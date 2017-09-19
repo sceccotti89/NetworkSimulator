@@ -18,6 +18,7 @@ import simulator.events.Packet;
 import simulator.events.generator.EventGenerator;
 import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
+import simulator.graphics.AnimationNetwork;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
 import simulator.test.energy.CPUEnergyModel.Mode;
@@ -35,7 +36,7 @@ public class EnergyTestDIST
     
     private static class ClientGenerator extends EventGenerator
     {
-        private static final String QUERY_TRACE = "Models/PESOS/msn.day2.arrivals.txt";
+        private static final String QUERY_TRACE = "Models/msn.day2.arrivals.txt";
         //private static final String QUERY_TRACE = "Models/test_arrivals.txt";
         private static final int NUM_QUERIES = 10000;
         // Random generator seed.
@@ -324,6 +325,71 @@ public class EnergyTestDIST
     {
         testMultiCore( timeBudget, mode );
         //testSingleCore( timeBudget, mode );
+        //testNetworkAnimation( timeBudget, mode );
+    }
+    
+    public static void testNetworkAnimation( final long timeBudget, final Mode mode ) throws Exception
+    {
+        NetworkTopology net = new NetworkTopology( "Topology/Animation/Topology_distributed_multiCore.json" );
+        net.setTrackingEvent( "Results/distr_multi_core.txt" );
+        System.out.println( net.toString() );
+        
+        Simulator sim = new Simulator( net );
+        
+        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt" );
+        model.loadModel();
+        EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
+                                                        new Packet( 20, SizeUnit.BYTE ),
+                                                        model );
+        Agent client = new ClientAgent( 0, generator );
+        net.addAgent( client );
+        
+        EventGenerator anyGen = new MulticastGenerator( Time.INFINITE,
+                                                        new Packet( 20, SizeUnit.BYTE ),
+                                                        new Packet( 20, SizeUnit.BYTE ) );
+        Agent switchAgent = new SwitchAgent( 1, anyGen );
+        net.addAgent( switchAgent );
+        client.getEventGenerator( 0 ).connect( switchAgent );
+        
+        String modelType = model.getModelType( true );
+        
+        List<EnergyCPU> cpus = new ArrayList<>( NODES );
+        for (int i = 0; i < NODES; i++) {
+            EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/cpu_frequencies.txt" );
+            cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
+            cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
+            cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
+            cpus.add( cpu );
+            
+            // Add the PESOS model to the corresponding cpu.
+            if (mode == Mode.PESOS_TIME_CONSERVATIVE) {
+                model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt",
+                                        "predictions.txt", "time_energy.txt", "regressors.txt" );
+            } else {
+                model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt",
+                                        "predictions_node"+i+".txt", "time_energy_node"+i+".txt", "regressors_normse_node"+i+".txt" );
+            }
+            model.loadModel();
+            cpu.setModel( model );
+            
+            EventGenerator sink = new SinkGenerator( Time.INFINITE,
+                                                     new Packet( 20, SizeUnit.BYTE ),
+                                                     new Packet( 20, SizeUnit.BYTE ) );
+            Agent agentCore = new MulticoreAgent( 2 + i, sink );
+            agentCore.addDevice( cpu );
+            net.addAgent( agentCore );
+            
+            switchAgent.getEventGenerator( 0 ).connect( agentCore );
+        }
+        
+        sim.start( new Time( 24, TimeUnit.HOURS ) );
+        
+        // Show the animation.
+        AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );
+        an.loadSimulation( "Topology/Animation/Topology_distributed_multiCore.json", "./Results/distr_multi_core.txt" );
+        an.setTargetFrameRate( 90 );
+        an.setForceExit( false );
+        an.start();
     }
     
     public static void testSingleCore( final long timeBudget, final Mode mode ) throws IOException
@@ -441,22 +507,22 @@ public class EnergyTestDIST
         //             COEFFICIENTS          QUERY_FILE            NORMALIZED
         //
         // TIME CONSERVATIVE 500ms
-        // TARGET:    601670.0000000000
+        // TARGET:    
         // SIMULATOR: 
         // IDLE:      
         
         // TIME CONSERVATIVE 1000ms
-        // TARGET:    443730.0000000000
+        // TARGET:    
         // SIMULATOR: 
         // IDLE:      
         
         // ENERGY CONSERVATIVE 500ms
-        // TARGET:    531100.0000000000
+        // TARGET:    
         // SIMULATOR: 
         // IDLE:      
         
         // ENERGY CONSERVATIVE 1000ms
-        // TARGET:    412060.0000000000
+        // TARGET:    
         // SIMULATOR: 
         // IDLE:         
     }
@@ -477,6 +543,7 @@ public class EnergyTestDIST
         */
         
         NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_multiCore.json" );
+        net.setTrackingEvent( "Results/distr_multi_core.txt" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );

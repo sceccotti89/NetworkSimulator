@@ -16,11 +16,11 @@ import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 
-import simulator.graphics.animator_swing.AnimationNetwork;
-import simulator.graphics.animator_swing.elements.Info;
-import simulator.graphics.animator_swing.elements.Link;
-import simulator.graphics.animator_swing.elements.Node;
-import simulator.graphics.animator_swing.elements.Packet;
+import simulator.graphics.animation_swing.AnimationNetwork;
+import simulator.graphics.animation_swing.elements.Info;
+import simulator.graphics.animation_swing.elements.Link;
+import simulator.graphics.animation_swing.elements.Node;
+import simulator.graphics.animation_swing.elements.Packet;
 
 public class NetworkDisplay extends JPanel implements MouseMotionListener, ComponentListener
 {

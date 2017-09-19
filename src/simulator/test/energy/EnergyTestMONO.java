@@ -39,7 +39,7 @@ public class EnergyTestMONO
     
     private static class ClientGenerator extends EventGenerator
     {
-        private static final String QUERY_TRACE = "Models/PESOS/msn.day2.arrivals.txt";
+        private static final String QUERY_TRACE = "Models/msn.day2.arrivals.txt";
         //private static final String QUERY_TRACE = "Models/test_arrivals.txt";
         private static final int NUM_QUERIES = 10000;
         // Random generator seed.

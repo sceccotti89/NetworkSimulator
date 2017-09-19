@@ -12,7 +12,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.metal.MetalSliderUI;
 
-import simulator.graphics.animator_swing.AnimationNetwork;
+import simulator.graphics.animation_swing.AnimationNetwork;
 
 public class TimeAnimation extends JPanel implements ChangeListener, ComponentListener
 {

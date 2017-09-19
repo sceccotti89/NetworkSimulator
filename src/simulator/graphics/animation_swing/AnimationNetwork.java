@@ -1,5 +1,5 @@
 
-package simulator.graphics.animator_swing;
+package simulator.graphics.animation_swing;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -24,9 +24,9 @@ import javax.swing.WindowConstants;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import simulator.graphics.animator_swing.elements.Link;
-import simulator.graphics.animator_swing.elements.Node;
-import simulator.graphics.animator_swing.elements.Packet;
+import simulator.graphics.animation_swing.elements.Link;
+import simulator.graphics.animation_swing.elements.Node;
+import simulator.graphics.animation_swing.elements.Packet;
 import simulator.graphics.animator_swing.interfaces.AnimationManager;
 import simulator.graphics.animator_swing.interfaces.MenuAnimationBar;
 import simulator.graphics.animator_swing.interfaces.NetworkDisplay;

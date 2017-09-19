@@ -1,5 +1,5 @@
 
-package simulator.graphics.animator_swing.elements;
+package simulator.graphics.animation_swing.elements;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -48,8 +48,8 @@ public class Packet implements Comparable<Packet>
                    final Color color,
                    final long startTime, final long endTime,
                    final int width, final int height,
-                   final int type) {
-        
+                   final int type)
+    {
         this.source = source;
         this.dest = dest;
         this.link = link;
