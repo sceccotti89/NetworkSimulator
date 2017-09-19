@@ -7,14 +7,9 @@ package simulator.test.energy;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import simulator.core.Model;
 import simulator.events.Event;
@@ -34,9 +29,10 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     private static final String REGRESSORS_ENERGY_CONSERVATIVE = DIR + "regressors_normse.txt";
     private static final String EFFECTIVE_TIME_ENERGY          = DIR + "time_energy.txt";
     
+    protected String _directory;
     protected String _postings;
-    protected String _regressors;
     protected String _effective_time_energy;
+    protected String _regressors;
     
     // Time limit to complete a query.
     protected Time timeBudget;
@@ -47,7 +43,10 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     // Map used to store the predictors for the evaluation of the "best" frequency.
     protected Map<String,Double> regressors;
     
-    protected List<Long> _frequencies;
+    private static final Long[] FREQUENCIES = new Long[] { 3500000L, 3300000L, 3100000L, 2900000L,
+                                                           2700000L, 2500000L, 2300000L, 2100000L,
+                                                           2000000L, 1800000L, 1600000L, 1400000L,
+                                                           1200000L, 1000000L,  800000L };
     
     // Energy evaluation mode.
     protected Type type;
@@ -118,19 +117,14 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
      * Creates a new energy model.
      * 
      * @param type           type of model (see {@linkplain CPUEnergyModel.Type Type}).
-     * @param frequencies    file containing a list of available frequencies.
+     * @param dir            directory used to load the fiels.
+     * @param files          list of files used to load the model.
      * 
-     * @throws IOException if the file of frequencies doesn't exits or is malformed.
+     * @throws IOException if a file doesn't exists or is malformed.
     */
-    public CPUEnergyModel( final Type type, final String frequencies, final String... files ) throws IOException {
-        this( type, readFrequencies( frequencies ) );
-    }
-    
-    public CPUEnergyModel( final Type type, final List<Long> frequencies, final String... files )
+    public CPUEnergyModel( final Type type, final String dir, final String... files )
     {
         this.type = type;
-        // Order the frequencies from higher to lower.
-        Collections.sort( _frequencies = frequencies, Collections.reverseOrder() );
         
         if (files.length == 0) {
             _postings = POSTINGS_PREDICTORS;
@@ -143,39 +137,13 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                 }
             }
         } else {
-            _postings = DIR + files[0];
-            _effective_time_energy = DIR + files[1];
+            _directory = dir;
+            _postings = _directory + files[0];
+            _effective_time_energy = _directory + files[1];
             if (files.length == 3) {
-                _regressors = DIR + files[2];
+                _regressors = _directory + files[2];
             }
         }
-    }
-    
-    /**
-     * Reads the list of available frequencies for this device.
-     * 
-     * @param frequencies_file    file where the frequencies are taken
-     * 
-     * @return the list of available frequencies
-    */
-    private static List<Long> readFrequencies( final String frequencies_file ) throws IOException
-    {
-        final Pattern p = Pattern.compile( "\\w+" );
-        
-        BufferedReader frequencyReader = new BufferedReader( new FileReader( frequencies_file ) );
-        List<Long> frequencies = new ArrayList<>();
-        
-        String frequencyLine;
-        while ((frequencyLine = frequencyReader.readLine()) != null) {
-            Matcher m = p.matcher( frequencyLine );
-            while (m.find()) {
-                frequencies.add( Long.parseLong( m.group() ) );
-            }
-        }
-        
-        frequencyReader.close();
-        
-        return frequencies;
     }
     
     @Override
@@ -264,7 +232,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                 double qTime  = Double.parseDouble( values[i] );
                 double energy = Double.parseDouble( values[i+1] );
                 long time = Utils.getTimeInMicroseconds( qTime, TimeUnit.MILLISECONDS );
-                query.setTimeAndEnergy( _frequencies.get( index++ ), time, energy );
+                query.setTimeAndEnergy( FREQUENCIES[index++], time, energy );
             }
         }
         
@@ -490,20 +458,17 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
          * 
          * @param time_budget    time limit to complete a query (in ms).
          * @param mode           PESOS modality (see {@linkplain CPUEnergyModel.Mode Mode}).
-         * @param frequencies    file containing a list of available frequencies.
+         * @param directory      directory used to load the files.
+         * @param files          list of file used to load the model.
          * 
-         * @throws IOException if the file of frequencies doesn't exists or is malformed.
+         * @throws IOException if a file doesn't exists or is malformed.
         */
-        public PESOSmodel( final long time_budget, final Mode mode, final String frequencies, final String... files ) throws IOException {
-            this( time_budget, mode, readFrequencies( frequencies ), files );
+        public PESOSmodel( final long time_budget, final Mode mode, final String directory, final String... files ) {
+            this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory, files );
         }
         
-        public PESOSmodel( final long time_budget, final Mode mode, final List<Long> frequencies, final String... files ) {
-            this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, frequencies, files );
-        }
-        
-        public PESOSmodel( final Time time_budget, final Mode mode, final List<Long> frequencies, final String... files ) {
-            super( getType( mode ), frequencies, files );
+        public PESOSmodel( final Time time_budget, final Mode mode, final String directory, final String... files ) {
+            super( getType( mode ), directory, files );
             timeBudget = time_budget;
         }
         
@@ -539,7 +504,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             if (currentDeadline.compareTo( now ) <= 0) {
                 // Time to complete the query is already over.
                 // We can only set the maximum frequency.
-                return _frequencies.get( 0 );
+                return _device.getMaxFrequency();
             }
             
             int ppcRMSE = regressors.get( "class." + currentQuery.getTerms() + ".rmse" ).intValue();
@@ -553,7 +518,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                 System.out.println( "CURRENT_DEADLINE: " + currentDeadline );
             }
             if (currentDeadline.compareTo( now ) <= 0) {
-                return _frequencies.get( 0 );
+                return _device.getMaxFrequency();
             } else {
                 maxDensity = volume / (currentDeadline.subTime( now )).getTimeMicroseconds();
             }
@@ -567,7 +532,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                 Time qArrivalTime = q.getArrivalTime();
                 Time deadline = qArrivalTime.addTime( timeBudget.clone().subTime( lateness, TimeUnit.MICROSECONDS ) );
                 if (deadline.compareTo( now ) <= 0) {
-                    return _frequencies.get( 0 );
+                    return _device.getMaxFrequency();
                 } else {
                     double density = volume / (deadline.subTime( now ).getTimeMicroseconds());
                     if (density > maxDensity) {
@@ -614,7 +579,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         
         private long predictServiceTimeAtMaxFrequency( final int terms, final long postings )
         {
-            String base  = _frequencies.get( 0 ) + "." + terms;
+            String base  = _device.getMaxFrequency() + "." + terms;
             double alpha = regressors.get( base + ".alpha" );
             double beta  = regressors.get( base + ".beta" );
             double rmse  = regressors.get( base + ".rmse" );
@@ -623,8 +588,8 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         
         private long identifyTargetFrequency( final int terms, final long postings, final double targetTime )
         {
-            for (int i = _frequencies.size() - 1; i > 0; i--) {
-                final String base  = _frequencies.get( i ) + "." + terms;
+            for (Long frequency : _device.getFrequencies()) {
+                final String base  = frequency + "." + terms;
                 double alpha = regressors.get( base + ".alpha" );
                 double beta  = regressors.get( base + ".beta" );
                 double rmse  = regressors.get( base + ".rmse" );
@@ -633,22 +598,19 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                 long extimatedTime = Utils.getTimeInMicroseconds( alpha * postings + beta + rmse, TimeUnit.MILLISECONDS );
                 //System.out.println( "EXTIMATED TIME: " + extimatedTime + "ns @ " + _frequencies.get( i ) );
                 if (extimatedTime <= targetTime) {
-                    return _frequencies.get( i );
+                    return frequency;
                 }
             }
             
-            return _frequencies.get( 0 ); 
+            return _device.getMaxFrequency(); 
         }
 
         @Override
         public CPUEnergyModel cloneModel()
         {
-            Collections.sort( _frequencies, Collections.reverseOrder() );
-            List<Long> freqs = new ArrayList<>( _frequencies );
-            PESOSmodel model = new PESOSmodel( timeBudget.clone(), getMode(), freqs );
+            PESOSmodel model = new PESOSmodel( timeBudget.clone(), getMode(), _directory, _postings, _effective_time_energy, _regressors );
             try { model.loadModel(); }
             catch ( IOException e ) { e.printStackTrace(); }
-            Collections.sort( _frequencies );
             return model;
         }
     }
@@ -658,16 +620,13 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         /**
          * Creates a new PERF model.
          * 
-         * @param frequencies    file containing a list of available frequencies.
+         * @param directory      directory used to load the files.
+         * @param files          list of files used to load the model.
          * 
-         * @throws IOException if the file of frequencies doesn't exists or is malformed.
+         * @throws IOException if a file doesn't exists or is malformed.
         */
-        public PERFmodel( final String frequencies ) throws IOException {
-            this( readFrequencies( frequencies ) );
-        }
-        
-        public PERFmodel( final List<Long> frequencies ) {
-            super( Type.PERF, frequencies );
+        public PERFmodel( final String directory, final String... files ) {
+            super( Type.PERF, directory, files );
         }
         
         /**
@@ -687,12 +646,9 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         @Override
         public CPUEnergyModel cloneModel()
         {
-            Collections.sort( _frequencies, Collections.reverseOrder() );
-            List<Long> freqs = new ArrayList<>( _frequencies );
-            PERFmodel model = new PERFmodel( freqs );
+            PERFmodel model = new PERFmodel( _directory, _postings, _effective_time_energy );
             try { model.loadModel(); }
             catch ( IOException e ) { e.printStackTrace(); }
-            Collections.sort( _frequencies );
             return model;
         }
     }
@@ -702,21 +658,18 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         private static final double TARGET = 0.70;
         private static final double UP_THRESHOLD = 0.80;
         private static final double DOWN_THRESHOLD = 0.20;
-        public static final long PERIOD = 2000;
+        public static final long PERIOD = 2000; // in ms.
         
         /**
          * Creates a new CONS model.
          * 
-         * @param frequencies    file containing a list of available frequencies.
+         * @param directory      directory used to load the files.
+         * @param files          list of files used to load the model.
          * 
-         * @throws IOException if the file of frequencies doesn't exists or is malformed.
+         * @throws IOException if a file doesn't exists or is malformed.
         */
-        public CONSmodel( final String frequencies ) throws IOException {
-            this( readFrequencies( frequencies ) );
-        }
-        
-        public CONSmodel( final List<Long> frequencies ) {
-            super( Type.CONS, frequencies );
+        public CONSmodel( final String directory, final String... files ) {
+            super( Type.CONS, directory, files );
         }
         
         /**
@@ -739,10 +692,8 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         private long controlCPUfrequency( final CONScore core )
         {
             double utilization = getUtilization( core );
-            //System.out.println( "#DVFS-CONSERVATIVE: Utilization is " + utilization );
             if (utilization >= UP_THRESHOLD || utilization <= DOWN_THRESHOLD) {
                 long targetFrequency = computeTargetFrequency( core );
-                //System.out.println( "#DVFS-CONSERVATIVE: Target frequency is " + targetFrequency );
                 core.reset();
                 return targetFrequency;
             }
@@ -792,7 +743,6 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                     return _device.getMaxFrequency();
                 }
             } else {
-                //System.out.println( "SERVICE: " + serviceRate + ", TARGET: " + targetServiceRate + ", RATIO: " + (targetServiceRate / serviceRate) );
                 return getFrequencyGEQ( (long) Math.ceil( core.getFrequency() * (targetServiceRate / serviceRate) ) );
             }
         }
@@ -800,12 +750,9 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         @Override
         public CPUEnergyModel cloneModel()
         {
-            Collections.sort( _frequencies, Collections.reverseOrder() );
-            List<Long> freqs = new ArrayList<>( _frequencies );
-            CONSmodel model = new CONSmodel( freqs );
+            CONSmodel model = new CONSmodel( _directory, _postings, _effective_time_energy );
             try { model.loadModel(); }
             catch ( IOException e ) { e.printStackTrace(); }
-            Collections.sort( _frequencies );
             return model;
         }
     }

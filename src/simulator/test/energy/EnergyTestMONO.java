@@ -324,8 +324,8 @@ public class EnergyTestMONO
         //model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
         
-        //model = loadModel( Type.PERF );
-        model = loadModel( Type.CONS );
+        model = loadModel( Type.PERF );
+        //model = loadModel( Type.CONS );
         
         testMultiCore( model );
         //testSingleCore( model );
@@ -335,7 +335,14 @@ public class EnergyTestMONO
     protected static CPUEnergyModel loadModel( final Type type, final Mode mode, final long timeBudget ) throws Exception
     {
         // PESOS loading model.
-        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt" );
+        CPUEnergyModel model;
+        if (mode == Mode.PESOS_TIME_CONSERVATIVE) {
+            model = new PESOSmodel( timeBudget, mode, "Models/MONOLITHIC/PESOS/MaxScore/",
+                                    "predictions.txt", "time_energy.txt", "regressors.txt" );
+        } else {
+            model = new PESOSmodel( timeBudget, mode, "Models/MONOLITHIC/PESOS/MaxScore/",
+                                    "predictions.txt", "time_energy.txt", "regressors_normse.txt" );
+        }
         model.loadModel();
         return model;
     }
@@ -344,8 +351,10 @@ public class EnergyTestMONO
     {
         CPUEnergyModel model = null;
         switch ( type ) {
-            case PERF:  model = new PERFmodel( "Models/cpu_frequencies.txt" ); break;
-            case CONS:  model = new CONSmodel( "Models/cpu_frequencies.txt" ); break;
+            case PERF:  model = new PERFmodel( "Models/MONOLITHIC/PESOS/MaxScore/",
+                                               "predictions.txt", "time_energy.txt" ); break;
+            case CONS:  model = new CONSmodel( "Models/MONOLITHIC/PESOS/MaxScore/",
+                                               "predictions.txt", "time_energy.txt" ); break;
             default:    break;
         }
         model.loadModel();
@@ -476,7 +485,7 @@ public class EnergyTestMONO
         
         client.getEventGenerator( 0 ).connect( server );
         
-        Plotter plotter = new Plotter( "MONO MULTI_CORE - " + model.getModelType( false ), 800, 600 );
+        Plotter plotter = new Plotter( "MONOLITHIC MULTI_CORE - " + model.getModelType( false ), 800, 600 );
         plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), null, model.getModelType( false ) );
         plotter.setAxisName( "Time (h)", "Energy (J)" );
         plotter.setTicks( Axis.Y, 10 );
@@ -565,7 +574,7 @@ public class EnergyTestMONO
         String modelType = model.getModelType( true );
         
         List<EnergyCPU> cpus = new ArrayList<>( CPU_CORES );
-        Plotter plotter = new Plotter( "MONO SINGLE_CORE - " + model.getModelType( false ), 800, 600 );
+        Plotter plotter = new Plotter( "MONOLITHIC SINGLE_CORE - " + model.getModelType( false ), 800, 600 );
         for (int i = 0; i < CPU_CORES; i++) {
             EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/cpu_frequencies.txt" );
             cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );

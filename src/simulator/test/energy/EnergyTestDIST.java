@@ -336,7 +336,8 @@ public class EnergyTestDIST
         
         Simulator sim = new Simulator( net );
         
-        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt" );
+        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/PESOS/MONOLITHIC/MaxScore/",
+                                                                 "predictions.txt", "time_energy.txt", "regressors.txt" );
         model.loadModel();
         EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
                                                         new Packet( 20, SizeUnit.BYTE ),
@@ -362,12 +363,13 @@ public class EnergyTestDIST
             cpus.add( cpu );
             
             // Add the PESOS model to the corresponding cpu.
+            final String directory = "Models/DISTRIBUTED/Node_" + (i+1) + "/PESOS/MaxScore/";
             if (mode == Mode.PESOS_TIME_CONSERVATIVE) {
-                model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt",
+                model = new PESOSmodel( timeBudget, mode, directory,
                                         "predictions.txt", "time_energy.txt", "regressors.txt" );
             } else {
-                model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt",
-                                        "predictions_node"+i+".txt", "time_energy_node"+i+".txt", "regressors_normse_node"+i+".txt" );
+                model = new PESOSmodel( timeBudget, mode, directory,
+                                        "predictions.txt", "time_energy.txt", "regressors_normse.txt" );
             }
             model.loadModel();
             cpu.setModel( model );
@@ -419,7 +421,8 @@ public class EnergyTestDIST
         
         Simulator sim = new Simulator( net );
         
-        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt" );
+        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/MONOLITHIC/PESOS/MaxScore/",
+                                                                 "predictions.txt", "time_energy.txt", "regressors.txt" );
         model.loadModel();
         EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
                                                         new Packet( 20, SizeUnit.BYTE ),
@@ -457,12 +460,13 @@ public class EnergyTestDIST
                 cpus.add( cpu );
                 
                 // Add the PESOS model to the corresponding cpu.
+                final String directory = "Models/DISTRIBUTED/Node_" + (i+1) + "/PESOS/MaxScore/";
                 if (mode == Mode.PESOS_TIME_CONSERVATIVE) {
-                    model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt",
-                                            "predictions_node"+i+".txt", "time_energy_node"+i+".txt", "regressors_node"+i+".txt" );
+                    model = new PESOSmodel( timeBudget, mode, directory,
+                                            "predictions.txt", "time_energy.txt", "regressors.txt" );
                 } else {
-                    model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt",
-                                            "predictions_node"+i+".txt", "time_energy_node"+i+".txt", "regressors_normse_node"+i+".txt" );
+                    model = new PESOSmodel( timeBudget, mode, directory,
+                                            "predictions.txt", "time_energy.txt", "regressors_normse.txt" );
                 }
                 model.loadModel();
                 cpu.setModel( model );
@@ -504,8 +508,7 @@ public class EnergyTestDIST
         Utils.LOGGER.info( model.getModelType( false ) + " - Total idle energy: " + totalIdleEnergy + "J" );
         System.out.println( "QUERIES: " + totalQueries );
         
-        //             COEFFICIENTS          QUERY_FILE            NORMALIZED
-        //
+        
         // TIME CONSERVATIVE 500ms
         // TARGET:    
         // SIMULATOR: 
@@ -548,7 +551,8 @@ public class EnergyTestDIST
         
         Simulator sim = new Simulator( net );
         
-        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt" );
+        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/MONOLITHIC/PESOS/MaxScore/",
+                                                                 "predictions.txt", "time_energy.txt", "regressors.txt" );
         model.loadModel();
         EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
                                                         new Packet( 20, SizeUnit.BYTE ),
@@ -575,12 +579,13 @@ public class EnergyTestDIST
             cpus.add( cpu );
             
             // Add the PESOS model to the corresponding cpu.
+            final String directory = "Models/DISTRIBUTED/Node_" + (i+1) + "/PESOS/MaxScore/";
             if (mode == Mode.PESOS_TIME_CONSERVATIVE) {
-                model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt",
-                                        "predictions_node"+i+".txt", "time_energy_node"+i+".txt", "regressors_node"+i+".txt" );
+                model = new PESOSmodel( timeBudget, mode, directory,
+                                        "predictions.txt", "time_energy.txt", "regressors.txt" );
             } else {
-                model = new PESOSmodel( timeBudget, mode, "Models/cpu_frequencies.txt",
-                                        "predictions_node"+i+".txt", "time_energy_node"+i+".txt", "regressors_normse_node"+i+".txt" );
+                model = new PESOSmodel( timeBudget, mode, directory,
+                                        "predictions.txt", "time_energy.txt", "regressors_normse.txt" );
             }
             model.loadModel();
             cpu.setModel( model );
@@ -620,8 +625,7 @@ public class EnergyTestDIST
         Utils.LOGGER.info( model.getModelType( false ) + " - Total idle energy: " + totalIdleEnergy + "J" );
         System.out.println( "QUERIES: " + totalQueries );
         
-        //      COEFFICIENTS          QUERY_FILE            NORMALIZED
-        //
+        
         // TIME CONSERVATIVE 500ms
         // SIMULATOR: 
         // IDLE:      
