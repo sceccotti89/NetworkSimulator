@@ -328,7 +328,7 @@ public class EnergyTestMONO
         
         testMultiCore( model );
         //testSingleCore( model );
-        //testNetworkAnimation( model );
+        //testAnimationNetwork( model );
     }
     
     protected static CPUEnergyModel loadModel( final Type type, final Mode mode, final long timeBudget ) throws Exception
@@ -360,7 +360,7 @@ public class EnergyTestMONO
         return model;
     }
     
-    public static void testNetworkAnimation( final CPUEnergyModel model, final ClientModel clientModel ) throws Exception
+    public static void testAnimationNetwork( final CPUEnergyModel model, final ClientModel clientModel ) throws Exception
     {
         NetworkTopology net = new NetworkTopology( "Topology/Topology_animation_test.json" );
         net.setTrackingEvent( "./Results/packets.txt" );

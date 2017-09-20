@@ -324,10 +324,10 @@ public class EnergyTestDIST
     {
         testMultiCore( timeBudget, mode );
         //testSingleCore( timeBudget, mode );
-        //testNetworkAnimation( timeBudget, mode );
+        //testAnimationNetwork( timeBudget, mode );
     }
     
-    public static void testNetworkAnimation( final long timeBudget, final Mode mode ) throws Exception
+    public static void testAnimationNetwork( final long timeBudget, final Mode mode ) throws Exception
     {
         NetworkTopology net = new NetworkTopology( "Topology/Animation/Topology_distributed_multiCore.json" );
         net.setTrackingEvent( "Results/distr_multi_core.txt" );
@@ -335,9 +335,6 @@ public class EnergyTestDIST
         
         Simulator sim = new Simulator( net );
         
-        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/PESOS/MONOLITHIC/MaxScore/",
-                                                                 "predictions.txt", "time_energy.txt", "regressors.txt" );
-        model.loadModel();
         EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
                                                         new Packet( 20, SizeUnit.BYTE ) );
         Agent client = new ClientAgent( 0, generator );
@@ -350,6 +347,7 @@ public class EnergyTestDIST
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
         
+        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/PESOS/MONOLITHIC/MaxScore/" );
         String modelType = model.getModelType( true );
         
         List<EnergyCPU> cpus = new ArrayList<>( NODES );
@@ -441,9 +439,7 @@ public class EnergyTestDIST
         
         // Add the CPU nodes.
         for (int i = 0; i < NODES; i++) {
-            anyGen = new AnycastGenerator( Time.INFINITE,
-                                           new Packet( 20, SizeUnit.BYTE ),
-                                           new Packet( 20, SizeUnit.BYTE ) );
+            anyGen = new AnycastGenerator( Time.INFINITE, new Packet( 20, SizeUnit.BYTE ), new Packet( 20, SizeUnit.BYTE ) );
             Agent switchNode = new SwitchAgent( i * CPU_CORES + 2 + i, anyGen );
             net.addAgent( switchNode );
             switchAgent.getEventGenerator( 0 ).connect( switchNode );
