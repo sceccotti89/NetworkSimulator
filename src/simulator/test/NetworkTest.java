@@ -1,9 +1,6 @@
 
 package simulator.test;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -89,7 +86,7 @@ public class NetworkTest
         }
         
         @Override
-        public Packet makePacket( final Event e )
+        public Packet makePacket( final Event e, final long destination )
         {
             if (e instanceof RequestEvent) {
                 return new Packet( 20, SizeUnit.KILOBYTE );
@@ -99,7 +96,7 @@ public class NetworkTest
         }
     }
     
-    protected static class ClientTestGenerator extends EventGenerator
+    /*protected static class ClientTestGenerator extends EventGenerator
     {
         private static final String QUERY_TRACE = "Settings/QueryArrivalTrace.txt";
         
@@ -112,11 +109,6 @@ public class NetworkTest
             
             // Open the associated file.
             queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
-        }
-        
-        @Override
-        public Packet makePacket( final Event e ) {
-            return null;
         }
         
         @Override
@@ -137,7 +129,7 @@ public class NetworkTest
             
             return null;
         }
-    }
+    }*/
     
     protected static class ClientAgent extends Agent
     {

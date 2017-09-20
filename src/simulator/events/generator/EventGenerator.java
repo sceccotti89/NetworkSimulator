@@ -181,8 +181,9 @@ public abstract class EventGenerator
     }
     
     /**
-     * Generate a new packet to be sent.</br>
-     * User can override this method to create a proper custom packet.</br>
+     * Generates a new packet to be sent.</br>
+     * In case of a multicast operation the destination assumes value {@code -1}.</br>
+     * This method could be overridden to create a proper custom packet.</br>
      * A typical usage of the input event {@code e} is:
      * 
      * <pre>
@@ -193,12 +194,13 @@ public abstract class EventGenerator
      * }
      * </pre>
      * 
-     * @param e    the input event
+     * @param e              the input event.
+     * @param destination    the destination node identifier.
      * 
      * @return the generated packet.</br>
      * NOTE: the returned packet can be {@code null}.
     */
-    public Packet makePacket( final Event e )
+    protected Packet makePacket( final Event e, final long destination )
     {
         if (e instanceof RequestEvent) {
             return _resPacket.clone();
@@ -314,8 +316,9 @@ public abstract class EventGenerator
     {
         List<Event> events = null;
         if (canSend()) {
+            _nextDestIndex = selectDestination( e.getArrivalTime() );
             // Prepare the request packet.
-            Packet reqPacket = makePacket( e );
+            Packet reqPacket = makePacket( e, (_isMulticasted) ? -1 : _nextDestIndex );
             if (reqPacket != null) {
                 if (_optimizedMulticast) {
                     _packetsInFlight = (_packetsInFlight + _destinations.size()) % Utils.INFINITE;
@@ -328,7 +331,7 @@ public abstract class EventGenerator
                     }
                 } else {
                     _packetsInFlight = (_packetsInFlight + 1) % Utils.INFINITE;
-                    Agent dest = _destinations.get( _nextDestIndex = selectDestination( e.getArrivalTime() ) );
+                    Agent dest = _destinations.get( _nextDestIndex );
                     Event request = new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() );
                     events = Collections.singletonList( request );
                     _continueToSend = _isMulticasted && canSend();
@@ -363,7 +366,7 @@ public abstract class EventGenerator
     */
     private List<Event> sendResponse( final Event e, final Agent from, final Agent dest )
     {
-        Packet resPacket = makePacket( e );
+        Packet resPacket = makePacket( e, -1 );
         
         if (resPacket == null) {
             return null;

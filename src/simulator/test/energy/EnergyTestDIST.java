@@ -31,8 +31,14 @@ import simulator.utils.Utils;
 
 public class EnergyTestDIST
 {
+    private static boolean PREDICTION_ON_SWITCH;
+    
     private static final int NODES = 5;
     private static final int CPU_CORES = 4;
+    
+    
+    
+    
     
     private static class ClientGenerator extends EventGenerator
     {
@@ -63,7 +69,7 @@ public class EnergyTestDIST
         }
         
         @Override
-        public Packet makePacket( final Event e )
+        public Packet makePacket( final Event e, final long destination )
         {
             Packet packet = _reqPacket.clone();
             while (true) {
@@ -130,10 +136,10 @@ public class EnergyTestDIST
         }
         
         @Override
-        public Packet makePacket( final Event e )
+        public Packet makePacket( final Event e, final long destination )
         {
             if (e instanceof RequestEvent) {
-                return super.makePacket( e );
+                return super.makePacket( e, destination );
             } else {
                 // New request from client: clone the packet.
                 return e.getPacket().clone();
@@ -176,25 +182,31 @@ public class EnergyTestDIST
         }
         
         @Override
-        public Packet makePacket( final Event e )
+        public Packet makePacket( final Event e, final long destination )
         {
+            Packet packet;
+            // TODO qui in teoria dovrei utilizzare il predittore e "consigliare" la frequenza da utilizzare per quel core.
+            // TODO prima pero' dovrei mettere questo in un generatore non multicast e settarlo a dovere.
             if (e instanceof RequestEvent) {
-                return super.makePacket( e );
+                packet = super.makePacket( e, destination );
             } else {
                 // New request from client: clone the packet.
-                return e.getPacket().clone();
+                packet = e.getPacket().clone();
             }
+            
+            return packet;
         }
     }
     
     private static class SwitchAgent extends Agent implements EventHandler
     {
-        public SwitchAgent( final long id, final EventGenerator evGenerator ) {
+        public SwitchAgent( final long id, final EventGenerator evGenerator )
+        {
             super( id );
             addEventGenerator( evGenerator );
             addEventHandler( this );
         }
-
+        
         @Override
         public Time handle( final Event e, final EventType type )
         {
@@ -313,6 +325,7 @@ public class EnergyTestDIST
     public static void main( final String[] args ) throws Exception
     {
         //Utils.VERBOSE = false;
+        PREDICTION_ON_SWITCH = false;
         
         execute( Mode.PESOS_TIME_CONSERVATIVE,  500 );
         //execute( Mode.PESOS_TIME_CONSERVATIVE, 1000 );

@@ -66,7 +66,7 @@ public class EnergyTestMONO
         }
         
         @Override
-        public Packet makePacket( final Event e )
+        public Packet makePacket( final Event e, final long destination )
         {
             Packet packet = _reqPacket.clone();
             while (true) {
@@ -133,10 +133,10 @@ public class EnergyTestMONO
         }
         
         @Override
-        public Packet makePacket( final Event e )
+        public Packet makePacket( final Event e, final long destination )
         {
             if (e instanceof RequestEvent) {
-                return super.makePacket( e );
+                return super.makePacket( e, destination );
             } else {
                 // New request from client: clone the packet.
                 return e.getPacket().clone();
@@ -218,7 +218,7 @@ public class EnergyTestMONO
         }
         
         @Override
-        public Packet makePacket( final Event e )
+        public Packet makePacket( final Event e, final long destination )
         {
             Packet packet = _reqPacket.clone();
             packet.addContent( Global.CONS_CTRL_EVT, "" );
