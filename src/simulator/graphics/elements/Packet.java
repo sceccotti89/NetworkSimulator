@@ -80,7 +80,7 @@ public class Packet implements Comparable<Packet>
         
         setSpeed();
         
-        System.out.println( "INIZIALIZZATO" );
+        //System.out.println( "INIZIALIZZATO" );
     }
     
     public Node getNodeSource() {

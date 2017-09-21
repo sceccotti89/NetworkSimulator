@@ -115,7 +115,7 @@ public class Simulator
         net.computeShortestPaths();
         _networks.put( net.getId(), net );
         
-        EventScheduler evtScheduler = new EventScheduler( this, net );
+        EventScheduler evtScheduler = new EventScheduler( net );
         _evtSchedulers.put( net.getId(), evtScheduler );
         net.setEventScheduler( evtScheduler );
     }
@@ -160,6 +160,7 @@ public class Simulator
             }
         }
         
+        // Calculates the time elapsed from the beginning of the simulation.
         long elapsedTime = System.currentTimeMillis() - currentTime;
         long hours   =  elapsedTime/3600000L;
         long minutes = (elapsedTime - hours*3600000L)/60000L;

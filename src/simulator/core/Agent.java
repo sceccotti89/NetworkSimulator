@@ -218,7 +218,7 @@ public abstract class Agent
         return this;
     }
     
-    public boolean parallelTransmission() {
+    public boolean isParallelTransmission() {
         return _parallelTransmission;
     }
     

@@ -18,7 +18,7 @@ import simulator.utils.Time;
 public abstract class Event implements Comparable<Event>
 {
     /** Event time in microseconds. */
-    private Time _time;
+    private Time _time = new Time( 0, TimeUnit.MICROSECONDS );
     private Time _arrivalTime = Time.ZERO;
     
     private Agent _source;
@@ -36,12 +36,13 @@ public abstract class Event implements Comparable<Event>
     
     
     public Event( final Time time ) {
-        _time = time.clone();
+        _time.setTime( time );
         setId();
     }
     
-    public Event( final Time time, final Agent source ) {
-        _time = time.clone();
+    public Event( final Time time, final Agent source )
+    {
+        _time.setTime( time );
         _source = source;
         _currentNodeId = source.getId();
         setId();
@@ -49,13 +50,13 @@ public abstract class Event implements Comparable<Event>
     
     public Event( final Time time, final Agent from, final Agent to, final Packet packet )
     {
-        _time = time.clone();
+        _time.setTime( time );
         _source = from;
+        _currentNodeId = from.getId();
         _dest = to;
         
         _packet = packet;
         
-        _currentNodeId = from.getId();
         setId();
     }
     
@@ -68,7 +69,7 @@ public abstract class Event implements Comparable<Event>
     }
     
     public void setTime( final Time time ) {
-        _time = time;
+        _time.setTime( time );
     }
     
     public Time getTime() {
@@ -83,6 +84,10 @@ public abstract class Event implements Comparable<Event>
         return _arrivalTime;
     }
     
+    public void setSource( final Agent node ) {
+        _source = node;
+    }
+    
     public Agent getSource() {
         return _source;
     }
@@ -91,8 +96,16 @@ public abstract class Event implements Comparable<Event>
         return _dest;
     }
     
+    public void setDestination( final Agent node ) {
+        _dest = node;
+    }
+    
     public long getCurrentNodeId() {
         return _currentNodeId;
+    }
+    
+    public void setPacket( final Packet packet ) {
+        _packet = packet;
     }
     
     public Packet getPacket() {
@@ -179,7 +192,7 @@ public abstract class Event implements Comparable<Event>
                 Time startTime = _time.clone().addTime( delay, TimeUnit.MICROSECONDS );
                 
                 // If the transmission is not in parallel add the corresponding delay.
-                if (!agent.parallelTransmission()) {
+                if (!agent.isParallelTransmission()) {
                     long Ttrasm = link.getTtrasm( _packet.getSizeInBits() );
                     time.addTime( Ttrasm, TimeUnit.MICROSECONDS );
                     delay += Ttrasm;
@@ -209,7 +222,8 @@ public abstract class Event implements Comparable<Event>
             _source.setTime( time );
         }
         
-        evtScheduler.schedule( _source.fireEvent( time, null ) );
+//        evtScheduler.schedule( _source.fireEvent( time, null ) );
+        evtScheduler.schedule( _source.fireEvent( time, this ) );
     }
     
     private Time getTcalc( final NetworkNode node, final Agent agent )

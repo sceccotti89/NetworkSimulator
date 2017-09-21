@@ -16,6 +16,7 @@ import simulator.events.EventHandler.EventType;
 import simulator.events.Packet;
 import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
+import simulator.test.energy.EnergyTestDIST.SwitchGenerator;
 import simulator.utils.Time;
 import simulator.utils.Utils;
 
@@ -41,14 +42,21 @@ public abstract class EventGenerator
     
     // Used for multiple destinations.
     private boolean _isMulticasted = false;
+    // TODO forse non serve se ho settato il parallel transmission nell'agent.
     private boolean _optimizedMulticast = false;
     private int     _nextDestIndex = -1;
     private boolean _continueToSend = false;
+    private Packet  _multiReqPacket = null;
     protected int   _destIndex = 0;
     protected List<Agent> _toAnswer;
     
+    // Dummy packets used to generate the corresponding request.
+    private RequestEvent  dummyReqEvent;
+    private ResponseEvent dummyResEvent;
     
     
+    // TODO Molti dei valori nel costruttore andranno tolti e messi in appositi metodi:
+    // TODO isActive - settarlo a FALSE e diventa TRUE solo se viene invocato il metodo: startAt( Time time );
     /**
      * Creates a new event generator.
      * 
@@ -111,8 +119,11 @@ public abstract class EventGenerator
         return this;
     }
     
-    public void setAgent( final Agent agent ) {
+    public void setAgent( final Agent agent )
+    {
         _agent = agent;
+        dummyReqEvent = new RequestEvent( Time.ZERO, _agent, null, null );
+        dummyResEvent = new ResponseEvent( Time.ZERO, _agent, null, null );
     }
     
     public EventGenerator connect( final Agent to )
@@ -129,6 +140,16 @@ public abstract class EventGenerator
             connect( dest );
         }
         return this;
+    }
+    
+    /**
+     * Sets the time when the generator starts at.
+     * 
+     * @param time    time of start
+    */
+    public void startAt( final Time time ) {
+        _activeGenerator = true;
+        // TODO salvarsi il tempo di avvio.
     }
     
     public List<Agent> getDestinations() {
@@ -150,7 +171,7 @@ public abstract class EventGenerator
         return _time.clone();
     }
     
-    public void setTime( final Time t ) {
+    private void setTime( final Time t ) {
         _time = t;
     }
     
@@ -158,14 +179,22 @@ public abstract class EventGenerator
         return _activeGenerator;
     }
     
-    private boolean canSend() {
-        return _packetsInFlight < _maxPacketsInFlight;
+    /**
+     * Checks whether the generator can send other packets.
+    */
+    private boolean canSend()
+    {
+        if (_isMulticasted){
+            return _nextDestIndex < _destinations.size() - 1;
+        } else {
+            return _packetsInFlight < _maxPacketsInFlight;
+        }
     }
     
     /**
      * Update the internal state of the generator.</br>
      * This method is called everytime a new event arrive.</br>
-     * By default it reduces by 1 the number of flying packets, but it can</br>
+     * By default it reduces by 1 the number of flying packets, but it can be</br>
      * extended to properly update the event generator.</br>
     */
     public void update() {
@@ -182,7 +211,7 @@ public abstract class EventGenerator
     
     /**
      * Generates a new packet to be sent.</br>
-     * In case of a multicast operation the destination assumes value {@code -1}.</br>
+     * In case of multicast operation the destination assumes value {@code -1}.</br>
      * This method could be overridden to create a proper custom packet.</br>
      * A typical usage of the input event {@code e} is:
      * 
@@ -261,19 +290,26 @@ public abstract class EventGenerator
         if (_time.compareTo( _duration ) > 0)
             return null; // No more events from this generator.
         
+        if (this instanceof SwitchGenerator)
+            System.out.println( "SONO QUI INPUT: " + e + ", CONTINUE: " + _continueToSend );
+        
         if (_activeGenerator && canSend()) {
-            Event event = new ResponseEvent( _time, _agent, null, null );
-            event.setArrivalTime( _time );
-            return sendRequest( event );
+            // TODO questo serve? pare di no..
+            if (this instanceof SwitchGenerator) System.out.println( "SONO QUI ACTIVE: " + e );
+            dummyResEvent.setTime( _time );
+            //dummyResEvent.setArrivalTime( _time );
+            return sendRequest( dummyResEvent );
         }
         
         List<Event> events = null;
         if (e instanceof RequestEvent) {
             if (_delayResponse) {
+                if (this instanceof SwitchGenerator) System.out.println( "SONO QUI DELAYED: " + e );
                 // Prepare and send the new request packet to the next node.
-                Event event = new ResponseEvent( e.getArrivalTime(), _agent, null, e.getPacket() );
-                event.setArrivalTime( e.getArrivalTime() );
-                events = sendRequest( event );
+                dummyResEvent.setTime( _time );
+                dummyResEvent.setPacket( e.getPacket() );
+                //dummyResEvent.setArrivalTime( e.getArrivalTime() );
+                events = sendRequest( dummyResEvent );
                 _toAnswer.add( e.getSource() );
             } else {
                 events = sendResponse( e, e.getDestination(), e.getSource() );
@@ -295,9 +331,9 @@ public abstract class EventGenerator
                 }
             } else {
                 if (_continueToSend) {
-                    Event event = new ResponseEvent( _time, _agent, null, null );
-                    event.setArrivalTime( _time );
-                    events = sendRequest( event );
+                    if (this instanceof SwitchGenerator) System.out.println( "SONO QUI CONTINUE" );
+                    dummyResEvent.setTime( _time );
+                    events = sendRequest( dummyReqEvent );
                 }
             }
         }
@@ -314,28 +350,54 @@ public abstract class EventGenerator
     */
     private List<Event> sendRequest( final Event e )
     {
+        if (this instanceof SwitchGenerator)
+            System.out.println( "CREO IL MESSAGGIO DI RICHIESTA DA: " + e );
+        
         List<Event> events = null;
         if (canSend()) {
-            _nextDestIndex = selectDestination( e.getArrivalTime() );
+            //_nextDestIndex = selectDestination( e.getArrivalTime() );
+            _nextDestIndex = selectDestination( _time );
+            
+            // FIXME Dopo aver sistemato questo risolvere il bug #6 degli appunti
+            if (this instanceof SwitchGenerator)
+                System.out.println( "MULTICAST: " + _isMulticasted + ", MULTI_PACKET: " + _multiReqPacket );
+            
             // Prepare the request packet.
-            Packet reqPacket = makePacket( e, (_isMulticasted) ? -1 : _nextDestIndex );
+            Packet reqPacket;
+            if (_isMulticasted && _multiReqPacket != null) {
+                reqPacket = _multiReqPacket;
+            } else {
+                reqPacket = makePacket( e, (_isMulticasted) ? -1 : _nextDestIndex );
+                _multiReqPacket = reqPacket;
+            }
+            
+            if (this instanceof SwitchGenerator)
+                System.out.println( "INIZIO GENERAZIONE MESSAGGIO DI RICHIESTA DA: " + e );
+            
             if (reqPacket != null) {
-                if (_optimizedMulticast) {
+                /*if (_optimizedMulticast) {
                     _packetsInFlight = (_packetsInFlight + _destinations.size()) % Utils.INFINITE;
                     events = new ArrayList<>( _destinations.size() );
                     for (int i = 0; i < _destinations.size(); i++) {
                         Agent dest = _destinations.get( _nextDestIndex = selectDestination( e.getArrivalTime() ) );
                         Event request = new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() );
-                        request.setArrivalTime( e.getArrivalTime() );
+                        // TODO questa serve?? pare di no
+                        //request.setArrivalTime( e.getArrivalTime() );
                         events.add( request );
                     }
-                } else {
+                } else {*/
                     _packetsInFlight = (_packetsInFlight + 1) % Utils.INFINITE;
                     Agent dest = _destinations.get( _nextDestIndex );
                     Event request = new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() );
                     events = Collections.singletonList( request );
                     _continueToSend = _isMulticasted && canSend();
-                }
+                    if (_continueToSend == false) {
+                        _multiReqPacket = null;
+                    }
+                    
+                    if (this instanceof SwitchGenerator)
+                        System.out.println( "GENERATA RICHIESTA: " + request );
+                //}
             }
         }
         

@@ -33,7 +33,7 @@ public class EnergyTestDIST
 {
     private static boolean PREDICTION_ON_SWITCH;
     
-    private static final int NODES = 5;
+    private static final int NODES = 3;
     private static final int CPU_CORES = 4;
     
     
@@ -42,8 +42,8 @@ public class EnergyTestDIST
     
     private static class ClientGenerator extends EventGenerator
     {
-        private static final String QUERY_TRACE = "Models/msn.day2.arrivals.txt";
-        //private static final String QUERY_TRACE = "Models/test_arrivals.txt";
+        //private static final String QUERY_TRACE = "Models/msn.day2.arrivals.txt";
+        private static final String QUERY_TRACE = "Models/test_arrivals.txt";
         private static final int NUM_QUERIES = 10000;
         // Random generator seed.
         private static final int SEED = 50000;
@@ -166,12 +166,13 @@ public class EnergyTestDIST
         }
     }
     
-    private static class MulticastGenerator extends EventGenerator
+    public static class SwitchGenerator extends EventGenerator
     {
-        public MulticastGenerator( final Time duration,
-                                   final Packet reqPacket,
-                                   final Packet resPacket ) {
+        public SwitchGenerator( final Time duration,
+                                final Packet reqPacket,
+                                final Packet resPacket ) {
             super( duration, Time.ZERO, Utils.INFINITE, reqPacket, resPacket, false, true, false );
+            // TODO bug quando si setta optimized a FALSE
             setMulticast( true, true );
         }
         
@@ -185,13 +186,17 @@ public class EnergyTestDIST
         public Packet makePacket( final Event e, final long destination )
         {
             Packet packet;
-            // TODO qui in teoria dovrei utilizzare il predittore e "consigliare" la frequenza da utilizzare per quel core.
-            // TODO prima pero' dovrei mettere questo in un generatore non multicast e settarlo a dovere.
             if (e instanceof RequestEvent) {
                 packet = super.makePacket( e, destination );
             } else {
                 // New request from client: clone the packet.
                 packet = e.getPacket().clone();
+            }
+            
+            // TODO qui in teoria dovrei utilizzare il predittore e "consigliare" la frequenza da utilizzare per quel core.
+            // TODO prima pero' dovrei mettere questo in un generatore non multicast e settarlo a dovere.
+            if (PREDICTION_ON_SWITCH) {
+                
             }
             
             return packet;
@@ -324,7 +329,7 @@ public class EnergyTestDIST
     
     public static void main( final String[] args ) throws Exception
     {
-        //Utils.VERBOSE = false;
+        Utils.VERBOSE = false;
         PREDICTION_ON_SWITCH = false;
         
         execute( Mode.PESOS_TIME_CONSERVATIVE,  500 );
@@ -335,9 +340,9 @@ public class EnergyTestDIST
     
     private static void execute( final Mode mode, final long timeBudget ) throws Exception
     {
-        testMultiCore( timeBudget, mode );
+        //testMultiCore( timeBudget, mode );
         //testSingleCore( timeBudget, mode );
-        //testAnimationNetwork( timeBudget, mode );
+        testAnimationNetwork( timeBudget, mode );
     }
     
     public static void testAnimationNetwork( final long timeBudget, final Mode mode ) throws Exception
@@ -353,15 +358,14 @@ public class EnergyTestDIST
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        EventGenerator anyGen = new MulticastGenerator( Time.INFINITE,
-                                                        new Packet( 20, SizeUnit.BYTE ),
-                                                        new Packet( 20, SizeUnit.BYTE ) );
+        EventGenerator anyGen = new SwitchGenerator( Time.INFINITE,
+                                                     new Packet( 20, SizeUnit.BYTE ),
+                                                     new Packet( 20, SizeUnit.BYTE ) );
         Agent switchAgent = new SwitchAgent( 1, anyGen );
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
         
-        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/PESOS/MONOLITHIC/MaxScore/" );
-        String modelType = model.getModelType( true );
+        final String modelType = "PESOS_" + mode + "_" + timeBudget + "ms";
         
         List<EnergyCPU> cpus = new ArrayList<>( NODES );
         for (int i = 0; i < NODES; i++) {
@@ -372,7 +376,8 @@ public class EnergyTestDIST
             cpus.add( cpu );
             
             // Add the PESOS model to the corresponding cpu.
-            final String directory = "Models/DISTRIBUTED/Node_" + (i+1) + "/PESOS/MaxScore/";
+            CPUEnergyModel model;
+            final String directory = "Models/Distributed/Node_" + (i+1) + "/PESOS/MaxScore/";
             if (mode == Mode.PESOS_TIME_CONSERVATIVE) {
                 model = new PESOSmodel( timeBudget, mode, directory,
                                         "predictions.txt", "time_energy.txt", "regressors.txt" );
@@ -393,7 +398,8 @@ public class EnergyTestDIST
             switchAgent.getEventGenerator( 0 ).connect( agentCore );
         }
         
-        sim.start( new Time( 24, TimeUnit.HOURS ) );
+        //sim.start( new Time( 24, TimeUnit.HOURS ) );
+        sim.start( new Time( 19100, TimeUnit.MICROSECONDS ) );
         
         // Show the animation.
         AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );
@@ -437,6 +443,8 @@ public class EnergyTestDIST
                                                         new Packet( 20, SizeUnit.BYTE ) );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
+        
+        // FIXME mi sa che l'assegnazione degli event generator non sia corretta: quando avro' finito tutto dare un'occhiata
         
         EventGenerator anyGen = new AnycastGenerator( Time.INFINITE,
                                                       new Packet( 20, SizeUnit.BYTE ),
@@ -565,10 +573,11 @@ public class EnergyTestDIST
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        EventGenerator anyGen = new MulticastGenerator( Time.INFINITE,
+        EventGenerator switchGen = new SwitchGenerator( Time.INFINITE,
                                                         new Packet( 20, SizeUnit.BYTE ),
                                                         new Packet( 20, SizeUnit.BYTE ) );
-        Agent switchAgent = new SwitchAgent( 1, anyGen );
+        //switchGen.setMulticast( true, true );
+        Agent switchAgent = new SwitchAgent( 1, switchGen );
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
         

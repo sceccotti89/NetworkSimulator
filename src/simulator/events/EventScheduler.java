@@ -9,14 +9,12 @@ import java.util.List;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import simulator.core.Simulator;
 import simulator.exception.TimeException;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Time;
 
 public class EventScheduler
 {
-    private final Simulator simulator;
     private NetworkTopology _network;
     
     private AbstractQueue<Event> _events;
@@ -27,9 +25,8 @@ public class EventScheduler
     private static long eventID = 0;
     
     
-    public EventScheduler( final Simulator simulator, final NetworkTopology network )
+    public EventScheduler( final NetworkTopology network )
     {
-        this.simulator = simulator;
         _network = network;
         _events = new PriorityBlockingQueue<Event>( 1 << 18 );
     }
@@ -68,8 +65,6 @@ public class EventScheduler
             if (_time.compareTo( e.getTime() ) <= 0) {
                 _time.setTime( e.getTime() );
             } else {
-                // FIXME in caso di eventi da parte di altre reti c'e' il rischio che alcuni eventi
-                // FIXME arrivino in tempi diversi tra di loro.
                 System.out.println( "TIME: " + _time + ", EVENT: " + e );
                 throw new TimeException( "You can't go back in time!" );
             }
@@ -81,77 +76,14 @@ public class EventScheduler
     public void schedule( final Event event )
     {
         if (event != null) {
-            long nodeId = -1;
-            if (event.getDestination() != null) {
-                nodeId = event.getDestination().getNode().getId();
-            }
-            
-            if (nodeId < 0 || _network.containsNode( nodeId )) {
-                _events.add( event );
-            } else {
-                changeScheduler( nodeId, event );
-            }
+            _events.add( event );
         }
     }
     
     public void schedule( final List<Event> events )
     {
         if (events != null) {
-            long nodeId = -1;
-            if (events.get( 0 ).getDestination() != null) {
-                nodeId = events.get( 0 ).getDestination().getNode().getId();
-            }
-            if (nodeId < 0 || _network.containsNode( nodeId )) {
-                _events.addAll( events );
-            } else {
-                changeScheduler( nodeId, events );
-            }
-        }
-    }
-    
-    private void scheduleFromOtherNetwork( final Event event ) {
-        if (event != null) {
-            // TODO dovrebbe risvegliare lo scheduler se e' in attesa di altri eventi
-            _events.add( event );
-        }
-    }
-    
-    private void scheduleFromOtherNetwork( final List<Event> events ) {
-        if (events != null) {
-            // TODO dovrebbe risvegliare lo scheduler se e' in attesa di altri eventi
             _events.addAll( events );
-        }
-    }
-    
-    /**
-     * Change the scheduler for the given event.
-     * 
-     * @param nodeId    node associated to the event.
-     * @param event     the given event.
-    */
-    private void changeScheduler( final long nodeId, final Event event )
-    {
-        for (NetworkTopology net : simulator.getNetworks()) {
-            if (net.containsNode( nodeId )) {
-                net.getEventScheduler().scheduleFromOtherNetwork( event );
-                break;
-            }
-        }
-    }
-    
-    /**
-     * Change the scheduler for the given events.
-     * 
-     * @param nodeId    node associated to the events.
-     * @param events    the given events.
-    */
-    private void changeScheduler( final long nodeId, final List<Event> events )
-    {
-        for (NetworkTopology net : simulator.getNetworks()) {
-            if (net.containsNode( nodeId )) {
-                net.getEventScheduler().scheduleFromOtherNetwork( events );
-                break;
-            }
         }
     }
 
