@@ -167,7 +167,6 @@ public class EnergyTestDIST
                                 final Packet reqPacket,
                                 final Packet resPacket ) {
             super( duration, Time.ZERO, reqPacket, resPacket, true, false );
-            setMulticast( true );
         }
         
         @Override

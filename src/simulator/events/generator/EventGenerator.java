@@ -81,20 +81,6 @@ public abstract class EventGenerator
         
     }
     
-    /**
-     * Set the communication as a multicast.</br>
-     * This is usefull in case of sending several copies of the input message to multiple destinations.</br>
-     * The {@linkplain #selectDestination()} method could be overridden to generate a proper next destination node.
-     * 
-     * @param multicasted    {@code true} if the output transmission is considered as a multicast,
-     *                       {@code false} otherwise
-    */
-    public EventGenerator setMulticast( final boolean multicasted )
-    {
-        _isMulticasted = multicasted;
-        return this;
-    }
-    
     public void setAgent( final Agent agent )
     {
         _agent = agent;
@@ -105,6 +91,7 @@ public abstract class EventGenerator
     public EventGenerator connect( final Agent to )
     {
         _destinations.add( to );
+        _isMulticasted = _destinations.size() > 1;
         /*if (_isMulticasted) {
             _maxPacketsInFlight = _initMaxPacketsInFlight * _destinations.size();
         }*/
