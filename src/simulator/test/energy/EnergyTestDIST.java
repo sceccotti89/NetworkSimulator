@@ -33,7 +33,7 @@ public class EnergyTestDIST
 {
     private static boolean PREDICTION_ON_SWITCH;
     
-    private static final int NODES = 3;
+    private static final int NODES = 5;
     private static final int CPU_CORES = 4;
     
     
@@ -59,8 +59,8 @@ public class EnergyTestDIST
         
         public ClientGenerator( final Packet reqPacket, final Packet resPacket ) throws IOException
         {
-            super( Time.INFINITE, Time.DYNAMIC, Utils.INFINITE,
-                   reqPacket, resPacket, true, false, false );
+            super( Time.INFINITE, Time.DYNAMIC, reqPacket, resPacket, false, false );
+            startAt( Time.ZERO );
             
             // Open the associated file.
             queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
@@ -127,13 +127,7 @@ public class EnergyTestDIST
         public AnycastGenerator( final Time duration,
                                  final Packet reqPacket,
                                  final Packet resPacket ) {
-            super( duration, Time.ZERO, Utils.INFINITE, reqPacket, resPacket, false, true, false );
-        }
-        
-        @Override
-        public Time computeDepartureTime( final Event e ) {
-            // Empty method.
-            return null;
+            super( duration, Time.ZERO, reqPacket, resPacket, true, false );
         }
         
         @Override
@@ -172,15 +166,8 @@ public class EnergyTestDIST
         public SwitchGenerator( final Time duration,
                                 final Packet reqPacket,
                                 final Packet resPacket ) {
-            super( duration, Time.ZERO, Utils.INFINITE, reqPacket, resPacket, false, true, false );
-            // TODO bug quando si setta optimized a FALSE
+            super( duration, Time.ZERO, reqPacket, resPacket, true, false );
             setMulticast( true );
-        }
-        
-        @Override
-        public Time computeDepartureTime( final Event e ) {
-            // Empty method.
-            return null;
         }
         
         @Override
@@ -257,13 +244,7 @@ public class EnergyTestDIST
                               final Packet reqPacket,
                               final Packet resPacket )
         {
-            super( duration, Time.ZERO, 1L, reqPacket, resPacket, false, false, true );
-        }
-        
-        @Override
-        public Time computeDepartureTime( final Event e ) {
-            // Empy method.
-            return null;
+            super( duration, Time.ZERO, reqPacket, resPacket, false, true );
         }
     }
     
@@ -399,8 +380,9 @@ public class EnergyTestDIST
             switchAgent.getEventGenerator( 0 ).connect( agentCore );
         }
         
-        sim.start( new Time( 24, TimeUnit.HOURS ) );
+        sim.start( new Time( 24, TimeUnit.HOURS ), false );
         //sim.start( new Time( 299100, TimeUnit.MICROSECONDS ) );
+        sim.close();
         
         // Show the animation.
         AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );
@@ -507,7 +489,8 @@ public class EnergyTestDIST
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         plotter.setVisible( true );
         
-        sim.start( new Time( 24, TimeUnit.HOURS ) );
+        sim.start( new Time( 24, TimeUnit.HOURS ), false );
+        sim.close();
         
         double totalEnergy = 0;
         double totalIdleEnergy = 0;
@@ -624,7 +607,8 @@ public class EnergyTestDIST
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         plotter.setVisible( true );
         
-        sim.start( new Time( 24, TimeUnit.HOURS ) );
+        sim.start( new Time( 24, TimeUnit.HOURS ), false );
+        sim.close();
         
         double totalEnergy = 0;
         double totalIdleEnergy = 0;

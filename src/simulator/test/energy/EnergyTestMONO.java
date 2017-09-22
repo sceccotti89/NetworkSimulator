@@ -56,8 +56,8 @@ public class EnergyTestMONO
         
         public ClientGenerator( final Packet reqPacket, final Packet resPacket ) throws IOException
         {
-            super( Time.INFINITE, Time.DYNAMIC, Utils.INFINITE,
-                   reqPacket, resPacket, true, false, false );
+            super( Time.INFINITE, Time.DYNAMIC, reqPacket, resPacket, false, false );
+            startAt( Time.ZERO );
             
             // Open the associated file.
             queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
@@ -123,13 +123,7 @@ public class EnergyTestMONO
         public AnycastGenerator( final Time duration,
                                  final Packet reqPacket,
                                  final Packet resPacket ) {
-            super( duration, Time.ZERO, Utils.INFINITE, reqPacket, resPacket, false, true, false );
-        }
-        
-        @Override
-        public Time computeDepartureTime( final Event e ) {
-            // Empty method.
-            return null;
+            super( duration, Time.ZERO, reqPacket, resPacket, true, false );
         }
         
         @Override
@@ -214,7 +208,7 @@ public class EnergyTestMONO
         public static final Time PERIOD = new Time( CONSmodel.PERIOD, TimeUnit.MILLISECONDS );
         
         public ServerConsGenerator( final Time duration, final Packet reqPacket, final Packet resPacket ) {
-            super( duration, PERIOD, reqPacket, resPacket );
+            super( Time.ZERO, duration, PERIOD, reqPacket, resPacket );
         }
         
         @Override
@@ -232,13 +226,7 @@ public class EnergyTestMONO
                               final Packet reqPacket,
                               final Packet resPacket )
         {
-            super( duration, Time.ZERO, 1L, reqPacket, resPacket, false, false, true );
-        }
-        
-        @Override
-        public Time computeDepartureTime( final Event e ) {
-            // Empy method.
-            return null;
+            super( duration, Time.ZERO, reqPacket, resPacket, false, true );
         }
     }
     
@@ -412,7 +400,8 @@ public class EnergyTestMONO
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         plotter.setVisible( true );
         
-        sim.start( new Time( 1, TimeUnit.HOURS ) );
+        sim.start( new Time( 24, TimeUnit.HOURS ), false );
+        sim.close();
         
         double totalEnergy = 0;
         double totalIdleEnergy = 0;
@@ -491,7 +480,8 @@ public class EnergyTestMONO
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         plotter.setVisible( true );
         
-        sim.start( duration );
+        sim.start( duration, false );
+        sim.close();
 
         Utils.LOGGER.debug( model.getModelType( false ) + " - Total energy:      " + cpu.getResultSampled( Global.ENERGY_SAMPLING ) + "J" );
         Utils.LOGGER.debug( model.getModelType( false ) + " - Total Idle energy: " + cpu.getResultSampled( Global.IDLE_ENERGY_SAMPLING ) + "J" );
@@ -611,7 +601,8 @@ public class EnergyTestMONO
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         plotter.setVisible( true );
         
-        sim.start( duration );
+        sim.start( duration, false );
+        sim.close();
         
         double totalEnergy = 0;
         double totalIdleEnergy = 0;

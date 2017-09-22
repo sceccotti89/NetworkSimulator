@@ -237,9 +237,9 @@ public abstract class Agent
         }
         
         for (EventGenerator evGenerator : _evtGenerators) {
-            List<Event> genEvents = evGenerator.generate( t, e );
-            if (genEvents != null) {
-                events.addAll( genEvents );
+            Event event = evGenerator.generate( t, e );
+            if (event != null) {
+                events.add( event );
             }
         }
         

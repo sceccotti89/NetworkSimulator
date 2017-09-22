@@ -21,13 +21,14 @@ public class FlowSession
     
     private int     _nextDestIndex = -1;
     
-    private boolean _continueToSend = false;
-    private boolean _isMulticast    = false;
-    
     /* Flow identifier. */
     private static int flowID = -1;
     
     
+    
+    public FlowSession() {
+        this( nextFlowID() );
+    }
     
     public FlowSession( final long id ) {
         _id = id;
@@ -66,13 +67,8 @@ public class FlowSession
          return _source;
     }
     
-    public void setMulticast( final boolean flag ) {
-        _isMulticast = flag;
-    }
-    
     public void increaseSentPackets() {
         _sentPackets++;
-        _continueToSend = _isMulticast && canSend();
     }
     
     public void increaseReceivedPackets() {
@@ -94,14 +90,6 @@ public class FlowSession
     }
     
     /**
-     * Checks whether, in a multicast environment,
-     * the generator can send other packets.
-    */
-    public boolean continueToSend() {
-        return _continueToSend;
-    }
-    
-    /**
      * Checks whether the session has been completed.
     */
     public boolean completed() {
@@ -111,7 +99,7 @@ public class FlowSession
     /**
      * Returns the next unique flow identifier.
     */
-    public static synchronized long nextFlowID() {
+    private static synchronized long nextFlowID() {
         return ++flowID  % Long.MAX_VALUE;
     }
 }

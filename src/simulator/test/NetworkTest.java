@@ -25,35 +25,22 @@ public class NetworkTest
     protected static class ClientGenerator extends EventGenerator
     {
         public ClientGenerator( final Time duration,
-                                final long maxPacketsInFly,
                                 final Packet reqPacket,
                                 final Packet resPacket )
         {
-            super( duration, Time.ZERO, maxPacketsInFly, reqPacket, resPacket, true, false, true );
-        }
-        
-        @Override
-        public Time computeDepartureTime( final Event e ) {
-            // Empty method.
-            return null;
+            super( duration, Time.ZERO, reqPacket, resPacket, false, true );
+            startAt( Time.ZERO );
         }
     }
     
     protected static class MulticastGenerator extends EventGenerator
     {
         public MulticastGenerator( final Time duration,
-                                   final long maxPacketsInFly,
                                    final Packet reqPacket,
                                    final Packet resPacket )
         {
-            super( duration, Time.ZERO, maxPacketsInFly, reqPacket, resPacket, false, true, true );
+            super( duration, Time.ZERO, reqPacket, resPacket, true, true );
             setMulticast( true );
-        }
-        
-        @Override
-        public Time computeDepartureTime( final Event e ) {
-            // Empty method.
-            return null;
         }
     }
     
@@ -82,7 +69,7 @@ public class NetworkTest
                               final Packet reqPacket,
                               final Packet resPacket )
         {
-            super( duration, 1L, reqPacket, resPacket );
+            super( duration, reqPacket, resPacket );
         }
         
         @Override
@@ -95,41 +82,6 @@ public class NetworkTest
             }
         }
     }
-    
-    /*protected static class ClientTestGenerator extends EventGenerator
-    {
-        private static final String QUERY_TRACE = "Settings/QueryArrivalTrace.txt";
-        
-        private BufferedReader queryReader;
-        
-        public ClientTestGenerator( final Packet reqPacket, final Packet resPacket ) throws FileNotFoundException
-        {
-            super( Time.INFINITE, Time.DYNAMIC, Utils.INFINITE,
-                   reqPacket, resPacket, true, false, false );
-            
-            // Open the associated file.
-            queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
-        }
-        
-        @Override
-        public Time computeDepartureTime( final Event e )
-        {
-            try {
-                String queryLine = null;
-                if ((queryLine = queryReader.readLine()) != null) {
-                    System.out.println( "QUERY: " + Long.parseLong( queryLine ) );
-                    return new Time( Long.parseLong( queryLine ), TimeUnit.MILLISECONDS );
-                } else {
-                    // No more lines to read.
-                    queryReader.close();
-                }
-            } catch ( IOException e1 ) {
-                System.err.println( e1 );
-            }
-            
-            return null;
-        }
-    }*/
     
     protected static class ClientAgent extends Agent
     {
@@ -194,7 +146,8 @@ public class NetworkTest
         
         Simulator sim = new Simulator( net );
         
-        CBRGenerator generator = new CBRGenerator( new Time( 20, TimeUnit.SECONDS ),
+        CBRGenerator generator = new CBRGenerator( Time.ZERO,
+                                                   new Time( 20, TimeUnit.SECONDS ),
                                                    new Time( 5,  TimeUnit.SECONDS ),
                                                    new Packet( 40, SizeUnit.KILOBYTE ),
                                                    new Packet( 40, SizeUnit.KILOBYTE ) );
@@ -206,7 +159,8 @@ public class NetworkTest
         
         client.getEventGenerator( 0 ).connect( server );
         
-        sim.start( new Time( 1, TimeUnit.HOURS ) );
+        sim.start( new Time( 1, TimeUnit.HOURS ), false );
+        sim.close();
     }
     
     public static void example2() throws IOException, SimulatorException
@@ -222,7 +176,8 @@ public class NetworkTest
         
         Simulator sim = new Simulator( net );
         
-        CBRGenerator generator = new CBRGenerator( new Time( 10, TimeUnit.SECONDS ),
+        CBRGenerator generator = new CBRGenerator( Time.ZERO,
+                                                   new Time( 10, TimeUnit.SECONDS ),
                                                    new Time( 5,  TimeUnit.SECONDS ),
                                                    new Packet( 40, SizeUnit.KILOBYTE ),
                                                    new Packet( 40, SizeUnit.KILOBYTE ) );
@@ -234,7 +189,8 @@ public class NetworkTest
         
         client.getEventGenerator( 0 ).connect( server );
         
-        sim.start( new Time( 1, TimeUnit.HOURS ) );
+        sim.start( new Time( 1, TimeUnit.HOURS ), false );
+        sim.close();
     }
     
     public static void example3() throws IOException, SimulatorException
@@ -251,14 +207,16 @@ public class NetworkTest
         
         Simulator sim = new Simulator( net );
         
-        CBRGenerator generator = new CBRGenerator( new Time( 10, TimeUnit.SECONDS ),
+        CBRGenerator generator = new CBRGenerator( Time.ZERO,
+                                                   new Time( 10, TimeUnit.SECONDS ),
                                                    new Time( 5,  TimeUnit.SECONDS ),
                                                    new Packet( 40, SizeUnit.KILOBYTE ),
                                                    new Packet( 40, SizeUnit.KILOBYTE ) );
         Agent client1 = new ClientAgent( 0, generator );
         net.addAgent( client1 );
         
-        CBRGenerator generator2 = new CBRGenerator( new Time( 5, TimeUnit.SECONDS ),
+        CBRGenerator generator2 = new CBRGenerator( Time.ZERO,
+                                                    new Time( 5, TimeUnit.SECONDS ),
                                                     new Time( 1, TimeUnit.SECONDS ),
                                                     new Packet( 20, SizeUnit.KILOBYTE ),
                                                     new Packet( 40, SizeUnit.KILOBYTE ) );
@@ -268,7 +226,8 @@ public class NetworkTest
         client1.getEventGenerator( 0 ).connect( client2 );
         client2.getEventGenerator( 0 ).connect( client1 );
         
-        sim.start( new Time( 1, TimeUnit.HOURS ) );
+        sim.start( new Time( 1, TimeUnit.HOURS ), false );
+        sim.close();
     }
     
     public static void example4() throws IOException, SimulatorException
@@ -289,14 +248,16 @@ public class NetworkTest
         
         Simulator sim = new Simulator( net );
         
-        CBRGenerator generator1 = new CBRGenerator( new Time( 10, TimeUnit.SECONDS ),
+        CBRGenerator generator1 = new CBRGenerator( Time.ZERO,
+                                                    new Time( 10, TimeUnit.SECONDS ),
                                                     new Time( 5,  TimeUnit.SECONDS ),
                                                     new Packet( 40, SizeUnit.KILOBYTE ),
                                                     new Packet( 40, SizeUnit.KILOBYTE ) );
         Agent client1 = new ClientAgent( 0, generator1 );
         net.addAgent( client1 );
         
-        CBRGenerator generator2 = new CBRGenerator( new Time( 5, TimeUnit.SECONDS ),
+        CBRGenerator generator2 = new CBRGenerator( Time.ZERO,
+                                                    new Time( 5, TimeUnit.SECONDS ),
                                                     new Time( 1, TimeUnit.SECONDS ),
                                                     new Packet( 20, SizeUnit.KILOBYTE ),
                                                     new Packet( 40, SizeUnit.KILOBYTE ) );
@@ -312,7 +273,8 @@ public class NetworkTest
         client1.getEventGenerator( 0 ).connect( server1 );
         client2.getEventGenerator( 0 ).connect( server2 );
         
-        sim.start( new Time( 1, TimeUnit.HOURS ) );
+        sim.start( new Time( 1, TimeUnit.HOURS ), false );
+        sim.close();
     }
     
     public static void example5() throws IOException, SimulatorException
@@ -328,7 +290,8 @@ public class NetworkTest
         
         Simulator sim = new Simulator( net );
         
-        CBRGenerator generator = new CBRGenerator( new Time( 10, TimeUnit.SECONDS ),
+        CBRGenerator generator = new CBRGenerator( Time.ZERO,
+                                                   new Time( 10, TimeUnit.SECONDS ),
                                                    new Time( 5,  TimeUnit.SECONDS ),
                                                    new Packet( 40, SizeUnit.KILOBYTE ),
                                                    new Packet( 20, SizeUnit.KILOBYTE ) );
@@ -343,7 +306,8 @@ public class NetworkTest
         
         client.getEventGenerator( 0 ).connect( server );
         
-        sim.start( new Time( 1, TimeUnit.HOURS ) );
+        sim.start( new Time( 1, TimeUnit.HOURS ), false );
+        sim.close();
     }
     
     public static void example6() throws IOException, SimulatorException
@@ -360,7 +324,6 @@ public class NetworkTest
         Simulator sim = new Simulator( net );
         
         ClientGenerator generator = new ClientGenerator( new Time( 2, TimeUnit.SECONDS ),
-                                                         2L,
                                                          new Packet( 40, SizeUnit.KILOBYTE ),
                                                          new Packet( 20, SizeUnit.KILOBYTE ) );
         Agent client = new ClientAgent( 0, generator );
@@ -374,7 +337,8 @@ public class NetworkTest
         
         client.getEventGenerator( 0 ).connect( server );
         
-        sim.start( new Time( 1, TimeUnit.HOURS ) );
+        sim.start( new Time( 1, TimeUnit.HOURS ), false );
+        sim.close();
     }
     
     public static void example7() throws IOException, SimulatorException
@@ -399,7 +363,6 @@ public class NetworkTest
         Simulator sim = new Simulator( net );
         
         ClientGenerator generator = new ClientGenerator( new Time( 2, TimeUnit.SECONDS ),
-                                                         1L,
                                                          new Packet( 40, SizeUnit.KILOBYTE ),
                                                          new Packet( 20, SizeUnit.KILOBYTE ) );
         Agent client = new ClientAgent( 0, generator );
@@ -415,7 +378,6 @@ public class NetworkTest
         net.addAgent( server2 );
         
         MulticastGenerator switchGenerator = new MulticastGenerator( new Time( 3, TimeUnit.SECONDS ),
-                                                                     1L,
                                                                      new Packet( 40, SizeUnit.KILOBYTE ),
                                                                      new Packet( 20, SizeUnit.KILOBYTE ) );
         Agent Switch = new ClientAgent( 1, switchGenerator );
@@ -425,7 +387,8 @@ public class NetworkTest
         
         client.getEventGenerator( 0 ).connect( Switch );
         
-        sim.start( new Time( 1, TimeUnit.HOURS ) );
+        sim.start( new Time( 1, TimeUnit.HOURS ), false );
+        sim.close();
     }
     
     public static void testNetworkAnimation() throws Exception
@@ -436,13 +399,13 @@ public class NetworkTest
         
         Simulator sim = new Simulator( net );
         
-        EventGenerator generator = new ClientGenerator( Time.INFINITE, 1L,
+        EventGenerator generator = new ClientGenerator( Time.INFINITE,
                                                         new Packet( 20, SizeUnit.MEGABYTE ),
                                                         new Packet( 20, SizeUnit.MEGABYTE ) );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        EventGenerator anyGen = new MulticastGenerator( Time.INFINITE, 1L,
+        EventGenerator anyGen = new MulticastGenerator( Time.INFINITE,
                                                         new Packet( 20, SizeUnit.MEGABYTE ),
                                                         new Packet( 20, SizeUnit.MEGABYTE ) );
         Agent switchAgent = new SwitchAgent( 1, anyGen );
@@ -456,7 +419,8 @@ public class NetworkTest
             switchAgent.getEventGenerator( 0 ).connect( agentCore );
         }
         
-        sim.start( new Time( 1, TimeUnit.HOURS ) );
+        sim.start( new Time( 1, TimeUnit.HOURS ), false );
+        sim.close();
         
         // Show the animation.
         AnimationNetwork an = new AnimationNetwork( 800, 600, "Distributed Network" );

@@ -5,15 +5,12 @@
 package simulator.core;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
+import java.io.Closeable;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.PropertyConfigurator;
@@ -21,19 +18,19 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import simulator.events.EventScheduler;
-import simulator.exception.SimulatorException;
+import simulator.network.element.Switch;
 import simulator.topology.NetworkNode;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Time;
 import simulator.utils.Utils;
 import simulator.utils.resources.ResourceLoader;
 
-public class Simulator
+public class Simulator implements Closeable
 {
-    private long currentTime = 0L;
+    private NetworkTopology _network;
+    private EventScheduler _evtScheduler;
     
-    private Map<Long,NetworkTopology> _networks;
-    private Map<Long,EventScheduler> _evtSchedulers;
+    private List<SimulatorExecution> simExes;
     
     
     
@@ -54,13 +51,11 @@ public class Simulator
         PropertyConfigurator.configure( ResourceLoader.getResourceAsStream( "Settings/log4j.properties" ) );
         BasicConfigurator.configure();
         
-        _networks = new HashMap<>();
-        
-        _evtSchedulers = new HashMap<>();
+        simExes = new ArrayList<>();
         
         if (networks != null) {
             for (NetworkTopology net : networks) {
-                addNetwork( net );
+                setNetwork( net );
             }
         }
     }
@@ -94,33 +89,20 @@ public class Simulator
     }
     
     /**
-     * Adds a new network. This network will be executed in parallel with respect to
-     * all the others, with no default communication mechanisms.</br>
-     * To let the networks communicate with each other just create a link in one of the
-     * two networks, or both if it's simplex.
+     * Sets the current network.
      * 
-     * @param net    the new network to add.
+     * @param net    the network to set.
     */
-    public void addNetwork( final NetworkTopology net )
+    public void setNetwork( final NetworkTopology net )
     {
-        // Checks the unicity of each node ID.
-        for (NetworkNode node : net.getNodes()) {
-            for (NetworkTopology network : _networks.values()) {
-                if (network.containsNode( node.getId() )) {
-                    throw new SimulatorException( "Duplicated node ID: " + node.getId() );
-                }
-            }
-        }
-        
         net.computeShortestPaths();
-        _networks.put( net.getId(), net );
+        _network = net;
         
-        EventScheduler evtScheduler = new EventScheduler( net );
-        _evtSchedulers.put( net.getId(), evtScheduler );
-        net.setEventScheduler( evtScheduler );
+        _evtScheduler = new EventScheduler( net );
+        net.setEventScheduler( _evtScheduler );
     }
     
-    public NetworkTopology getNetwork( final long netId ) {
+    /*public NetworkTopology getNetwork( final long netId ) {
         return _networks.get( netId );
     }
     
@@ -130,47 +112,48 @@ public class Simulator
     
     public void trackEvents( final String eventsFile, final long netID ) throws FileNotFoundException {
         _networks.get( netID ).setTrackingEvent( eventsFile );
+    }*/
+    
+    /**
+     * Starts the simulation.
+     * 
+     * @param parExe    {@code true} lets the simulation to start in parallel,
+     *                  {@code false} otherwise.
+    */
+    public void start( final boolean parExe ) {
+        start( Time.INFINITE, parExe );
     }
     
-    public void start() {
-        start( Time.INFINITE );
-    }
-    
-    public void start( final Time duration )
+    /**
+     * Starts the simulation.
+     * 
+     * @param duration    lifetime of the simulation.
+     * @param parExe      {@code true} lets the simulation to start in parallel,
+     *                    {@code false} otherwise.
+    */
+    public void start( final Time duration, final boolean parExe )
     {
-        Utils.LOGGER.info( "Simulation start!" );
-        
-        currentTime = System.currentTimeMillis();
-        
-        // Start each network in parallel.
-        List<SimulatorExecution> simExes = new ArrayList<>( _evtSchedulers.size() );
-        for (EventScheduler evtScheduler : _evtSchedulers.values()) {
-            NetworkTopology net = evtScheduler.getNetwork();
-            // TODO dovrei ottenere la MAPPA degli agent e capire chi ce l'ha e chi no: a quelli nulli verra' assegnato uno switch
-            //net.computeShortestPaths();
-            SimulatorExecution simExe = new SimulatorExecution( net, duration );
-            simExes.add( simExe );
-            simExe.start();
-        }
-        
-        for (SimulatorExecution exe : simExes) {
-            try {
-                exe.join();
-            } catch ( InterruptedException e ) {
-                e.printStackTrace();
+        //List<SimulatorExecution> simExes = new ArrayList<>( _evtSchedulers.size() );
+        for (NetworkNode node : _network.getNodes()) {
+            if (node.getAgent() == null) {
+                // By default the agent is a switch.
+                node.setAgent( new Switch( node, _network ) );
+                _network.addAgent( node.getAgent() );
             }
         }
         
-        // Calculates the time elapsed from the beginning of the simulation.
-        long elapsedTime = System.currentTimeMillis() - currentTime;
-        long hours   =  elapsedTime/3600000L;
-        long minutes = (elapsedTime - hours*3600000L)/60000L;
-        long seconds = (elapsedTime - hours*3600000L - minutes*60000L)/1000L;
-        long millis  =  elapsedTime - hours*3600000L - minutes*60000L - seconds*1000L;
-        Utils.LOGGER.info( "Simulation completed in " + hours + "h:" + minutes + "m:" + seconds + "s:" + millis + "ms" );
+        //_network.computeShortestPaths();
+        SimulatorExecution simExe = new SimulatorExecution( _network, duration );
+        simExes.add( simExe );
+        simExe.start();
         
-        for (NetworkTopology net : _networks.values()) {
-            net.shutdown();
+        if (!parExe) {
+            try {
+                simExe.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            _network.shutdown();
         }
     }
     
@@ -202,9 +185,23 @@ public class Simulator
         }
     }*/
     
+    @Override
+    public void close() throws IOException
+    {
+        for (SimulatorExecution exe : simExes) {
+            try {
+                exe.join();
+                exe.getNetwork().shutdown();
+            } catch ( InterruptedException e ) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private static class SimulatorExecution extends Thread
     {
         private final NetworkTopology net;
+        private long currentTime = 0L;
         
         public SimulatorExecution( final NetworkTopology net, final Time duration )
         {
@@ -218,7 +215,21 @@ public class Simulator
         
         @Override
         public void run() {
+            Utils.LOGGER.info( "Simulation start!" );
+            currentTime = System.currentTimeMillis();
             net.getEventScheduler().doAllEvents();
+            
+            // Calculates the time elapsed from the beginning of the simulation.
+            long elapsedTime = System.currentTimeMillis() - currentTime;
+            long hours   =  elapsedTime/3600000L;
+            long minutes = (elapsedTime - hours*3600000L)/60000L;
+            long seconds = (elapsedTime - hours*3600000L - minutes*60000L)/1000L;
+            long millis  =  elapsedTime - hours*3600000L - minutes*60000L - seconds*1000L;
+            Utils.LOGGER.info( "Simulation completed in " + hours + "h:" + minutes + "m:" + seconds + "s:" + millis + "ms" );
+        }
+        
+        public NetworkTopology getNetwork() {
+            return net;
         }
     }
 }

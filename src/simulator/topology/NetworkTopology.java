@@ -24,18 +24,16 @@ import simulator.core.Agent;
 import simulator.events.EventScheduler;
 import simulator.events.impl.ExternalEvent;
 import simulator.exception.SimulatorException;
-import simulator.network.element.Switch;
 import simulator.utils.resources.ResourceLoader;
 
 public class NetworkTopology
 {
 	private Map<Long,NetworkNode> nodes = new HashMap<>( 32 );
 	private Map<Long,List<NetworkLink>> links = new HashMap<>( 32 );
+	private Map<Long,Agent> agents;
 	@SuppressWarnings("deprecation")
     private GraphPath gp = new GraphPath();
-	private Map<Long,Agent> agents;
 	
-	private static long nextID = 0;
 	private long netID;
 	
 	private PrintWriter eventsWriter;
@@ -43,9 +41,11 @@ public class NetworkTopology
 	private EventScheduler evtScheduler;
 	
 	private int _nextIndex = 0;
-	
-	
+	private static long nextID = 0;
     
+
+
+
     public NetworkTopology( final JSONObject settings ) throws IOException
     {
         netID = getNextID();
@@ -112,10 +112,6 @@ public class NetworkTopology
             
             NetworkNode _node = new NetworkNode( this, id, name, delay, xPos, yPos );
             addNode( _node );
-            
-            // By default the agent is a switch.
-            _node.setAgent( new Switch( _node, this ) );
-            addAgent( _node.getAgent() );
         }
         
         // Get the list of links.
