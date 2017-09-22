@@ -5,7 +5,6 @@
 package simulator.core;
 
 import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,7 +24,7 @@ import simulator.utils.Time;
 import simulator.utils.Utils;
 import simulator.utils.resources.ResourceLoader;
 
-public class Simulator implements Closeable
+public class Simulator implements AutoCloseable
 {
     private NetworkTopology _network;
     private EventScheduler _evtScheduler;
@@ -186,7 +185,7 @@ public class Simulator implements Closeable
     }*/
     
     @Override
-    public void close() throws IOException
+    public void close()
     {
         for (SimulatorExecution exe : simExes) {
             try {
