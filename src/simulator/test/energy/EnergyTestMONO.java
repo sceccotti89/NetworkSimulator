@@ -68,7 +68,7 @@ public class EnergyTestMONO
         @Override
         public Packet makePacket( final Event e, final long destination )
         {
-            Packet packet = _reqPacket.clone();
+            Packet packet = getRequestPacket();
             while (true) {
                 long queryID = RANDOM.nextInt( NUM_QUERIES ) + 1;
                 if (model.isQueryAvailable( queryID )) {
@@ -220,7 +220,7 @@ public class EnergyTestMONO
         @Override
         public Packet makePacket( final Event e, final long destination )
         {
-            Packet packet = _reqPacket.clone();
+            Packet packet = getRequestPacket();
             packet.addContent( Global.CONS_CTRL_EVT, "" );
             return packet;
         }

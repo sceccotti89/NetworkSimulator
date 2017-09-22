@@ -146,6 +146,7 @@ public class Simulator
         List<SimulatorExecution> simExes = new ArrayList<>( _evtSchedulers.size() );
         for (EventScheduler evtScheduler : _evtSchedulers.values()) {
             NetworkTopology net = evtScheduler.getNetwork();
+            // TODO dovrei ottenere la MAPPA degli agent e capire chi ce l'ha e chi no: a quelli nulli verra' assegnato uno switch
             //net.computeShortestPaths();
             SimulatorExecution simExe = new SimulatorExecution( net, duration );
             simExes.add( simExe );

@@ -47,7 +47,7 @@ public class NetworkTest
                                    final Packet resPacket )
         {
             super( duration, Time.ZERO, maxPacketsInFly, reqPacket, resPacket, false, true, true );
-            setMulticast( true, false );
+            setMulticast( true );
         }
         
         @Override

@@ -6,8 +6,9 @@ package simulator.events.generator;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import simulator.core.Agent;
@@ -16,51 +17,51 @@ import simulator.events.EventHandler.EventType;
 import simulator.events.Packet;
 import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
-import simulator.test.energy.EnergyTestDIST.SwitchGenerator;
 import simulator.utils.Time;
-import simulator.utils.Utils;
 
 public abstract class EventGenerator
 {
     protected Time _time;
     
-    protected Time _duration;
-    protected Packet _reqPacket;
-    protected Packet _resPacket;
+    private   Time _duration;
+    private   Packet _reqPacket;
+    private   Packet _resPacket;
     
-    protected Agent _agent;
+    private   Agent _agent;
     protected List<Agent> _destinations;
     
-    protected boolean _activeGenerator = false;
-    protected boolean _waitResponse = true;
-    protected boolean _delayResponse = false;
-    protected boolean _makeAnswer = true;
-    protected Time    _departureTime;
-    protected long    _packetsInFlight = 0;
-    private long      _initMaxPacketsInFlight;
-    protected long    _maxPacketsInFlight = 0;
+    private boolean _activeGenerator = false;
+    private boolean _waitResponse = true;
+    private boolean _delayResponse = false;
+    private boolean _makeAnswer = true;
+    private Time    _departureTime;
+    
+    // TODO queste 2 variabili non sarebbero proprio necessarie
+    // TODO perche' il numero massimo di pacchetti in volo (in genere) e' dato dal numero di destinatari.
+    private long _initMaxPacketsInFlight;
+    private long _maxPacketsInFlight = 0;
     
     // Used for multiple destinations.
     private boolean _isMulticasted = false;
-    // TODO forse non serve se ho settato il parallel transmission nell'agent.
-    private boolean _optimizedMulticast = false;
-    private int     _nextDestIndex = -1;
-    private boolean _continueToSend = false;
-    private Packet  _multiReqPacket = null;
-    protected int   _destIndex = 0;
-    protected List<Agent> _toAnswer;
+    private FlowSession session;
+    private Map<Long,FlowSession> _sessions;
+    //private int     _nextDestIndex = -1;
+    //private boolean _continueToSend = false;
+    //protected int   _destIndex = 0;
+    //protected List<Agent> _toAnswer;
     
     // Dummy packets used to generate the corresponding request.
     private RequestEvent  dummyReqEvent;
     private ResponseEvent dummyResEvent;
     
     
-    // TODO Molti dei valori nel costruttore andranno tolti e messi in appositi metodi:
-    // TODO isActive - settarlo a FALSE e diventa TRUE solo se viene invocato il metodo: startAt( Time time );
+    // TODO Molti dei valori nel costruttore andranno tolti o messi in appositi metodi:
+    // TODO isActive           - rimuoverlo e settarlo a FALSE: diventa TRUE solo se viene invocato il metodo "startAt( Time time )"
+    // TODO maxPacketsInFlight - rimuoverlo
     /**
      * Creates a new event generator.
      * 
-     * @param duration              time of life of the generator.
+     * @param duration              lifetime of the generator.
      * @param departureTime         time to wait before sending a packet.
      * @param maxPacketsInFlight    maximum number of packets in flight.
      * @param reqPacket             the request packet.
@@ -91,9 +92,11 @@ public abstract class EventGenerator
         
         _initMaxPacketsInFlight = _maxPacketsInFlight;
         
+        _sessions = new HashMap<>();
+        
         _destinations = new ArrayList<>();
         
-        _toAnswer = new LinkedList<>();
+        //_toAnswer = new LinkedList<>();
         
         // TODO assegnare i protocolli di comunicazione ad ogni livello (crearne anche il metodo).
         
@@ -102,20 +105,18 @@ public abstract class EventGenerator
     /**
      * Set the communication as a multicast.</br>
      * This is usefull in case of sending several copies of the input message to multiple destinations.</br>
-     * The {@linkplain #selectDestination()} method could be overrided to generate a proper next destination node.
+     * The {@linkplain #selectDestination()} method could be overridden to generate a proper next destination node.
      * 
      * @param multicasted    {@code true} if the output transmission is considered as a multicast,
      *                       {@code false} otherwise
-     * @param optimized      {@code true} if the multicast is optimized, hence the Ttrasm is not payed among two consecutive messages,
-     *                       {@code false} otherwise
     */
-    public EventGenerator setMulticast( final boolean multicasted, final boolean optimized )
+    public EventGenerator setMulticast( final boolean multicasted )
     {
         _isMulticasted = multicasted;
-        if (multicasted) {
+        /*if (multicasted) {
             _maxPacketsInFlight = _initMaxPacketsInFlight * _destinations.size();
             _optimizedMulticast = optimized;
-        }
+        }*/
         return this;
     }
     
@@ -143,13 +144,14 @@ public abstract class EventGenerator
     }
     
     /**
-     * Sets the time when the generator starts at.
+     * Sets the time when the generator starts at.</br>
+     * In addition let the generator start sending events in an active mode.
      * 
      * @param time    time of start
     */
     public void startAt( final Time time ) {
         _activeGenerator = true;
-        // TODO salvarsi il tempo di avvio.
+        _time.setTime( time );
     }
     
     public List<Agent> getDestinations() {
@@ -180,39 +182,29 @@ public abstract class EventGenerator
     }
     
     /**
-     * Checks whether the generator can send other packets.
-    */
-    private boolean canSend()
-    {
-        if (_isMulticasted){
-            return _nextDestIndex < _destinations.size() - 1;
-        } else {
-            return _packetsInFlight < _maxPacketsInFlight;
-        }
-    }
-    
-    /**
      * Update the internal state of the generator.</br>
      * This method is called everytime a new event arrive.</br>
      * By default it reduces by 1 the number of flying packets, but it can be</br>
      * extended to properly update the event generator.</br>
     */
-    public void update() {
+    /*public void update() {
         _packetsInFlight--;
-    }
+    }*/
     
+    /***/
     public Packet getRequestPacket() {
         return _reqPacket.clone();
     }
     
+    /***/
     public Packet getResponsePacket() {
         return _resPacket.clone();
     }
     
     /**
      * Generates a new packet to be sent.</br>
-     * In case of multicast operation the destination assumes value {@code -1}.</br>
-     * This method could be overridden to create a proper custom packet.</br>
+     * In case of multicast operation the destination assumes value {@code -1}
+     * and this method is called only once for all the possible destinations.</br>
      * A typical usage of the input event {@code e} is:
      * 
      * <pre>
@@ -232,9 +224,9 @@ public abstract class EventGenerator
     protected Packet makePacket( final Event e, final long destination )
     {
         if (e instanceof RequestEvent) {
-            return _resPacket.clone();
+            return getResponsePacket();
         } else {
-            return _reqPacket.clone();
+            return getRequestPacket();
         }
     }
     
@@ -261,6 +253,56 @@ public abstract class EventGenerator
     public abstract Time computeDepartureTime( final Event e );
     
     /**
+     * Retrieves the session associated with the given event.
+     * 
+     * @param e    the given event.
+    */
+    private FlowSession getSession( final Event e )
+    {
+        FlowSession session;
+        if (e == null) {
+            session = new FlowSession( FlowSession.nextFlowID() );
+            //System.out.println( _agent + ": GENERATA NUOVA SESSIONE: " + session.getId() );
+        } else {
+            if (_activeGenerator && !_waitResponse) {
+                session = new FlowSession( FlowSession.nextFlowID() );
+                //System.out.println( _agent + ": GENERATA NUOVA SESSIONE: " + session.getId() );
+            } else {
+                if ((session = _sessions.get( e.getFlowId() )) == null) {
+                    session = new FlowSession( e.getFlowId() );
+                    session.setSource( e.getSource() );
+                }
+            }
+        }
+        
+        //session.setMaximumFlyingPackets( _maxPacketsInFlight );
+        session.setMulticast( _isMulticasted );
+        session.setMaximumFlyingPackets( _destinations.size() );
+        
+        _sessions.put( session.getId(), session );
+        
+        return session;
+    }
+    
+    /**
+     * Checks whether a new event can be generated.
+     * 
+     * @param e    the given event.
+    */
+    private boolean generateEvent( final Event e )
+    {
+        if (!_makeAnswer || _time.compareTo( _duration ) > 0) {
+            return false;
+        }
+        
+        if (e == null && !_activeGenerator) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
      * Generates a new list of events.</br>
      * NOTE: time and event can be {@code null}.
      * 
@@ -271,7 +313,7 @@ public abstract class EventGenerator
     */
     public final List<Event> generate( final Time t, final Event e )
     {
-        if (!_makeAnswer || _time.compareTo( _duration ) > 0) {
+        if (!generateEvent( e )) {
             return null;
         }
         
@@ -290,50 +332,53 @@ public abstract class EventGenerator
         if (_time.compareTo( _duration ) > 0)
             return null; // No more events from this generator.
         
-        if (this instanceof SwitchGenerator)
-            System.out.println( "SONO QUI INPUT: " + e + ", CONTINUE: " + _continueToSend );
+        // Load the current session.
+        session = getSession( e );
         
-        if (_activeGenerator && canSend()) {
-            // TODO questo serve? pare di no..
-            if (this instanceof SwitchGenerator) System.out.println( "SONO QUI ACTIVE: " + e );
+        //if (_agent.getId() == 2)// primo nodo server
+        //    System.out.println( "EVENTO RICEVUTO: " + e );
+        
+        // FIXME controllare che funzioni anche con piu' messaggi contemporanei in input.
+        //if (_agent.getId() == 1)
+        //    System.out.println( "SONO QUI INPUT: " + e + ", CONTINUE: " + session.continueToSend() );
+        
+        if (_activeGenerator && session.canSend()) {
+            if (_agent.getId() == 1)
+                System.out.println( "SONO QUI ACTIVE: " + e );
+            
             dummyResEvent.setTime( _time );
-            //dummyResEvent.setArrivalTime( _time );
-            return sendRequest( dummyResEvent );
+            return sendRequest( session, dummyResEvent );
         }
         
         List<Event> events = null;
         if (e instanceof RequestEvent) {
             if (_delayResponse) {
-                if (this instanceof SwitchGenerator) System.out.println( "SONO QUI DELAYED: " + e );
+                //if (_agent.getId() == 1)
+                //    System.out.println( "SONO QUI DELAYED: " + e );
+                
                 // Prepare and send the new request packet to the next node.
                 dummyResEvent.setTime( _time );
                 dummyResEvent.setPacket( e.getPacket() );
-                //dummyResEvent.setArrivalTime( e.getArrivalTime() );
-                events = sendRequest( dummyResEvent );
-                _toAnswer.add( e.getSource() );
+                events = sendRequest( session, dummyResEvent );
             } else {
-                events = sendResponse( e, e.getDestination(), e.getSource() );
+                events = sendResponse( session, e, e.getDestination(), e.getSource() );
             }
         } else {
-            update();
+            session.increaseReceivedPackets();
             // Response message.
-            if (e != null && !_toAnswer.isEmpty()) {
-                if (!_isMulticasted) {
-                    Agent dest = _toAnswer.remove( 0 );
-                    events = sendResponse( e, _agent, dest );
-                } else {
-                    if (++_destIndex == _destinations.size()) {
-                        // Send back the "delayed" response.
-                        Agent dest = _toAnswer.remove( 0 );
-                        events = sendResponse( e, _agent, dest );
-                        _destIndex = 0;
-                    }
+            if (e != null && _delayResponse) {
+                // Send back the "delayed" response.
+                Agent dest = session.getSource();
+                events = sendResponse( session, e, _agent, dest );
+                if (session.completed()) {
+                    _sessions.remove( session.getId() );
                 }
             } else {
-                if (_continueToSend) {
-                    if (this instanceof SwitchGenerator) System.out.println( "SONO QUI CONTINUE" );
+                if (session.continueToSend()) {
+                    //if (_agent.getId() == 1)
+                    //    System.out.println( "SONO QUI CONTINUE" );
                     dummyResEvent.setTime( _time );
-                    events = sendRequest( dummyReqEvent );
+                    events = sendRequest( session, dummyReqEvent );
                 }
             }
         }
@@ -344,60 +389,43 @@ public abstract class EventGenerator
     /**
      * Generates a new list of request messages.
      * 
-     * @param e    the current received event. It can be {@code null}.
+     * @param session    the current session.
+     * @param e          the current received event. It can be {@code null}.
      * 
-     * @return the list of "sent" messages
+     * @return the list of request messages.
     */
-    private List<Event> sendRequest( final Event e )
+    private List<Event> sendRequest( final FlowSession session, final Event e )
     {
-        if (this instanceof SwitchGenerator)
-            System.out.println( "CREO IL MESSAGGIO DI RICHIESTA DA: " + e );
+        //if (_agent.getId() == 1)
+        //    System.out.println( "CREO IL MESSAGGIO DI RICHIESTA DA: " + e );
         
         List<Event> events = null;
-        if (canSend()) {
+        if (session.canSend()) {
             //_nextDestIndex = selectDestination( e.getArrivalTime() );
-            _nextDestIndex = selectDestination( _time );
+            int _nextDestIndex = selectDestination( _time );
             
-            // FIXME Dopo aver sistemato questo risolvere il bug #6 degli appunti
-            if (this instanceof SwitchGenerator)
-                System.out.println( "MULTICAST: " + _isMulticasted + ", MULTI_PACKET: " + _multiReqPacket );
+            //if (_agent.getId() == 1)
+            //    System.out.println( "MULTICAST: " + _isMulticasted + ", MULTI_PACKET: " + session.getPacket() );
             
             // Prepare the request packet.
-            Packet reqPacket;
-            if (_isMulticasted && _multiReqPacket != null) {
-                reqPacket = _multiReqPacket;
-            } else {
+            Packet reqPacket = session.getPacket();
+            if (reqPacket == null) {
                 reqPacket = makePacket( e, (_isMulticasted) ? -1 : _nextDestIndex );
-                _multiReqPacket = reqPacket;
+                session.setPacket( reqPacket );
             }
             
-            if (this instanceof SwitchGenerator)
-                System.out.println( "INIZIO GENERAZIONE MESSAGGIO DI RICHIESTA DA: " + e );
+            //if (_agent.getId() == 1)
+            //    System.out.println( "INIZIO GENERAZIONE MESSAGGIO DI RICHIESTA DA: " + e );
             
             if (reqPacket != null) {
-                /*if (_optimizedMulticast) {
-                    _packetsInFlight = (_packetsInFlight + _destinations.size()) % Utils.INFINITE;
-                    events = new ArrayList<>( _destinations.size() );
-                    for (int i = 0; i < _destinations.size(); i++) {
-                        Agent dest = _destinations.get( _nextDestIndex = selectDestination( e.getArrivalTime() ) );
-                        Event request = new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() );
-                        // TODO questa serve?? pare di no
-                        //request.setArrivalTime( e.getArrivalTime() );
-                        events.add( request );
-                    }
-                } else {*/
-                    _packetsInFlight = (_packetsInFlight + 1) % Utils.INFINITE;
-                    Agent dest = _destinations.get( _nextDestIndex );
-                    Event request = new RequestEvent( _time.clone(), _agent, dest, reqPacket.clone() );
-                    events = Collections.singletonList( request );
-                    _continueToSend = _isMulticasted && canSend();
-                    if (_continueToSend == false) {
-                        _multiReqPacket = null;
-                    }
-                    
-                    if (this instanceof SwitchGenerator)
-                        System.out.println( "GENERATA RICHIESTA: " + request );
-                //}
+                session.increaseSentPackets();
+                Agent dest = _destinations.get( _nextDestIndex );
+                Event request = new RequestEvent( _time, _agent, dest, reqPacket.clone() );
+                request.setFlowId( session.getId() );
+                events = Collections.singletonList( request );
+                
+                //if (_agent.getId() == 1)
+                //    System.out.println( "GENERATA RICHIESTA: " + request );
             }
         }
         
@@ -405,35 +433,37 @@ public abstract class EventGenerator
     }
     
     /**
-     * Select the index of the next destination node at the specified time.
+     * Select the next destination node at the specified time.
      * 
      * @param time    time to check the destination. Useful in multicast/anycast transmissions
-     *                where, for instance, the destination node is selected based on their workloads.
+     *                where, for instance, the destination node is selected based on its workload.
      * 
      * @return Index of the next destination.</br>
      *         It must be in the range <b>[0 - #destinations)</b>
     */
     protected int selectDestination( final Time time ) {
-        return (_nextDestIndex + 1) % _destinations.size();
+        return session.getNextDestination( _destinations.size() );
     }
     
     /**
      * Generates a new list of response messages.
      * 
-     * @param e     the current received event.
-     * @param from  the source node
-     * @param dest  the destination node
+     * @param session    the current session
+     * @param e          the received event.
+     * @param from       the source node
+     * @param dest       the destination node
      * 
-     * @return the list of response messages
+     * @return the list of response messages.
     */
-    private List<Event> sendResponse( final Event e, final Agent from, final Agent dest )
+    private List<Event> sendResponse( final FlowSession session, final Event e, final Agent from, final Agent dest )
     {
-        Packet resPacket = makePacket( e, -1 );
+        Packet resPacket = makePacket( e, session.getSource().getId() );
         
         if (resPacket == null) {
             return null;
         } else {
-            Event response = new ResponseEvent( _time.clone(), from, dest, resPacket );
+            Event response = new ResponseEvent( _time, from, dest, resPacket );
+            response.setFlowId( session.getId() );
             if (from.getEventHandler() != null) {
                 from.getEventHandler().handle( response, EventType.GENERATED );
             }

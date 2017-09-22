@@ -477,7 +477,8 @@ public class Plotter
             this.box = box;
         }
         
-        public void updateValues() {
+        public void updateValues()
+        {
             if (box != null) {
                 box.setText( title );
             }
@@ -490,7 +491,8 @@ public class Plotter
         }
         
         @Override
-        public Plot clone() {
+        public Plot clone()
+        {
             Color nColor = new Color( color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() );
             Plot plot = new Plot( title, points, nColor, line, lineWidth, box );
             return plot;
@@ -525,6 +527,8 @@ public class Plotter
             
             setDoubleBuffered( true );
             addMouseMotionListener( this );
+            
+            setLayout( null );
             
             description = new JTextArea();
             description.addMouseMotionListener( this );

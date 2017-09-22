@@ -66,12 +66,13 @@ public class EnergyTestDIST
             queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
             model = new ClientModel();
             model.loadModel();
+            startAt( Time.ZERO );
         }
         
         @Override
         public Packet makePacket( final Event e, final long destination )
         {
-            Packet packet = _reqPacket.clone();
+            Packet packet = getRequestPacket();
             while (true) {
                 long queryID = RANDOM.nextInt( NUM_QUERIES ) + 1;
                 if (model.isQueryAvailable( queryID )) {
@@ -173,7 +174,7 @@ public class EnergyTestDIST
                                 final Packet resPacket ) {
             super( duration, Time.ZERO, Utils.INFINITE, reqPacket, resPacket, false, true, false );
             // TODO bug quando si setta optimized a FALSE
-            setMulticast( true, true );
+            setMulticast( true );
         }
         
         @Override
@@ -398,8 +399,8 @@ public class EnergyTestDIST
             switchAgent.getEventGenerator( 0 ).connect( agentCore );
         }
         
-        //sim.start( new Time( 24, TimeUnit.HOURS ) );
-        sim.start( new Time( 19100, TimeUnit.MICROSECONDS ) );
+        sim.start( new Time( 24, TimeUnit.HOURS ) );
+        //sim.start( new Time( 299100, TimeUnit.MICROSECONDS ) );
         
         // Show the animation.
         AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );

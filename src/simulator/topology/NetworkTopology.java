@@ -258,7 +258,7 @@ public class NetworkTopology
     
     /**
      * This method permits to add some "external" events to modify the current network
-     * topology during the simulation, adding or removing links or nodes, at some fixed time
+     * topology during the simulation (i.e. add/remove links or nodes), at some fixed time
      * specified in the event.
      * 
      * @param events    the "external" events
@@ -271,7 +271,7 @@ public class NetworkTopology
     
     /**
      * This method permits to add an "external" event to modify the current network
-     * topology during the simulation, adding or removing links or nodes, at some fixed time
+     * topology during the simulation (i.e. add/remove links or nodes), at some fixed time
      * specified in the event.
      * 
      * @param event    the "external" event
@@ -352,7 +352,7 @@ public class NetworkTopology
         }
     }
     
-    private static final long getNextID() {
+    private static final synchronized long getNextID() {
         return nextID = (nextID + 1) % Long.MAX_VALUE;
     }
 

@@ -109,7 +109,7 @@ public class EventScheduler
     /**
      * Returns the next unique event identifier.
     */
-    public static long nextEventId() {
+    public static synchronized long nextEventId() {
         return ++eventID % Long.MAX_VALUE;
     }
     
