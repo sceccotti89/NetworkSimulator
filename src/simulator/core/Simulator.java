@@ -101,18 +101,6 @@ public class Simulator implements AutoCloseable
         net.setEventScheduler( _evtScheduler );
     }
     
-    /*public NetworkTopology getNetwork( final long netId ) {
-        return _networks.get( netId );
-    }
-    
-    public Collection<NetworkTopology> getNetworks() {
-        return _networks.values();
-    }
-    
-    public void trackEvents( final String eventsFile, final long netID ) throws FileNotFoundException {
-        _networks.get( netID ).setTrackingEvent( eventsFile );
-    }*/
-    
     /**
      * Starts the simulation.
      * 
@@ -142,47 +130,19 @@ public class Simulator implements AutoCloseable
         }
         
         //_network.computeShortestPaths();
-        SimulatorExecution simExe = new SimulatorExecution( _network, duration );
-        simExes.add( simExe );
-        simExe.start();
+        
+        EventScheduler evtScheduler = _network.getEventScheduler();
+        evtScheduler.setDuration( duration );
         
         if (!parExe) {
-            try {
-                simExe.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            SimulatorExecution.startSimulation( _network );
             _network.shutdown();
+        } else {
+            SimulatorExecution simExe = new SimulatorExecution( _network );
+            simExes.add( simExe );
+            simExe.start();
         }
     }
-    
-    /*public void pause()
-    {
-        elapsedTime += System.currentTimeMillis() - currentTime;
-        // TODO crea un evento in modo che se letto rimanga in attesa del resume.
-        throw new UnsupportedOperationException( "Not yet implemented." );
-    }
-    
-    public void resume()
-    {
-        currentTime = System.currentTimeMillis();
-        // TODO crea e aggiunge l'evento resume in modo che riparta.
-        throw new UnsupportedOperationException( "Not yet implemented." );
-    }
-    
-    public void stop()
-    {
-        elapsedTime += System.currentTimeMillis() - currentTime;
-        long hours   =  elapsedTime/3600000L;
-        long minutes = (elapsedTime - hours*3600000L)/60000L;
-        long seconds = (elapsedTime - hours*3600000L - minutes*60000L)/1000L;
-        long millis  =  elapsedTime - hours*3600000L - minutes*60000L - seconds*1000L;
-        Utils.LOGGER.info( "Simulation completed in " + hours + "h:" + minutes + "m:" + seconds + "s:" + millis + "ms" );
-        
-        for (NetworkTopology net : _networks.values()) {
-            net.shutdown();
-        }
-    }*/
     
     @Override
     public void close()
@@ -200,23 +160,29 @@ public class Simulator implements AutoCloseable
     private static class SimulatorExecution extends Thread
     {
         private final NetworkTopology net;
-        private long currentTime = 0L;
         
-        public SimulatorExecution( final NetworkTopology net, final Time duration )
-        {
+        public SimulatorExecution( final NetworkTopology net ) {
             this.net = net;
-            EventScheduler evtScheduler = net.getEventScheduler();
-            evtScheduler.setDuration( duration );
-            for (Agent agent : net.getAgents()) {
-                evtScheduler.schedule( agent.fireEvent( null, null ) );
-            }
         }
         
         @Override
         public void run() {
+            startSimulation( net );
+        }
+        
+        private static final void startSimulation( final NetworkTopology net )
+        {
             Utils.LOGGER.info( "Simulation start!" );
-            currentTime = System.currentTimeMillis();
+            long currentTime = System.currentTimeMillis();
+            
+            EventScheduler evtScheduler = net.getEventScheduler();
+            for (Agent agent : net.getAgents()) {
+                evtScheduler.schedule( agent.fireEvent( null, null ) );
+            }
+            
             net.getEventScheduler().doAllEvents();
+            
+            net.shutdown();
             
             // Calculates the time elapsed from the beginning of the simulation.
             long elapsedTime = System.currentTimeMillis() - currentTime;

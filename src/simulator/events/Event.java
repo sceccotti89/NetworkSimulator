@@ -181,8 +181,7 @@ public abstract class Event implements Comparable<Event>
         long nextNode = net.nextNode( nodeId, _dest.getId() ).getId();
         NetworkLink link = net.getLink( nodeId, nextNode );
         if (link != null && link.isActive()) {
-            //if (nodeId == _source.getId())
-                //System.out.println( "[" + _time + "] Starting from node: " + node );
+            //if (nodeId == _source.getId()) System.out.println( "[" + _time + "] Starting from node: " + node );
             
             if (link.checkErrorLink()) {
                 //System.out.println( "[" + _time + "] Packet lost due to an error in the link." );

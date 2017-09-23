@@ -28,7 +28,7 @@ public class NetworkTest
                                 final Packet reqPacket,
                                 final Packet resPacket )
         {
-            super( duration, Time.ZERO, reqPacket, resPacket, false, true );
+            super( duration, Time.ZERO, reqPacket, resPacket, false );
             startAt( Time.ZERO );
         }
     }
@@ -39,7 +39,7 @@ public class NetworkTest
                                    final Packet reqPacket,
                                    final Packet resPacket )
         {
-            super( duration, Time.ZERO, reqPacket, resPacket, true, true );
+            super( duration, Time.ZERO, reqPacket, resPacket, true );
         }
     }
     
@@ -120,13 +120,13 @@ public class NetworkTest
     public static void main( final String argv[] ) throws Exception
     {
         Utils.VERBOSE = false;
-    	example1();
-    	example2();
-    	example3();
-        example4();
-        example5();
+    	//example1();
+    	//example2();
+    	//example3();
+        //example4();
+        //example5();
         example6();
-        example7();
+        //example7();
         //testNetworkAnimation();
     	
     	System.out.println( "End of simulation." );
@@ -317,6 +317,7 @@ public class NetworkTest
          10ms              7ms               5ms
         */
         
+        // FIXME con questa gestione dell'event generator questo test non funzionerebbe proprio correttamente.
         NetworkTopology net = new NetworkTopology( "Topology/Topology_ex6.json" );
         System.out.println( net.toString() );
         
@@ -325,6 +326,7 @@ public class NetworkTest
         ClientGenerator generator = new ClientGenerator( new Time( 2, TimeUnit.SECONDS ),
                                                          new Packet( 40, SizeUnit.KILOBYTE ),
                                                          new Packet( 20, SizeUnit.KILOBYTE ) );
+        generator.setMaximumFlyingPackets( 2 );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
@@ -364,6 +366,7 @@ public class NetworkTest
         ClientGenerator generator = new ClientGenerator( new Time( 2, TimeUnit.SECONDS ),
                                                          new Packet( 40, SizeUnit.KILOBYTE ),
                                                          new Packet( 20, SizeUnit.KILOBYTE ) );
+        generator.setWaitForResponse( true );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
@@ -401,13 +404,15 @@ public class NetworkTest
         EventGenerator generator = new ClientGenerator( Time.INFINITE,
                                                         new Packet( 20, SizeUnit.MEGABYTE ),
                                                         new Packet( 20, SizeUnit.MEGABYTE ) );
+        generator.setWaitForResponse( true );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        EventGenerator anyGen = new MulticastGenerator( Time.INFINITE,
-                                                        new Packet( 20, SizeUnit.MEGABYTE ),
-                                                        new Packet( 20, SizeUnit.MEGABYTE ) );
-        Agent switchAgent = new SwitchAgent( 1, anyGen );
+        EventGenerator multiGen = new MulticastGenerator( Time.INFINITE,
+                                                          new Packet( 20, SizeUnit.MEGABYTE ),
+                                                          new Packet( 20, SizeUnit.MEGABYTE ) );
+        multiGen.setWaitForResponse( true );
+        Agent switchAgent = new SwitchAgent( 1, multiGen );
         net.addAgent( switchAgent );
         
         client.getEventGenerator( 0 ).connect( switchAgent );

@@ -17,6 +17,7 @@ import simulator.events.Packet;
 import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
 import simulator.utils.Time;
+import simulator.utils.Utils;
 
 public abstract class EventGenerator
 {
@@ -35,35 +36,36 @@ public abstract class EventGenerator
     private boolean _makeAnswer = true;
     private Time    _departureTime;
     
-    // Used for multiple destinations.
     private boolean _isMulticasted = false;
-    private FlowSession session;
+    
+    //private long _flyingPackets      = 0;
+    //private long _receivedPackets    = 0;
+    private long _maxPacketsInFlight = 0;
+    private boolean _setByTheUser    = false;
+    
     private Map<Long,FlowSession> _sessions;
+    private FlowSession session;
     
     // Dummy packets used to generate the corresponding request.
     private RequestEvent  dummyReqEvent;
     private ResponseEvent dummyResEvent;
     
     
-    // TODO forse il numero di pacchetti in volo poteva servire, o almeno mettere un metodo che lo specifichi..
     // TODO Molti dei valori nel costruttore andranno tolti o messi in appositi metodi:
     /**
      * Creates a new event generator.
      * 
      * @param duration              lifetime of the generator.
      * @param departureTime         time to wait before sending a packet.
-     * @param maxPacketsInFlight    maximum number of packets in flight.
      * @param reqPacket             the request packet.
      * @param resPacket             the response packet.
-     * @param delayResponse         {@code TRUE} if the answer to the source is sent after the reception of a message as a reponse of an outgoing packet, {@code FALSE} to send it immediately.
-     * @param waitResponse          {@code TRUE} let this generator to wait the response of any sent message before sending the next one, {@code FALSE} otherwise.
+     * @param delayResponse         {@code TRUE} let this generator to answer the source after the reception of a message as a reponse of an out-going packet, {@code FALSE} to send it immediately.
     */
     public EventGenerator( final Time duration,
                            final Time departureTime,
                            final Packet reqPacket,
                            final Packet resPacket,
-                           final boolean delayResponse,
-                           final boolean waitResponse )
+                           final boolean delayResponse )
     {
         _time = new Time( 0, TimeUnit.MICROSECONDS );
         
@@ -72,7 +74,6 @@ public abstract class EventGenerator
         _resPacket          = resPacket;
         _departureTime      = departureTime;
         _delayResponse      = delayResponse;
-        _waitResponse       = waitResponse;
         
         _sessions = new HashMap<>();
         _destinations = new ArrayList<>();
@@ -91,10 +92,9 @@ public abstract class EventGenerator
     public EventGenerator connect( final Agent to )
     {
         _destinations.add( to );
-        _isMulticasted = _destinations.size() > 1;
-        /*if (_isMulticasted) {
-            _maxPacketsInFlight = _initMaxPacketsInFlight * _destinations.size();
-        }*/
+        if (!_setByTheUser) {
+            _maxPacketsInFlight++;
+        }
         return this;
     }
     
@@ -106,14 +106,46 @@ public abstract class EventGenerator
     }
     
     /**
+     * 
+    */
+    public void setMulticast( final boolean flag ) {
+        _isMulticasted = flag;
+    }
+    
+    /**
      * Sets the time when the generator starts at.</br>
      * This method lets the generator to send events in any moment.
      * 
      * @param time    time of start
     */
-    public void startAt( final Time time ) {
+    public void startAt( final Time time )
+    {
         _activeGenerator = true;
         _time.setTime( time );
+        _maxPacketsInFlight = Utils.INFINITE;
+        _setByTheUser = true;
+        setWaitForResponse( false );
+    }
+    
+    /**
+     * Sets the maximum number of packets in flight.</br>
+     * The minimum number of packets is internally sets as the maximum between 1 and the given value.</br>
+     * In addition forces the generator to wait for the response before sending new packets.
+    */
+    public void setMaximumFlyingPackets( final long packets )
+    {
+        _maxPacketsInFlight = Math.max( packets, 1 );
+        _setByTheUser = true;
+        setWaitForResponse( true );
+    }
+    
+    /**
+     * Sets this generator to wait the response of any sent message before sending the next one.
+     * 
+     * @param flag    {@code TRUE} , {@code FALSE} otherwise.
+    */
+    public void setWaitForResponse( final boolean flag ) {
+        _waitResponse = flag;
     }
     
     public List<Agent> getDestinations() {
@@ -209,21 +241,22 @@ public abstract class EventGenerator
         FlowSession session;
         if (e == null) {
             session = new FlowSession();
+            session.setMaximumFlyingPackets( _maxPacketsInFlight );
+            _sessions.put( session.getId(), session );
         } else {
             if (_activeGenerator && !_waitResponse) {
                 session = new FlowSession();
+                session.setMaximumFlyingPackets( _maxPacketsInFlight );
+                _sessions.put( session.getId(), session );
             } else {
                 if ((session = _sessions.get( e.getFlowId() )) == null) {
                     session = new FlowSession( e.getFlowId() );
                     session.setSource( e.getSource() );
+                    session.setMaximumFlyingPackets( _maxPacketsInFlight );
+                    _sessions.put( session.getId(), session );
                 }
             }
         }
-        
-        //session.setMaximumFlyingPackets( _maxPacketsInFlight );
-        session.setMaximumFlyingPackets( _destinations.size() );
-        
-        _sessions.put( session.getId(), session );
         
         return session;
     }
@@ -238,13 +271,28 @@ public abstract class EventGenerator
         if (!_makeAnswer || _time.compareTo( _duration ) > 0) {
             return false;
         }
-        
         if (e == null && !_activeGenerator) {
             return false;
         }
         
         return true;
     }
+    
+    /**
+     * Checks whether the generator can send other packets.
+    */
+    /*private boolean canSend() {
+        return _flyingPackets >= 0 && _flyingPackets < _maxPacketsInFlight;
+    }*/
+    
+    /**
+     * Checks whether the session has been completed.
+    */
+    /*private boolean completed() {
+        return _receivedPackets == _maxPacketsInFlight;
+    }*/
+    
+    // FIXME qualcosa nel codice ancora non torna: analizzare bene confrontandosi anche con l'esempio 6.
     
     /**
      * Generates a new event.</br>
@@ -276,36 +324,50 @@ public abstract class EventGenerator
         // Load the current session.
         session = getSession( e );
         
-        if (_activeGenerator && session.canSend()) {
+        //System.out.println( "AGENT: " + _agent.getId() + ", CAN_SEND: " + session.canSend() + ", WAIT_RESPONSE: " + _waitResponse );
+        if (e == null && _activeGenerator && session.canSend()) {
             dummyResEvent.setTime( _time );
             return sendRequest( dummyResEvent );
         }
         
         Event event = null;
         if (e instanceof RequestEvent) {
-            if (_delayResponse) {
-                // Prepare and send the new request packet to the next node.
+            if (e.getSource().getId() == _agent.getId()) {
                 if (session.canSend()) {
                     dummyResEvent.setTime( _time );
-                    dummyResEvent.setPacket( e.getPacket() );
-                    event = sendRequest( dummyResEvent );
+                    return sendRequest( dummyResEvent );
                 }
             } else {
-                event = sendResponse( e, e.getDestination(), e.getSource() );
+                if (_delayResponse) {
+                    // Prepare and send the new request packet to the next node.
+                    if (session.canSend()) {
+                        dummyResEvent.setTime( _time );
+                        dummyResEvent.setPacket( e.getPacket() );
+                        event = sendRequest( dummyResEvent );
+                    }
+                } else {
+                    //System.out.println( "AGENT: " + _agent.getId() + ", GENERO RISPOSTA: " + e );
+                    event = sendResponse( e, e.getDestination(), e.getSource() );
+                }
             }
-        } else { // Response message.
-            session.increaseReceivedPackets();
-            if (_delayResponse) {
-                // Send back the "delayed" response.
-                Agent dest = session.getSource();
-                event = sendResponse( e, _agent, dest );
-                if (session.completed()) {
-                    _sessions.remove( session.getId() );
-                }
-            } else {
-                if (session.canSend()) {
-                    dummyResEvent.setTime( _time );
-                    event = sendRequest( dummyReqEvent );
+        } else {
+            // Response message.
+            if (e.getSource().getId() != _agent.getId()) {
+                session.increaseReceivedPackets();
+                //_receivedPackets++;
+                //_flyingPackets--;
+                if (_delayResponse) {
+                    // Send back the "delayed" response.
+                    Agent dest = session.getSource();
+                    event = sendResponse( e, _agent, dest );
+                    if (session.completed()) {
+                        _sessions.remove( session.getId() );
+                    }
+                } else {
+                    if (session.canSend()) {
+                        dummyResEvent.setTime( _time );
+                        event = sendRequest( dummyReqEvent );
+                    }
                 }
             }
         }
@@ -316,25 +378,26 @@ public abstract class EventGenerator
     /**
      * Generates a new request messages.
      * 
-     * @param e          the current received event. It can be {@code null}.
+     * @param e    the current received event. It can be {@code null}.
      * 
      * @return the request messages.
     */
     private Event sendRequest( final Event e )
     {
         Event event = null;
-        int _nextDestIndex = selectDestination( _time );
+        int nextDestIndex = selectDestination( _time );
+        Agent dest = _destinations.get( nextDestIndex );
         
         // Prepare the request packet.
         Packet reqPacket = session.getPacket();
-        if (reqPacket == null) {
-            reqPacket = makePacket( e, (_isMulticasted) ? -1 : _nextDestIndex );
+        if (reqPacket == null || !_isMulticasted) {
+            reqPacket = makePacket( e, (_isMulticasted) ? -1 : dest.getId() );
             session.setPacket( reqPacket );
         }
         
         if (reqPacket != null) {
             session.increaseSentPackets();
-            Agent dest = _destinations.get( _nextDestIndex );
+            //_flyingPackets++;
             event = new RequestEvent( _time, _agent, dest, reqPacket.clone() );
             event.setFlowId( session.getId() );
         }
@@ -358,15 +421,17 @@ public abstract class EventGenerator
     /**
      * Generates a new list of response messages.
      * 
-     * @param e          the received event.
-     * @param from       the source node
-     * @param dest       the destination node
+     * @param e       the received event.
+     * @param from    the source node
+     * @param dest    the destination node
      * 
      * @return the list of response messages.
     */
     private Event sendResponse( final Event e, final Agent from, final Agent dest )
     {
-        Packet resPacket = makePacket( e, session.getSource().getId() );
+        Packet resPacket = makePacket( e, dest.getId() );
+        //System.out.println( "AGENT: " + _agent.getId() + ", SESSION: " + session.getId() + ", DEST: " + from.getId() + ", EVENT: " + e );
+        //Packet resPacket = makePacket( e, session.getSource().getId() );
         
         if (resPacket == null) {
             return null;

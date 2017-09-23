@@ -56,7 +56,7 @@ public class EnergyTestMONO
         
         public ClientGenerator( final Packet reqPacket, final Packet resPacket ) throws IOException
         {
-            super( Time.INFINITE, Time.DYNAMIC, reqPacket, resPacket, false, false );
+            super( Time.INFINITE, Time.DYNAMIC, reqPacket, resPacket, false );
             startAt( Time.ZERO );
             
             // Open the associated file.
@@ -123,7 +123,7 @@ public class EnergyTestMONO
         public AnycastGenerator( final Time duration,
                                  final Packet reqPacket,
                                  final Packet resPacket ) {
-            super( duration, Time.ZERO, reqPacket, resPacket, true, false );
+            super( duration, Time.ZERO, reqPacket, resPacket, true );
         }
         
         @Override
@@ -220,20 +220,17 @@ public class EnergyTestMONO
         }
     }
     
-    private static class SinkGenerator extends EventGenerator
+    
+    
+    
+    
+    
+    private static class MulticoreGenerator extends EventGenerator
     {
-        public SinkGenerator( final Time duration,
-                              final Packet reqPacket,
-                              final Packet resPacket )
-        {
-            super( duration, Time.ZERO, reqPacket, resPacket, false, true );
+        public MulticoreGenerator( final Time duration, final Packet reqPacket, final Packet resPacket ) {
+            super( duration, Time.ZERO, reqPacket, resPacket, false );
         }
     }
-    
-    
-    
-    
-    
     
     private static class MulticoreAgent extends Agent implements EventHandler
     {
@@ -302,7 +299,7 @@ public class EnergyTestMONO
     
     public static void main( final String[] args ) throws Exception
     {
-        //Utils.VERBOSE = false;
+        Utils.VERBOSE = false;
         
         CPUEnergyModel model = null;
         
@@ -381,9 +378,9 @@ public class EnergyTestMONO
             cpu.setModel( model );
             cpus.add( cpu );
             
-            EventGenerator sink = new SinkGenerator( Time.INFINITE,
-                                                     new Packet( 20, SizeUnit.MEGABYTE ),
-                                                     new Packet( 20, SizeUnit.MEGABYTE ) );
+            EventGenerator sink = new MulticoreGenerator( Time.INFINITE,
+                                                          new Packet( 20, SizeUnit.MEGABYTE ),
+                                                          new Packet( 20, SizeUnit.MEGABYTE ) );
             Agent agentCore = new MulticoreAgent( 2 + i, sink );
             agentCore.addDevice( cpu );
             net.addAgent( agentCore );
@@ -454,10 +451,9 @@ public class EnergyTestMONO
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        EventGenerator sink = new SinkGenerator( Time.INFINITE,
-                                                 new Packet( 40, SizeUnit.BYTE ),
-                                                 new Packet( 20, SizeUnit.BYTE ) );
-        
+        EventGenerator sink = new MulticoreGenerator( Time.INFINITE,
+                                                      new Packet( 40, SizeUnit.BYTE ),
+                                                      new Packet( 20, SizeUnit.BYTE ) );
         Agent server = new MulticoreAgent( 1, sink );
         if (model.getType() == Type.CONS) {
             EventGenerator evtGen = new ServerConsGenerator( duration,
@@ -575,9 +571,9 @@ public class EnergyTestMONO
             cpu.setModel( model.clone() );
             cpus.add( cpu );
             
-            EventGenerator sink = new SinkGenerator( Time.INFINITE,
-                                                     new Packet( 20, SizeUnit.BYTE ),
-                                                     new Packet( 20, SizeUnit.BYTE ) );
+            EventGenerator sink = new MulticoreGenerator( Time.INFINITE,
+                                                          new Packet( 20, SizeUnit.BYTE ),
+                                                          new Packet( 20, SizeUnit.BYTE ) );
             Agent agentCore = new MulticoreAgent( 2 + i, sink );
             agentCore.addDevice( cpu );
             net.addAgent( agentCore );

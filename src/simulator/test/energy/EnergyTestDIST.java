@@ -42,8 +42,8 @@ public class EnergyTestDIST
     
     private static class ClientGenerator extends EventGenerator
     {
-        //private static final String QUERY_TRACE = "Models/msn.day2.arrivals.txt";
-        private static final String QUERY_TRACE = "Models/test_arrivals.txt";
+        private static final String QUERY_TRACE = "Models/msn.day2.arrivals.txt";
+        //private static final String QUERY_TRACE = "Models/test_arrivals.txt";
         private static final int NUM_QUERIES = 10000;
         // Random generator seed.
         private static final int SEED = 50000;
@@ -59,14 +59,13 @@ public class EnergyTestDIST
         
         public ClientGenerator( final Packet reqPacket, final Packet resPacket ) throws IOException
         {
-            super( Time.INFINITE, Time.DYNAMIC, reqPacket, resPacket, false, false );
+            super( Time.INFINITE, Time.DYNAMIC, reqPacket, resPacket, false );
             startAt( Time.ZERO );
             
             // Open the associated file.
             queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
             model = new ClientModel();
             model.loadModel();
-            startAt( Time.ZERO );
         }
         
         @Override
@@ -127,7 +126,7 @@ public class EnergyTestDIST
         public AnycastGenerator( final Time duration,
                                  final Packet reqPacket,
                                  final Packet resPacket ) {
-            super( duration, Time.ZERO, reqPacket, resPacket, true, false );
+            super( duration, Time.ZERO, reqPacket, resPacket, true );
         }
         
         @Override
@@ -166,7 +165,7 @@ public class EnergyTestDIST
         public SwitchGenerator( final Time duration,
                                 final Packet reqPacket,
                                 final Packet resPacket ) {
-            super( duration, Time.ZERO, reqPacket, resPacket, true, false );
+            super( duration, Time.ZERO, reqPacket, resPacket, true );
         }
         
         @Override
@@ -178,12 +177,11 @@ public class EnergyTestDIST
             } else {
                 // New request from client: clone the packet.
                 packet = e.getPacket().clone();
-            }
-            
-            // TODO qui in teoria dovrei utilizzare il predittore e "consigliare" la frequenza da utilizzare per quel core.
-            // TODO prima pero' dovrei mettere questo in un generatore non multicast e settarlo a dovere.
-            if (PREDICTION_ON_SWITCH) {
-                
+                if (PREDICTION_ON_SWITCH) {
+                    // TODO qui in teoria dovrei utilizzare il predittore e "consigliare" la frequenza da utilizzare per quel nodo.
+                    // TODO ricordarsi che la destinazione varia da 2 a 6, lo 0 e' il client
+                    //System.out.println( "DESTINATION: " + destination );
+                }
             }
             
             return packet;
@@ -237,20 +235,17 @@ public class EnergyTestDIST
         }
     }
     
-    private static class SinkGenerator extends EventGenerator
+    
+    
+    
+    
+    
+    private static class MulticoreGenerator extends EventGenerator
     {
-        public SinkGenerator( final Time duration,
-                              final Packet reqPacket,
-                              final Packet resPacket )
-        {
-            super( duration, Time.ZERO, reqPacket, resPacket, false, true );
+        public MulticoreGenerator( final Time duration, final Packet reqPacket, final Packet resPacket ) {
+            super( duration, Time.ZERO, reqPacket, resPacket, false );
         }
     }
-    
-    
-    
-    
-    
     
     private static class MulticoreAgent extends Agent implements EventHandler
     {
@@ -311,7 +306,7 @@ public class EnergyTestDIST
     public static void main( final String[] args ) throws Exception
     {
         Utils.VERBOSE = false;
-        PREDICTION_ON_SWITCH = false;
+        PREDICTION_ON_SWITCH = true;
         
         execute( Mode.PESOS_TIME_CONSERVATIVE,  500 );
         //execute( Mode.PESOS_TIME_CONSERVATIVE, 1000 );
@@ -321,9 +316,9 @@ public class EnergyTestDIST
     
     private static void execute( final Mode mode, final long timeBudget ) throws Exception
     {
-        //testMultiCore( timeBudget, mode );
+        testMultiCore( timeBudget, mode );
         //testSingleCore( timeBudget, mode );
-        testAnimationNetwork( timeBudget, mode );
+        //testAnimationNetwork( timeBudget, mode );
     }
     
     public static void testAnimationNetwork( final long timeBudget, final Mode mode ) throws Exception
@@ -369,9 +364,9 @@ public class EnergyTestDIST
             model.loadModel();
             cpu.setModel( model );
             
-            EventGenerator sink = new SinkGenerator( Time.INFINITE,
-                                                     new Packet( 20, SizeUnit.BYTE ),
-                                                     new Packet( 20, SizeUnit.BYTE ) );
+            EventGenerator sink = new MulticoreGenerator( Time.INFINITE,
+                                                          new Packet( 20, SizeUnit.BYTE ),
+                                                          new Packet( 20, SizeUnit.BYTE ) );
             Agent agentCore = new MulticoreAgent( 2 + i, sink );
             agentCore.addDevice( cpu );
             net.addAgent( agentCore );
@@ -467,9 +462,9 @@ public class EnergyTestDIST
                 model.loadModel();
                 cpu.setModel( model );
                 
-                EventGenerator sink = new SinkGenerator( Time.INFINITE,
-                                                         new Packet( 20, SizeUnit.BYTE ),
-                                                         new Packet( 20, SizeUnit.BYTE ) );
+                EventGenerator sink = new MulticoreGenerator( Time.INFINITE,
+                                                              new Packet( 20, SizeUnit.BYTE ),
+                                                              new Packet( 20, SizeUnit.BYTE ) );
                 long id = i * (CPU_CORES + 1) + 3 + j;
                 Agent agentCore = new MulticoreAgent( id, sink );
                 agentCore.addDevice( cpu );
@@ -548,9 +543,6 @@ public class EnergyTestDIST
         
         Simulator sim = new Simulator( net );
         
-        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/",
-                                                                 "predictions.txt", "time_energy.txt", "regressors.txt" );
-        model.loadModel();
         EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
                                                         new Packet( 20, SizeUnit.BYTE ) );
         Agent client = new ClientAgent( 0, generator );
@@ -559,17 +551,19 @@ public class EnergyTestDIST
         EventGenerator switchGen = new SwitchGenerator( Time.INFINITE,
                                                         new Packet( 20, SizeUnit.BYTE ),
                                                         new Packet( 20, SizeUnit.BYTE ) );
-        //switchGen.setMulticast( true, true );
         Agent switchAgent = new SwitchAgent( 1, switchGen );
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
         
+        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/",
+                                               "predictions.txt", "time_energy.txt", "regressors.txt" );
+        model.loadModel();
         String modelType = model.getModelType( true );
         
         List<EnergyCPU> cpus = new ArrayList<>( NODES );
         Plotter plotter = new Plotter( "DISTRIBUTED MULTI_CORE - " + model.getModelType( false ), 800, 600 );
         for (int i = 0; i < NODES; i++) {
-            EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/cpu_frequencies.txt" );
+            EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 4, 1, "Models/cpu_frequencies.txt" );
             cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
             cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
             cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
@@ -587,9 +581,9 @@ public class EnergyTestDIST
             model.loadModel();
             cpu.setModel( model );
             
-            EventGenerator sink = new SinkGenerator( Time.INFINITE,
-                                                     new Packet( 20, SizeUnit.BYTE ),
-                                                     new Packet( 20, SizeUnit.BYTE ) );
+            EventGenerator sink = new MulticoreGenerator( Time.INFINITE,
+                                                          new Packet( 20, SizeUnit.BYTE ),
+                                                          new Packet( 20, SizeUnit.BYTE ) );
             Agent agentCore = new MulticoreAgent( 2 + i, sink );
             agentCore.addDevice( cpu );
             net.addAgent( agentCore );
@@ -602,7 +596,7 @@ public class EnergyTestDIST
         plotter.setAxisName( "Time (h)", "Energy (J)" );
         plotter.setTicks( Axis.Y, 10 );
         plotter.setTicks( Axis.X, 24, 2 );
-        plotter.setRange( Axis.Y, 0, 5800 );
+        plotter.setRange( Axis.Y, 0, 4350 );
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         plotter.setVisible( true );
         
