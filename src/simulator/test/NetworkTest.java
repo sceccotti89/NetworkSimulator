@@ -22,7 +22,7 @@ public class NetworkTest
 {
     private static final int CPU_CORES = 4;
     
-    protected static class ClientGenerator extends EventGenerator
+    private static class ClientGenerator extends EventGenerator
     {
         public ClientGenerator( final Time duration,
                                 final Packet reqPacket,
@@ -33,7 +33,7 @@ public class NetworkTest
         }
     }
     
-    protected static class MulticastGenerator extends EventGenerator
+    private static class MulticastGenerator extends EventGenerator
     {
         public MulticastGenerator( final Time duration,
                                    final Packet reqPacket,
@@ -62,13 +62,13 @@ public class NetworkTest
         }
     }
     
-    protected static class SinkGenerator extends simulator.events.generator.SinkGenerator
+    private static class SinkGenerator extends EventGenerator
     {
         public SinkGenerator( final Time duration,
                               final Packet reqPacket,
                               final Packet resPacket )
         {
-            super( duration, reqPacket, resPacket );
+            super( duration, Time.ZERO, reqPacket, resPacket, false );
         }
         
         @Override
@@ -82,7 +82,7 @@ public class NetworkTest
         }
     }
     
-    protected static class ClientAgent extends Agent
+    private static class ClientAgent extends Agent
     {
         public ClientAgent( final long id, final EventGenerator evGenerator )
         {
@@ -91,7 +91,7 @@ public class NetworkTest
         }
     }
     
-    protected static class ServerAgent extends Agent
+    private static class ServerAgent extends Agent
     {
         public ServerAgent( final long id )
         {
@@ -99,18 +99,9 @@ public class NetworkTest
         }
     }
     
-    protected static class ResponseServerAgent extends Agent
+    private static class ResponseServerAgent extends Agent
     {
         public ResponseServerAgent( final long id, final EventGenerator generator )
-        {
-            super( id );
-            addEventGenerator( generator );
-        }
-    }
-    
-    protected static class ServerTestAgent extends Agent
-    {
-        public ServerTestAgent( final long id, final EventGenerator generator )
         {
             super( id );
             addEventGenerator( generator );
@@ -317,7 +308,6 @@ public class NetworkTest
          10ms              7ms               5ms
         */
         
-        // FIXME con questa gestione dell'event generator questo test non funzionerebbe proprio correttamente.
         NetworkTopology net = new NetworkTopology( "Topology/Topology_ex6.json" );
         System.out.println( net.toString() );
         

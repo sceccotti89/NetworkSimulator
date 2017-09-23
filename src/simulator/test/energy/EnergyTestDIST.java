@@ -42,8 +42,8 @@ public class EnergyTestDIST
     
     private static class ClientGenerator extends EventGenerator
     {
-        private static final String QUERY_TRACE = "Models/msn.day2.arrivals.txt";
-        //private static final String QUERY_TRACE = "Models/test_arrivals.txt";
+        //private static final String QUERY_TRACE = "Models/msn.day2.arrivals.txt";
+        private static final String QUERY_TRACE = "Models/test_arrivals.txt";
         private static final int NUM_QUERIES = 10000;
         // Random generator seed.
         private static final int SEED = 50000;
@@ -175,12 +175,13 @@ public class EnergyTestDIST
             if (e instanceof RequestEvent) {
                 packet = super.makePacket( e, destination );
             } else {
-                // New request from client: clone the packet.
-                packet = e.getPacket().clone();
-                if (PREDICTION_ON_SWITCH) {
+                // New request from client: get a copy.
+                packet = e.getPacket();
+                if (packet.getContent( Global.QUERY_ID ) != null && PREDICTION_ON_SWITCH) {
+                    System.out.println( "INOLTRO RICHIESTA: " + packet.getContent( Global.QUERY_ID ) );
                     // TODO qui in teoria dovrei utilizzare il predittore e "consigliare" la frequenza da utilizzare per quel nodo.
-                    // TODO ricordarsi che la destinazione varia da 2 a 6, lo 0 e' il client
-                    //System.out.println( "DESTINATION: " + destination );
+                    // TODO Ricordarsi anche quale ID stiamo valutando: utilizzare una map a cui assegno: queryID => destinatario.
+                    System.out.println( "DESTINATION: " + destination );
                 }
             }
             
@@ -316,9 +317,9 @@ public class EnergyTestDIST
     
     private static void execute( final Mode mode, final long timeBudget ) throws Exception
     {
-        testMultiCore( timeBudget, mode );
+        //testMultiCore( timeBudget, mode );
         //testSingleCore( timeBudget, mode );
-        //testAnimationNetwork( timeBudget, mode );
+        testAnimationNetwork( timeBudget, mode );
     }
     
     public static void testAnimationNetwork( final long timeBudget, final Mode mode ) throws Exception

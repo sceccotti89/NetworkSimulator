@@ -38,16 +38,13 @@ public abstract class EventGenerator
     
     private boolean _isMulticasted = false;
     
-    //private long _flyingPackets      = 0;
-    //private long _receivedPackets    = 0;
     private long _maxPacketsInFlight = 0;
     private boolean _setByTheUser    = false;
     
     private Map<Long,FlowSession> _sessions;
-    private FlowSession session;
+    private FlowSession _session;
     
-    // Dummy packets used to generate the corresponding request.
-    private RequestEvent  dummyReqEvent;
+    // Dummy packet used to generate the corresponding request event.
     private ResponseEvent dummyResEvent;
     
     
@@ -59,7 +56,8 @@ public abstract class EventGenerator
      * @param departureTime         time to wait before sending a packet.
      * @param reqPacket             the request packet.
      * @param resPacket             the response packet.
-     * @param delayResponse         {@code TRUE} let this generator to answer the source after the reception of a message as a reponse of an out-going packet, {@code FALSE} to send it immediately.
+     * @param delayResponse         {@code TRUE} to answer the source after the reception of a message as a reponse of an out-going packet,
+     *                              {@code FALSE} to send it immediately.
     */
     public EventGenerator( final Time duration,
                            final Time departureTime,
@@ -85,7 +83,6 @@ public abstract class EventGenerator
     public void setAgent( final Agent agent )
     {
         _agent = agent;
-        dummyReqEvent = new RequestEvent( Time.ZERO, _agent, null, null );
         dummyResEvent = new ResponseEvent( Time.ZERO, _agent, null, null );
     }
     
@@ -227,7 +224,7 @@ public abstract class EventGenerator
      * @return the departure time.</br>
      * NOTE: returned time can be {@code null}.
     */
-    public Time computeDepartureTime( final Event e ) {
+    protected Time computeDepartureTime( final Event e ) {
         return _departureTime;
     }
     
@@ -279,20 +276,15 @@ public abstract class EventGenerator
     }
     
     /**
-     * Checks whether the generator can send other packets.
+     * Cehcks whether the current session is over.
     */
-    /*private boolean canSend() {
-        return _flyingPackets >= 0 && _flyingPackets < _maxPacketsInFlight;
-    }*/
-    
-    /**
-     * Checks whether the session has been completed.
-    */
-    /*private boolean completed() {
-        return _receivedPackets == _maxPacketsInFlight;
-    }*/
-    
-    // FIXME qualcosa nel codice ancora non torna: analizzare bene confrontandosi anche con l'esempio 6.
+    private void checkCompletedSession( final Event e )
+    {
+        if (_session.completed()) {
+            _sessions.remove( _session.getId() );
+            _session = getSession( e );
+        }
+    }
     
     /**
      * Generates a new event.</br>
@@ -322,10 +314,9 @@ public abstract class EventGenerator
             return null; // No more events from this generator.
         
         // Load the current session.
-        session = getSession( e );
+        _session = getSession( e );
         
-        //System.out.println( "AGENT: " + _agent.getId() + ", CAN_SEND: " + session.canSend() + ", WAIT_RESPONSE: " + _waitResponse );
-        if (e == null && _activeGenerator && session.canSend()) {
+        if (e == null && _activeGenerator && _session.canSend()) {
             dummyResEvent.setTime( _time );
             return sendRequest( dummyResEvent );
         }
@@ -333,40 +324,38 @@ public abstract class EventGenerator
         Event event = null;
         if (e instanceof RequestEvent) {
             if (e.getSource().getId() == _agent.getId()) {
-                if (session.canSend()) {
+                if (_session.canSend()) {
                     dummyResEvent.setTime( _time );
+                    dummyResEvent.setPacket( _session.getPacket() );
                     return sendRequest( dummyResEvent );
                 }
             } else {
                 if (_delayResponse) {
                     // Prepare and send the new request packet to the next node.
-                    if (session.canSend()) {
+                    if (_session.canSend()) {
                         dummyResEvent.setTime( _time );
                         dummyResEvent.setPacket( e.getPacket() );
+                        _session.setPacket( e.getPacket() );
                         event = sendRequest( dummyResEvent );
                     }
                 } else {
-                    //System.out.println( "AGENT: " + _agent.getId() + ", GENERO RISPOSTA: " + e );
                     event = sendResponse( e, e.getDestination(), e.getSource() );
                 }
             }
         } else {
             // Response message.
             if (e.getSource().getId() != _agent.getId()) {
-                session.increaseReceivedPackets();
-                //_receivedPackets++;
-                //_flyingPackets--;
+                _session.increaseReceivedPackets();
                 if (_delayResponse) {
                     // Send back the "delayed" response.
-                    Agent dest = session.getSource();
+                    Agent dest = _session.getSource();
                     event = sendResponse( e, _agent, dest );
-                    if (session.completed()) {
-                        _sessions.remove( session.getId() );
-                    }
+                    checkCompletedSession( e );
                 } else {
-                    if (session.canSend()) {
+                    checkCompletedSession( e );
+                    if (_session.canSend()) {
                         dummyResEvent.setTime( _time );
-                        event = sendRequest( dummyReqEvent );
+                        event = sendRequest( dummyResEvent );
                     }
                 }
             }
@@ -385,21 +374,15 @@ public abstract class EventGenerator
     private Event sendRequest( final Event e )
     {
         Event event = null;
-        int nextDestIndex = selectDestination( _time );
-        Agent dest = _destinations.get( nextDestIndex );
+        int nextDest = selectDestination( _time );
+        Agent dest = _destinations.get( nextDest );
         
-        // Prepare the request packet.
-        Packet reqPacket = session.getPacket();
-        if (reqPacket == null || !_isMulticasted) {
-            reqPacket = makePacket( e, (_isMulticasted) ? -1 : dest.getId() );
-            session.setPacket( reqPacket );
-        }
-        
+        // Get the request packet.
+        Packet reqPacket = makePacket( e, (_isMulticasted) ? -1 : dest.getId() );
         if (reqPacket != null) {
-            session.increaseSentPackets();
-            //_flyingPackets++;
+            _session.increaseSentPackets();
             event = new RequestEvent( _time, _agent, dest, reqPacket.clone() );
-            event.setFlowId( session.getId() );
+            event.setFlowId( _session.getId() );
         }
         
         return event;
@@ -415,7 +398,7 @@ public abstract class EventGenerator
      *         It must be in the range <b>[0 - #destinations)</b>
     */
     protected int selectDestination( final Time time ) {
-        return session.getNextDestination( _destinations.size() );
+        return _session.getNextDestination( _destinations.size() );
     }
     
     /**
@@ -430,14 +413,13 @@ public abstract class EventGenerator
     private Event sendResponse( final Event e, final Agent from, final Agent dest )
     {
         Packet resPacket = makePacket( e, dest.getId() );
-        //System.out.println( "AGENT: " + _agent.getId() + ", SESSION: " + session.getId() + ", DEST: " + from.getId() + ", EVENT: " + e );
         //Packet resPacket = makePacket( e, session.getSource().getId() );
         
         if (resPacket == null) {
             return null;
         } else {
             Event response = new ResponseEvent( _time, from, dest, resPacket );
-            response.setFlowId( session.getId() );
+            response.setFlowId( _session.getId() );
             if (from.getEventHandler() != null) {
                 from.getEventHandler().handle( response, EventType.GENERATED );
             }
