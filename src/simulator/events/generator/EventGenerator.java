@@ -378,7 +378,10 @@ public abstract class EventGenerator
         Agent dest = _destinations.get( nextDest );
         
         // Get the request packet.
-        Packet reqPacket = makePacket( e, (_isMulticasted) ? -1 : dest.getId() );
+        Packet reqPacket = _session.getPacket();
+        if (reqPacket == null || !_isMulticasted) {
+            reqPacket = makePacket( e, (_isMulticasted) ? -1 : dest.getId() );
+        }
         if (reqPacket != null) {
             _session.increaseSentPackets();
             event = new RequestEvent( _time, _agent, dest, reqPacket.clone() );
