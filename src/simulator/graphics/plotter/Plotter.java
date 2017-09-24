@@ -9,6 +9,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -18,8 +19,8 @@ import java.awt.Stroke;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -43,15 +44,9 @@ import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.swing.JCheckBox;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
 
@@ -503,7 +498,7 @@ public class Plotter
         }
     }
     
-    private class GraphicPlotter extends JPanel implements MouseMotionListener
+    protected class GraphicPlotter extends JPanel implements MouseMotionListener, ComponentListener
     {
         /** Generated serial ID. */
         private static final long serialVersionUID = -1157813231215489004L;
@@ -519,6 +514,7 @@ public class Plotter
         private static final long SECOND = 1000L;
         private static final int pointRadius = 10;
         private static final double ROUNDNESS = 0.0001d;
+        private static final int LEGEND_LINE_LENGTH = 70;
         
         private PlotsPanel _legend;
         
@@ -531,6 +527,7 @@ public class Plotter
             
             setDoubleBuffered( true );
             addMouseMotionListener( this );
+            addComponentListener( this );
             
             setLayout( null );
             
@@ -541,7 +538,7 @@ public class Plotter
             addMouseListener( new MouseListener() {
                 @Override
                 public void mouseClicked( final MouseEvent e ) {
-                    _legend.mouseClicked( e );
+                    _legend.checkClicked( e );
                 }
                 @Override
                 public void mouseEntered( final MouseEvent e ) {}
@@ -555,8 +552,7 @@ public class Plotter
                 }
             } );
             
-            // TODO testare come mai non funziona...
-            _legend = new PlotsPanel( 200, 200, 200, 200 );
+            _legend = new PlotsPanel( this, (int) (width - 370), 350, 200 );
         }
         
         private String makeBoxTitle( final String title )
@@ -579,127 +575,9 @@ public class Plotter
                              final Color color, final Line line,
                              final String title )
         {
-            int maxWidth = 0;
-            int startY = 100;
-            for (Plot plot : _plots) {
-                JCheckBox box = plot.box;
-                startY   = (int) box.getBounds().getMaxY();
-                maxWidth = (int) Math.max( maxWidth, box.getBounds().getWidth() );
-            }
-            
             String text = makeBoxTitle( title );
-            JCheckBox box = new JCheckBox( text, true );
-            box.setBackground( new Color( 0,0,0,0 ) );
-            box.setBounds( getWidth() - 200, startY,
-                           Math.max( maxWidth, getWidth( text, getGraphics() ) + 40 ),
-                           getHeight( text, getGraphics() ) + 10 );
-            box.addFocusListener( new FocusListener() {
-                @Override
-                public void focusLost( final FocusEvent e ) {
-                    box.setBackground( new Color( 0,0,0,0 ) );
-                }
-                
-                @Override
-                public void focusGained( final FocusEvent e ) {
-                    box.setBackground( new Color( 100, 100, 100, 120 ) );
-                }
-            } );
-            box.addMouseListener( new MouseListener() {
-                @Override
-                public void mouseReleased( final MouseEvent e ) {}
-                @Override
-                public void mousePressed( final MouseEvent e ) {}
-                @Override
-                public void mouseExited( final MouseEvent e ) {}
-                @Override
-                public void mouseEntered( final MouseEvent e ) {}
-                
-                @Override
-                public void mouseClicked( final MouseEvent e )
-                {
-                    if (SwingUtilities.isRightMouseButton( e ) || e.isControlDown()) {
-                        int idx = 0;
-                        for (Plot plot : _plots) {
-                            JCheckBox jBox = plot.box;
-                            if (jBox == box) {
-                                break;
-                            }
-                            idx++;
-                        }
-                        final int index = idx;
-                        
-                        JPopupMenu menu = new JPopupMenu( "Menu Plot" );
-                        
-                        JMenuItem new_file = new JMenuItem( "Save as file" );
-                        new_file.addActionListener( new ActionListener() {
-                            @Override
-                            public void actionPerformed( final ActionEvent e ) {
-                                JFileChooser f = new JFileChooser() {
-                                    /** Generated serial ID. */
-                                    private static final long serialVersionUID = 768969466487289338L;
-                                    
-                                    @Override
-                                    public void approveSelection()
-                                    {
-                                        File f = getSelectedFile();
-                                        if (f.exists() && getDialogType() == SAVE_DIALOG) {
-                                            int result = JOptionPane.showConfirmDialog( this, "The file exists, overwrite?",
-                                                                                              "Existing file", JOptionPane.YES_NO_OPTION );
-                                            switch (result) {
-                                                case JOptionPane.YES_OPTION:
-                                                    super.approveSelection();
-                                                    return;
-                                                case JOptionPane.NO_OPTION:
-                                                    return;
-                                                case JOptionPane.CLOSED_OPTION:
-                                                    return;
-                                            }
-                                        }
-                                        super.approveSelection();
-                                    }        
-                                };
-                                
-                                f.setSelectedFile( new File( text ) );
-                            
-                                if (f.showSaveDialog( getFrame() ) == JFileChooser.APPROVE_OPTION) {
-                                    String dir  = f.getCurrentDirectory().getAbsolutePath();
-                                    String file = f.getSelectedFile().getName();
-                                    try {
-                                        savePlot( dir, file );
-                                    } catch (IOException e1) {
-                                        e1.printStackTrace();
-                                    }
-                                }
-                            }
-                        } );
-                        menu.add( new_file );
-                        
-                        JMenuItem modify = new JMenuItem( "Modify" );
-                        modify.addActionListener( new ActionListener() {
-                            @Override
-                            public void actionPerformed( final ActionEvent e ) {
-                                PlotEditDialog dialog = new PlotEditDialog( frame, _plots.get( index ) );
-                                dialog.setVisible( true );
-                            }
-                        } );
-                        menu.add( modify );
-                        
-                        JMenuItem remove = new JMenuItem( "Remove" );
-                        remove.addActionListener( new ActionListener() {
-                            @Override
-                            public void actionPerformed( final ActionEvent e ) {
-                                removePlot( index );
-                            }
-                        } );
-                        menu.add( remove );
-                        
-                        menu.show( e.getComponent(), e.getX(), e.getY() );
-                        box.requestFocusInWindow();
-                    }
-                }
-            } );
+            JCheckBox box = _legend.addPlot( this, text );
             _plots.add( new Plot( title, points, chooseColor( color ), line, 2f, box ) );
-            //_legend.addPlot( box );
             add( box );
         }
         
@@ -714,11 +592,17 @@ public class Plotter
             fw.close();
         }
 
-        private void removePlot( final int index ) {
+        protected void removePlot( final int index )
+        {
             Plot plot = _plots.remove( index );
+            colorsInUse.remove( plot.color );
             remove( plot.box );
         }
         
+        protected List<Plot> getPlots() {
+            return _plots;
+        }
+
         private Color chooseColor( final Color selected )
         {
             if (selected != null) {
@@ -796,13 +680,13 @@ public class Plotter
             return value;
         }
         
-        private int getWidth( final String arg, final Graphics g )
+        protected int getWidth( final String arg, final Graphics g )
         {
             FontMetrics font = g.getFontMetrics();
             return (int) font.getStringBounds( arg, g ).getWidth();
         }
         
-        private int getHeight( final String arg, final Graphics g )
+        protected int getHeight( final String arg, final Graphics g )
         {
             FontMetrics font = g.getFontMetrics();
             return (int) font.getStringBounds( arg, g ).getHeight();
@@ -1055,20 +939,26 @@ public class Plotter
         
         private void drawLegend( final Graphics2D g )
         {
+            for (Plot plot : _plots) {
+                JCheckBox box = plot.box;
+                box.setVisible( _legend.isSelected() );
+            }
+            
+            if (!_legend.isSelected()) {
+                return;
+            }
+            
             g.setStroke( new BasicStroke( 2f ) );
             
             // Draw the legend.
-            int startY = 0;
             int saveStartY = 0;
-            final int length = 70;
             for (Plot plot : _plots) {
                 JCheckBox box = plot.box;
                 Rectangle bounds = box.getBounds();
                 box.setForeground( (theme == Theme.BLACK) ? Color.WHITE : Color.BLACK );
-                box.setBounds( getWidth() - 300, startY, bounds.width, bounds.height );
+                box.setBounds( getWidth() - 300, bounds.y, bounds.width, bounds.height );
                 
                 // Draw the associated line.
-                startY = (int) bounds.getMaxY();
                 Point p = box.getLocation();
                 Dimension size = box.getSize();
                 
@@ -1089,7 +979,7 @@ public class Plotter
                 g.setColor( plot.color );
                 g.setStroke( plot.stroke );
                 g.drawLine( p.x + size.width, p.y + size.height/2 - 1,
-                            p.x + size.width + length, p.y + size.height/2 - 1 );
+                            p.x + size.width + LEGEND_LINE_LENGTH, p.y + size.height/2 - 1 );
             }
         }
         
@@ -1098,36 +988,38 @@ public class Plotter
         */
         private Range getRange()
         {
-            double maxX = settings._range.maxX, maxY = settings._range.maxY;
-            double minX = settings._range.minX, minY = settings._range.minY;
-            boolean getMinX = (minX == Double.MAX_VALUE);
-            boolean getMaxX = (maxX == Double.MIN_VALUE);
-            boolean getMinY = (minY == Double.MAX_VALUE);
-            boolean getMaxY = (maxY == Double.MIN_VALUE);
+            double maxX = Double.MIN_VALUE, maxY = Double.MIN_VALUE;
+            double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
             
-            // FIXME durante la simulazione il min e max della X si aggiornano costantemente
-            // FIXME dovrei rifletterlo anche nel setting.
-            
-            for (Plot plot : _plots) {
-                try {
-                    List<Pair<Double,Double>> points = plot.points;
-                    if (points.size() > 0) {
-                        if (points.size() == 1) {
-                            minX = points.get( 0 ).getFirst() - 0.1d;
-                            maxX = points.get( 0 ).getFirst() + 0.1d;
-                            minY = points.get( 0 ).getSecond() - 0.1d;
-                            maxY = points.get( 0 ).getSecond() + 0.1d;
-                        } else {
-                            if (getMinX)  minX = Math.min( minX, points.get( 0 ).getFirst() );
-                            if (getMaxX)  maxX = Math.max( maxX, points.get( points.size() - 1 ).getFirst() );
-                            for (Pair<Double,Double> point : points) {
-                                if (getMinY)  minY = Math.min( minY, point.getSecond() );
-                                if (getMaxY)  maxY = Math.max( maxY, point.getSecond() );
+            if (settings._settedByUser) {
+                maxX = settings._range.maxX;
+                maxY = settings._range.maxY;
+                minX = settings._range.minX;
+                minY = settings._range.minY;
+            } else {
+                // FIXME durante la simulazione il min e max della X si aggiornano costantemente
+                // FIXME dovrei rifletterlo anche nel setting.
+                for (Plot plot : _plots) {
+                    try {
+                        List<Pair<Double,Double>> points = plot.points;
+                        if (points.size() > 0) {
+                            if (points.size() == 1) {
+                                minX = points.get( 0 ).getFirst() - 0.1d;
+                                maxX = points.get( 0 ).getFirst() + 0.1d;
+                                minY = points.get( 0 ).getSecond() - 0.1d;
+                                maxY = points.get( 0 ).getSecond() + 0.1d;
+                            } else {
+                                minX = Math.min( minX, points.get( 0 ).getFirst() );
+                                maxX = Math.max( maxX, points.get( points.size() - 1 ).getFirst() );
+                                for (Pair<Double,Double> point : points) {
+                                    minY = Math.min( minY, point.getSecond() );
+                                    maxY = Math.max( maxY, point.getSecond() );
+                                }
                             }
                         }
+                    } catch ( ConcurrentModificationException e ) {
+                        // Empty body.
                     }
-                } catch ( ConcurrentModificationException e ) {
-                    // Empty body.
                 }
             }
             
@@ -1215,6 +1107,10 @@ public class Plotter
             g2d.dispose();
         }
         
+        protected Frame getFrame() {
+            return frame;
+        }
+
         @Override
         public Dimension getPreferredSize() {
             return getSize();
@@ -1228,6 +1124,17 @@ public class Plotter
         @Override
         public void mouseMoved( final MouseEvent event ) {
             mouse = event.getPoint();
+        }
+
+        @Override
+        public void componentHidden( final ComponentEvent e ) {}
+        @Override
+        public void componentMoved( final ComponentEvent e ) {}
+        @Override
+        public void componentShown( final ComponentEvent e ) {}
+        @Override
+        public void componentResized( final ComponentEvent e ) {
+            _legend.setXPosition( (int) (getWidth() - 370) );
         }
     }
     
