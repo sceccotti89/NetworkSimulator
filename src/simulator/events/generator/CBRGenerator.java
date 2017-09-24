@@ -15,7 +15,7 @@ public class CBRGenerator extends EventGenerator
                          final Packet reqPacket,
                          final Packet resPacket )
     {
-        super( duration, departureTime, reqPacket, resPacket, false );
+        super( duration, departureTime, reqPacket, resPacket );
         startAt( startTime );
     }
 }

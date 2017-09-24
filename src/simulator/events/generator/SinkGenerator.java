@@ -13,7 +13,7 @@ public class SinkGenerator extends EventGenerator
                           final Packet reqPacket,
                           final Packet resPacket )
     {
-        super( duration, Time.ZERO, reqPacket, resPacket, false );
+        super( duration, Time.ZERO, reqPacket, resPacket );
         makeAnswer( false );
     }
 }

@@ -56,14 +56,11 @@ public abstract class EventGenerator
      * @param departureTime         time to wait before sending a packet.
      * @param reqPacket             the request packet.
      * @param resPacket             the response packet.
-     * @param delayResponse         {@code TRUE} to answer the source after the reception of a message as a reponse of an out-going packet,
-     *                              {@code FALSE} to send it immediately.
     */
     public EventGenerator( final Time duration,
                            final Time departureTime,
                            final Packet reqPacket,
-                           final Packet resPacket,
-                           final boolean delayResponse )
+                           final Packet resPacket )
     {
         _time = new Time( 0, TimeUnit.MICROSECONDS );
         
@@ -71,7 +68,6 @@ public abstract class EventGenerator
         _reqPacket          = reqPacket;
         _resPacket          = resPacket;
         _departureTime      = departureTime;
-        _delayResponse      = delayResponse;
         
         _sessions = new HashMap<>();
         _destinations = new ArrayList<>();
@@ -139,10 +135,21 @@ public abstract class EventGenerator
     /**
      * Sets this generator to wait the response of any sent message before sending the next one.
      * 
-     * @param flag    {@code TRUE} , {@code FALSE} otherwise.
+     * @param flag    {@code true} to wait for a response, {@code false} otherwise.
     */
     public void setWaitForResponse( final boolean flag ) {
         _waitResponse = flag;
+    }
+    
+    /**
+     * Sets this generator to answer the source after the reception of a message
+     * as a reponse of an out-going packet.
+     * 
+     * @param flag    {@code true} to answer after a reponse of an out-going packet,
+     *                {@code false} to send it immediately.
+    */
+    public void setDelayResponse( final boolean flag ) {
+        _delayResponse = flag;
     }
     
     public List<Agent> getDestinations() {

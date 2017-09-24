@@ -59,7 +59,7 @@ public class EnergyTestDIST
         
         public ClientGenerator( final Packet reqPacket, final Packet resPacket ) throws IOException
         {
-            super( Time.INFINITE, Time.DYNAMIC, reqPacket, resPacket, false );
+            super( Time.INFINITE, Time.DYNAMIC, reqPacket, resPacket );
             startAt( Time.ZERO );
             
             // Open the associated file.
@@ -126,7 +126,8 @@ public class EnergyTestDIST
         public AnycastGenerator( final Time duration,
                                  final Packet reqPacket,
                                  final Packet resPacket ) {
-            super( duration, Time.ZERO, reqPacket, resPacket, true );
+            super( duration, Time.ZERO, reqPacket, resPacket );
+            setDelayResponse( true );
         }
         
         @Override
@@ -160,12 +161,13 @@ public class EnergyTestDIST
         }
     }
     
-    public static class SwitchGenerator extends EventGenerator
+    private static class SwitchGenerator extends EventGenerator
     {
         public SwitchGenerator( final Time duration,
                                 final Packet reqPacket,
                                 final Packet resPacket ) {
-            super( duration, Time.ZERO, reqPacket, resPacket, true );
+            super( duration, Time.ZERO, reqPacket, resPacket );
+            setDelayResponse( true );
         }
         
         @Override
@@ -244,7 +246,7 @@ public class EnergyTestDIST
     private static class MulticoreGenerator extends EventGenerator
     {
         public MulticoreGenerator( final Time duration, final Packet reqPacket, final Packet resPacket ) {
-            super( duration, Time.ZERO, reqPacket, resPacket, false );
+            super( duration, Time.ZERO, reqPacket, resPacket );
         }
     }
     
@@ -346,7 +348,7 @@ public class EnergyTestDIST
         
         List<EnergyCPU> cpus = new ArrayList<>( NODES );
         for (int i = 0; i < NODES; i++) {
-            EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/cpu_frequencies.txt" );
+            EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 4, 1, "Models/cpu_frequencies.txt" );
             cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
             cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
             cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
@@ -422,12 +424,10 @@ public class EnergyTestDIST
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        // FIXME mi sa che l'assegnazione degli event generator non sia corretta: quando avro' finito tutto dare un'occhiata
-        
-        EventGenerator anyGen = new AnycastGenerator( Time.INFINITE,
-                                                      new Packet( 20, SizeUnit.BYTE ),
-                                                      new Packet( 20, SizeUnit.BYTE ) );
-        Agent switchAgent = new SwitchAgent( 1, anyGen );
+        EventGenerator switchGen = new SwitchGenerator( Time.INFINITE,
+                                                        new Packet( 20, SizeUnit.BYTE ),
+                                                        new Packet( 20, SizeUnit.BYTE ) );
+        Agent switchAgent = new SwitchAgent( 1, switchGen );
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
         
@@ -438,7 +438,9 @@ public class EnergyTestDIST
         
         // Add the CPU nodes.
         for (int i = 0; i < NODES; i++) {
-            anyGen = new AnycastGenerator( Time.INFINITE, new Packet( 20, SizeUnit.BYTE ), new Packet( 20, SizeUnit.BYTE ) );
+            EventGenerator anyGen = new AnycastGenerator( Time.INFINITE, 
+                                                          new Packet( 20, SizeUnit.BYTE ),
+                                                          new Packet( 20, SizeUnit.BYTE ) );
             Agent switchNode = new SwitchAgent( i * CPU_CORES + 2 + i, anyGen );
             net.addAgent( switchNode );
             switchAgent.getEventGenerator( 0 ).connect( switchNode );

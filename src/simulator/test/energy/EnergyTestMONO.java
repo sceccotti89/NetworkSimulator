@@ -56,7 +56,7 @@ public class EnergyTestMONO
         
         public ClientGenerator( final Packet reqPacket, final Packet resPacket ) throws IOException
         {
-            super( Time.INFINITE, Time.DYNAMIC, reqPacket, resPacket, false );
+            super( Time.INFINITE, Time.DYNAMIC, reqPacket, resPacket );
             startAt( Time.ZERO );
             
             // Open the associated file.
@@ -123,7 +123,8 @@ public class EnergyTestMONO
         public AnycastGenerator( final Time duration,
                                  final Packet reqPacket,
                                  final Packet resPacket ) {
-            super( duration, Time.ZERO, reqPacket, resPacket, true );
+            super( duration, Time.ZERO, reqPacket, resPacket );
+            setDelayResponse( true );
         }
         
         @Override
@@ -228,7 +229,7 @@ public class EnergyTestMONO
     private static class MulticoreGenerator extends EventGenerator
     {
         public MulticoreGenerator( final Time duration, final Packet reqPacket, final Packet resPacket ) {
-            super( duration, Time.ZERO, reqPacket, resPacket, false );
+            super( duration, Time.ZERO, reqPacket, resPacket );
         }
     }
     

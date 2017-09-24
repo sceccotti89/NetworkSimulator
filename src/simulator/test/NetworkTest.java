@@ -28,7 +28,7 @@ public class NetworkTest
                                 final Packet reqPacket,
                                 final Packet resPacket )
         {
-            super( duration, Time.ZERO, reqPacket, resPacket, false );
+            super( duration, Time.ZERO, reqPacket, resPacket );
             startAt( Time.ZERO );
         }
     }
@@ -39,7 +39,8 @@ public class NetworkTest
                                    final Packet reqPacket,
                                    final Packet resPacket )
         {
-            super( duration, Time.ZERO, reqPacket, resPacket, true );
+            super( duration, Time.ZERO, reqPacket, resPacket );
+            setDelayResponse( true );
         }
     }
     
@@ -68,7 +69,7 @@ public class NetworkTest
                               final Packet reqPacket,
                               final Packet resPacket )
         {
-            super( duration, Time.ZERO, reqPacket, resPacket, false );
+            super( duration, Time.ZERO, reqPacket, resPacket );
         }
         
         @Override
