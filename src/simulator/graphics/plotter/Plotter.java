@@ -30,9 +30,10 @@ import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
@@ -48,6 +49,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -55,6 +57,7 @@ import javax.swing.WindowConstants;
 
 import simulator.utils.Pair;
 import simulator.utils.Utils;
+import simulator.utils.resources.ResourceLoader;
 
 public class Plotter
 {
@@ -132,7 +135,8 @@ public class Plotter
     
     public static List<Pair<Double,Double>> readPlot( final String filePlotter ) throws IOException
     {
-        BufferedReader reader = new BufferedReader( new FileReader( filePlotter ) );
+        InputStream stream = ResourceLoader.getResourceAsStream( filePlotter );
+        BufferedReader reader = new BufferedReader( new InputStreamReader( stream ) );
         List<Pair<Double,Double>> points = new ArrayList<>();
         
         String line;
@@ -516,9 +520,9 @@ public class Plotter
         private static final int pointRadius = 10;
         private static final double ROUNDNESS = 0.0001d;
         
+        private PlotsPanel _legend;
+        
         private GraphicPlotter PLOTTER = this;
-        
-        
         
         
         public GraphicPlotter()
@@ -536,7 +540,9 @@ public class Plotter
             
             addMouseListener( new MouseListener() {
                 @Override
-                public void mouseClicked( final MouseEvent e ) {}
+                public void mouseClicked( final MouseEvent e ) {
+                    _legend.mouseClicked( e );
+                }
                 @Override
                 public void mouseEntered( final MouseEvent e ) {}
                 @Override
@@ -548,6 +554,9 @@ public class Plotter
                     PLOTTER.requestFocusInWindow();
                 }
             } );
+            
+            // TODO testare come mai non funziona...
+            _legend = new PlotsPanel( 200, 200, 200, 200 );
         }
         
         private String makeBoxTitle( final String title )
@@ -690,6 +699,7 @@ public class Plotter
                 }
             } );
             _plots.add( new Plot( title, points, chooseColor( color ), line, 2f, box ) );
+            //_legend.addPlot( box );
             add( box );
         }
         
@@ -1199,6 +1209,8 @@ public class Plotter
             
             // Draw legend.
             drawLegend( g2d );
+            
+            _legend.draw( this, g2d );
             
             g2d.dispose();
         }

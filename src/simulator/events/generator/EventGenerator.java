@@ -36,7 +36,7 @@ public abstract class EventGenerator
     private boolean _makeAnswer = true;
     private Time    _departureTime;
     
-    private boolean _isMulticasted = false;
+    private boolean _isBroadcasted = false;
     
     private long _maxPacketsInFlight = 0;
     private boolean _setByTheUser    = false;
@@ -99,10 +99,10 @@ public abstract class EventGenerator
     }
     
     /**
-     * 
+     * Sets the generator as a broadcast.
     */
-    public void setMulticast( final boolean flag ) {
-        _isMulticasted = flag;
+    public void setBroadcast( final boolean flag ) {
+        _isBroadcasted = flag;
     }
     
     /**
@@ -187,8 +187,8 @@ public abstract class EventGenerator
     
     /**
      * Generates a new packet to be sent.</br>
-     * In case of multicast operation the destination assumes value {@code -1}
-     * and this method is called only once for all the possible destinations.</br>
+     * In case of broadcast operation the destination assumes value {@code -1},
+     * and this method is called once for all the possible destinations.</br>
      * A typical usage of the input event {@code e} is:
      * 
      * <pre>
@@ -386,8 +386,8 @@ public abstract class EventGenerator
         
         // Get the request packet.
         Packet reqPacket = _session.getPacket();
-        if (reqPacket == null || !_isMulticasted) {
-            reqPacket = makePacket( e, (_isMulticasted) ? -1 : dest.getId() );
+        if (reqPacket == null || !_isBroadcasted) {
+            reqPacket = makePacket( e, (_isBroadcasted) ? -1 : dest.getId() );
         }
         if (reqPacket != null) {
             _session.increaseSentPackets();
