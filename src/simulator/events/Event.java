@@ -31,8 +31,9 @@ public abstract class Event implements Comparable<Event>
     // Message payload.
     protected Packet _packet;
     
-    private long flowID = -1;
-    private long eventID = -1;
+    private long flowID      = -1;
+    private long eventID     = -1;
+    private long generatorID = -1;
     
     
     
@@ -75,6 +76,14 @@ public abstract class Event implements Comparable<Event>
     
     public long getFlowId() {
         return flowID;
+    }
+    
+    public void setGeneratorID( final long id ) {
+        generatorID = id;
+    }
+    
+    public long getGeneratorID() {
+        return generatorID;
     }
     
     public void setTime( final Time time ) {
@@ -271,7 +280,7 @@ public abstract class Event implements Comparable<Event>
 
     @Override
     public String toString() {
-        return "ID: " + eventID + ", flow: " + flowID +
+        return "ID: " + eventID + ", flow: " + flowID + ", generator: " + generatorID +
                ", From: {" + _source + "}, To: {" + _dest + "}" +
                ", Time: " + _time + "ns, arrival time: " + _arrivalTime + "ns";
     }

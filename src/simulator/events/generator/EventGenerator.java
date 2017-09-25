@@ -36,6 +36,8 @@ public abstract class EventGenerator
     private boolean _makeAnswer = true;
     private Time    _departureTime;
     
+    private long _forwardFrom = -1;
+    
     private boolean _isBroadcasted = false;
     
     private long _maxPacketsInFlight = 0;
@@ -47,8 +49,11 @@ public abstract class EventGenerator
     // Dummy packet used to generate the corresponding request event.
     private ResponseEvent dummyResEvent;
     
+    private long _id;
     
-    // TODO Molti dei valori nel costruttore andranno tolti o messi in appositi metodi:
+    private static long nextID = -1;
+    
+    
     /**
      * Creates a new event generator.
      * 
@@ -76,10 +81,16 @@ public abstract class EventGenerator
         
     }
     
+    public long getId() {
+        return _id;
+    }
+    
     public void setAgent( final Agent agent )
     {
+        _id = getNextID();
         _agent = agent;
         dummyResEvent = new ResponseEvent( Time.ZERO, _agent, null, null );
+        dummyResEvent.setGeneratorID( _id );
     }
     
     public EventGenerator connect( final Agent to )
@@ -167,6 +178,15 @@ public abstract class EventGenerator
         return this;
     }
     
+    public EventGenerator forwardMessagesFrom( final Agent from ) {
+        return forwardMessagesFrom( from.getId() );
+    }
+    
+    public EventGenerator forwardMessagesFrom( final long id ) {
+        _forwardFrom = id;
+        return this;
+    }
+    
     public Time getTime() {
         return _time.clone();
     }
@@ -186,7 +206,7 @@ public abstract class EventGenerator
     }
     
     /**
-     * Generates a new packet to be sent.</br>
+     * Generates a new packet to sent to the destination node, expressed by its identifier.</br>
      * In case of broadcast operation the destination assumes value {@code -1},
      * and this method is called once for all the possible destinations.</br>
      * A typical usage of the input event {@code e} is:
@@ -243,22 +263,16 @@ public abstract class EventGenerator
     private FlowSession getSession( final Event e )
     {
         FlowSession session;
-        if (e == null) {
+        if (e == null || _activeGenerator && !_waitResponse) {
             session = new FlowSession();
             session.setMaximumFlyingPackets( _maxPacketsInFlight );
             _sessions.put( session.getId(), session );
         } else {
-            if (_activeGenerator && !_waitResponse) {
-                session = new FlowSession();
+            if ((session = _sessions.get( e.getFlowId() )) == null) {
+                session = new FlowSession( e.getFlowId() );
+                session.setSource( e.getSource() );
                 session.setMaximumFlyingPackets( _maxPacketsInFlight );
                 _sessions.put( session.getId(), session );
-            } else {
-                if ((session = _sessions.get( e.getFlowId() )) == null) {
-                    session = new FlowSession( e.getFlowId() );
-                    session.setSource( e.getSource() );
-                    session.setMaximumFlyingPackets( _maxPacketsInFlight );
-                    _sessions.put( session.getId(), session );
-                }
             }
         }
         
@@ -302,7 +316,7 @@ public abstract class EventGenerator
      * 
      * @return the new event list, or {@code null} if the time is expired.
     */
-    public final Event generate( final Time t, final Event e )
+    public Event generate( final Time t, final Event e )
     {
         if (!generateEvent( e )) {
             return null;
@@ -323,7 +337,11 @@ public abstract class EventGenerator
         // Load the current session.
         _session = getSession( e );
         
-        if (e == null && _activeGenerator && _session.canSend()) {
+        /*if (this instanceof ServerConsGenerator) {
+            System.out.println( "TIME 1: " + _time + ", EVENT: " + e + ", CAN_SEND: " + _session.canSend() );
+        }*/
+        
+        if (_activeGenerator && _session.canSend()) {
             dummyResEvent.setTime( _time );
             return sendRequest( dummyResEvent );
         }
@@ -334,7 +352,7 @@ public abstract class EventGenerator
                 if (_session.canSend()) {
                     dummyResEvent.setTime( _time );
                     dummyResEvent.setPacket( _session.getPacket() );
-                    return sendRequest( dummyResEvent );
+                    event = sendRequest( dummyResEvent );
                 }
             } else {
                 if (_delayResponse) {
@@ -346,7 +364,17 @@ public abstract class EventGenerator
                         event = sendRequest( dummyResEvent );
                     }
                 } else {
-                    event = sendResponse( e, e.getDestination(), e.getSource() );
+                    // Received a request message from this node, just forward it to the next nodes.
+                    if (e.getSource().getId() == _forwardFrom) {
+                        if (_session.canSend()) {
+                            dummyResEvent.setTime( _time );
+                            dummyResEvent.setPacket( e.getPacket() );
+                            _session.setPacket( e.getPacket() );
+                            event = sendRequest( dummyResEvent );
+                        }
+                    } else {
+                        event = sendResponse( e, e.getDestination(), e.getSource() );
+                    }
                 }
             }
         } else {
@@ -395,6 +423,12 @@ public abstract class EventGenerator
             event.setFlowId( _session.getId() );
         }
         
+        event.setGeneratorID( getId() );
+        
+        /*if (this instanceof ServerConsGenerator) {
+            System.out.println( "TIME 2: " + _time );
+        }*/
+        
         return event;
     }
     
@@ -433,7 +467,12 @@ public abstract class EventGenerator
             if (from.getEventHandler() != null) {
                 from.getEventHandler().handle( response, EventType.GENERATED );
             }
+            response.setGeneratorID( getId() );
             return response;
         }
+    }
+    
+    private static synchronized long getNextID() {
+        return ++nextID % Long.MAX_VALUE;
     }
 }

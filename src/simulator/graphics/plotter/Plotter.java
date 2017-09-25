@@ -283,7 +283,7 @@ public class Plotter
     }
     
     /**
-     * Set the range of the plotter.
+     * Sets the range of the plotter.
      * Useful when you have multiple lines to plot.
      * 
      * @param axis    
@@ -296,11 +296,12 @@ public class Plotter
             throw new IllegalArgumentException( "from (" + from + ") cannot be greater than to (" + to + ")." );
         }
         
-        settings._settedByUser = true;
         if (axis == Axis.X) {
+            settings._settedXRangeByUser = true;
             settings._range.minX = from;
             settings._range.maxX = to;
         } else {
+            settings._settedYRangeByUser = true;
             settings._range.minY = from;
             settings._range.maxY = to;
         }
@@ -391,7 +392,8 @@ public class Plotter
     
     public static  class PlotterSettings
     {
-        public boolean _settedByUser = false;
+        public boolean _settedXRangeByUser = false;
+        public boolean _settedYRangeByUser = false;
         public int xTickInterval = 1;
         public int yTickInterval = 1;
         public int _xNumTicks = Integer.MAX_VALUE;
@@ -904,10 +906,14 @@ public class Plotter
                 yTickPosition += yTicksOffset;
             }
             
-            if (!settings._settedByUser) {
-                // Set the range of the plotter.
+            if (!settings._settedXRangeByUser) {
+                // Set the X range of the plotter.
                 settings._range.minX = Math.min( settings._range.minX, range.minX );
                 settings._range.maxX = Math.max( settings._range.maxX, range.maxX );
+            }
+            
+            if (!settings._settedYRangeByUser) {
+                // Set the Y range of the plotter.
                 settings._range.minY = Math.min( settings._range.minY, range.minY );
                 settings._range.maxY = Math.max( settings._range.maxY, range.maxY );
             }
@@ -991,12 +997,16 @@ public class Plotter
             double maxX = Double.MIN_VALUE, maxY = Double.MIN_VALUE;
             double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
             
-            if (settings._settedByUser) {
+            if (settings._settedXRangeByUser) {
                 maxX = settings._range.maxX;
-                maxY = settings._range.maxY;
                 minX = settings._range.minX;
+            }
+            if (settings._settedYRangeByUser) {
+                maxY = settings._range.maxY;
                 minY = settings._range.minY;
-            } else {
+            }
+            
+            if (!settings._settedXRangeByUser || !settings._settedYRangeByUser) {
                 // FIXME durante la simulazione il min e max della X si aggiornano costantemente
                 // FIXME dovrei rifletterlo anche nel setting.
                 for (Plot plot : _plots) {
@@ -1004,16 +1014,24 @@ public class Plotter
                         List<Pair<Double,Double>> points = plot.points;
                         if (points.size() > 0) {
                             if (points.size() == 1) {
-                                minX = points.get( 0 ).getFirst() - 0.1d;
-                                maxX = points.get( 0 ).getFirst() + 0.1d;
-                                minY = points.get( 0 ).getSecond() - 0.1d;
-                                maxY = points.get( 0 ).getSecond() + 0.1d;
+                                if (!settings._settedXRangeByUser) {
+                                    minX = points.get( 0 ).getFirst() - 0.1d;
+                                    maxX = points.get( 0 ).getFirst() + 0.1d;
+                                }
+                                if (!settings._settedYRangeByUser) {
+                                    minY = points.get( 0 ).getSecond() - 0.1d;
+                                    maxY = points.get( 0 ).getSecond() + 0.1d;
+                                }
                             } else {
-                                minX = Math.min( minX, points.get( 0 ).getFirst() );
-                                maxX = Math.max( maxX, points.get( points.size() - 1 ).getFirst() );
-                                for (Pair<Double,Double> point : points) {
-                                    minY = Math.min( minY, point.getSecond() );
-                                    maxY = Math.max( maxY, point.getSecond() );
+                                if (!settings._settedXRangeByUser) {
+                                    minX = Math.min( minX, points.get( 0 ).getFirst() );
+                                    maxX = Math.max( maxX, points.get( points.size() - 1 ).getFirst() );
+                                }
+                                if (!settings._settedYRangeByUser) {
+                                    for (Pair<Double,Double> point : points) {
+                                        minY = Math.min( minY, point.getSecond() );
+                                        maxY = Math.max( maxY, point.getSecond() );
+                                    }
                                 }
                             }
                         }

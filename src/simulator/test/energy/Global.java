@@ -4,9 +4,9 @@ package simulator.test.energy;
 public class Global
 {
     /** Fields used for testing. */
-    public static final String QUERY_ID      = "QUERY_ID";
-    public static final String CONS_CTRL_EVT = "CONS_CTRL_EVT";
-    public static final String CPU_FREQUENCY = "CPU_FREQUENCY";
+    public static final String QUERY_ID            = "QUERY_ID";
+    public static final String CONS_CONTROL        = "CONS_CONTROL_EVT";
+    public static final String PESOS_CPU_FREQUENCY = "CPU_FREQUENCY";
     
     /** Samplings ID. */
     public static final String ENERGY_SAMPLING       = "EnergyConsumption";

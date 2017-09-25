@@ -36,6 +36,8 @@ public class EnergyTestDIST
     private static final int NODES = 5;
     private static final int CPU_CORES = 4;
     
+    private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
+    
     
     
     
@@ -59,12 +61,13 @@ public class EnergyTestDIST
         
         public ClientGenerator( final Packet reqPacket, final Packet resPacket ) throws IOException
         {
-            super( Time.INFINITE, Time.DYNAMIC, reqPacket, resPacket );
+            super( Time.INFINITE, Time.ZERO, reqPacket, resPacket );
             startAt( Time.ZERO );
             
             // Open the associated file.
             queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
-            model = new ClientModel();
+            // TODO estendere inserendo i file di tutti i nodi, ma solo se necessario
+            model = new ClientModel( "Models/Monolithic/PESOS/MaxScore/time_energy.txt" );
             model.loadModel();
         }
         
@@ -161,12 +164,57 @@ public class EnergyTestDIST
         }
     }
     
+    private static class PesosPredictorGenerator extends EventGenerator
+    {
+        private List<CpuInfos> cpuInfos;
+        
+        public PesosPredictorGenerator( final Time duration ) {
+            super( duration, Time.ZERO, PACKET, PACKET );
+            cpuInfos = new ArrayList<>();
+        }
+        
+        @Override
+        public EventGenerator connect( final Agent to )
+        {
+            cpuInfos.add( new CpuInfos() );
+            return super.connect( to );
+        }
+        
+        @Override
+        public Packet makePacket( final Event e, final long destination )
+        {
+            //System.out.println( "RICEVUTO: " + e + ", DESTINAZIONE: " + destination );
+            
+            if (destination == 0) {
+                return null;
+            } else {
+                Packet packet = getRequestPacket();
+                // TODO qui in teoria dovrei utilizzare PESOS e analizzare le frequenze di ogni nodo e valutare la migliore.
+                // TODO il problema sara' capire a quale nodo andra' assegnata la prossima query:
+                // TODO se fosse deterministico allora ok, ma senza saperlo sara' dura.
+                //System.out.println( "RICEVUTO: " + e + ", INVIO PESOS A: " + destination );
+                packet.addContent( Global.PESOS_CPU_FREQUENCY, 0L );
+                return packet;
+            }
+        }
+        
+        private static class CpuInfos
+        {
+            private long frequency = 3500000L;
+            
+            
+            public CpuInfos()
+            {
+                // TODO Auto-generated constructor stub
+            }
+        }
+    }
+    
     private static class SwitchGenerator extends EventGenerator
     {
-        public SwitchGenerator( final Time duration,
-                                final Packet reqPacket,
-                                final Packet resPacket ) {
-            super( duration, Time.ZERO, reqPacket, resPacket );
+        public SwitchGenerator( final Time duration )
+        {
+            super( duration, Time.ZERO, PACKET, PACKET );
             setDelayResponse( true );
         }
         
@@ -175,70 +223,48 @@ public class EnergyTestDIST
         {
             Packet packet;
             if (e instanceof RequestEvent) {
-                packet = super.makePacket( e, destination );
+                packet = getResponsePacket();
             } else {
                 // New request from client: get a copy.
+                System.out.println( "INPUT EVENT: " + e + ", PACKET: " + e.getPacket() );
                 packet = e.getPacket();
-                if (packet.getContent( Global.QUERY_ID ) != null && PREDICTION_ON_SWITCH) {
+                /*if (packet.hasContent( Global.QUERY_ID ) && PREDICTION_ON_SWITCH) {
                     //System.out.println( "INOLTRO RICHIESTA: " + packet.getContent( Global.QUERY_ID ) );
-                    // TODO credo che arrivati qui la "previsione" sia gia' stata fatta dall'agent.
-                    // TODO recuperare quindi tali dati dall'agent e spedire la "nuova" frequenza al giusto destinatario.
                     //System.out.println( "DESTINATION: " + destination );
                     
-                }
+                }*/
             }
             
             return packet;
         }
     }
     
-    private static class CpuInfos
-    {
-        private long frequency = 3500000L;
-        
-        
-        public CpuInfos()
-        {
-            // TODO Auto-generated constructor stub
-        }
-    }
-    
     private static class SwitchAgent extends Agent implements EventHandler
     {
-        private List<CpuInfos> cpuInfos;
-        
         public SwitchAgent( final long id, final EventGenerator evGenerator )
         {
             super( id );
             addEventGenerator( evGenerator );
             addEventHandler( this );
-            
-            cpuInfos = new ArrayList<>();
-            final int size = getEventGenerator( 0 ).getDestinations().size();
-            for (int i = 0; i < size; i++) {
-                cpuInfos.add( new CpuInfos() );
-            }
         }
         
         @Override
         public Time handle( final Event e, final EventType type )
         {
+            /*System.out.println( "SWITCH HANDLE: " + e + ", TYPE: " + type );
             if (type == EventType.RECEIVED) {
-                //System.out.println( "RECEIVED: " + e );
-                if (e.getSource().getId() == 0) {
-                    // Received from client.
-                    // TODO qui in teoria dovrei utilizzare il predittore e analizzare le frequenze di ogni nodo e valutare la migliore.
-                    // TODO il problema sara' capire a quale nodo andra' assegnata la prossima query:
-                    // TODO se fosse deterministico allora ok, ma senza saperlo sara' dura.
-                    System.out.println( "RECEIVED: " + e.getPacket().getContent( Global.QUERY_ID ) );
+                if (e.getSource().getId() == getId() && e.getPacket().hasContent( Global.PESOS_CPU_FREQUENCY)) {
+                    // Message generated by this agent.
                     
+                    //System.out.println( "RECEIVED: " + e.getPacket().getContent( Global.QUERY_ID ) );
+                    return Time.ZERO;
                 }
-            } else {
+            } else {*/
                 if (type == EventType.GENERATED) {
                     // Event generated by a node as a response to the client.
                     computeIdleEnergy( e.getSource().getId(), e.getTime() );
                 }
-            }
+            //}
             
             return _node.getTcalc();
         }
@@ -277,8 +303,19 @@ public class EnergyTestDIST
     
     private static class MulticoreGenerator extends EventGenerator
     {
-        public MulticoreGenerator( final Time duration, final Packet reqPacket, final Packet resPacket ) {
-            super( duration, Time.ZERO, reqPacket, resPacket );
+        public MulticoreGenerator( final Time duration ) {
+            super( duration, Time.ZERO, PACKET, PACKET );
+        }
+        
+        @Override
+        protected Packet makePacket( final Event e, final long destination )
+        {
+            //System.out.println( "SERVER PACKET: " + e.getPacket().hasContent( Global.PESOS_CPU_FREQUENCY ) );
+            if (e.getPacket().hasContent( Global.PESOS_CPU_FREQUENCY )) {
+                return null;
+            } else {
+                return super.makePacket( e, destination );
+            }
         }
     }
     
@@ -295,13 +332,19 @@ public class EnergyTestDIST
         public void addEventOnQueue( final Event e )
         {
             Packet p = e.getPacket();
-            EnergyCPU cpu = getDevice( new EnergyCPU() );
-            CPUEnergyModel model = (CPUEnergyModel) cpu.getModel();
-            QueryInfo query = model.getQuery( p.getContent( Global.QUERY_ID ) );
-            //System.out.println( "RECEIVED QUERY: " + p.getContent( Global.QUERY_ID ) );
-            query.setEvent( e );
-            query.setArrivalTime( e.getArrivalTime() );
-            cpu.addQuery( cpu.selectCore( e.getArrivalTime() ), query );
+            if (p.hasContent( Global.PESOS_CPU_FREQUENCY )) {
+                // TODO setta la frequenza consigliata dal broker usando PESOS
+                
+            } else {
+                EnergyCPU cpu = getDevice( new EnergyCPU() );
+                CPUEnergyModel model = (CPUEnergyModel) cpu.getModel();
+                System.out.println( "AGGIUNGO EVENTO: " + e );
+                QueryInfo query = model.getQuery( p.getContent( Global.QUERY_ID ) );
+                //System.out.println( "RECEIVED QUERY: " + p.getContent( Global.QUERY_ID ) );
+                query.setEvent( e );
+                query.setArrivalTime( e.getArrivalTime() );
+                cpu.addQuery( cpu.selectCore( e.getArrivalTime() ), query );
+            }
         }
         
         @Override
@@ -318,9 +361,13 @@ public class EnergyTestDIST
                     cpu.checkQueryCompletion( e.getTime() );
                 }
             } else {
-                // Compute the time to complete the query.
-                EnergyCPU cpu = getDevice( new EnergyCPU() );
-                return cpu.timeToCompute( null );
+                if (e.getPacket().hasContent( Global.QUERY_ID )) {
+                    // Compute the time to complete the query.
+                    EnergyCPU cpu = getDevice( new EnergyCPU() );
+                    return cpu.timeToCompute( null );
+                } else {
+                    return Time.ZERO;
+                }
             }
             
             return null;
@@ -364,15 +411,16 @@ public class EnergyTestDIST
         
         Simulator sim = new Simulator( net );
         
-        EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
-                                                        new Packet( 20, SizeUnit.BYTE ) );
+        EventGenerator generator = new ClientGenerator( PACKET, PACKET );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        EventGenerator anyGen = new SwitchGenerator( Time.INFINITE,
-                                                     new Packet( 20, SizeUnit.BYTE ),
-                                                     new Packet( 20, SizeUnit.BYTE ) );
-        Agent switchAgent = new SwitchAgent( 1, anyGen );
+        EventGenerator switchGen = new SwitchGenerator( Time.INFINITE );
+        EventGenerator pesosGen  = new PesosPredictorGenerator( Time.INFINITE );
+        pesosGen.forwardMessagesFrom( client );
+        
+        Agent switchAgent = new SwitchAgent( 1, switchGen );
+        switchAgent.addEventGenerator( pesosGen );
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
         
@@ -399,18 +447,17 @@ public class EnergyTestDIST
             model.loadModel();
             cpu.setModel( model );
             
-            EventGenerator sink = new MulticoreGenerator( Time.INFINITE,
-                                                          new Packet( 20, SizeUnit.BYTE ),
-                                                          new Packet( 20, SizeUnit.BYTE ) );
+            EventGenerator sink = new MulticoreGenerator( Time.INFINITE );
             Agent agentCore = new MulticoreAgent( 2 + i, sink );
             agentCore.addDevice( cpu );
             net.addAgent( agentCore );
             
-            switchAgent.getEventGenerator( 0 ).connect( agentCore );
+            switchGen.connect( agentCore );
+            pesosGen.connect( agentCore );
         }
         
         sim.start( new Time( 24, TimeUnit.HOURS ), false );
-        //sim.start( new Time( 299100, TimeUnit.MICROSECONDS ) );
+        //sim.start( new Time( 13100, TimeUnit.MICROSECONDS ), false );
         sim.close();
         
         // Show the animation.
@@ -448,31 +495,26 @@ public class EnergyTestDIST
         
         Simulator sim = new Simulator( net );
         
-        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/",
-                                                                 "predictions.txt", "time_energy.txt", "regressors.txt" );
-        model.loadModel();
-        EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
-                                                        new Packet( 20, SizeUnit.BYTE ) );
+        
+        EventGenerator generator = new ClientGenerator( PACKET, PACKET );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        EventGenerator switchGen = new SwitchGenerator( Time.INFINITE,
-                                                        new Packet( 20, SizeUnit.BYTE ),
-                                                        new Packet( 20, SizeUnit.BYTE ) );
+        EventGenerator switchGen = new SwitchGenerator( Time.INFINITE );
         Agent switchAgent = new SwitchAgent( 1, switchGen );
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
         
-        List<EnergyCPU> cpus = new ArrayList<>( NODES * CPU_CORES );
-        Plotter plotter = new Plotter( "DISTRIBUTED SINGLE_CORE - " + model.getModelType( false ), 800, 600 );
-        
+        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/",
+                                               "predictions.txt", "time_energy.txt", "regressors.txt" );
+        model.loadModel();
         String modelType = model.getModelType( true );
         
+        Plotter plotter = new Plotter( "DISTRIBUTED SINGLE_CORE - " + model.getModelType( false ), 800, 600 );
+        List<EnergyCPU> cpus = new ArrayList<>( NODES * CPU_CORES );
         // Add the CPU nodes.
         for (int i = 0; i < NODES; i++) {
-            EventGenerator anyGen = new AnycastGenerator( Time.INFINITE, 
-                                                          new Packet( 20, SizeUnit.BYTE ),
-                                                          new Packet( 20, SizeUnit.BYTE ) );
+            EventGenerator anyGen = new AnycastGenerator( Time.INFINITE, PACKET, PACKET );
             Agent switchNode = new SwitchAgent( i * CPU_CORES + 2 + i, anyGen );
             net.addAgent( switchNode );
             switchAgent.getEventGenerator( 0 ).connect( switchNode );
@@ -497,9 +539,7 @@ public class EnergyTestDIST
                 model.loadModel();
                 cpu.setModel( model );
                 
-                EventGenerator sink = new MulticoreGenerator( Time.INFINITE,
-                                                              new Packet( 20, SizeUnit.BYTE ),
-                                                              new Packet( 20, SizeUnit.BYTE ) );
+                EventGenerator sink = new MulticoreGenerator( Time.INFINITE );
                 long id = i * (CPU_CORES + 1) + 3 + j;
                 Agent agentCore = new MulticoreAgent( id, sink );
                 agentCore.addDevice( cpu );
@@ -578,15 +618,15 @@ public class EnergyTestDIST
         
         Simulator sim = new Simulator( net );
         
-        EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
-                                                        new Packet( 20, SizeUnit.BYTE ) );
+        EventGenerator generator = new ClientGenerator( PACKET, PACKET );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        EventGenerator switchGen = new SwitchGenerator( Time.INFINITE,
-                                                        new Packet( 20, SizeUnit.BYTE ),
-                                                        new Packet( 20, SizeUnit.BYTE ) );
+        EventGenerator switchGen = new SwitchGenerator( Time.INFINITE );
+        EventGenerator pesosGen  = new PesosPredictorGenerator( Time.INFINITE );
+        
         Agent switchAgent = new SwitchAgent( 1, switchGen );
+        switchAgent.addEventGenerator( pesosGen );
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
         
@@ -616,14 +656,13 @@ public class EnergyTestDIST
             model.loadModel();
             cpu.setModel( model );
             
-            EventGenerator sink = new MulticoreGenerator( Time.INFINITE,
-                                                          new Packet( 20, SizeUnit.BYTE ),
-                                                          new Packet( 20, SizeUnit.BYTE ) );
+            EventGenerator sink = new MulticoreGenerator( Time.INFINITE );
             Agent agentCore = new MulticoreAgent( 2 + i, sink );
             agentCore.addDevice( cpu );
             net.addAgent( agentCore );
             
-            switchAgent.getEventGenerator( 0 ).connect( agentCore );
+            switchGen.connect( agentCore );
+            pesosGen.connect( agentCore );
             
             plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), null, "Node " + i + " " + model.getModelType( true ) );
         }

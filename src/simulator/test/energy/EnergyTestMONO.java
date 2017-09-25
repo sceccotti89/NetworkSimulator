@@ -36,6 +36,9 @@ import simulator.utils.Utils;
 public class EnergyTestMONO
 {
     private static final int CPU_CORES = 4;
+    private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
+    
+    
     
     private static class ClientGenerator extends EventGenerator
     {
@@ -56,12 +59,12 @@ public class EnergyTestMONO
         
         public ClientGenerator( final Packet reqPacket, final Packet resPacket ) throws IOException
         {
-            super( Time.INFINITE, Time.DYNAMIC, reqPacket, resPacket );
+            super( Time.INFINITE, Time.ZERO, reqPacket, resPacket );
             startAt( Time.ZERO );
             
             // Open the associated file.
             queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
-            model = new ClientModel();
+            model = new ClientModel( "Models/Monolithic/PESOS/MaxScore/time_energy.txt" );
             model.loadModel();
         }
         
@@ -120,10 +123,8 @@ public class EnergyTestMONO
     
     private static class AnycastGenerator extends EventGenerator
     {
-        public AnycastGenerator( final Time duration,
-                                 final Packet reqPacket,
-                                 final Packet resPacket ) {
-            super( duration, Time.ZERO, reqPacket, resPacket );
+        public AnycastGenerator( final Time duration ) {
+            super( duration, Time.ZERO, PACKET, PACKET );
             setDelayResponse( true );
         }
         
@@ -204,19 +205,19 @@ public class EnergyTestMONO
         }
     }
     
-    public static class ServerConsGenerator extends CBRGenerator
+    private static class ServerConsGenerator extends CBRGenerator
     {
         public static final Time PERIOD = new Time( CONSmodel.PERIOD, TimeUnit.MILLISECONDS );
         
-        public ServerConsGenerator( final Time duration, final Packet reqPacket, final Packet resPacket ) {
-            super( Time.ZERO, duration, PERIOD, reqPacket, resPacket );
+        public ServerConsGenerator( final Time duration ) {
+            super( Time.ZERO, duration, PERIOD, PACKET, PACKET );
         }
         
         @Override
         public Packet makePacket( final Event e, final long destination )
         {
             Packet packet = getRequestPacket();
-            packet.addContent( Global.CONS_CTRL_EVT, "" );
+            packet.addContent( Global.CONS_CONTROL, "" );
             return packet;
         }
     }
@@ -228,8 +229,8 @@ public class EnergyTestMONO
     
     private static class MulticoreGenerator extends EventGenerator
     {
-        public MulticoreGenerator( final Time duration, final Packet reqPacket, final Packet resPacket ) {
-            super( duration, Time.ZERO, reqPacket, resPacket );
+        public MulticoreGenerator( final Time duration ) {
+            super( duration, Time.ZERO, PACKET, PACKET );
         }
     }
     
@@ -248,7 +249,7 @@ public class EnergyTestMONO
             Packet p = e.getPacket();
             EnergyCPU cpu = getDevice( new EnergyCPU() );
             
-            if (p.getContent( Global.CONS_CTRL_EVT ) != null) {
+            if (p.hasContent( Global.CONS_CONTROL )) {
                 cpu.evalCONSparameters( e.getTime() );
             } else {
                 CPUEnergyModel model = (CPUEnergyModel) cpu.getModel();
@@ -265,7 +266,7 @@ public class EnergyTestMONO
         {
             EnergyCPU cpu = getDevice( new EnergyCPU() );
             Packet p = e.getPacket();
-            if (p.getContent( Global.CONS_CTRL_EVT ) != null) {
+            if (p.hasContent( Global.CONS_CONTROL )) {
                 return Time.ZERO;
             } else {
                 if (e instanceof ResponseEvent) {
@@ -359,9 +360,7 @@ public class EnergyTestMONO
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        EventGenerator anyGen = new AnycastGenerator( Time.INFINITE,
-                                                      new Packet( 20, SizeUnit.MEGABYTE ),
-                                                      new Packet( 20, SizeUnit.MEGABYTE ) );
+        EventGenerator anyGen = new AnycastGenerator( Time.INFINITE );
         Agent switchAgent = new SwitchAgent( 1, anyGen );
         net.addAgent( switchAgent );
         
@@ -379,9 +378,7 @@ public class EnergyTestMONO
             cpu.setModel( model );
             cpus.add( cpu );
             
-            EventGenerator sink = new MulticoreGenerator( Time.INFINITE,
-                                                          new Packet( 20, SizeUnit.MEGABYTE ),
-                                                          new Packet( 20, SizeUnit.MEGABYTE ) );
+            EventGenerator sink = new MulticoreGenerator( Time.INFINITE );
             Agent agentCore = new MulticoreAgent( 2 + i, sink );
             agentCore.addDevice( cpu );
             net.addAgent( agentCore );
@@ -447,19 +444,14 @@ public class EnergyTestMONO
         
         Simulator sim = new Simulator( net );
         
-        EventGenerator generator = new ClientGenerator( new Packet( 40, SizeUnit.BYTE ),
-                                                        new Packet( 40, SizeUnit.BYTE ) );
+        EventGenerator generator = new ClientGenerator( PACKET, PACKET );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        EventGenerator sink = new MulticoreGenerator( Time.INFINITE,
-                                                      new Packet( 40, SizeUnit.BYTE ),
-                                                      new Packet( 20, SizeUnit.BYTE ) );
+        EventGenerator sink = new MulticoreGenerator( Time.INFINITE );
         Agent server = new MulticoreAgent( 1, sink );
         if (model.getType() == Type.CONS) {
-            EventGenerator evtGen = new ServerConsGenerator( duration,
-                                                             new Packet( 1, SizeUnit.BYTE ),
-                                                             new Packet( 1, SizeUnit.BYTE ) );
+            EventGenerator evtGen = new ServerConsGenerator( duration );
             evtGen.connect( server );
             server.addEventGenerator( evtGen );
         }
@@ -521,8 +513,8 @@ public class EnergyTestMONO
         // CONS
         // TARGET: 575000
         // 
-        // SIMULATOR:  911862.87644774050   749175.27901627180    639790.48538287170     668200.88972794660 (16%)
-        // IDLE:       207028.73735399803    79377.59104444605     79377.59104444605      74412.69254638738
+        // SIMULATOR:  911862.87644774050   749175.27901627180    639790.48538287170     668121.88972794660 (16%)
+        // IDLE:       207028.73735399803    79377.59104444605     79377.59104444605      74404.69254638738
     }
     
     public static void testSingleCore( final CPUEnergyModel model ) throws Exception
@@ -548,14 +540,11 @@ public class EnergyTestMONO
         
         Simulator sim = new Simulator( net );
         
-        EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.BYTE ),
-                                                        new Packet( 20, SizeUnit.BYTE ) );
+        EventGenerator generator = new ClientGenerator( PACKET, PACKET );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        EventGenerator anyGen = new AnycastGenerator( Time.INFINITE,
-                                                      new Packet( 20, SizeUnit.BYTE ),
-                                                      new Packet( 20, SizeUnit.BYTE ) );
+        EventGenerator anyGen = new AnycastGenerator( Time.INFINITE );
         Agent switchAgent = new SwitchAgent( 1, anyGen );
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
@@ -572,9 +561,7 @@ public class EnergyTestMONO
             cpu.setModel( model.clone() );
             cpus.add( cpu );
             
-            EventGenerator sink = new MulticoreGenerator( Time.INFINITE,
-                                                          new Packet( 20, SizeUnit.BYTE ),
-                                                          new Packet( 20, SizeUnit.BYTE ) );
+            EventGenerator sink = new MulticoreGenerator( Time.INFINITE );
             Agent agentCore = new MulticoreAgent( 2 + i, sink );
             agentCore.addDevice( cpu );
             net.addAgent( agentCore );
@@ -582,8 +569,7 @@ public class EnergyTestMONO
             switchAgent.getEventGenerator( 0 ).connect( agentCore );
             
             if (model.getType() == Type.CONS) {
-                EventGenerator evtGen = new ServerConsGenerator( duration, new Packet( 1, SizeUnit.BYTE ),
-                                                                           new Packet( 1, SizeUnit.BYTE ) );
+                EventGenerator evtGen = new ServerConsGenerator( duration );
                 evtGen.connect( agentCore );
                 agentCore.addEventGenerator( evtGen );
             }

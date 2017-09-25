@@ -49,6 +49,10 @@ public class Packet
         _contents.put( field, value );
     }
     
+    public boolean hasContent( final String field ) {
+        return _contents.containsKey( field );
+    }
+    
     @SuppressWarnings("unchecked")
     public <T> T getContent( final String field ) {
         return (T) _contents.get( field );

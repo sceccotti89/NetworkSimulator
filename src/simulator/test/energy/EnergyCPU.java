@@ -234,9 +234,6 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         if (core.getFirstQueryInQueue().getStartTime().getTimeMicroseconds() == 44709952703L)
             System.out.println( "EVALUATING FREQUENCY AT: " + time );
         
-        // These statement is necessary in case the CONS model needs to access the core informations
-        //currentCoreId = core.getId();
-        
         // Evaluate the "best" frequency to use.
         long frequency = model.eval( time, queue.toArray( new QueryInfo[0] ) );
         //System.out.println( "QUERY: " + core.lastQuery + ", OLD_FREQ: " + core.getFrequency() + ", NEW FREQ: " + frequency );
