@@ -4,13 +4,12 @@
 
 package simulator.graphics.plotter;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -19,7 +18,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -40,8 +38,8 @@ public class PlotsPanel implements MouseListener, FocusListener
     private String text;
     private Font font;
     private boolean selected;
-    private BufferedImage open, closed;
-    private Rectangle target;
+    private Polygon targetOpen;
+    private Polygon targetClose;
     private int x;
     private int startY = PAD + POLY_SIZE + 2;
     
@@ -50,6 +48,8 @@ public class PlotsPanel implements MouseListener, FocusListener
     
     private static final int OFFSET = 30, PAD = 5;
     private static final int POLY_SIZE = 20;
+    
+    
     
     public PlotsPanel( final GraphicPlotter plotter, final int x, final int width, final int height )
     {
@@ -60,11 +60,22 @@ public class PlotsPanel implements MouseListener, FocusListener
         background = new Color( 200, 200, 220 );
         this.x = x;
         size = new Dimension( width, height );
-        createImages();
+        
+        int[] xPoly = { x + PAD + 3, x + PAD + 9, x + PAD + 15 };
+        int[] yPoly = { PAD + 4, PAD + 14, PAD + 4 };
+        targetOpen = new Polygon( xPoly, yPoly, 3 );
+        
+        xPoly = new int[]{ x + PAD + 3, x + PAD + 13, x + PAD + 3 };
+        yPoly = new int[]{ PAD + 4, PAD + 10, PAD + 16 };
+        targetClose = new Polygon( xPoly, yPoly, 3 );
     }
     
-    public void setXPosition( final int x ) {
+    public void setXPosition( final int x )
+    {
+        int offset = x - this.x;
         this.x = x;
+        targetOpen.translate( offset, 0 );
+        targetClose.translate( offset, 0 );
     }
     
     public boolean isSelected() {
@@ -73,39 +84,6 @@ public class PlotsPanel implements MouseListener, FocusListener
     
     private int getHeight() {
         return POLY_SIZE;
-    }
-    
-    private void createImages()
-    {
-        int h = POLY_SIZE;
-        target = new Rectangle( x + PAD, PAD, 20, getHeight() );
-        open = new BufferedImage( size.width, h, BufferedImage.TYPE_INT_RGB );
-        Graphics2D g2 = open.createGraphics();
-        g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-        g2.setPaint( background );
-        g2.fillRect( 0, 0, size.width, h );
-        int[] x = { 3, 9, 15 };
-        int[] y = { 4, 14, 4 };
-        Polygon p = new Polygon( x, y, 3 );
-        g2.setPaint( Color.green.brighter() );
-        g2.fill( p );
-        g2.setPaint( Color.blue.brighter() );
-        g2.draw( p );
-        g2.dispose();
-        
-        closed = new BufferedImage( size.width, h, BufferedImage.TYPE_INT_RGB );
-        g2 = closed.createGraphics();
-        g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-        g2.setPaint( background );
-        g2.fillRect( 0, 0, size.width, h );
-        x = new int[]{ 3, 13, 3};
-        y = new int[]{ 4, 10, 16 };
-        p = new Polygon( x, y, 3 );
-        g2.setPaint( Color.red );
-        g2.fill( p );
-        g2.setPaint( Color.blue.brighter() );
-        g2.draw( p );
-        g2.dispose();
     }
     
     public JCheckBox addPlot( final GraphicPlotter plotter, final String title )
@@ -131,8 +109,14 @@ public class PlotsPanel implements MouseListener, FocusListener
     
     public void checkClicked( final MouseEvent e )
     {
-        if (target.contains( e.getPoint() )) {
-            selected = !selected;
+        if (selected) {
+            if (targetOpen.contains( e.getPoint() )) {
+                selected = false;
+            }
+        } else {
+            if (targetClose.contains( e.getPoint() )) {
+                selected = true;
+            }
         }
     }
     
@@ -266,16 +250,28 @@ public class PlotsPanel implements MouseListener, FocusListener
         final int xArea = x + PAD;
         final int yArea = PAD;
         
-        g.setColor( Color.LIGHT_GRAY );
+        g.setColor( background );
+        g.fillRect( xArea, yArea, size.width, getHeight() );
         
+        g.setStroke( new BasicStroke( 1f ) );
         int h = POLY_SIZE;
         if (selected) {
-            g.drawImage( open, xArea, yArea, plotter );
+            g.setColor( Color.GREEN );
+            g.fill( targetOpen );
+            g.setColor( Color.BLACK );
+            g.draw( targetOpen );
+            g.setColor( Color.BLACK );
+            g.setColor( Color.LIGHT_GRAY );
             g.drawRect( xArea, yArea, size.width, size.height );
         } else {
-            g.drawImage( closed, xArea, yArea, plotter );
-            g.drawRect( xArea, yArea, size.width, closed.getHeight() );
+            g.setColor( Color.RED );
+            g.fill( targetClose );
+            g.setColor( Color.BLACK );
+            g.draw( targetClose );
+            g.setColor( Color.LIGHT_GRAY );
         }
+        
+        g.drawRect( xArea, yArea, size.width, getHeight() );
         
         g.setFont( font );
         FontRenderContext frc = g.getFontRenderContext();

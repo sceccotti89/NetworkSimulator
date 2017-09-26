@@ -125,7 +125,7 @@ public class EnergyTestMONO
     {
         public AnycastGenerator( final Time duration ) {
             super( duration, Time.ZERO, PACKET, PACKET );
-            setDelayResponse( true );
+            setDelayedResponse( true );
         }
         
         @Override

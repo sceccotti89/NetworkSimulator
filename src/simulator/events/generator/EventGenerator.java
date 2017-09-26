@@ -102,7 +102,8 @@ public abstract class EventGenerator
         return this;
     }
     
-    public EventGenerator connectAll( final List<Agent> to ) {
+    public EventGenerator connectAll( final List<Agent> to )
+    {
         for (Agent dest : _destinations) {
             connect( dest );
         }
@@ -159,7 +160,7 @@ public abstract class EventGenerator
      * @param flag    {@code true} to answer after a reponse of an out-going packet,
      *                {@code false} to send it immediately.
     */
-    public void setDelayResponse( final boolean flag ) {
+    public void setDelayedResponse( final boolean flag ) {
         _delayResponse = flag;
     }
     
@@ -178,10 +179,30 @@ public abstract class EventGenerator
         return this;
     }
     
+    /**
+     * Forwards messages coming from the given node, represented by its agent.</br>
+     * This means that a reply for those incoming messages is not performed.</br>
+     * This is different to a delayed response, since this method does not provide a response
+     * for the specified node.
+     * 
+     * @param from    the agent of the node
+     *
+     * @see EventGenerator#setDelayedResponse(boolean)
+    */
     public EventGenerator forwardMessagesFrom( final Agent from ) {
         return forwardMessagesFrom( from.getId() );
     }
     
+    /**
+     * Forwards messages coming from the given node identifier.</br>
+     * This means that a reply for those incoming messages is not performed.</br>
+     * This is different to a delayed response, since this method does not provide a response
+     * for the specified node.
+     * 
+     * @param id    the given node identifer
+     *
+     * @see EventGenerator#setDelayedResponse(boolean)
+    */
     public EventGenerator forwardMessagesFrom( final long id ) {
         _forwardFrom = id;
         return this;
@@ -307,6 +328,8 @@ public abstract class EventGenerator
         }
     }
     
+    // TODO implementare un metodo per la generazione finale del messaggio
+    
     /**
      * Generates a new event.</br>
      * NOTE: input time and event can be {@code null}.
@@ -316,7 +339,7 @@ public abstract class EventGenerator
      * 
      * @return the new event list, or {@code null} if the time is expired.
     */
-    public Event generate( final Time t, final Event e )
+    public final Event generate( final Time t, final Event e )
     {
         if (!generateEvent( e )) {
             return null;

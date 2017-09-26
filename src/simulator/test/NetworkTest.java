@@ -40,7 +40,7 @@ public class NetworkTest
                                    final Packet resPacket )
         {
             super( duration, Time.ZERO, reqPacket, resPacket );
-            setDelayResponse( true );
+            setDelayedResponse( true );
         }
     }
     

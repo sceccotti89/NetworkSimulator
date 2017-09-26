@@ -130,7 +130,7 @@ public class EnergyTestDIST
                                  final Packet reqPacket,
                                  final Packet resPacket ) {
             super( duration, Time.ZERO, reqPacket, resPacket );
-            setDelayResponse( true );
+            setDelayedResponse( true );
         }
         
         @Override
@@ -215,7 +215,7 @@ public class EnergyTestDIST
         public SwitchGenerator( final Time duration )
         {
             super( duration, Time.ZERO, PACKET, PACKET );
-            setDelayResponse( true );
+            setDelayedResponse( true );
         }
         
         @Override
