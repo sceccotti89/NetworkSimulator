@@ -128,9 +128,11 @@ public class EnergyTestDIST
     {
         public AnycastGenerator( final Time duration,
                                  final Packet reqPacket,
-                                 final Packet resPacket ) {
+                                 final Packet resPacket )
+        {
             super( duration, Time.ZERO, reqPacket, resPacket );
             setDelayedResponse( true );
+            setMaximumFlyingPackets( 1 );
         }
         
         @Override
@@ -151,8 +153,6 @@ public class EnergyTestDIST
             int nextDestination = -1;
             for (int i = 0; i < _destinations.size(); i++) {
                 Agent agent = _destinations.get( i );
-                //EnergyCPU device = agent.getDevice( new EnergyCPU() );
-                //double nodeUtilization = device.getUtilization( time );
                 double nodeUtilization = agent.getNodeUtilization( time );
                 if (nodeUtilization < minUtilization) {
                     nextDestination = i;
@@ -185,17 +185,13 @@ public class EnergyTestDIST
         {
             //System.out.println( "RICEVUTO: " + e + ", DESTINAZIONE: " + destination );
             
-            if (destination == 0) {
-                return null;
-            } else {
-                Packet packet = getRequestPacket();
-                // TODO qui in teoria dovrei utilizzare PESOS e analizzare le frequenze di ogni nodo e valutare la migliore.
-                // TODO il problema sara' capire a quale nodo andra' assegnata la prossima query:
-                // TODO se fosse deterministico allora ok, ma senza saperlo sara' dura.
-                //System.out.println( "RICEVUTO: " + e + ", INVIO PESOS A: " + destination );
-                packet.addContent( Global.PESOS_CPU_FREQUENCY, 0L );
-                return packet;
-            }
+            Packet packet = getRequestPacket();
+            // TODO qui in teoria dovrei utilizzare PESOS e analizzare le frequenze di ogni nodo e valutare la migliore.
+            // TODO il problema sara' capire a quale nodo andra' assegnata la prossima query:
+            // TODO se fosse deterministico allora ok, ma senza saperlo sara' dura.
+            //System.out.println( "RICEVUTO: " + e + ", INVIO PESOS A: " + destination );
+            packet.addContent( Global.PESOS_CPU_FREQUENCY, 0L );
+            return packet;
         }
         
         private static class CpuInfos
@@ -226,7 +222,7 @@ public class EnergyTestDIST
                 packet = getResponsePacket();
             } else {
                 // New request from client: get a copy.
-                System.out.println( "INPUT EVENT: " + e + ", PACKET: " + e.getPacket() );
+                //System.out.println( "INPUT EVENT: " + e + ", PACKET: " + e.getPacket() );
                 packet = e.getPacket();
                 /*if (packet.hasContent( Global.QUERY_ID ) && PREDICTION_ON_SWITCH) {
                     //System.out.println( "INOLTRO RICHIESTA: " + packet.getContent( Global.QUERY_ID ) );
@@ -301,6 +297,7 @@ public class EnergyTestDIST
     
     
     
+    // FIXME c'e' ancora un bug in questo test, perche' uno dei nodi risponde prima degli altri.
     private static class MulticoreGenerator extends EventGenerator
     {
         public MulticoreGenerator( final Time duration ) {
@@ -338,7 +335,7 @@ public class EnergyTestDIST
             } else {
                 EnergyCPU cpu = getDevice( new EnergyCPU() );
                 CPUEnergyModel model = (CPUEnergyModel) cpu.getModel();
-                System.out.println( "AGGIUNGO EVENTO: " + e );
+                //System.out.println( "AGGIUNGO EVENTO: " + e );
                 QueryInfo query = model.getQuery( p.getContent( Global.QUERY_ID ) );
                 //System.out.println( "RECEIVED QUERY: " + p.getContent( Global.QUERY_ID ) );
                 query.setEvent( e );
@@ -416,8 +413,12 @@ public class EnergyTestDIST
         net.addAgent( client );
         
         EventGenerator switchGen = new SwitchGenerator( Time.INFINITE );
-        EventGenerator pesosGen  = new PesosPredictorGenerator( Time.INFINITE );
-        pesosGen.forwardMessagesFrom( client );
+        EventGenerator pesosGen = null;
+        
+        if (PREDICTION_ON_SWITCH) {
+            pesosGen = new PesosPredictorGenerator( Time.INFINITE );
+            pesosGen.forwardMessagesFrom( client );
+        }
         
         Agent switchAgent = new SwitchAgent( 1, switchGen );
         switchAgent.addEventGenerator( pesosGen );
@@ -453,7 +454,9 @@ public class EnergyTestDIST
             net.addAgent( agentCore );
             
             switchGen.connect( agentCore );
-            pesosGen.connect( agentCore );
+            if (PREDICTION_ON_SWITCH) {
+                pesosGen.connect( agentCore );
+            }
         }
         
         sim.start( new Time( 24, TimeUnit.HOURS ), false );

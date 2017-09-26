@@ -20,7 +20,7 @@ import simulator.events.Event;
 import simulator.test.energy.CPUEnergyModel.CONSmodel;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.test.energy.CPUEnergyModel.Type;
-import simulator.test.energy.EnergyModel.ParameterEnergyModel;
+import simulator.test.energy.EnergyModel.QueryEnergyModel;
 import simulator.utils.Time;
 import simulator.utils.Utils;
 
@@ -66,10 +66,10 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         setFrequency( getMaxFrequency() );
         coresMap = new HashMap<>( (int) _cores );
         
-        //setEnergyModel( new QueryEnergyModel() );
+        setEnergyModel( new QueryEnergyModel() );
         //setEnergyModel( new CoefficientEnergyModel() );
         //setEnergyModel( new NormalizedEnergyModel() );
-        setEnergyModel( new ParameterEnergyModel() );
+        //setEnergyModel( new ParameterEnergyModel() );
     }
     
     @Override
@@ -160,16 +160,30 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     {
         //System.out.println( "SELECTING CORE AT: " + time );
         long id = -1;
-        double utilization = Double.MAX_VALUE;
+        double utilization = Integer.MAX_VALUE;
+        int tiedSelection  = Integer.MAX_VALUE;
+        boolean tieSituation = false;
         for (Core core : coresMap.values()) {
-            //System.out.println( "CORE: " + core.getId() + ", UTILIZATION: " + core.getUtilization( time ) );
             double coreUtilization = core.getUtilization( time );
             if (coreUtilization < utilization) {
                 id = core.getId();
                 utilization = coreUtilization;
+                tiedSelection = core.tieSelected;
+                tieSituation = false;
+            } else if (coreUtilization == utilization) {
+                if (core.tieSelected < tiedSelection) {
+                    id = core.getId();
+                    utilization = coreUtilization;
+                    tiedSelection = core.tieSelected;
+                }
+                tieSituation = true;
             }
         }
-        //System.out.println( "SELECTED: " + id );
+        
+        if (tieSituation) {
+            getCore( id ).tieSelected++;
+        }
+        
         return lastSelectedCore = id;
     }
     
@@ -365,7 +379,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     }
     
     // Core of the CPU.
-    protected static abstract class Core
+    private static abstract class Core
     {
         protected long coreId;
         private Time time;
@@ -376,6 +390,8 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         protected EnergyCPU cpu;
         protected long idleTimeInterval = 0;
         private int queriesExecuted = 0;
+        // Number of times this core has been selected in a tied situation.
+        private int tieSelected = 0;
         
         // TODO implementare i context di ogni core della CPU (se proprio c'e' bisogno).
         
@@ -612,7 +628,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         }
     }
     
-    protected static class PERFcore extends Core
+    private static class PERFcore extends Core
     {
         public PERFcore( final EnergyCPU cpu, final long coreId, final long initFrequency )
         {

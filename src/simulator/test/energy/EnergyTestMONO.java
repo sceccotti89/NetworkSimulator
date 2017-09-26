@@ -126,6 +126,7 @@ public class EnergyTestMONO
         public AnycastGenerator( final Time duration ) {
             super( duration, Time.ZERO, PACKET, PACKET );
             setDelayedResponse( true );
+            setMaximumFlyingPackets( 1 );
         }
         
         @Override
@@ -146,8 +147,6 @@ public class EnergyTestMONO
             int nextDestination = -1;
             for (int i = 0; i < _destinations.size(); i++) {
                 Agent agent = _destinations.get( i );
-                //EnergyCPU device = agent.getDevice( new EnergyCPU() );
-                //double nodeUtilization = device.getUtilization( time );
                 double nodeUtilization = agent.getNodeUtilization( time );
                 if (nodeUtilization < minUtilization) {
                     nextDestination = i;
@@ -513,8 +512,8 @@ public class EnergyTestMONO
         // CONS
         // TARGET: 575000
         // 
-        // SIMULATOR:  911862.87644774050   749175.27901627180    639790.48538287170     668121.88972794660 (16%)
-        // IDLE:       207028.73735399803    79377.59104444605     79377.59104444605      74404.69254638738
+        // SIMULATOR:  911862.87644774050   557117.85926009370    639790.48538287170     510740.82836311805 (12%)
+        // IDLE:       207028.73735399803    70245.49618359195     79377.59104444605      74404.69254638738
     }
     
     public static void testSingleCore( final CPUEnergyModel model ) throws Exception

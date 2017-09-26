@@ -17,7 +17,6 @@ import simulator.events.Packet;
 import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
 import simulator.utils.Time;
-import simulator.utils.Utils;
 
 public abstract class EventGenerator
 {
@@ -127,7 +126,8 @@ public abstract class EventGenerator
     {
         _activeGenerator = true;
         _time.setTime( time );
-        _maxPacketsInFlight = Utils.INFINITE;
+        //_maxPacketsInFlight = Utils.INFINITE;
+        _maxPacketsInFlight = Math.max( _maxPacketsInFlight, 1 );
         _setByTheUser = true;
         setWaitForResponse( false );
     }
@@ -307,7 +307,7 @@ public abstract class EventGenerator
     */
     private boolean generateEvent( final Event e )
     {
-        if (!_makeAnswer || _time.compareTo( _duration ) > 0) {
+        if (_time.compareTo( _duration ) > 0) {
             return false;
         }
         if (e == null && !_activeGenerator) {
@@ -317,16 +317,7 @@ public abstract class EventGenerator
         return true;
     }
     
-    /**
-     * Cehcks whether the current session is over.
-    */
-    private void checkCompletedSession( final Event e )
-    {
-        if (_session.completed()) {
-            _sessions.remove( _session.getId() );
-            _session = getSession( e );
-        }
-    }
+    
     
     // TODO implementare un metodo per la generazione finale del messaggio
     
@@ -359,11 +350,11 @@ public abstract class EventGenerator
         
         // Load the current session.
         _session = getSession( e );
-        
-        /*if (this instanceof ServerConsGenerator) {
-            System.out.println( "TIME 1: " + _time + ", EVENT: " + e + ", CAN_SEND: " + _session.canSend() );
-        }*/
-        
+        return createMessage( _session, e );
+    }
+    
+    protected Event createMessage( final FlowSession session, final Event e )
+    {
         if (_activeGenerator && _session.canSend()) {
             dummyResEvent.setTime( _time );
             return sendRequest( dummyResEvent );
@@ -423,6 +414,17 @@ public abstract class EventGenerator
     }
     
     /**
+     * Cehcks whether the current session is over.
+    */
+    private void checkCompletedSession( final Event e )
+    {
+        if (_session.completed()) {
+            _sessions.remove( _session.getId() );
+            _session = getSession( e );
+        }
+    }
+
+    /**
      * Generates a new request messages.
      * 
      * @param e    the current received event. It can be {@code null}.
@@ -447,10 +449,6 @@ public abstract class EventGenerator
         }
         
         event.setGeneratorID( getId() );
-        
-        /*if (this instanceof ServerConsGenerator) {
-            System.out.println( "TIME 2: " + _time );
-        }*/
         
         return event;
     }
@@ -479,6 +477,10 @@ public abstract class EventGenerator
     */
     private Event sendResponse( final Event e, final Agent from, final Agent dest )
     {
+        if (!_makeAnswer) {
+            return null;
+        }
+        
         Packet resPacket = makePacket( e, dest.getId() );
         //Packet resPacket = makePacket( e, session.getSource().getId() );
         

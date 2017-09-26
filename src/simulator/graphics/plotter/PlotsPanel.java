@@ -10,6 +10,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -38,6 +39,7 @@ public class PlotsPanel implements MouseListener, FocusListener
     private String text;
     private Font font;
     private boolean selected;
+    private Rectangle target;
     private Polygon targetOpen;
     private Polygon targetClose;
     private int x;
@@ -62,12 +64,14 @@ public class PlotsPanel implements MouseListener, FocusListener
         size = new Dimension( width, height );
         
         int[] xPoly = { x + PAD + 3, x + PAD + 9, x + PAD + 15 };
-        int[] yPoly = { PAD + 4, PAD + 14, PAD + 4 };
+        int[] yPoly = { PAD + 4, PAD + 16, PAD + 4 };
         targetOpen = new Polygon( xPoly, yPoly, 3 );
         
         xPoly = new int[]{ x + PAD + 3, x + PAD + 13, x + PAD + 3 };
         yPoly = new int[]{ PAD + 4, PAD + 10, PAD + 16 };
         targetClose = new Polygon( xPoly, yPoly, 3 );
+        
+        target = new Rectangle( x + PAD + 3, PAD + 4, 12, 12 );
     }
     
     public void setXPosition( final int x )
@@ -109,14 +113,8 @@ public class PlotsPanel implements MouseListener, FocusListener
     
     public void checkClicked( final MouseEvent e )
     {
-        if (selected) {
-            if (targetOpen.contains( e.getPoint() )) {
-                selected = false;
-            }
-        } else {
-            if (targetClose.contains( e.getPoint() )) {
-                selected = true;
-            }
+        if (target.contains( e.getPoint() )) {
+            selected = !selected;
         }
     }
     

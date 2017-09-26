@@ -12,8 +12,8 @@ public class FlowSession
     private final long _id;
     
     private long _sentPackets     = 0;
-    private long _receivedPackets = 0;
-    private long _maxPacketsInFlight = 0;
+    public long _receivedPackets = 0;// TODO rimettere private
+    public long _maxPacketsInFlight = 0; // TODO private pure lui
     
     private Agent _source;
     

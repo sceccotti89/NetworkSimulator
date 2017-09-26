@@ -411,9 +411,9 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }
 
         @Override
-        public CPUEnergyModel cloneModel()
+        protected CPUEnergyModel cloneModel()
         {
-            PESOSmodel model = new PESOSmodel( timeBudget.clone(), getMode(), _directory, _postings, _effective_time_energy, _regressors );
+            PESOSmodel model = new PESOSmodel( timeBudget.clone(), getMode(), "", _postings, _effective_time_energy, _regressors );
             try { model.loadModel(); }
             catch ( IOException e ) { e.printStackTrace(); }
             return model;
@@ -449,7 +449,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }
         
         @Override
-        public CPUEnergyModel cloneModel()
+        protected CPUEnergyModel cloneModel()
         {
             PERFmodel model = new PERFmodel( _directory, _postings, _effective_time_energy );
             try { model.loadModel(); }
@@ -553,7 +553,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }
         
         @Override
-        public CPUEnergyModel cloneModel()
+        protected CPUEnergyModel cloneModel()
         {
             CONSmodel model = new CONSmodel( _directory, _postings, _effective_time_energy );
             try { model.loadModel(); }

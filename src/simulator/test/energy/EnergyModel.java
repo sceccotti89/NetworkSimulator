@@ -8,7 +8,7 @@ import simulator.utils.Utils;
 
 public abstract class EnergyModel
 {
-    private static final double energyIdle = 1.3d / 4d;
+    private static final double ENERGY_IDLE = 1.3d / 4d;
     
     public EnergyModel()
     {
@@ -89,7 +89,7 @@ public abstract class EnergyModel
         
         @Override
         public double getIdleEnergy( final long frequency, final long interval ) {
-            return energyIdle * (interval / Utils.MILLION);
+            return ENERGY_IDLE * (interval / Utils.MILLION);
         }
     }
     
@@ -103,7 +103,7 @@ public abstract class EnergyModel
         
         @Override
         public double computeEnergy( final double energy, final long frequency, final double interval, final boolean idle ) {
-            return energy - (3d * energyIdle * (interval/Utils.MILLION));
+            return energy - (3d * ENERGY_IDLE * (interval/Utils.MILLION));
         }
         
         @Override
@@ -113,7 +113,7 @@ public abstract class EnergyModel
         
         @Override
         public double getIdleEnergy( final long frequency, final long interval ) {
-            return energyIdle * (interval / Utils.MILLION);
+            return ENERGY_IDLE * (interval / Utils.MILLION);
         }
     }
     
@@ -177,7 +177,7 @@ public abstract class EnergyModel
         
         @Override
         public double getIdleEnergy( final long frequency, final long interval ) {
-            return computeEnergy( energyIdle * (interval / Utils.MILLION), frequency, 0d, true );
+            return computeEnergy( ENERGY_IDLE * (interval / Utils.MILLION), frequency, 0d, true );
         }
     }
     
@@ -205,7 +205,7 @@ public abstract class EnergyModel
         
         @Override
         public double getIdleEnergy( final long frequency, final long interval ) {
-            return energyIdle * (interval / Utils.MILLION);
+            return ENERGY_IDLE * (interval / Utils.MILLION);
         }
     }
 }

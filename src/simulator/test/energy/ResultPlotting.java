@@ -96,12 +96,12 @@ public class ResultPlotting
         }
         
         // Using NULL the percentiles will not be saved on file.
-        //List<Pair<Double,Double>> pesosPercentiles = getPercentiles( "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
-        //                                                             "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_95th_Percentile.txt" );
+        List<Pair<Double,Double>> pesosPercentiles = getPercentiles( "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
+                                                                     "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_95th_Percentile.txt" );
         //List<Pair<Double,Double>> perfPercentiles = getPercentiles( "Results/Perf_Tail_Latency.log",
         //                                                            "Results/Perf_Tail_Latency_95th_Percentile.txt" );
-        List<Pair<Double,Double>> consPercentiles = getPercentiles( "Results/CONS_Tail_Latency.log",
-                                                                    "Results/CONS_Latency_95th_Percentile.txt" );
+        //List<Pair<Double,Double>> consPercentiles = getPercentiles( "Results/CONS_Tail_Latency.log",
+        //                                                            "Results/CONS_Latency_95th_Percentile.txt" );
         
         Plotter plotter = new Plotter( "Tail Latency 95-th Percentile", 800, 600 );
         plotter.setAxisName( "Time (h)", "95th-tile response time (ms)" );
@@ -114,9 +114,9 @@ public class ResultPlotting
         plotter.setTicks( Axis.X, 24, 2 );
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         
-        //plotter.addPlot( pesosPercentiles, Color.GREEN, Line.UNIFORM, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
+        plotter.addPlot( pesosPercentiles, Color.GREEN, Line.UNIFORM, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
         //plotter.addPlot( perfPercentiles, Color.RED, Line.UNIFORM, "Perf" );
-        plotter.addPlot( consPercentiles, Color.GREEN, Line.UNIFORM, "CONS" );
+        //plotter.addPlot( consPercentiles, Color.GREEN, Line.UNIFORM, "CONS" );
         plotter.addPlot( points, Color.YELLOW, Line.DASHED, "Tail latency (" + time_budget + "ms)" );
         plotter.setVisible( true );
     }
