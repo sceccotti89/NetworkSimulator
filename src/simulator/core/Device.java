@@ -31,19 +31,20 @@ import simulator.utils.Utils;
  * With the {@linkplain #addSampler(String, Time, Sampling, String) addSampler} method a new sampler
  * is added to this device, associated with a unique identifier used to retrieve its results.
  * 
- * @param <E>    type of the value returned by the {@link Model#eval(Object...) eval} method
+ * @param <I>    type of the value returned by the {@link Model#eval(Object...) eval} method
  *               of the associated model.
- * @param <P>    type of input parameters of the {@link Model#eval(Object...) eval} method
+ * @param <O>    type of input parameters of the {@link Model#eval(Object...) eval} method
  *               of the associated model.
 */
-public abstract class Device<E,P>
+public abstract class Device<I,O>
 {
     protected String _name;
     protected List<Long> _frequencies;
     protected Agent _agent;
     protected EventScheduler _evtScheduler;
+    protected Time _time;
     
-    protected Model<E,P> _model;
+    protected Model<I,O> _model;
     
     protected long _frequency;
     
@@ -76,7 +77,7 @@ public abstract class Device<E,P>
         Collections.sort( _frequencies = frequencies );
         
         // By default the frequency is setted as the maximum one.
-        _frequency = _frequencies.get( _frequencies.size() - 1 );
+        _frequency = getMaxFrequency();
         
         samplings = new HashMap<>( 4 );
     }
@@ -109,13 +110,13 @@ public abstract class Device<E,P>
     }
     
     /**
-     * Assign the cost model.
+     * Assigns the cost model.
     */
-    public void setModel( final Model<E,P> model ) {
+    public void setModel( final Model<I,O> model ) {
         _model = model;
     }
     
-    public Model<E,P> getModel() {
+    public Model<I,O> getModel() {
         return _model;
     }
     
@@ -128,17 +129,21 @@ public abstract class Device<E,P>
     }
     
     /**
-     * Set the device time.
+     * Sets the device time.
     */
-    public abstract void setTime( final Time time );
+    public void setTime( final Time time ) {
+        _time.setTime( time );
+    }
     
     /**
      * Returns the current time of this device.
     */
-    public abstract Time getTime();
+    public Time getTime() {
+        return _time.clone();
+    }
     
     /**
-     * Add a new sampler to collect some informations about this device with a default
+     * Adds a new sampler to collect some informations about this device with a default
      * initial capacity (2^12 elements).</br>
      * By default the sampling interval is 60 seconds.</br>
      * If the given interval is {@code null} or its time is <= 0 the sampling mode is ignored.
@@ -157,7 +162,7 @@ public abstract class Device<E,P>
     }
     
     /**
-     * Add a new sampler to collect some informations about this device with a specified
+     * Adds a new sampler to collect some informations about this device with a specified
      * initial capacity.</br>
      * By default the sampling interval is 60 seconds.</br>
      * If the given interval is {@code null} or its time is <= 0 the sampling mode is ignored.
@@ -178,7 +183,7 @@ public abstract class Device<E,P>
     }
     
     /**
-     * Add a new sampler to collect some informations about this device.
+     * Adds a new sampler to collect some informations about this device.
      * 
      * @param samplerId    name of the sampler. Must be UNIQUE.
      * @param sampler      the sampler object
@@ -213,7 +218,7 @@ public abstract class Device<E,P>
     }
 
     /**
-     * Set the current frequency expressed in KHz.
+     * Sets the current frequency expressed in KHz.
      * 
      * @param frequency    the clock frequency
     */
@@ -232,7 +237,7 @@ public abstract class Device<E,P>
     public abstract Time timeToCompute( final Task task );
     
     /**
-     * Insert a value in the corresponding interval.
+     * Inserts a value in the corresponding interval.
      * 
      * @param mode            mode of insertion (see {@linkplain Sampling})
      * @param currentValue    the current value contained in the bucket
@@ -252,7 +257,7 @@ public abstract class Device<E,P>
     }
     
     /**
-     * Scan the intervals to find the correct position over the last position, adding intervals if necessary.</br>
+     * Scans the intervals to find the correct position over the last position, adding intervals if necessary.</br>
      * Any added interval as a value depending to the one given by the {@code valueUnit} input variable. 
      * 
      * @param nextInterval    the next interval to scan
@@ -281,7 +286,7 @@ public abstract class Device<E,P>
     }
     
     /**
-     * Add a new value to the specified sampler with the corresponding time intervals.</br>
+     * Adds a new value to the specified sampler with the corresponding time intervals.</br>
      * If the starting time is earlier than the ending time, the given value is "distributed" in multiple buckets along the entire interval;
      * if the sampler interval is less or equal than 0 it goes in a single separate bucket,
      * whose insertion is driven by the ending time.</br>
@@ -297,7 +302,7 @@ public abstract class Device<E,P>
     }
     
     /**
-     * Add a new value to the specified sampler with the corresponding time intervals.</br>
+     * Adds a new value to the specified sampler with the corresponding time intervals.</br>
      * If the starting time is earlier than the ending time, the given value is "distributed" in multiple buckets along the entire interval;
      * if the sampler interval is less or equal than 0 it goes in a single separate bucket,
      * whose insertion is driven by the ending time.</br>
@@ -479,7 +484,7 @@ public abstract class Device<E,P>
     }
     
     /**
-     * Return the percentage of utilization of this device respect to the input time.
+     * Returns the percentage of utilization of this device respect to the input time.
      * 
      * @param time    time to check the device utilization
     */

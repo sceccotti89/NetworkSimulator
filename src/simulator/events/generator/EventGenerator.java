@@ -216,13 +216,11 @@ public abstract class EventGenerator
         _time = t;
     }
     
-    /***/
-    public Packet getRequestPacket() {
+    protected Packet getRequestPacket() {
         return _reqPacket.clone();
     }
     
-    /***/
-    public Packet getResponsePacket() {
+    protected Packet getResponsePacket() {
         return _resPacket.clone();
     }
     
@@ -396,10 +394,12 @@ public abstract class EventGenerator
             if (e.getSource().getId() != _agent.getId()) {
                 _session.increaseReceivedPackets();
                 if (_delayResponse) {
-                    // Send back the "delayed" response.
-                    Agent dest = _session.getSource();
-                    event = sendResponse( e, _agent, dest );
-                    checkCompletedSession( e );
+                    if (_session.completed()) {
+                        // Send back the "delayed" response.
+                        Agent dest = _session.getSource();
+                        event = sendResponse( e, _agent, dest );
+                        checkCompletedSession( e );
+                    }
                 } else {
                     checkCompletedSession( e );
                     if (_session.canSend()) {

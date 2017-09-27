@@ -5,13 +5,17 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import simulator.core.Agent;
+import simulator.core.Device;
 import simulator.core.Device.Sampler.Sampling;
 import simulator.core.Simulator;
+import simulator.core.Task;
 import simulator.events.Event;
 import simulator.events.EventHandler;
 import simulator.events.Packet;
@@ -32,6 +36,9 @@ import simulator.utils.Utils;
 public class EnergyTestDIST
 {
     private static boolean PREDICTION_ON_SWITCH;
+    
+    private static long time_budget;
+    private static Mode mode;
     
     private static final int NODES = 5;
     private static final int CPU_CORES = 4;
@@ -166,42 +173,85 @@ public class EnergyTestDIST
     
     private static class PesosPredictorGenerator extends EventGenerator
     {
-        private List<CpuInfos> cpuInfos;
+        private Map<Long,CpuInfos> cpuInfos;
         
         public PesosPredictorGenerator( final Time duration ) {
             super( duration, Time.ZERO, PACKET, PACKET );
-            cpuInfos = new ArrayList<>();
+            cpuInfos = new HashMap<>();
         }
         
         @Override
         public EventGenerator connect( final Agent to )
         {
-            cpuInfos.add( new CpuInfos() );
+            try { cpuInfos.put( to.getId(), new CpuInfos( to.getId() - 1 ) ); }
+            catch ( IOException e ) {}
             return super.connect( to );
         }
         
         @Override
         public Packet makePacket( final Event e, final long destination )
         {
-            //System.out.println( "RICEVUTO: " + e + ", DESTINAZIONE: " + destination );
-            
             Packet packet = getRequestPacket();
-            // TODO qui in teoria dovrei utilizzare PESOS e analizzare le frequenze di ogni nodo e valutare la migliore.
-            // TODO il problema sara' capire a quale nodo andra' assegnata la prossima query:
-            // TODO se fosse deterministico allora ok, ma senza saperlo sara' dura.
-            //System.out.println( "RICEVUTO: " + e + ", INVIO PESOS A: " + destination );
-            packet.addContent( Global.PESOS_CPU_FREQUENCY, 0L );
+            if (e.getPacket() != null && e.getPacket().hasContent( Global.QUERY_ID )) {
+                System.out.println( "RICEVUTO: " + e.getPacket().getContent( Global.QUERY_ID ) );
+                // TODO qui dovrei utilizzare PESOS e capire se spedire la frequenza consigliata.
+                
+            }
+            
+            packet.addContent( Global.PESOS_CPU_FREQUENCY, cpuInfos.get( destination ).getFrequency() );
+            
             return packet;
         }
         
-        private static class CpuInfos
+        private static class CpuInfos extends Device<Long,QueryInfo>
         {
-            private long frequency = 3500000L;
+            private List<Long> queries;
+            private CPUEnergyModel model;
+            private Map<Long,List<Long>> coresMap;
             
             
-            public CpuInfos()
+            public CpuInfos( final long index ) throws IOException
             {
-                // TODO Auto-generated constructor stub
+                super( "", "Models/cpu_frequencies.txt" );
+                
+                setModel( model );
+                
+                coresMap = new HashMap<>();
+                for (long i = 0; i < CPU_CORES; i++) {
+                    coresMap.put( i, new ArrayList<>( 64 ) );
+                }
+                model = new PESOSmodel( time_budget, mode, "Models/Distributed/Node_" + index + "/" );
+            }
+            
+            public void addQuery( final Time time, final long queryID )
+            {
+                // TODO devo aggiungere la query al giusto core.
+                setTime( time );
+                queries.add( queryID );
+                setFrequency( model.eval( getTime(), queries.toArray( new QueryInfo[0] ) ) );
+            }
+            
+            public void removeQuery( final Time time, final long queryID )
+            {
+                // TODO devo rimuovere la query al giusto core.
+                setTime( time );
+                queries.remove( queryID );
+                setFrequency( model.eval( getTime(), queries.toArray( new QueryInfo[0] ) ) );
+            }
+            
+            @Override
+            public Time timeToCompute( final Task task ) {
+                return null;
+            }
+            
+            @Override
+            public double getUtilization( final Time time ) {
+                return 0;
+            }
+            
+            @Override
+            public String getID() {
+                return null;
             }
         }
     }
@@ -393,8 +443,11 @@ public class EnergyTestDIST
         //execute( Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
     }
     
-    private static void execute( final Mode mode, final long timeBudget ) throws Exception
+    private static void execute( final Mode modality, final long timeBudget ) throws Exception
     {
+        mode = modality;
+        time_budget = timeBudget;
+        
         //testMultiCore( timeBudget, mode );
         //testSingleCore( timeBudget, mode );
         testAnimationNetwork( timeBudget, mode );

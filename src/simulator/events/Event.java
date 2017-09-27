@@ -127,7 +127,7 @@ public abstract class Event implements Comparable<Event>
     }
     
     public Packet getPacket() {
-        return _packet.clone();
+        return _packet;
     }
     
     /**

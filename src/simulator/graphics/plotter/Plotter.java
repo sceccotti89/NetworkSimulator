@@ -987,6 +987,8 @@ public class Plotter
                 g.drawLine( p.x + size.width, p.y + size.height/2 - 1,
                             p.x + size.width + LEGEND_LINE_LENGTH, p.y + size.height/2 - 1 );
             }
+            
+            _legend.draw( this, g );
         }
         
         /**
@@ -1119,8 +1121,6 @@ public class Plotter
             
             // Draw legend.
             drawLegend( g2d );
-            
-            _legend.draw( this, g2d );
             
             g2d.dispose();
         }
