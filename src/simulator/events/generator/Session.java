@@ -7,13 +7,13 @@ package simulator.events.generator;
 import simulator.core.Agent;
 import simulator.events.Packet;
 
-public class FlowSession
+public class Session
 {
     private final long _id;
     
     private long _sentPackets     = 0;
-    public long _receivedPackets = 0;// TODO rimettere private
-    public long _maxPacketsInFlight = 0; // TODO private pure lui
+    private long _receivedPackets = 0;
+    private long _maxPacketsInFlight = 0;
     
     private Agent _source;
     
@@ -26,11 +26,11 @@ public class FlowSession
     
     
     
-    public FlowSession() {
+    public Session() {
         this( nextFlowID() );
     }
     
-    public FlowSession( final long id ) {
+    public Session( final long id ) {
         _id = id;
     }
     

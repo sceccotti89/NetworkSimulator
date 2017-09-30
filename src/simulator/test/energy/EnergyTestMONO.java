@@ -275,7 +275,10 @@ public class EnergyTestMONO
                     } else { // EventType.SENT event.
                         // Set the time of the cpu as (at least) the time of the sending event.
                         cpu.setTime( e.getTime() );
-                        cpu.checkQueryCompletion( e.getTime() );
+                        //cpu.checkQueryCompletion( e.getTime() );
+                        for (long i = 0; i < CPU_CORES; i++) {
+                            cpu.getCore( i ).checkQueryCompletion( e.getTime() );
+                        }
                     }
                 } else {
                     // Compute the time to complete the query.
@@ -320,14 +323,7 @@ public class EnergyTestMONO
     protected static CPUEnergyModel loadModel( final Type type, final Mode mode, final long timeBudget ) throws Exception
     {
         // PESOS loading model.
-        CPUEnergyModel model;
-        if (mode == Mode.PESOS_TIME_CONSERVATIVE) {
-            model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/",
-                                    "predictions.txt", "time_energy.txt", "regressors.txt" );
-        } else {
-            model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/",
-                                    "predictions.txt", "time_energy.txt", "regressors_normse.txt" );
-        }
+        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" );
         model.loadModel();
         return model;
     }
@@ -336,10 +332,8 @@ public class EnergyTestMONO
     {
         CPUEnergyModel model = null;
         switch ( type ) {
-            case PERF:  model = new PERFmodel( "Models/Monolithic/PESOS/MaxScore/",
-                                               "predictions.txt", "time_energy.txt" ); break;
-            case CONS:  model = new CONSmodel( "Models/Monolithic/PESOS/MaxScore/",
-                                               "predictions.txt", "time_energy.txt" ); break;
+            case PERF:  model = new PERFmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
+            case CONS:  model = new CONSmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
             default:    break;
         }
         model.loadModel();

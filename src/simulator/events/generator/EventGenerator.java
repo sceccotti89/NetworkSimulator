@@ -42,8 +42,8 @@ public abstract class EventGenerator
     private long _maxPacketsInFlight = 0;
     private boolean _setByTheUser    = false;
     
-    private Map<Long,FlowSession> _sessions;
-    private FlowSession _session;
+    private Map<Long,Session> _sessions;
+    private Session _session;
     
     // Dummy packet used to generate the corresponding request event.
     private ResponseEvent dummyResEvent;
@@ -279,16 +279,16 @@ public abstract class EventGenerator
      * 
      * @param e    the given event.
     */
-    private FlowSession getSession( final Event e )
+    private Session getSession( final Event e )
     {
-        FlowSession session;
+        Session session;
         if (e == null || _activeGenerator && !_waitResponse) {
-            session = new FlowSession();
+            session = new Session();
             session.setMaximumFlyingPackets( _maxPacketsInFlight );
             _sessions.put( session.getId(), session );
         } else {
             if ((session = _sessions.get( e.getFlowId() )) == null) {
-                session = new FlowSession( e.getFlowId() );
+                session = new Session( e.getFlowId() );
                 session.setSource( e.getSource() );
                 session.setMaximumFlyingPackets( _maxPacketsInFlight );
                 _sessions.put( session.getId(), session );
@@ -351,7 +351,7 @@ public abstract class EventGenerator
         return createMessage( _session, e );
     }
     
-    protected Event createMessage( final FlowSession session, final Event e )
+    protected Event createMessage( final Session session, final Event e )
     {
         if (_activeGenerator && _session.canSend()) {
             dummyResEvent.setTime( _time );

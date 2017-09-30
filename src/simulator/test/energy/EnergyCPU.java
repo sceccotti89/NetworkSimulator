@@ -18,6 +18,7 @@ import simulator.core.Model;
 import simulator.core.Task;
 import simulator.events.Event;
 import simulator.test.energy.CPUEnergyModel.CONSmodel;
+import simulator.test.energy.CPUEnergyModel.PESOSmodel;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.test.energy.CPUEnergyModel.Type;
 import simulator.test.energy.EnergyModel.QueryEnergyModel;
@@ -101,7 +102,11 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         
         for (long i = 0; i < _cores; i++) {
             switch (cpuModel.getType()) {
-                case PESOS: coresMap.put( i, new PESOScore( this, i, getMaxFrequency() ) ); break;
+                case PESOS:
+                    PESOScore core = new PESOScore( this, i, getMaxFrequency() );
+                    core.setBaseTimeBudget( cpuModel.getTimeBudget().getTimeMicroseconds() );
+                    coresMap.put( i, core );
+                    break;
                 case PERF:  coresMap.put( i, new PERFcore( this, i, getMaxFrequency() ) ); break;
                 case CONS:  coresMap.put( i, new CONScore( this, i, getMaxFrequency() ) ); break;
             }
@@ -240,7 +245,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
      * @param time    time of evaluation.
      * @param core    core to which assign the evaluated frequency.
     */
-    private void evalFrequency( final Time time, final Core core )
+    protected void evalFrequency( final Time time, final Core core )
     {
         Model<Long,QueryInfo> model = getModel();
         List<QueryInfo> queue = core.getQueue();
@@ -379,7 +384,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     }
     
     // Core of the CPU.
-    private static abstract class Core
+    public static abstract class Core
     {
         protected long coreId;
         private Time time;
@@ -451,7 +456,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             cpu.addSampledValue( Global.IDLE_ENERGY_SAMPLING, startTime, time, idleEnergy );
         }
         
-        public void setFrequency( final Time time, final long newFrequency )
+        private void setFrequency( final Time time, final long newFrequency )
         {
             if (frequency != newFrequency) {
                 //System.out.println( "TIME: " + time + ", NEW: " + newFrequency + ", OLD: " + frequency + ", QUERY: " + currentQuery );
@@ -568,10 +573,12 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         }
     }
     
-    private static class PESOScore extends Core
+    public static class PESOScore extends Core
     {
-        public PESOScore( final EnergyCPU cpu, final long coreId, final long initFrequency )
-        {
+        private long baseTimeBudget;
+        private long timeBudget;
+        
+        public PESOScore( final EnergyCPU cpu, final long coreId, final long initFrequency ) {
             super( cpu, coreId, initFrequency );
         }
         
@@ -587,6 +594,9 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         {
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
                 addQueryOnSampling();
+                if (timeBudget != baseTimeBudget) {
+                    timeBudget = baseTimeBudget;
+                }
                 if (hasMoreQueries()) {
                     cpu.evalFrequency( time, this );
                     cpu.computeTime( getFirstQueryInQueue(), this );
@@ -594,6 +604,26 @@ public class EnergyCPU extends Device<Long,QueryInfo>
                 return true;
             } else {
                 return false;
+            }
+        }
+        
+        public void setBaseTimeBudget( final long time )
+        {
+            baseTimeBudget = time;
+            setTimeBudget( time, null );
+        }
+        
+        public void setTimeBudget( final long time, final Long queryID )
+        {
+            timeBudget = time;
+            if (queryID != null && currentQuery != null && currentQuery.getId() == queryID) {
+                PESOSmodel model = (PESOSmodel) cpu.getModel();
+                if (model != null) {
+                    model.setTimeBudget( timeBudget );
+                    if (hasMoreQueries()) {
+                        cpu.evalFrequency( new Time( time, TimeUnit.MICROSECONDS ), this );
+                    }
+                }
             }
         }
         

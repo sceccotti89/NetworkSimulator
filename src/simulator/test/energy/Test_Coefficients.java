@@ -128,6 +128,6 @@ public class Test_Coefficients
     }
     
     private static double roundValue( final double value ) {
-        return Math.round( value * 100.0 ) / 100.0;
+        return Math.round( value * ROUNDNESS ) / ROUNDNESS;
     }
 }

@@ -23,13 +23,10 @@ import simulator.utils.resources.ResourceLoader;
 
 public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cloneable
 {
-    private static final String SEPARATOR = "=";
+    private static final String POSTINGS_PREDICTORS   = "predictions.txt";
+    private static final String EFFECTIVE_TIME_ENERGY = "time_energy.txt";
     
-    private static final String DIR = "Models/PESOS/MaxScore/";
-    private static final String POSTINGS_PREDICTORS            = DIR + "predictions.txt";
-    private static final String REGRESSORS_TIME_CONSERVATIVE   = DIR + "regressors.txt";
-    private static final String REGRESSORS_ENERGY_CONSERVATIVE = DIR + "regressors_normse.txt";
-    private static final String EFFECTIVE_TIME_ENERGY          = DIR + "time_energy.txt";
+    private static final String SEPARATOR = "=";
     
     protected String _directory;
     protected String _postings;
@@ -128,23 +125,11 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     {
         this.type = type;
         
-        if (files.length == 0) {
-            _postings = POSTINGS_PREDICTORS;
-            _effective_time_energy = EFFECTIVE_TIME_ENERGY;
-            if (type == Type.PESOS) {
-                if (type.getMode() == Mode.PESOS_TIME_CONSERVATIVE) {
-                    _regressors = REGRESSORS_TIME_CONSERVATIVE;
-                } else {
-                    _regressors = REGRESSORS_ENERGY_CONSERVATIVE;
-                }
-            }
-        } else {
-            _directory = dir;
-            _postings = _directory + files[0];
-            _effective_time_energy = _directory + files[1];
-            if (files.length == 3) {
-                _regressors = _directory + files[2];
-            }
+        _directory = dir;
+        _postings = _directory + files[0];
+        _effective_time_energy = _directory + files[1];
+        if (files.length == 3) {
+            _regressors = _directory + files[2];
         }
     }
     
@@ -178,6 +163,10 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
 
     public Time getTimeBudget() {
         return timeBudget;
+    }
+    
+    public void setTimeBudget( final long time ) {
+        timeBudget = new Time( time, TimeUnit.MICROSECONDS );
     }
 
     private void loadPostingsPredictors() throws IOException
@@ -258,6 +247,26 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     
     public static class PESOSmodel extends CPUEnergyModel
     {
+        private static final String REGRESSORS_TIME_CONSERVATIVE   = "regressors.txt";
+        private static final String REGRESSORS_ENERGY_CONSERVATIVE = "regressors_normse.txt";
+        
+        
+        /**
+         * Creates a new PESOS model.
+         * 
+         * @param time_budget    time limit to complete a query (in ms).
+         * @param mode           PESOS modality (see {@linkplain CPUEnergyModel.Mode Mode}).
+         * @param directory      directory used to load the files.
+         * 
+         * @throws IOException if a file doesn't exists or is malformed.
+        */
+        public PESOSmodel( final long time_budget, final Mode mode, final String directory )
+        {
+            this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory,
+                  POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY,
+                  (mode == Mode.PESOS_ENERGY_CONSERVATIVE) ? REGRESSORS_ENERGY_CONSERVATIVE : REGRESSORS_TIME_CONSERVATIVE );
+        }
+        
         /**
          * Creates a new PESOS model.
          * 
@@ -284,15 +293,6 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             return type;
         }
         
-        /**
-         * Evaluates the input parameters to decide which is the "best" frequency
-         * to complete the current queue of queries.
-         * 
-         * @param now       time of evaluation.
-         * @param queries   list of parameters.
-         * 
-         * @return the "best" frequency, expressed in KHz.
-        */
         @Override
         public Long eval( final Time now, final QueryInfo... queries )
         {
@@ -303,6 +303,8 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                 System.out.println( "NOW: " + now + ", ARRIVAL: " + currentQuery.getArrivalTime() );
             }
             
+            int ppcRMSE = regressors.get( "class." + currentQuery.getTerms() + ".rmse" ).intValue();
+            long pcost = currentQuery.getPostings() + ppcRMSE;
             Time currentDeadline = currentQuery.getArrivalTime().addTime( timeBudget );
             if (now.getTimeMicroseconds() == 44709952703L || now.getTimeMicroseconds() == 44709955000L)
                 System.out.println( "CURRENT_DEADLINE: " + currentDeadline + ", NOW: " + now );
@@ -312,8 +314,6 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                 return _device.getMaxFrequency();
             }
             
-            int ppcRMSE = regressors.get( "class." + currentQuery.getTerms() + ".rmse" ).intValue();
-            long pcost = currentQuery.getPostings() + ppcRMSE;
             long volume = pcost;
             double maxDensity = Double.MIN_VALUE;
             long lateness = getLateness( now, queries );
@@ -382,7 +382,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             return Utils.getTimeInMicroseconds( result, TimeUnit.MICROSECONDS );
         }
         
-        private long predictServiceTimeAtMaxFrequency( final int terms, final long postings )
+        public long predictServiceTimeAtMaxFrequency( final int terms, final long postings )
         {
             String base  = _device.getMaxFrequency() + "." + terms;
             double alpha = regressors.get( base + ".alpha" );
@@ -426,6 +426,17 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
          * Creates a new PERF model.
          * 
          * @param directory    directory used to load the files.
+         * 
+         * @throws IOException if a file doesn't exists or is malformed.
+        */
+        public PERFmodel( final String directory ) {
+            super( Type.PERF, directory, POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY );
+        }
+        
+        /**
+         * Creates a new PERF model.
+         * 
+         * @param directory    directory used to load the files.
          * @param files        list of files used to load the model.
          * 
          * @throws IOException if a file doesn't exists or is malformed.
@@ -464,6 +475,17 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         private static final double UP_THRESHOLD = 0.80;
         private static final double DOWN_THRESHOLD = 0.20;
         public static final long PERIOD = 2000; // in ms.
+        
+        /**
+         * Creates a new CONS model.
+         * 
+         * @param directory    directory used to load the files.
+         * 
+         * @throws IOException if a file doesn't exists or is malformed.
+        */
+        public CONSmodel( final String directory ) {
+            super( Type.CONS, directory, POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY );
+        }
         
         /**
          * Creates a new CONS model.
@@ -573,9 +595,9 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         private int _postings;
         
         private Event event;
-        private Time arrivalTime;
+        private Time arrivalTime = new Time( 0, TimeUnit.MILLISECONDS );
         
-        private Time startTime = Time.ZERO;
+        private Time startTime = new Time( 0, TimeUnit.MILLISECONDS );
         private Time currentTime;
         private Time endTime;
         private long _frequency;
@@ -626,7 +648,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }
         
         public void setArrivalTime( final Time t ) {
-            arrivalTime = t;
+            arrivalTime.setTime( t );
         }
         
         public Time getArrivalTime() {

@@ -951,6 +951,7 @@ public class Plotter
             }
             
             if (!_legend.isSelected()) {
+                _legend.draw( this, g );
                 return;
             }
             

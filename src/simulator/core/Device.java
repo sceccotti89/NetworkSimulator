@@ -9,10 +9,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -72,10 +72,12 @@ public abstract class Device<I,O>
     public Device( final String name, final List<Long> frequencies )
     {
         _name = name;
+        _time = new Time( 0, TimeUnit.MILLISECONDS );
         
         // Order the frequencies from lower to higher.
-        Collections.sort( _frequencies = frequencies );
+        //Collections.sort( _frequencies = frequencies );
         
+        _frequencies = frequencies;
         // By default the frequency is setted as the maximum one.
         _frequency = getMaxFrequency();
         
