@@ -310,7 +310,6 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                 System.out.println( "CURRENT_DEADLINE: " + currentDeadline + ", NOW: " + now );
             if (currentDeadline.compareTo( now ) <= 0) {
                 // Time to complete the query is already over.
-                // We can only set the maximum frequency.
                 return _device.getMaxFrequency();
             }
             
@@ -325,7 +324,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             if (currentDeadline.compareTo( now ) <= 0) {
                 return _device.getMaxFrequency();
             } else {
-                maxDensity = volume / (currentDeadline.subTime( now )).getTimeMicroseconds();
+                maxDensity = volume / currentDeadline.subTime( now ).getTimeMicroseconds();
             }
             
             for (int i = 1; i < queries.length; i++) {
@@ -401,7 +400,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                 //System.out.println( "ALPHA: " + alpha + ", BETA: " + beta + ", RMSE: " + rmse );
                 
                 long extimatedTime = Utils.getTimeInMicroseconds( alpha * postings + beta + rmse, TimeUnit.MILLISECONDS );
-                //System.out.println( "EXTIMATED TIME: " + extimatedTime + "ns @ " + _frequencies.get( i ) );
+                //System.out.println( "EXTIMATED TIME: " + extimatedTime + "ns @ " + frequency );
                 if (extimatedTime <= targetTime) {
                     return frequency;
                 }

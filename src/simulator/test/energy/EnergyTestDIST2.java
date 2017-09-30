@@ -168,20 +168,7 @@ public class EnergyTestDIST2
             
             // TODO per finire dovrei salvarmi il time budget corrente
             // TODO perche' anche FINE potrebbe essere un valore diverso da quello precedente.
-            if (cpu.getCore( coreID ).getFirstQuery().getId() == queryID) {
-                //TODO potrei farlo anche in parallelo nel numero di nodi (se i core sono troppi)!!!
-                for (CpuInfo _cpu : cpuInfos.values()) {
-                    for (CoreInfo _core : _cpu.getCores()) {
-                        Status status = analyzeSystem( time.getTimeMicroseconds(), _cpu, _core );
-                        System.out.println( "NEW EXTRA TIME: " + status.extraTime + ", STATUS: " + status );
-                        //if (_core.hasMoreQueries() && status != Status.FINE) {
-                        if (_core.hasMoreQueries()) {
-                            PESOScore core = (PESOScore) cpus.get( (int) _cpu.getId() - 2 ).getCore( _core.getCoreID() );
-                            core.setTimeBudget( timeBudget + status.getExtraTime(), _core.getFirstQuery().getId() );
-                        }
-                    }
-                }
-            }
+            analyzeSystem( time );
         }
         
         public void completedQuery( final Time time, final long nodeID, final long coreID )
@@ -192,7 +179,7 @@ public class EnergyTestDIST2
                 openQueries.put( queryID, 1 );
             } else {
                 int value = openQueries.get( queryID ) + 1;
-                if (value == NODES) {
+                if (value == cpuInfos.size()) {
                     openQueries.remove( queryID );
                 } else {
                     openQueries.put( queryID, openQueries.get( queryID ) + 1 );
@@ -201,16 +188,21 @@ public class EnergyTestDIST2
             
             cpu.completedQuery( time, coreID );
             
-            // TODO per finire dovrei salvarmi il time budget corrente
+            // TODO per finire dovrei salvarmi il time budget corrente nel relativo core
             // TODO perche' anche FINE potrebbe essere un valore diverso da quello precedente.
             System.out.println( "\nRIMOSSA QUERY: " + queryID + " - CPU: " + nodeID + ", CORE: " + coreID );
-            //TODO potrei farlo anche in parallelo nel numero di nodi (se i core sono troppi)!!!
+            analyzeSystem( time );
+        }
+        
+        private void analyzeSystem( final Time time )
+        {
+            //TODO potrei farlo in parallelo nel numero di nodi (se i core totali sono troppi)!!!
             for (CpuInfo _cpu : cpuInfos.values()) {
                 for (CoreInfo _core : _cpu.getCores()) {
-                    Status status = analyzeSystem( time.getTimeMicroseconds(), _cpu, _core );
+                    Status status = evalTimeBudget( time.getTimeMicroseconds(), _cpu, _core );
                     System.out.println( "NEW EXTRA TIME: " + status.extraTime + ", STATUS: " + status );
-                    //if (_core.hasMoreQueries() && status != Status.FINE) {
-                    if (_core.hasMoreQueries()) {
+                    if (_core.hasMoreQueries() && status != Status.FINE) {
+                    //if (_core.hasMoreQueries()) {
                         PESOScore core = (PESOScore) cpus.get( (int) _cpu.getId() - 2 ).getCore( _core.getCoreID() );
                         core.setTimeBudget( timeBudget + status.getExtraTime(), _core.getFirstQuery().getId() );
                     }
@@ -239,7 +231,7 @@ public class EnergyTestDIST2
             return false;
         }
         
-        private Status analyzeSystem( final long time, final CpuInfo cpu, final CoreInfo core )
+        private Status evalTimeBudget( final long time, final CpuInfo cpu, final CoreInfo core )
         {
             long extraBudget = 0;
             

@@ -235,7 +235,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
      * @param time    time of evaluation.
      * @param core    core to which assign the evaluated frequency.
     */
-    protected void evalFrequency( final Time time, final Core core )
+    protected long evalFrequency( final Time time, final Core core )
     {
         Model<Long,QueryInfo> model = getModel();
         List<QueryInfo> queue = core.getQueue();
@@ -244,9 +244,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             System.out.println( "EVALUATING FREQUENCY AT: " + time );
         
         // Evaluate the "best" frequency to use.
-        long frequency = model.eval( time, queue.toArray( new QueryInfo[0] ) );
-        //System.out.println( "QUERY: " + core.lastQuery + ", OLD_FREQ: " + core.getFrequency() + ", NEW FREQ: " + frequency );
-        core.setFrequency( time, frequency );
+        return model.eval( time, queue.toArray( new QueryInfo[0] ) );
     }
     
     @Override
@@ -265,7 +263,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         if (!core.isNextQuery( query )) {
             //Time time = new Time( Long.MAX_VALUE, TimeUnit.MICROSECONDS );
             Time time = _evtScheduler.getTimeDuration();
-            query.setTimeToComplete( Time.ZERO, time.clone() );
+            query.setTimeToComplete( Time.ZERO, Time.ZERO );
             return time.subTime( query.getArrivalTime() );
         }
         
@@ -377,7 +375,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     public static abstract class Core
     {
         protected long coreId;
-        private Time time;
+        protected Time time;
         protected List<QueryInfo> queryQueue;
         protected long frequency;
         protected QueryInfo currentQuery = null;
@@ -446,7 +444,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             cpu.addSampledValue( Global.IDLE_ENERGY_SAMPLING, startTime, time, idleEnergy );
         }
         
-        private void setFrequency( final Time time, final long newFrequency )
+        protected void setFrequency( final Time time, final long newFrequency )
         {
             if (frequency != newFrequency) {
                 System.out.println( "TIME_BUDGET: " + ((PESOSmodel) cpu.getModel()).getTimeBudget() );
@@ -578,7 +576,8 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         {
             q.setCoreId( coreId );
             queryQueue.add( q );
-            cpu.evalFrequency( q.getArrivalTime(), this );
+            long frequency = cpu.evalFrequency( q.getArrivalTime(), this );
+            setFrequency( q.getArrivalTime(), frequency );
         }
         
         @Override
@@ -588,12 +587,13 @@ public class EnergyCPU extends Device<Long,QueryInfo>
                 addQueryOnSampling();
                 if (timeBudget != baseTimeBudget) {
                     timeBudget = baseTimeBudget;
+                    PESOSmodel model = (PESOSmodel) cpu.getModel();
+                    model.setTimeBudget( timeBudget );
                 }
-                PESOSmodel model = (PESOSmodel) cpu.getModel();
-                model.setTimeBudget( timeBudget );
                 
                 if (hasMoreQueries()) {
-                    cpu.evalFrequency( time, this );
+                    long frequency = cpu.evalFrequency( time, this );
+                    setFrequency( time, frequency );
                     cpu.computeTime( getFirstQueryInQueue(), this );
                 }
                 return true;
@@ -611,18 +611,17 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         public void setTimeBudget( final long time, final Long queryID )
         {
             timeBudget = time;
-            System.out.println( "NUOVO TIME BUDGET: " + timeBudget );
+            System.out.println( "CORE: " + getId() + ", NUOVO TIME BUDGET: " + timeBudget );
             if (queryID != null && currentQuery != null && currentQuery.getId() == queryID) {
                 PESOSmodel model = (PESOSmodel) cpu.getModel();
-                if (model != null) {
-                    // Get the elapsed time since the beginning of the current query.
+                model.setTimeBudget( timeBudget );
+                if (hasMoreQueries()) {
                     Time t = new Time( time, TimeUnit.MICROSECONDS );
-                    Time elapsed = t.subTime( currentQuery.getStartTime() );
-                    System.out.println( "ELAPSED: " + elapsed );
-                    model.setTimeBudget( timeBudget + elapsed.getTimeMicroseconds() );
-                    if (hasMoreQueries()) {
-                        cpu.evalFrequency( t, this );
-                    }
+                    // FIXME quale delle 2 versioni e' la piu' corretta?? forse la prima va bene lo stesso
+                    // FIXME perche' sono interessato alla velocita' in base al nuovo time budget.
+                    long frequency = cpu.evalFrequency( currentQuery.getStartTime(), this );
+                    //long frequency = cpu.evalFrequency( t, this );
+                    setFrequency( t, frequency );
                 }
             }
         }

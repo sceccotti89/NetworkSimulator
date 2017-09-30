@@ -106,7 +106,7 @@ public class Time implements Comparable<Time>
     }
     
     /**
-     * Subtract i unit of time from this obj. Result will never be negative.
+     * Subtract i units of time from this object. Result will never be negative.
      * 
      * @param i
      * @param unit
@@ -118,13 +118,13 @@ public class Time implements Comparable<Time>
         if (l > time) {
             time = 0;
         } else {
-            time -= unit.toMicros( i );
+            time -= l;
         }
         return this;
     }
     
     /**
-     * Subtract i time from this. Result will never be negative.
+     * Subtract i units of time from this object. Result will never be negative.
      * @param i
      * @return
     */
