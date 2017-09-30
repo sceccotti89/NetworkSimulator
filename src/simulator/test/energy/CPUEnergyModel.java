@@ -366,7 +366,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                 long pcost4q = q.getPostings() + ppcRMSE;
                 long predictedRemainingTime4q = predictServiceTimeAtMaxFrequency( q.getTerms(), pcost4q );
                 Time qArrivalTime = q.getArrivalTime();
-                long budget4q = Math.max( 0, timeBudget.clone().subTime( now.clone().subTime( qArrivalTime ) ).getTimeMicroseconds() );
+                long budget4q = timeBudget.clone().subTime( now.clone().subTime( qArrivalTime ) ).getTimeMicroseconds();
                 
                 if (now.getTimeMicroseconds() == 44709952703L || now.getTimeMicroseconds() == 44709955000L)
                     System.out.println( "PREDICTED: " + predictedRemainingTime4q + ", BUDGET: " + budget4q );

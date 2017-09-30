@@ -124,22 +124,12 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     {
         Core core = coresMap.get( coreId );
         core.addQuery( q );
-        
-        //System.out.println( "AGGIUNTA QUERY " + q.getId() + " TO CORE: " + coreId );
-        // Set the time of the cores as (at least) the last query arrival time.
-        //setTime( q.getArrivalTime() );
-        
-        CPUEnergyModel model = (CPUEnergyModel) getModel();
-        if (model.getType() == Type.PESOS) {
-            // Evaluate the new core frequency.
-            evalFrequency( q.getArrivalTime(), core );
-        }
     }
     
     @Override
     public void setTime( final Time time )
     {
-        // Set the time of the CPU cores.
+        // Set the time of the cores.
         for (Core cpuCore : coresMap.values()) {
             cpuCore.setTime( time );
         }
@@ -459,7 +449,8 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         private void setFrequency( final Time time, final long newFrequency )
         {
             if (frequency != newFrequency) {
-                //System.out.println( "TIME: " + time + ", NEW: " + newFrequency + ", OLD: " + frequency + ", QUERY: " + currentQuery );
+                System.out.println( "TIME_BUDGET: " + ((PESOSmodel) cpu.getModel()).getTimeBudget() );
+                System.out.println( "TIME: " + time + ", NEW: " + newFrequency + ", OLD: " + frequency );
                 if (currentQuery != null) {
                     /*if (newFrequency < frequency) {
                         // FIXME abbassamento frequenza PESOS.
@@ -587,6 +578,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         {
             q.setCoreId( coreId );
             queryQueue.add( q );
+            cpu.evalFrequency( q.getArrivalTime(), this );
         }
         
         @Override
@@ -597,6 +589,9 @@ public class EnergyCPU extends Device<Long,QueryInfo>
                 if (timeBudget != baseTimeBudget) {
                     timeBudget = baseTimeBudget;
                 }
+                PESOSmodel model = (PESOSmodel) cpu.getModel();
+                model.setTimeBudget( timeBudget );
+                
                 if (hasMoreQueries()) {
                     cpu.evalFrequency( time, this );
                     cpu.computeTime( getFirstQueryInQueue(), this );
@@ -616,12 +611,17 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         public void setTimeBudget( final long time, final Long queryID )
         {
             timeBudget = time;
+            System.out.println( "NUOVO TIME BUDGET: " + timeBudget );
             if (queryID != null && currentQuery != null && currentQuery.getId() == queryID) {
                 PESOSmodel model = (PESOSmodel) cpu.getModel();
                 if (model != null) {
-                    model.setTimeBudget( timeBudget );
+                    // Get the elapsed time since the beginning of the current query.
+                    Time t = new Time( time, TimeUnit.MICROSECONDS );
+                    Time elapsed = t.subTime( currentQuery.getStartTime() );
+                    System.out.println( "ELAPSED: " + elapsed );
+                    model.setTimeBudget( timeBudget + elapsed.getTimeMicroseconds() );
                     if (hasMoreQueries()) {
-                        cpu.evalFrequency( new Time( time, TimeUnit.MICROSECONDS ), this );
+                        cpu.evalFrequency( t, this );
                     }
                 }
             }

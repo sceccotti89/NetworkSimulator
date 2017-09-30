@@ -112,7 +112,8 @@ public class Time implements Comparable<Time>
      * @param unit
      * @return
     */
-    public Time subTime( final long i, final TimeUnit unit ) {
+    public Time subTime( final long i, final TimeUnit unit )
+    {
         long l = unit.toMicros( i );
         if (l > time) {
             time = 0;

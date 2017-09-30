@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ import simulator.utils.Utils;
 
 public class EnergyTestDIST2
 {
-    private static final int NODES = 5;
+    private static final int NODES = 1;
     private static final int CPU_CORES = 4;
     
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
@@ -140,9 +141,7 @@ public class EnergyTestDIST2
         private static final double WARNING_COEFFICIENT  = 0.5;
         private static final double CRITICAL_COEFFICIENT = 0.7;
         
-        // TODO utilizzare una lista di query "aperte", cioe' non ancora completate??
-        // TODO in questo modo saprei quale core e' ancora indietro..
-        //private Map<Long,Integer> openQueries;
+        private Map<Long,Integer> openQueries;
         
         
         public PesosController( final long timeBudget, final Mode mode )
@@ -150,11 +149,13 @@ public class EnergyTestDIST2
             cpuInfos = new HashMap<>( NODES );
             this.timeBudget = timeBudget;
             this.mode = mode;
+            
+            openQueries = new HashMap<>();
         }
         
         public void connect( final Agent to )
         {
-            try { cpuInfos.put( to.getId(), new CpuInfo( timeBudget, mode, to.getId() - 1 ) ); }
+            try { cpuInfos.put( to.getId(), new CpuInfo( timeBudget, mode, to.getId() ) ); }
             catch ( IOException e ) {}
         }
         
@@ -163,17 +164,22 @@ public class EnergyTestDIST2
             CpuInfo cpu = cpuInfos.get( nodeID );
             cpu.addQuery( time, queryID, coreID );
             
-            if (cpu.getCore( coreID ).getQueries().size() == 1) {
-                Status status = analyzeSystem( time.getTimeMicroseconds(), cpu, coreID );
-                if (status != Status.FINE) {
-                    // TODO nella forma finale dovro' inviare il nuovo time budget relativo alla query in questione
-                    // TODO quindi nel messaggio inseriro' sia il nuovo budget che l'ID della query.
-                    
-                    // TODO in realta' il valore da ottenere non puo' essere semplicemente il tempo di attendere quella query
-                    // TODO ma dovro' controllare che non abbia altre query in coda. In quel caso il delay dovra' essere minore.
-                    // TODO potrei valutare lo stato anche delle prossime query.
-                    PESOScore core = (PESOScore) cpus.get( (int) nodeID - 2 ).getCore( coreID );
-                    core.setTimeBudget( timeBudget + status.getExtraTime(), queryID );
+            System.out.println( "\nAGGIUNTA QUERY: " + queryID + " - CPU: " + nodeID + ", CORE: " + coreID );
+            
+            // TODO per finire dovrei salvarmi il time budget corrente
+            // TODO perche' anche FINE potrebbe essere un valore diverso da quello precedente.
+            if (cpu.getCore( coreID ).getFirstQuery().getId() == queryID) {
+                //TODO potrei farlo anche in parallelo nel numero di nodi (se i core sono troppi)!!!
+                for (CpuInfo _cpu : cpuInfos.values()) {
+                    for (CoreInfo _core : _cpu.getCores()) {
+                        Status status = analyzeSystem( time.getTimeMicroseconds(), _cpu, _core );
+                        System.out.println( "NEW EXTRA TIME: " + status.extraTime + ", STATUS: " + status );
+                        //if (_core.hasMoreQueries() && status != Status.FINE) {
+                        if (_core.hasMoreQueries()) {
+                            PESOScore core = (PESOScore) cpus.get( (int) _cpu.getId() - 2 ).getCore( _core.getCoreID() );
+                            core.setTimeBudget( timeBudget + status.getExtraTime(), _core.getFirstQuery().getId() );
+                        }
+                    }
                 }
             }
         }
@@ -181,46 +187,96 @@ public class EnergyTestDIST2
         public void completedQuery( final Time time, final long nodeID, final long coreID )
         {
             CpuInfo cpu = cpuInfos.get( nodeID );
+            long queryID = cpu.getCore( coreID ).getFirstQuery().getId();
+            if (!openQueries.containsKey( queryID )) {
+                openQueries.put( queryID, 1 );
+            } else {
+                int value = openQueries.get( queryID ) + 1;
+                if (value == NODES) {
+                    openQueries.remove( queryID );
+                } else {
+                    openQueries.put( queryID, openQueries.get( queryID ) + 1 );
+                }
+            }
+            
             cpu.completedQuery( time, coreID );
             
-            Status status = analyzeSystem( time.getTimeMicroseconds(), cpu, coreID );
-            if (status != Status.FINE) {
-                // TODO nella forma finale dovro' inviare il nuovo time budget relativo alla query in questione
-                // TODO quindi nel messaggio inseriro' sia il nuovo budget che l'ID della query.
-                PESOScore core = (PESOScore) cpus.get( (int) nodeID - 2 ).getCore( coreID );
-                core.setTimeBudget( timeBudget + status.getExtraTime(), cpu.getCore( coreID ).getFirstQuery().getId() );
+            // TODO per finire dovrei salvarmi il time budget corrente
+            // TODO perche' anche FINE potrebbe essere un valore diverso da quello precedente.
+            System.out.println( "\nRIMOSSA QUERY: " + queryID + " - CPU: " + nodeID + ", CORE: " + coreID );
+            //TODO potrei farlo anche in parallelo nel numero di nodi (se i core sono troppi)!!!
+            for (CpuInfo _cpu : cpuInfos.values()) {
+                for (CoreInfo _core : _cpu.getCores()) {
+                    Status status = analyzeSystem( time.getTimeMicroseconds(), _cpu, _core );
+                    System.out.println( "NEW EXTRA TIME: " + status.extraTime + ", STATUS: " + status );
+                    //if (_core.hasMoreQueries() && status != Status.FINE) {
+                    if (_core.hasMoreQueries()) {
+                        PESOScore core = (PESOScore) cpus.get( (int) _cpu.getId() - 2 ).getCore( _core.getCoreID() );
+                        core.setTimeBudget( timeBudget + status.getExtraTime(), _core.getFirstQuery().getId() );
+                    }
+                }
             }
         }
         
-        private Status analyzeSystem( final long time, final CpuInfo cpu, final long coreID )
+        private boolean lastToComplete( final long queryID )
+        {
+            return openQueries.containsKey( queryID ) &&
+                   openQueries.get( queryID ) == cpuInfos.size() - 1;
+        }
+        
+        private boolean checkForEmptyCore( final long cpuId )
+        {
+            for (CpuInfo cpu : cpuInfos.values()) {
+                if (cpu.getId() != cpuId) {
+                    for (CoreInfo core : cpu.getCores()) {
+                        if (!core.hasMoreQueries()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            
+            return false;
+        }
+        
+        private Status analyzeSystem( final long time, final CpuInfo cpu, final CoreInfo core )
         {
             long extraBudget = 0;
             
-            CoreInfo core = cpu.coresMap.get( coreID );
-            if (core.hasMoreQueries()) {
-                PesosQuery query = core.getFirstQuery();
+            //CoreInfo core = cpu.coresMap.get( coreID );
+            System.out.print( "ANALYZING " );
+            core.printQueue();
+            for (PesosQuery query : core.getQueries()) {
+                if (lastToComplete( query.getId() ) || checkForEmptyCore( cpu.getId() )) {
+                    return Status.FINE;
+                }
+                
                 for (CpuInfo cpu1 : cpuInfos.values()) {
                     if (cpu1.getId() != cpu.getId()) {
-                        long tmpExtraTime = 0;
+                        long extraTime = 0;
                         // Scan all the cores of the cpu.
                         for (CoreInfo core1 : cpu1.coresMap.values()) {
+                            core1.printQueue();
                             // Scan all the enqueued queries.
-                            for (PesosQuery query1 : core1.queryQueue) {
+                            int index = 0;
+                            for (PesosQuery query1 : core1.getQueries()) {
                                 if (query1.getId() == query.getId()) {
-                                    break;
+                                    if (index == 0) return Status.FINE;
+                                    else break;
                                 } else {
-                                    tmpExtraTime += query1.getServiceTime( time );
+                                    index++;
+                                    extraTime += query1.getResidualServiceTime( time );
                                 }
                             }
                         }
                         
                         // Get the maximum time to wait.
-                        extraBudget = Math.max( extraBudget, tmpExtraTime );
+                        extraBudget = Math.max( extraBudget, extraTime );
                     }
                 }
             }
             
-            System.out.println( "EXTRA TIME: " + extraBudget );
+            //System.out.println( "EXTRA TIME: " + extraBudget );
             
             Status status;
             if (extraBudget >= CRITICAL_DELAY) {
@@ -234,8 +290,6 @@ public class EnergyTestDIST2
             }
             status.setExtraTimeBudget( extraBudget );
             
-            System.out.println( "NEW EXTRA TIME: " + extraBudget + ", STATUS: " + status );
-            
             return status;
         }
         
@@ -245,7 +299,7 @@ public class EnergyTestDIST2
             WARNING,
             CRITICAL;
             
-            private long extraTime;
+            private long extraTime = 0;
             
             public void setExtraTimeBudget( final long time ) {
                 extraTime = time;
@@ -262,12 +316,12 @@ public class EnergyTestDIST2
             private Map<Long,CoreInfo> coresMap;
             
             
-            public CpuInfo( final long timeBudget, final Mode mode, final long index ) throws IOException
+            public CpuInfo( final long timeBudget, final Mode mode, final long id ) throws IOException
             {
-                _id = index;
+                _id = id;
                 coresMap = new HashMap<>();
                 for (long i = 0; i < CPU_CORES; i++) {
-                    coresMap.put( i, new CoreInfo( timeBudget, mode, index ) );
+                    coresMap.put( i, new CoreInfo( _id, i, timeBudget, mode ) );
                 }
             }
             
@@ -283,6 +337,10 @@ public class EnergyTestDIST2
                 return coresMap.get( coreID );
             }
             
+            public Collection<CoreInfo> getCores() {
+                return coresMap.values();
+            }
+
             public long getId() {
                 return _id;
             }
@@ -291,14 +349,18 @@ public class EnergyTestDIST2
         private static class CoreInfo extends Device<Object,Object>
         {
             private PESOSmodel model;
-            private List<PesosQuery> queryQueue;
+            private List<PesosQuery> queue;
+            private long _cpuId;
+            private long _coreId;
             
-            public CoreInfo( final long timeBudget, final Mode mode, final long index ) throws IOException
+            public CoreInfo( final long cpuId, final long coreId, final long timeBudget, final Mode mode ) throws IOException
             {
                 super( "", "Models/cpu_frequencies.txt" );
                 
-                queryQueue = new ArrayList<>( 64 );
-                model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + index + "/PESOS/MaxScore/" );
+                _cpuId = cpuId;
+                _coreId = coreId;
+                queue = new ArrayList<>( 64 );
+                model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + cpuId + "/PESOS/MaxScore/" );
                 model.setDevice( this );
                 model.loadModel();
             }
@@ -311,27 +373,45 @@ public class EnergyTestDIST2
                 if (!hasMoreQueries()) {
                     pQuery.setStartTime( time );
                 }
-                queryQueue.add( pQuery );
+                queue.add( pQuery );
             }
             
             public void completedQuery( final Time time )
             {
-                queryQueue.remove( 0 );
+                queue.remove( 0 );
                 if (hasMoreQueries()) {
-                    queryQueue.get( 0 ).setStartTime( time );
+                    queue.get( 0 ).setStartTime( time );
                 }
             }
             
             public List<PesosQuery> getQueries() {
-                return queryQueue;
+                return queue;
+            }
+            
+            public void printQueue()
+            {
+                System.out.print( "CPU: " + _cpuId + ", CORE: " + _coreId + " = [" );
+                int index = 0;
+                for (PesosQuery query : queue) {
+                    if (index < queue.size() - 1) {
+                        System.out.print( "ID: " + query.getId() + ", " );
+                    } else {
+                        System.out.print( "ID: " + query.getId() );
+                    }
+                }
+                System.out.println( "]" );
             }
             
             public PesosQuery getFirstQuery() {
-                return queryQueue.get( 0 );
+                return queue.get( 0 );
             }
             
             public boolean hasMoreQueries() {
-                return !queryQueue.isEmpty();
+                return !queue.isEmpty();
+            }
+            
+            public long getCoreID() {
+                return _coreId;
             }
             
             @Override
@@ -365,7 +445,7 @@ public class EnergyTestDIST2
             
             public void predictServiceTime( final PESOSmodel model ) {
                 _serviceTime = model.predictServiceTimeAtMaxFrequency( _terms, _postings );
-                System.out.println( "QUERY: " + _id + ", PREDICTED: " + _serviceTime + ", REAL: " + model.getQuery( _id ).getTime( 3500000 )  );
+                //System.out.println( "QUERY: " + _id + ", PREDICTED: " + _serviceTime + ", REAL: " + model.getQuery( _id ).getTime( 3500000 )  );
             }
             
             /**
@@ -373,7 +453,7 @@ public class EnergyTestDIST2
              * 
              * @param time    time of evaluation.
             */
-            public long getServiceTime( final long time )
+            public long getResidualServiceTime( final long time )
             {
                 if (_startTime == -1) {
                     return _serviceTime;
@@ -583,6 +663,8 @@ public class EnergyTestDIST2
             EnergyCPU cpu = getDevice( new EnergyCPU() );
             PESOSmodel model = (PESOSmodel) cpu.getModel();
             
+            System.out.println( "RECEIVED QUERY: " + e.getPacket().getContents() );
+            
             if (p.hasContent( Global.PESOS_TIME_BUDGET )) {
                 PESOSmessage message = p.getContent( Global.PESOS_TIME_BUDGET );
                 PESOScore core = (PESOScore) cpu.getCore( message.getCoreID() );
@@ -715,6 +797,12 @@ public class EnergyTestDIST2
         sim.start( new Time( 24, TimeUnit.HOURS ), false );
         //sim.start( new Time( 53100, TimeUnit.MICROSECONDS ), false );
         sim.close();
+        
+        for (int i = 0; i < NODES; i++) {
+            EnergyCPU cpu = cpus.get( i );
+            double energy = cpu.getResultSampled( Global.ENERGY_SAMPLING );
+            System.out.println( "CPU: " + i + ", Energy: " + energy );
+        }
         
         // Show the animation.
         AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );
