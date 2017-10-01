@@ -36,7 +36,7 @@ import simulator.utils.Utils;
 
 public class EnergyTestDIST2
 {
-    private static final int NODES = 1;
+    private static final int NODES = 2;
     private static final int CPU_CORES = 4;
     
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
@@ -139,9 +139,6 @@ public class EnergyTestDIST2
         private static final double WARNING_DELAY  = 100000d;
         private static final double CRITICAL_DELAY = 200000d;
         
-        private static final double WARNING_COEFFICIENT  = 0.5;
-        private static final double CRITICAL_COEFFICIENT = 0.7;
-        
         // Former value is number of arrived shards, the latter the completed ones.
         private Map<Long,Pair<Integer,Integer>> openQueries;
         
@@ -166,7 +163,6 @@ public class EnergyTestDIST2
             CpuInfo cpu = cpuInfos.get( nodeID );
             cpu.addQuery( time, queryID, coreID );
             
-            // TODO devo settare il fatto che ho aggiunto la query.
             if (!openQueries.containsKey( queryID )) {
                 openQueries.put( queryID, new Pair<>( 1, 0 ) );
             } else {
@@ -176,8 +172,6 @@ public class EnergyTestDIST2
             
             System.out.println( "\nAGGIUNTA QUERY: " + queryID + " - CPU: " + nodeID + ", CORE: " + coreID );
             
-            // TODO per finire dovrei salvarmi il time budget corrente
-            // TODO perche' anche FINE potrebbe essere un valore diverso da quello precedente.
             analyzeSystem( time );
         }
         
@@ -193,8 +187,6 @@ public class EnergyTestDIST2
             
             cpu.completedQuery( time, coreID );
             
-            // TODO per finire dovrei salvarmi il time budget corrente nel relativo core
-            // TODO perche' anche FINE potrebbe essere un valore diverso da quello precedente.
             System.out.println( "\nRIMOSSA QUERY: " + queryID + " - CPU: " + nodeID + ", CORE: " + coreID );
             analyzeSystem( time );
         }
@@ -206,10 +198,10 @@ public class EnergyTestDIST2
                 for (CoreInfo _core : _cpu.getCores()) {
                     Status status = evalTimeBudget( time.getTimeMicroseconds(), _cpu, _core );
                     System.out.println( "STATUS: " + status );
-                    //if (_core.hasMoreQueries() && status != Status.FINE) {
-                    if (_core.hasMoreQueries()) {
+                    long budget = timeBudget + status.getExtraTime();
+                    if (_core.hasMoreQueries() && _core.checkTimeBudget( budget )) {
                         PESOScore core = (PESOScore) cpus.get( (int) _cpu.getId() - 2 ).getCore( _core.getCoreID() );
-                        core.setTimeBudget( timeBudget + status.getExtraTime(), _core.getFirstQuery().getId() );
+                        core.setTimeBudget( budget, _core.getFirstQuery().getId() );
                     }
                 }
             }
@@ -284,9 +276,9 @@ public class EnergyTestDIST2
             }
             
             if (extraBudget >= CRITICAL_DELAY) {
-                status.setStatus( Status.CRITICAL, extraBudget * CRITICAL_COEFFICIENT );
+                status.setStatus( Status.CRITICAL, extraBudget );
             } else if (extraBudget >= WARNING_DELAY) {
-                status.setStatus( Status.WARNING, extraBudget * WARNING_COEFFICIENT );
+                status.setStatus( Status.WARNING, extraBudget );
             }
             
             return status;
@@ -301,14 +293,22 @@ public class EnergyTestDIST2
             protected static final String WARNING  = "WARNING";
             protected static final String CRITICAL = "CRITICAL";
             
+            private static final double WARNING_COEFFICIENT  = 0.5;
+            private static final double CRITICAL_COEFFICIENT = 0.7;
+            
+            
             public Status( final String status, final long time ) {
                 setStatus( status, time );
             }
             
-            public void setStatus( final String status, final double time )
+            public void setStatus( final String status, final long time )
             {
                 _status = status;
-                extraTime = (long) time;
+                if (status == WARNING) {
+                    extraTime = (long) (time * WARNING_COEFFICIENT);
+                } else if (status == CRITICAL) {
+                    extraTime = (long) (time * CRITICAL_COEFFICIENT);
+                }
             }
             
             public String getStatus() {
@@ -368,12 +368,20 @@ public class EnergyTestDIST2
             private long _cpuId;
             private long _coreId;
             
+            private long _initTimeBudget;
+            private long _timeBudget;
+            
+            private static final long DELTA_TIME_THRESHOLD = 50000;
+            
             public CoreInfo( final long cpuId, final long coreId, final long timeBudget, final Mode mode ) throws IOException
             {
                 super( "", "Models/cpu_frequencies.txt" );
                 
                 _cpuId = cpuId;
                 _coreId = coreId;
+                _initTimeBudget = timeBudget;
+                _timeBudget = timeBudget;
+                
                 queue = new ArrayList<>( 64 );
                 model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + cpuId + "/PESOS/MaxScore/" );
                 model.setDevice( this );
@@ -397,6 +405,7 @@ public class EnergyTestDIST2
                 if (hasMoreQueries()) {
                     queue.get( 0 ).setStartTime( time );
                 }
+                _timeBudget = _initTimeBudget;
             }
             
             public List<PesosQuery> getQueries() {
@@ -423,6 +432,16 @@ public class EnergyTestDIST2
             
             public boolean hasMoreQueries() {
                 return !queue.isEmpty();
+            }
+            
+            public boolean checkTimeBudget( final long timeBudget )
+            {
+                if (Math.abs( timeBudget - _timeBudget ) >= DELTA_TIME_THRESHOLD) {
+                    _timeBudget = timeBudget;
+                    return true;
+                } else {
+                    return false;
+                }
             }
             
             public long getCoreID() {
