@@ -36,7 +36,7 @@ import simulator.utils.Utils;
 
 public class EnergyTestDIST2
 {
-    private static final int NODES = 2;
+    private static final int NODES = 5;
     private static final int CPU_CORES = 4;
     
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
@@ -154,7 +154,7 @@ public class EnergyTestDIST2
         
         public void connect( final Agent to )
         {
-            try { cpuInfos.put( to.getId(), new CpuInfo( timeBudget, mode, to.getId() ) ); }
+            try { cpuInfos.put( to.getId(), new CpuInfo( timeBudget, mode, to.getId(), to.getId() - 1 ) ); }
             catch ( IOException e ) {}
         }
         
@@ -271,7 +271,7 @@ public class EnergyTestDIST2
                     }
                 }
                 
-                // Get the minimum between two queries of the same core.
+                // Get the minimum between queries of the same core.
                 extraBudget = Math.min( extraBudget, queryDelay );
             }
             
@@ -325,18 +325,24 @@ public class EnergyTestDIST2
             }
         }
         
-        private static class CpuInfo
+        private static class CpuInfo extends Device<Object,Object>
         {
             private long _id;
             private Map<Long,CoreInfo> coresMap;
             
             
-            public CpuInfo( final long timeBudget, final Mode mode, final long id ) throws IOException
+            public CpuInfo( final long timeBudget, final Mode mode, final long id, final long index ) throws IOException
             {
+                super( "", "Models/cpu_frequencies.txt" );
+                
+                PESOSmodel model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + index + "/PESOS/MaxScore/" );
+                model.setDevice( this );
+                model.loadModel();
+                
                 _id = id;
                 coresMap = new HashMap<>();
                 for (long i = 0; i < CPU_CORES; i++) {
-                    coresMap.put( i, new CoreInfo( _id, i, timeBudget, mode ) );
+                    coresMap.put( i, new CoreInfo( _id, i, model ) );
                 }
             }
             
@@ -359,11 +365,24 @@ public class EnergyTestDIST2
             public long getId() {
                 return _id;
             }
+            
+            @Override
+            public Time timeToCompute( final Task task ) {
+                return null;
+            }
+            @Override
+            public double getUtilization( final Time time ) {
+                return 0;
+            }
+            @Override
+            public String getID() {
+                return null;
+            }
         }
         
-        private static class CoreInfo extends Device<Object,Object>
+        private static class CoreInfo
         {
-            private PESOSmodel model;
+            private PESOSmodel _model;
             private List<PesosQuery> queue;
             private long _cpuId;
             private long _coreId;
@@ -373,26 +392,22 @@ public class EnergyTestDIST2
             
             private static final long DELTA_TIME_THRESHOLD = 50000;
             
-            public CoreInfo( final long cpuId, final long coreId, final long timeBudget, final Mode mode ) throws IOException
+            public CoreInfo( final long cpuId, final long coreId, final PESOSmodel model ) throws IOException
             {
-                super( "", "Models/cpu_frequencies.txt" );
-                
                 _cpuId = cpuId;
                 _coreId = coreId;
-                _initTimeBudget = timeBudget;
-                _timeBudget = timeBudget;
+                _initTimeBudget = model.getTimeBudget().getTimeMicroseconds();
+                _timeBudget = model.getTimeBudget().getTimeMicroseconds();
                 
                 queue = new ArrayList<>( 64 );
-                model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + cpuId + "/PESOS/MaxScore/" );
-                model.setDevice( this );
-                model.loadModel();
+                _model = model;
             }
             
             public void addQuery( final Time time, final long queryID )
             {
-                QueryInfo query = model.getQuery( queryID );
+                QueryInfo query = _model.getQuery( queryID );
                 PesosQuery pQuery = new PesosQuery( query.getId(), query.getTerms(), query.getPostings() );
-                pQuery.predictServiceTime( model );
+                pQuery.predictServiceTime( _model );
                 if (!hasMoreQueries()) {
                     pQuery.setStartTime( time );
                 }
@@ -446,19 +461,6 @@ public class EnergyTestDIST2
             
             public long getCoreID() {
                 return _coreId;
-            }
-            
-            @Override
-            public Time timeToCompute( final Task task ) {
-                return null;
-            }
-            @Override
-            public double getUtilization( final Time time ) {
-                return 0;
-            }
-            @Override
-            public String getID() {
-                return null;
             }
         }
         
