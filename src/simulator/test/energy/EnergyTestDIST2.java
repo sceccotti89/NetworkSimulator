@@ -29,6 +29,7 @@ import simulator.test.energy.CPUEnergyModel.PESOSmodel;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.test.energy.EnergyCPU.PESOScore;
 import simulator.topology.NetworkTopology;
+import simulator.utils.Pair;
 import simulator.utils.SizeUnit;
 import simulator.utils.Time;
 import simulator.utils.Utils;
@@ -141,7 +142,8 @@ public class EnergyTestDIST2
         private static final double WARNING_COEFFICIENT  = 0.5;
         private static final double CRITICAL_COEFFICIENT = 0.7;
         
-        private Map<Long,Integer> openQueries;
+        // Former value is number of arrived shards, the latter the completed ones.
+        private Map<Long,Pair<Integer,Integer>> openQueries;
         
         
         public PesosController( final long timeBudget, final Mode mode )
@@ -164,6 +166,14 @@ public class EnergyTestDIST2
             CpuInfo cpu = cpuInfos.get( nodeID );
             cpu.addQuery( time, queryID, coreID );
             
+            // TODO devo settare il fatto che ho aggiunto la query.
+            if (!openQueries.containsKey( queryID )) {
+                openQueries.put( queryID, new Pair<>( 1, 0 ) );
+            } else {
+                Pair<Integer,Integer> value = openQueries.get( queryID );
+                value.setFirst( value.getFirst() + 1 );
+            }
+            
             System.out.println( "\nAGGIUNTA QUERY: " + queryID + " - CPU: " + nodeID + ", CORE: " + coreID );
             
             // TODO per finire dovrei salvarmi il time budget corrente
@@ -175,15 +185,10 @@ public class EnergyTestDIST2
         {
             CpuInfo cpu = cpuInfos.get( nodeID );
             long queryID = cpu.getCore( coreID ).getFirstQuery().getId();
-            if (!openQueries.containsKey( queryID )) {
-                openQueries.put( queryID, 1 );
-            } else {
-                int value = openQueries.get( queryID ) + 1;
-                if (value == cpuInfos.size()) {
-                    openQueries.remove( queryID );
-                } else {
-                    openQueries.put( queryID, openQueries.get( queryID ) + 1 );
-                }
+            Pair<Integer,Integer> value = openQueries.get( queryID );
+            value.setSecond( value.getSecond() + 1 );
+            if (value.getSecond() == cpuInfos.size()) {
+                openQueries.remove( queryID );
             }
             
             cpu.completedQuery( time, coreID );
@@ -200,9 +205,9 @@ public class EnergyTestDIST2
             for (CpuInfo _cpu : cpuInfos.values()) {
                 for (CoreInfo _core : _cpu.getCores()) {
                     Status status = evalTimeBudget( time.getTimeMicroseconds(), _cpu, _core );
-                    System.out.println( "NEW EXTRA TIME: " + status.extraTime + ", STATUS: " + status );
-                    if (_core.hasMoreQueries() && status != Status.FINE) {
-                    //if (_core.hasMoreQueries()) {
+                    System.out.println( "STATUS: " + status );
+                    //if (_core.hasMoreQueries() && status != Status.FINE) {
+                    if (_core.hasMoreQueries()) {
                         PESOScore core = (PESOScore) cpus.get( (int) _cpu.getId() - 2 ).getCore( _core.getCoreID() );
                         core.setTimeBudget( timeBudget + status.getExtraTime(), _core.getFirstQuery().getId() );
                     }
@@ -210,10 +215,12 @@ public class EnergyTestDIST2
             }
         }
         
-        private boolean lastToComplete( final long queryID )
-        {
-            return openQueries.containsKey( queryID ) &&
-                   openQueries.get( queryID ) == cpuInfos.size() - 1;
+        private boolean lastToComplete( final long queryID ) {
+            return openQueries.get( queryID ).getSecond() == cpuInfos.size() - 1;
+        }
+        
+        private boolean allShardsArrived( final long queryID ) {
+            return openQueries.get( queryID ).getFirst() == cpuInfos.size();
         }
         
         private boolean checkForEmptyCore( final long cpuId )
@@ -233,16 +240,18 @@ public class EnergyTestDIST2
         
         private Status evalTimeBudget( final long time, final CpuInfo cpu, final CoreInfo core )
         {
+            Status status = new Status( Status.FINE, 0L );
             long extraBudget = 0;
             
-            //CoreInfo core = cpu.coresMap.get( coreID );
             System.out.print( "ANALYZING " );
             core.printQueue();
             for (PesosQuery query : core.getQueries()) {
-                if (lastToComplete( query.getId() ) || checkForEmptyCore( cpu.getId() )) {
-                    return Status.FINE;
+                if (lastToComplete( query.getId() ) ||
+                   (!allShardsArrived( query.getId() ) && checkForEmptyCore( cpu.getId() ))) {
+                    return status;
                 }
                 
+                long queryDelay = 0;
                 for (CpuInfo cpu1 : cpuInfos.values()) {
                     if (cpu1.getId() != cpu.getId()) {
                         long extraTime = 0;
@@ -253,8 +262,11 @@ public class EnergyTestDIST2
                             int index = 0;
                             for (PesosQuery query1 : core1.getQueries()) {
                                 if (query1.getId() == query.getId()) {
-                                    if (index == 0) return Status.FINE;
-                                    else break;
+                                    if (index == 0) {
+                                        return status;
+                                    } else {
+                                        break;
+                                    }
                                 } else {
                                     index++;
                                     extraTime += query1.getResidualServiceTime( time );
@@ -262,43 +274,54 @@ public class EnergyTestDIST2
                             }
                         }
                         
-                        // Get the maximum time to wait.
-                        extraBudget = Math.max( extraBudget, extraTime );
+                        // Get the maximum time to wait for the current query.
+                        queryDelay = Math.max( queryDelay, extraTime );
                     }
                 }
+                
+                // Get the minimum between two queries of the same core.
+                extraBudget = Math.min( extraBudget, queryDelay );
             }
             
-            //System.out.println( "EXTRA TIME: " + extraBudget );
-            
-            Status status;
             if (extraBudget >= CRITICAL_DELAY) {
-                status = Status.CRITICAL;
-                extraBudget *= CRITICAL_COEFFICIENT;
+                status.setStatus( Status.CRITICAL, extraBudget * CRITICAL_COEFFICIENT );
             } else if (extraBudget >= WARNING_DELAY) {
-                status = Status.WARNING;
-                extraBudget *= WARNING_COEFFICIENT;
-            } else {
-                status = Status.FINE;
+                status.setStatus( Status.WARNING, extraBudget * WARNING_COEFFICIENT );
             }
-            status.setExtraTimeBudget( extraBudget );
             
             return status;
         }
         
-        private enum Status
+        private static class Status
         {
-            FINE,
-            WARNING,
-            CRITICAL;
-            
+            private String _status;
             private long extraTime = 0;
             
-            public void setExtraTimeBudget( final long time ) {
-                extraTime = time;
+            protected static final String FINE     = "FINE";
+            protected static final String WARNING  = "WARNING";
+            protected static final String CRITICAL = "CRITICAL";
+            
+            public Status( final String status, final long time ) {
+                setStatus( status, time );
+            }
+            
+            public void setStatus( final String status, final double time )
+            {
+                _status = status;
+                extraTime = (long) time;
+            }
+            
+            public String getStatus() {
+                return _status;
             }
             
             public long getExtraTime() {
                 return extraTime;
+            }
+            
+            @Override
+            public String toString() {
+                return getStatus() + ", ExtraTime: " + extraTime;
             }
         }
         
