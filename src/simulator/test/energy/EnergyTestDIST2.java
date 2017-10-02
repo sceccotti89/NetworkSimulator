@@ -210,7 +210,6 @@ public class EnergyTestDIST2
             for (CpuInfo _cpu : cpuInfos.values()) {
                 for (CoreInfo _core : _cpu.getCores()) {
                     Status status = evalTimeBudget( time.getTimeMicroseconds(), _cpu, _core );
-                    //System.out.println( "STATUS: " + status );
                     long budget = timeBudget + status.getExtraTime();
                     if (_core.hasMoreQueries() && _core.checkTimeBudget( budget )) {
                         PESOScore core = (PESOScore) cpus.get( (int) _cpu.getId() - 2 ).getCore( _core.getCoreID() );
@@ -220,12 +219,12 @@ public class EnergyTestDIST2
             }
         }
         
-        private boolean lastToComplete( final long queryID ) {
-            return openQueries.get( queryID ).getSecond() == cpuInfos.size() - 1;
+        private boolean lastToComplete( final PesosQuery query ) {
+            return openQueries.get( query ).getSecond() == cpuInfos.size() - 1;
         }
         
-        private boolean allShardsArrived( final long queryID ) {
-            return openQueries.get( queryID ).getFirst() == cpuInfos.size();
+        private boolean allShardsArrived( final PesosQuery query ) {
+            return openQueries.get( query ).getFirst() == cpuInfos.size();
         }
         
         private boolean checkForEmptyCore( final long cpuId )
@@ -247,12 +246,13 @@ public class EnergyTestDIST2
         {
             Status status = new Status( Status.FINE, 0L );
             long extraBudget = 0;
+            final boolean emptyCore = checkForEmptyCore( cpu.getId() );
             
             //System.out.print( "ANALYZING " );
             //core.printQueue();
             for (PesosQuery query : core.getQueries()) {
-                if (lastToComplete( query.getId() ) ||
-                   (!allShardsArrived( query.getId() ) && checkForEmptyCore( cpu.getId() ))) {
+                if (lastToComplete( query ) ||
+                   (!allShardsArrived( query ) && emptyCore)) {
                     return status;
                 }
                 
@@ -285,8 +285,14 @@ public class EnergyTestDIST2
                 }
                 
                 // Get the minimum between queries of the same core.
-                extraBudget = Math.min( extraBudget, queryDelay );
+                if (extraBudget == 0) {
+                    extraBudget = queryDelay;
+                } else {
+                    extraBudget = Math.min( extraBudget, queryDelay );
+                }
             }
+            
+            //System.out.println( "EXTRA BUDGET: " + extraBudget );
             
             if (extraBudget >= CRITICAL_DELAY) {
                 status.setStatus( Status.CRITICAL, extraBudget );
@@ -409,8 +415,8 @@ public class EnergyTestDIST2
             {
                 _cpuId = cpuId;
                 _coreId = coreId;
-                _initTimeBudget = model.getTimeBudget().getTimeMicroseconds();
-                _timeBudget = model.getTimeBudget().getTimeMicroseconds();
+                _initTimeBudget = model.getTimeBudget().getTimeMicroseconds() / 1000;
+                _timeBudget = model.getTimeBudget().getTimeMicroseconds() / 1000;
                 
                 queue = new ArrayList<>( 64 );
                 _model = model;
@@ -419,7 +425,6 @@ public class EnergyTestDIST2
             public void addQuery( final Time time, final PesosQuery query )
             {
                 QueryInfo q = _model.getQuery( query.getId() );
-                //PesosQuery pQuery = new PesosQuery( query.getId(), query.getTerms(), query.getPostings() );
                 query.setInfo( q.getTerms(), q.getPostings() );
                 query.predictServiceTime( _model );
                 if (!hasMoreQueries()) {
@@ -466,6 +471,7 @@ public class EnergyTestDIST2
             public boolean checkTimeBudget( final long timeBudget )
             {
                 if (Math.abs( timeBudget - _timeBudget ) >= DELTA_TIME_THRESHOLD) {
+                    System.out.println( "OLD: " + _timeBudget + ", NEW: " + timeBudget );
                     _timeBudget = timeBudget;
                     return true;
                 } else {
@@ -808,15 +814,13 @@ public class EnergyTestDIST2
     
     public static void createDistributedIndex() throws Exception
     {
-        // TODO provare a ottenere valori molto diversi partendo pero' dalle query originali
-        // TODO senza cioe' dividere il valore originale per 5.
         final String dir = "Models/Monolithic/PESOS/MaxScore/";
         List<PrintWriter> writers = new ArrayList<>( NODES );
-        final double RANDOM_RANGE = 20;
+        final double RANDOM_RANGE = 10;
         
         List<Double> ranges = new ArrayList<>( NODES );
         for (int i = 0; i < NODES; i++) {
-            ranges.add( -1 * Math.random() * RANDOM_RANGE );
+            ranges.add( Math.random() * RANDOM_RANGE + RANDOM_RANGE );
         }
         
         String file = dir + "predictions.txt";
@@ -832,7 +836,8 @@ public class EnergyTestDIST2
             String[] values = line.split( "\\t+" );
             long queryID    = Long.parseLong( values[0] );
             int terms       = Integer.parseInt( values[1] );
-            int postings    = Integer.parseInt( values[2] ) / NODES;
+            //int postings    = Integer.parseInt( values[2] ) / NODES;
+            int postings    = Integer.parseInt( values[2] );
             for (int i = 0; i < NODES; i++) {
                 int difference = (int) (postings / 100d * ranges.get( i ));
                 if (i % 2 == 0) {
@@ -849,7 +854,7 @@ public class EnergyTestDIST2
         writers.clear();
         loader.close();
         
-        // TODO qui non so proprio come mettere
+        // TODO qui non so se va cambiato qualcosa
         /*file = dir + "regressors_normse.txt";
         loader = ResourceLoader.getResourceAsStream( file );
         reader = new BufferedReader( new InputStreamReader( loader ) );
@@ -888,9 +893,10 @@ public class EnergyTestDIST2
             }
             
             for (int i = 1; i < values.length; i+=2) {
-                double qTime  = Double.parseDouble( values[i] ) / NODES;
-                double energy = Double.parseDouble( values[i+1] ) / NODES;
-                long time     = Utils.getTimeInMicroseconds( qTime, TimeUnit.MILLISECONDS );
+                //double qTime  = Double.parseDouble( values[i] ) / NODES;
+                //double energy = Double.parseDouble( values[i+1] ) / NODES;
+                double qTime  = Double.parseDouble( values[i] );
+                double energy = Double.parseDouble( values[i+1] );
                 for (int j = 0; j < NODES; j++) {
                     int difference = (int) (energy / 100d * ranges.get( j ));
                     if (j % 2 == 0) {
@@ -898,16 +904,16 @@ public class EnergyTestDIST2
                     }
                     energy += difference;
                     
-                    difference = (int) (time / 100d * ranges.get( j ));
+                    difference = (int) (qTime / 100d * ranges.get( j ));
                     if (j % 2 == 0) {
                         difference *= -1;
                     }
-                    time += difference;
+                    qTime += difference;
                     
                     if (i < values.length - 2) {
-                        writers.get( j ).print( time + " " + energy + " " );
+                        writers.get( j ).print( qTime + " " + energy + " " );
                     } else {
-                        writers.get( j ).print( time + " " + energy );
+                        writers.get( j ).print( qTime + " " + energy );
                     }
                 }
             }
@@ -927,7 +933,7 @@ public class EnergyTestDIST2
     
     public static void main( final String[] args ) throws Exception
     {
-        //createDistributedIndex();
+        createDistributedIndex();
         
         Utils.VERBOSE = false;
         PESOS_CONTROLLER = false;

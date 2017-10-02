@@ -240,9 +240,6 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         Model<Long,QueryInfo> model = getModel();
         List<QueryInfo> queue = core.getQueue();
         
-        if (core.getFirstQueryInQueue().getStartTime().getTimeMicroseconds() == 44709952703L)
-            System.out.println( "EVALUATING FREQUENCY AT: " + time );
-        
         // Evaluate the "best" frequency to use.
         return model.eval( time, queue.toArray( new QueryInfo[0] ) );
     }
@@ -274,9 +271,6 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         Time startTime   = core.getTime();
         Time endTime     = startTime.clone().addTime( computeTime );
         query.setTimeToComplete( startTime, endTime );
-        
-        if (query.getStartTime().getTimeMicroseconds() == 44709952703L)
-            System.out.println( "CORE: " + core.getId() + ", EXECUTING QUERY: " + query.getId() + ", START_TIME: " + startTime + ", COMPUTE_TIME: " + computeTime + ", END_TIME: " + endTime + ", QUEUE: " + core.getQueue() );
         
         computeEnergyConsumption( core, query, computeTime );
         core.setCompletedQuery( query );
@@ -754,7 +748,6 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             return serviceRate;
         }
         
-        /** Method used by the cons model. */
         public void reset()
         {
             receivedQueries = 0;

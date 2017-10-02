@@ -298,16 +298,9 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         {
             QueryInfo currentQuery = queries[0];
             
-            if (now.getTimeMicroseconds() == 44709952703L || now.getTimeMicroseconds() == 44709955000L) {
-                System.out.println( "QUERY: " + currentQuery.getId() );
-                System.out.println( "NOW: " + now + ", ARRIVAL: " + currentQuery.getArrivalTime() );
-            }
-            
             int ppcRMSE = regressors.get( "class." + currentQuery.getTerms() + ".rmse" ).intValue();
             long pcost = currentQuery.getPostings() + ppcRMSE;
             Time currentDeadline = currentQuery.getArrivalTime().addTime( timeBudget );
-            if (now.getTimeMicroseconds() == 44709952703L || now.getTimeMicroseconds() == 44709955000L)
-                System.out.println( "CURRENT_DEADLINE: " + currentDeadline + ", NOW: " + now );
             if (currentDeadline.compareTo( now ) <= 0) {
                 // Time to complete the query is already over.
                 return _device.getMaxFrequency();
@@ -317,10 +310,6 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             double maxDensity = Double.MIN_VALUE;
             long lateness = getLateness( now, queries );
             currentDeadline.subTime( lateness, TimeUnit.MICROSECONDS );
-            if (now.getTimeMicroseconds() == 44709952703L || now.getTimeMicroseconds() == 44709955000L) {
-                System.out.println( "LATENESS: " + lateness );
-                System.out.println( "CURRENT_DEADLINE: " + currentDeadline );
-            }
             if (currentDeadline.compareTo( now ) <= 0) {
                 return _device.getMaxFrequency();
             } else {
@@ -345,11 +334,6 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                 }
             }
             
-            if (now.getTimeMicroseconds() == 44709952703L || now.getTimeMicroseconds() == 44709955000L) {
-                System.out.println( "P_COST: " + pcost + ", MAX_DENSITY: " + maxDensity );
-                System.out.println( "TARGET TIME: " + pcost/maxDensity );
-            }
-            
             double targetTime = pcost/maxDensity;
             return identifyTargetFrequency( currentQuery.getTerms(), pcost, targetTime );
         }
@@ -366,9 +350,6 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                 long predictedRemainingTime4q = predictServiceTimeAtMaxFrequency( q.getTerms(), pcost4q );
                 Time qArrivalTime = q.getArrivalTime();
                 long budget4q = timeBudget.clone().subTime( now.clone().subTime( qArrivalTime ) ).getTimeMicroseconds();
-                
-                if (now.getTimeMicroseconds() == 44709952703L || now.getTimeMicroseconds() == 44709955000L)
-                    System.out.println( "PREDICTED: " + predictedRemainingTime4q + ", BUDGET: " + budget4q );
                 
                 if (predictedRemainingTime4q > budget4q) {
                     lateness += predictedRemainingTime4q - budget4q;
