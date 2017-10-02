@@ -5,8 +5,9 @@
 package simulator.core;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +16,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.newdawn.slick.util.ResourceLoader;
 
 import simulator.core.Device.Sampler.Sampling;
 import simulator.events.EventScheduler;
@@ -95,7 +98,8 @@ public abstract class Device<I,O>
     {
         final Pattern p = Pattern.compile( "\\w+" );
         
-        BufferedReader frequencyReader = new BufferedReader( new FileReader( frequencies_file ) );
+        InputStream loader = ResourceLoader.getResourceAsStream( frequencies_file );
+        BufferedReader frequencyReader = new BufferedReader( new InputStreamReader( loader ) );
         List<Long> frequencies = new ArrayList<>();
         
         String frequencyLine;

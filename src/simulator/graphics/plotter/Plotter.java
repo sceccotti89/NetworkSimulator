@@ -226,13 +226,25 @@ public class Plotter
     public void setTimer( final int FPS, final ActionListener listener ) {
         timer = new Timer( 1000 / FPS, listener );
     }
+    
+    public void addPlot( final String filePlotter, final String title ) throws IOException {
+        addPlot( readPlot( filePlotter ), null, Line.UNIFORM, title );
+    }
 
     public void addPlot( final String filePlotter, final Color color, final String title ) throws IOException {
         addPlot( readPlot( filePlotter ), color, Line.UNIFORM, title );
     }
     
+    public void addPlot( final String filePlotter, final Line line, final String title ) throws IOException {
+        addPlot( readPlot( filePlotter ), null, line, title );
+    }
+    
     public void addPlot( final String filePlotter, final Color color, final Line line, final String title ) throws IOException {
         addPlot( readPlot( filePlotter ), color, line, title );
+    }
+    
+    public void addPlot( final List<Pair<Double,Double>> points, final String title ) {
+        addPlot( points, null, Line.UNIFORM, title );
     }
     
     public void addPlot( final List<Pair<Double,Double>> points, final Color color, final String title ) {

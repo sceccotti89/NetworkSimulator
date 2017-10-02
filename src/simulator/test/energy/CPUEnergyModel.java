@@ -210,10 +210,10 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     private void loadEffectiveTimeEnergy() throws IOException
     {
         InputStream fReader = ResourceLoader.getResourceAsStream( _effective_time_energy );
-        BufferedReader regressorReader = new BufferedReader( new InputStreamReader( fReader ) );
+        BufferedReader reader = new BufferedReader( new InputStreamReader( fReader ) );
         
         String line;
-        while ((line = regressorReader.readLine()) != null) {
+        while ((line = reader.readLine()) != null) {
             String[] values = line.split( "\\s+" );
             
             long queryID = Long.parseLong( values[0] );
@@ -227,7 +227,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             }
         }
         
-        regressorReader.close();
+        reader.close();
         fReader.close();
     }
 

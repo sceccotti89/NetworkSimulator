@@ -29,8 +29,8 @@ public class ResultPlotting
         plotter.setRange( Axis.Y, 0, 7000 );
         plotter.setRange( Axis.X, 0, TimeUnit.HOURS.toMicros( 24 ) );
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
-        plotter.addPlot( "Results/PESOS_" + mode + "_" + time_budget + "ms_Energy.log", null, "PESOS (" + mode + ", t = " + time_budget + "ms)" );
-        plotter.addPlot( "Results/Perf_Energy.log", null, "perf" );
+        plotter.addPlot( "Results/PESOS_" + mode + "_" + time_budget + "ms_Energy.log", "PESOS (" + mode + ", t = " + time_budget + "ms)" );
+        plotter.addPlot( "Results/Perf_Energy.log", "perf" );
         plotter.setVisible( true );
     }
     

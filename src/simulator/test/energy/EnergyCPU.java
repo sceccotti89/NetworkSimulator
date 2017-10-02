@@ -328,6 +328,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         }
     }
     
+    // TODO rimuovere dopo i test
     public static void writeResult( final long frequency, final double energy ) {
         coeffWriter.println( frequency + " " + energy + " " );
     }
@@ -447,8 +448,8 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         protected void setFrequency( final Time time, final long newFrequency )
         {
             if (frequency != newFrequency) {
-                System.out.println( "TIME_BUDGET: " + ((PESOSmodel) cpu.getModel()).getTimeBudget() );
-                System.out.println( "TIME: " + time + ", NEW: " + newFrequency + ", OLD: " + frequency );
+                //System.out.println( "TIME_BUDGET: " + ((PESOSmodel) cpu.getModel()).getTimeBudget() );
+                //System.out.println( "TIME: " + time + ", NEW: " + newFrequency + ", OLD: " + frequency );
                 if (currentQuery != null) {
                     /*if (newFrequency < frequency) {
                         // FIXME abbassamento frequenza PESOS.
@@ -617,8 +618,6 @@ public class EnergyCPU extends Device<Long,QueryInfo>
                 model.setTimeBudget( timeBudget );
                 if (hasMoreQueries()) {
                     Time t = new Time( time, TimeUnit.MICROSECONDS );
-                    // FIXME quale delle 2 versioni e' la piu' corretta?? forse la prima va bene lo stesso
-                    // FIXME perche' sono interessato alla velocita' in base al nuovo time budget.
                     long frequency = cpu.evalFrequency( currentQuery.getStartTime(), this );
                     //long frequency = cpu.evalFrequency( t, this );
                     setFrequency( t, frequency );

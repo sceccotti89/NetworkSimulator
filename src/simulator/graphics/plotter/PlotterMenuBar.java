@@ -211,7 +211,7 @@ public class PlotterMenuBar extends JMenuBar implements ActionListener
                     String file = f.getSelectedFile().getName();
                     int index = file.lastIndexOf( '.' );
                     try {
-                        plotter.addPlot( dir + "/" + file, null, file.substring( 0, index ) );
+                        plotter.addPlot( dir + "/" + file, file.substring( 0, index ) );
                     } catch ( IOException e1 ) {
                         e1.printStackTrace();
                     }

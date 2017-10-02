@@ -454,7 +454,7 @@ public class EnergyTestMONO
         client.getEventGenerator( 0 ).connect( server );
         
         Plotter plotter = new Plotter( "MONOLITHIC MULTI_CORE - " + model.getModelType( false ), 800, 600 );
-        plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), null, model.getModelType( false ) );
+        plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), model.getModelType( false ) );
         plotter.setAxisName( "Time (h)", "Energy (J)" );
         plotter.setTicks( Axis.Y, 10 );
         plotter.setTicks( Axis.X, 24, 2 );
@@ -567,7 +567,7 @@ public class EnergyTestMONO
                 agentCore.addEventGenerator( evtGen );
             }
             
-            plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), null, "Node " + i + " " + model.getModelType( true ) );
+            plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + i + " " + model.getModelType( true ) );
         }
         
         plotter.setAxisName( "Time (h)", "Energy (J)" );

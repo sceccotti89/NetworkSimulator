@@ -5,17 +5,13 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import simulator.core.Agent;
-import simulator.core.Device;
 import simulator.core.Device.Sampler.Sampling;
 import simulator.core.Simulator;
-import simulator.core.Task;
 import simulator.events.Event;
 import simulator.events.EventHandler;
 import simulator.events.Packet;
@@ -35,8 +31,6 @@ import simulator.utils.Utils;
 
 public class EnergyTestDIST
 {
-    private static boolean PREDICTION_ON_SWITCH;
-    
     private static final int NODES = 5;
     private static final int CPU_CORES = 4;
     
@@ -48,8 +42,8 @@ public class EnergyTestDIST
     
     private static class ClientGenerator extends EventGenerator
     {
-        //private static final String QUERY_TRACE = "Models/msn.day2.arrivals.txt";
-        private static final String QUERY_TRACE = "Models/test_arrivals.txt";
+        private static final String QUERY_TRACE = "Models/msn.day2.arrivals.txt";
+        //private static final String QUERY_TRACE = "Models/test_arrivals.txt";
         private static final int NUM_QUERIES = 10000;
         // Random generator seed.
         private static final int SEED = 50000;
@@ -165,137 +159,6 @@ public class EnergyTestDIST
             }
             
             return nextDestination;
-        }
-    }
-    
-    private static class PesosPredictorGenerator extends EventGenerator
-    {
-        private Map<Long,CpuInfo> cpuInfos;
-        private final long timeBudget;
-        private final Mode mode;
-        
-        public PesosPredictorGenerator( final Time duration, final long timeBudget, final Mode mode )
-        {
-            super( duration, Time.ZERO, PACKET, PACKET );
-            cpuInfos = new HashMap<>();
-            this.timeBudget = timeBudget;
-            this.mode = mode;
-        }
-        
-        @Override
-        public EventGenerator connect( final Agent to )
-        {
-            try { cpuInfos.put( to.getId(), new CpuInfo( timeBudget, mode, to.getId() - 1 ) ); }
-            catch ( IOException e ) {}
-            return super.connect( to );
-        }
-        
-        @Override
-        public Packet makePacket( final Event e, final long destination )
-        {
-            // TODO nella nuova versione il messaggio verra' inviato solo se il generatore nota una certa situazione critica
-            // TODO ovvero se c'e' troppa disparita' tra i vari core.
-            
-            Packet packet = getRequestPacket();
-            if (e.getPacket() != null && e.getPacket().hasContent( Global.QUERY_ID )) {
-                System.out.println( "RICEVUTO: " + e.getPacket().getContent( Global.QUERY_ID ) );
-                // TODO qui dovrei utilizzare PESOS e capire se spedire la frequenza consigliata.
-                //cpuInfos.get( destination ).addQuery( e.getTime(), e.getPacket().getContent( Global.QUERY_ID ) );
-            }
-            
-            packet.addContent( Global.PESOS_TIME_BUDGET, cpuInfos.get( destination ).getFrequency() );
-            
-            return packet;
-        }
-        
-        private static class CpuInfo extends Device<Long,QueryInfo>
-        {
-            private PESOSmodel model;
-            private Map<Long,List<QueryInfo>> coresMap;
-            
-            
-            public CpuInfo( final long timeBudget, final Mode mode, final long index ) throws IOException
-            {
-                super( "", "Models/cpu_frequencies.txt" );
-                
-                setModel( model );
-                
-                coresMap = new HashMap<>();
-                for (long i = 0; i < CPU_CORES; i++) {
-                    coresMap.put( i, new ArrayList<>( 64 ) );
-                }
-                model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + index + "/" );
-            }
-            
-            public void addQuery( final long queryID, final long coreID )
-            {
-                QueryInfo query = new QueryInfo( queryID );
-                coresMap.get( coreID ).add( query );
-            }
-            
-            public void removeQuery( final long queryID, final long coreID ) {
-                coresMap.get( coreID ).remove( queryID );
-            }
-            
-            @Override
-            public Time timeToCompute( final Task task ) {
-                return null;
-            }
-            @Override
-            public double getUtilization( final Time time ) {
-                return 0;
-            }
-            @Override
-            public String getID() {
-                return null;
-            }
-        }
-    }
-    
-    private static class PesosOracle extends Agent implements EventHandler
-    {
-        private PesosPredictorGenerator evt_gen;
-        
-        public PesosOracle( final long id, final PesosPredictorGenerator generator )
-        {
-            super( id );
-            addEventGenerator( generator );
-            addEventHandler( this );
-            
-            evt_gen = generator;
-        }
-        
-        private Status analyzeSystem()
-        {
-            // TODO completare.
-            
-            return Status.FINE;
-        }
-        
-        @Override
-        public Time handle( final Event e, final EventType type )
-        {
-            if (type == EventType.RECEIVED) {
-                //TODO CPUmessage msg = e.getPacket().getContent( Global.CPU_MESSAGE );
-                long node = e.getSource().getId();
-                evt_gen.cpuInfos.get( node )/*.addQuery( msg.getQueryID(), msg.getCoreID() )*/;
-                
-                // Riceve 3 tipi di status: FINE, WARNING e CRITICAL.
-                // Col primo non fa niente, col secondo invia un valore molto basso di delay, col terzo invia un valore piu' elevato.
-                Status status = analyzeSystem();
-                if (status == Status.CRITICAL) {
-                    //model.predictServiceTimeAtMaxFrequency( terms, postings );
-                }
-            }
-            
-            return Time.ZERO;
-        }
-        
-        private enum Status
-        {
-            FINE,
-            WARNING,
-            CRITICAL;
         }
     }
     
@@ -481,7 +344,6 @@ public class EnergyTestDIST
     public static void main( final String[] args ) throws Exception
     {
         Utils.VERBOSE = false;
-        PREDICTION_ON_SWITCH = true;
         
         execute( Mode.PESOS_TIME_CONSERVATIVE,  500 );
         //execute( Mode.PESOS_TIME_CONSERVATIVE, 1000 );
@@ -491,9 +353,9 @@ public class EnergyTestDIST
     
     private static void execute( final Mode mode, final long timeBudget ) throws Exception
     {
-        //testMultiCore( timeBudget, mode );
+        testMultiCore( timeBudget, mode );
         //testSingleCore( timeBudget, mode );
-        testAnimationNetwork( timeBudget, mode );
+        //testAnimationNetwork( timeBudget, mode );
     }
     
     public static void testAnimationNetwork( final long timeBudget, final Mode mode ) throws Exception
@@ -510,23 +372,11 @@ public class EnergyTestDIST
         net.addAgent( client );
         
         EventGenerator switchGen = new SwitchGenerator( Time.INFINITE );
-        EventGenerator pesosGen = null;
-        
-        if (PREDICTION_ON_SWITCH) {
-            pesosGen = new PesosPredictorGenerator( Time.INFINITE, timeBudget, mode );
-            pesosGen.forwardMessagesFrom( client );
-        }
-        
         
         // Create switch.
         Agent switchAgent = new SwitchAgent( 1, switchGen );
-        switchAgent.addEventGenerator( pesosGen );
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
-        
-        // Create PESOS oracle.
-        Agent pesosOracle = new PesosOracle( 7, new PesosPredictorGenerator( Time.INFINITE, timeBudget, mode ) );
-        net.addAgent( pesosOracle );
         
         final String modelType = "PESOS_" + mode + "_" + timeBudget + "ms";
         
@@ -561,9 +411,6 @@ public class EnergyTestDIST
             net.addAgent( agentCore );
             
             switchGen.connect( agentCore );
-            if (PREDICTION_ON_SWITCH) {
-                pesosGen.connect( agentCore );
-            }
         }
         
         sim.start( new Time( 24, TimeUnit.HOURS ), false );
@@ -733,10 +580,8 @@ public class EnergyTestDIST
         net.addAgent( client );
         
         EventGenerator switchGen = new SwitchGenerator( Time.INFINITE );
-        EventGenerator pesosGen  = new PesosPredictorGenerator( Time.INFINITE, timeBudget, mode );
         
         Agent switchAgent = new SwitchAgent( 1, switchGen );
-        switchAgent.addEventGenerator( pesosGen );
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
         
@@ -755,14 +600,9 @@ public class EnergyTestDIST
             cpus.add( cpu );
             
             // Add the PESOS model to the corresponding cpu.
-            final String directory = "Models/Distributed/Node_" + (i+1) + "/PESOS/MaxScore/";
-            if (mode == Mode.PESOS_TIME_CONSERVATIVE) {
-                model = new PESOSmodel( timeBudget, mode, directory,
-                                        "predictions.txt", "time_energy.txt", "regressors.txt" );
-            } else {
-                model = new PESOSmodel( timeBudget, mode, directory,
-                                        "predictions.txt", "time_energy.txt", "regressors_normse.txt" );
-            }
+            //final String directory = "Models/Distributed/Node_" + (i+1) + "/PESOS/MaxScore/";
+            final String directory = "Models/Monolithic/PESOS/MaxScore/";
+            model = new PESOSmodel( timeBudget, mode, directory );
             model.loadModel();
             cpu.setModel( model );
             
@@ -772,9 +612,8 @@ public class EnergyTestDIST
             net.addAgent( agentCore );
             
             switchGen.connect( agentCore );
-            pesosGen.connect( agentCore );
             
-            plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), null, "Node " + i + " " + model.getModelType( true ) );
+            plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + i + " " + model.getModelType( true ) );
         }
         
         plotter.setAxisName( "Time (h)", "Energy (J)" );
