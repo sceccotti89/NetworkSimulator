@@ -29,7 +29,6 @@ import simulator.events.Packet;
 import simulator.events.generator.EventGenerator;
 import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
-import simulator.graphics.AnimationNetwork;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
 import simulator.test.energy.CPUEnergyModel.Mode;
@@ -44,7 +43,7 @@ import simulator.utils.Utils;
 
 public class EnergyTestDIST2
 {
-    private static final int NODES = 5;
+    public static final int NODES = 5;
     private static final int CPU_CORES = 4;
     
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
@@ -140,6 +139,7 @@ public class EnergyTestDIST2
     
     
     
+    // TODO Utilizzare 0.8 in ogni caso e non soltano se e' critico??
     private static class PesosController
     {
         private Map<Long,CpuInfo> cpuInfos;
@@ -213,7 +213,7 @@ public class EnergyTestDIST2
                     long budget = timeBudget + status.getExtraTime();
                     if (_core.hasMoreQueries() && _core.checkTimeBudget( budget )) {
                         PESOScore core = (PESOScore) cpus.get( (int) _cpu.getId() - 2 ).getCore( _core.getCoreID() );
-                        core.setTimeBudget( budget, _core.getFirstQuery().getId() );
+                        core.setTimeBudget( time, budget, _core.getFirstQuery().getId() );
                     }
                 }
             }
@@ -266,7 +266,7 @@ public class EnergyTestDIST2
                             // Scan all the enqueued queries.
                             int index = 0;
                             for (PesosQuery query1 : core1.getQueries()) {
-                                if (query1.getId() == query.getId()) {
+                                if (query1.compareTo( query ) == 0) {
                                     if (index == 0) {
                                         return status;
                                     } else {
@@ -471,7 +471,6 @@ public class EnergyTestDIST2
             public boolean checkTimeBudget( final long timeBudget )
             {
                 if (Math.abs( timeBudget - _timeBudget ) >= DELTA_TIME_THRESHOLD) {
-                    System.out.println( "OLD: " + _timeBudget + ", NEW: " + timeBudget );
                     _timeBudget = timeBudget;
                     return true;
                 } else {
@@ -575,51 +574,6 @@ public class EnergyTestDIST2
             return _timeBudget;
         }
     }
-    
-    /*private static class PesosOracleAgent extends Agent implements EventHandler
-    {
-        private PesosPredictorGenerator evt_gen;
-        
-        public PesosOracleAgent( final long id, final PesosPredictorGenerator generator )
-        {
-            super( id );
-            addEventGenerator( generator );
-            addEventHandler( this );
-        }
-        
-        private Status analyzeSystem()
-        {
-            // TODO completare.
-            
-            return Status.FINE;
-        }
-        
-        @Override
-        public Time handle( final Event e, final EventType type )
-        {
-            if (type == EventType.RECEIVED) {
-                System.out.println( "RICEVUTO: " + e );
-                //TODO CPUmessage msg = e.getPacket().getContent( Global.CPU_MESSAGE );
-                long node = e.getSource().getId();
-                evt_gen.cpuInfos.get( node )/*.addQuery( msg.getQueryID(), msg.getCoreID() )*//*;
-                
-                // Riceve 3 tipi di status: FINE, WARNING e CRITICAL.
-                // Col primo non fa niente, col secondo invia un valore molto basso di delay, col terzo invia un valore piu' elevato.
-                Status status = analyzeSystem();
-                if (status == Status.CRITICAL) {
-                    //model.predictServiceTimeAtMaxFrequency( terms, postings );
-                }
-            }
-            
-            return Time.ZERO;
-        }
-        
-        private enum Status {
-            FINE,
-            WARNING,
-            CRITICAL;
-        }
-    }*/
     
     private static class SwitchGenerator extends EventGenerator
     {
@@ -747,7 +701,7 @@ public class EnergyTestDIST2
             if (p.hasContent( Global.PESOS_TIME_BUDGET )) {
                 PESOSmessage message = p.getContent( Global.PESOS_TIME_BUDGET );
                 PESOScore core = (PESOScore) cpu.getCore( message.getCoreID() );
-                core.setTimeBudget( message.getTimeBudget(), message.getQueryID() );
+                core.setTimeBudget( e.getTime(), message.getTimeBudget(), message.getQueryID() );
             }
             
             if (p.hasContent( Global.QUERY_ID )) {
@@ -933,35 +887,36 @@ public class EnergyTestDIST2
     
     public static void main( final String[] args ) throws Exception
     {
-        createDistributedIndex();
+        //createDistributedIndex();
         
         Utils.VERBOSE = false;
-        PESOS_CONTROLLER = false;
+        PESOS_CONTROLLER = true;
         
-        testAnimationNetwork( Mode.PESOS_TIME_CONSERVATIVE,  500 );
+        testNetwork( Mode.PESOS_TIME_CONSERVATIVE,  500 );
         //testAnimationNetwork( Mode.PESOS_TIME_CONSERVATIVE, 1000 );
         //testAnimationNetwork( Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
         //testAnimationNetwork( Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
         
         // PESOS Controller On
-        //CPU: 0, Energy: 111.81421579220957
-        //CPU: 1, Energy: 112.04269079417281
-        //CPU: 2, Energy: 110.50349078120033
-        //CPU: 3, Energy: 121.32924088682292
-        //CPU: 4, Energy: 114.56436581673024
+        //CPU: 0, Energy: 555501.4640459444
+        //CPU: 1, Energy: 585338.8949188942
+        //CPU: 2, Energy: 520255.81663697807
+        //CPU: 3, Energy: 568789.8291370552
+        //CPU: 4, Energy: 541176.95434233
         
         // PESOS Controller Off
-        //CPU: 0, Energy: 111.81421579220957
-        //CPU: 1, Energy: 112.04269079417281
-        //CPU: 2, Energy: 110.50349078120033
-        //CPU: 3, Energy: 121.32924088682292
-        //CPU: 4, Energy: 114.56436581673024
+        //CPU: 0, Energy: 555912.9932714059
+        //CPU: 1, Energy: 585812.2313076374
+        //CPU: 2, Energy: 521066.4301939342
+        //CPU: 3, Energy: 569435.7938913363
+        //CPU: 4, Energy: 541652.1565429326
     }
     
-    public static void testAnimationNetwork( final Mode mode, final long timeBudget ) throws Exception
+    public static void testNetwork( final Mode mode, final long timeBudget ) throws Exception
     {
-        NetworkTopology net = new NetworkTopology( "Topology/Animation/Topology_distributed_multiCore.json" );
-        net.setTrackingEvent( "Results/distr_multi_core.txt" );
+        //NetworkTopology net = new NetworkTopology( "Topology/Animation/Topology_distributed_multiCore.json" );
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_multiCore.json" );
+        //net.setTrackingEvent( "Results/distr_multi_core.txt" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -988,7 +943,7 @@ public class EnergyTestDIST2
             EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 4, 1, "Models/cpu_frequencies.txt" );
             cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
             cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
-            cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
+            cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Node" + (i+1) + "_Tail_Latency.log" );
             cpus.add( cpu );
             
             // Add the PESOS model to the corresponding cpu.
@@ -1001,7 +956,7 @@ public class EnergyTestDIST2
             agentCore.addDevice( cpu );
             net.addAgent( agentCore );
             
-            plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) + " " + model.getModelType( true ) );
+            plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) + " " + model.getModelType( false ) );
             
             switchGen.connect( agentCore );
             controller.connect( agentCore );
@@ -1010,7 +965,7 @@ public class EnergyTestDIST2
         plotter.setAxisName( "Time (h)", "Energy (J)" );
         plotter.setTicks( Axis.Y, 10 );
         plotter.setTicks( Axis.X, 24, 2 );
-        plotter.setRange( Axis.Y, 0, 1800 );
+        plotter.setRange( Axis.Y, 0, 4300 );
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         plotter.setVisible( true );
         
@@ -1025,10 +980,10 @@ public class EnergyTestDIST2
         }
         
         // Show the animation.
-        AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );
+        /*AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );
         an.loadSimulation( "Topology/Animation/Topology_distributed_multiCore.json", "./Results/distr_multi_core.txt" );
         an.setTargetFrameRate( 90 );
         an.setForceExit( false );
-        an.start();
+        an.start();*/
     }
 }

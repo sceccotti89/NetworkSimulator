@@ -104,7 +104,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             switch (cpuModel.getType()) {
                 case PESOS:
                     PESOScore core = new PESOScore( this, i, getMaxFrequency() );
-                    core.setBaseTimeBudget( cpuModel.getTimeBudget().getTimeMicroseconds() );
+                    core.setBaseTimeBudget( getTime(), cpuModel.getTimeBudget().getTimeMicroseconds() );
                     coresMap.put( i, core );
                     break;
                 case PERF:  coresMap.put( i, new PERFcore( this, i, getMaxFrequency() ) ); break;
@@ -597,25 +597,27 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             }
         }
         
-        public void setBaseTimeBudget( final long time )
+        public void setBaseTimeBudget( final Time time, final long timeBudget )
         {
-            baseTimeBudget = time;
-            setTimeBudget( time, null );
+            baseTimeBudget = timeBudget;
+            setTimeBudget( time, timeBudget, null );
         }
         
-        public void setTimeBudget( final long time, final Long queryID )
+        public void setTimeBudget( final Time time, final long timeBudget, final Long queryID )
         {
-            timeBudget = time;
+            this.timeBudget = timeBudget;
             System.out.println( "CORE: " + getId() + ", NUOVO TIME BUDGET: " + timeBudget );
             if (queryID != null && currentQuery != null && currentQuery.getId() == queryID) {
                 PESOSmodel model = (PESOSmodel) cpu.getModel();
                 model.setTimeBudget( timeBudget );
-                if (hasMoreQueries()) {
-                    Time t = new Time( time, TimeUnit.MICROSECONDS );
+                //if (hasMoreQueries()) {
                     long frequency = cpu.evalFrequency( currentQuery.getStartTime(), this );
+                    System.out.println( "TIME: " + time + ", VALUTO LA NUOVA FREQUENZA DELLA QUERY: " + currentQuery );
+                    //19231494457
+                    //19231449186
                     //long frequency = cpu.evalFrequency( t, this );
-                    setFrequency( t, frequency );
-                }
+                    setFrequency( time, frequency );
+                //}
             }
         }
         

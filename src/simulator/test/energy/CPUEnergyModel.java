@@ -698,6 +698,9 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             
             //System.out.println( "ARRIVAL: " + arrivalTime + ", OLD TIME: " + endTime + ", NEW: " + newEndTime );
             
+            if (time.getTimeMicroseconds() == 19231494457L)
+                System.out.println( "CURRENT: " + time + ", OLD_END_TIME: " + endTime + ", NEW_END_TIME: " + newEndTime );
+            
             energyConsumption += elapsedEnergy + newEnergy - lastEnergy;
             previousEnergy = elapsedEnergy;
             lastEnergy     = newEnergy;

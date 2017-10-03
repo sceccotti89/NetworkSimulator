@@ -600,8 +600,8 @@ public class EnergyTestDIST
             cpus.add( cpu );
             
             // Add the PESOS model to the corresponding cpu.
-            //final String directory = "Models/Distributed/Node_" + (i+1) + "/PESOS/MaxScore/";
-            final String directory = "Models/Monolithic/PESOS/MaxScore/";
+            final String directory = "Models/Distributed/Node_" + (i+1) + "/PESOS/MaxScore/";
+            //final String directory = "Models/Monolithic/PESOS/MaxScore/";
             model = new PESOSmodel( timeBudget, mode, directory );
             model.loadModel();
             cpu.setModel( model );
@@ -613,7 +613,7 @@ public class EnergyTestDIST
             
             switchGen.connect( agentCore );
             
-            plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + i + " " + model.getModelType( true ) );
+            plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) + " " + model.getModelType( true ) );
         }
         
         plotter.setAxisName( "Time (h)", "Energy (J)" );

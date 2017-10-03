@@ -121,12 +121,41 @@ public class ResultPlotting
         plotter.setVisible( true );
     }
     
+    public static void plotDistributedTailLatency( final long time_budget, final String mode ) throws IOException
+    {
+        Plotter plotter = new Plotter( "Tail Latency 95-th Percentile", 800, 600 );
+        plotter.setAxisName( "Time (h)", "95th-tile response time (ms)" );
+        double yRange = time_budget * 1000d + 200000d;
+        plotter.setRange( Axis.Y, 0, yRange );
+        plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
+        plotter.setScaleY( 1000d );
+        
+        plotter.setRange( Axis.X, 0, TimeUnit.HOURS.toMicros( 24 ) );
+        plotter.setTicks( Axis.X, 24, 2 );
+        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
+        
+        List<Pair<Double, Double>> points = new ArrayList<>();
+        for(int i = 0; i <= 1; i++) {
+            points.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), time_budget * 1000d ) );
+        }
+        plotter.addPlot( points, Color.YELLOW, Line.DASHED, "Tail latency (" + time_budget + "ms)" );
+        
+        for (int i = 1; i <= EnergyTestDIST2.NODES; i++) {
+            List<Pair<Double,Double>> percentiles = getPercentiles( "Results/PESOS_" + mode + "_" + time_budget + "ms_Node" + i + "_Tail_Latency.log",
+                                                                    "Results/PESOS_" + mode + "_" + time_budget + "ms_Node" + i + "_Tail_Latency_95th_Percentile.txt" );
+            plotter.addPlot( percentiles, "Node " + i + " - PESOS (" + mode + ", t=" + time_budget + "ms)" );
+        }
+        
+        plotter.setVisible( true );
+    }
+    
     public static void main( final String argv[] ) throws IOException
     {
         final long time_budget = 500;
         final Mode mode        = Mode.PESOS_TIME_CONSERVATIVE;
         
         //plotEnergy( time_budget, mode.toString() );
-        plotTailLatency( time_budget, mode.toString() );
+        //plotTailLatency( time_budget, mode.toString() );
+        plotDistributedTailLatency( time_budget, mode.toString() );
     }
 }
