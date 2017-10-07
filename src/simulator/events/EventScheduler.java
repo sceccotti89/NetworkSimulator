@@ -34,10 +34,6 @@ public class EventScheduler
     public void setNetwork( final NetworkTopology network ) {
         _network = network;
     }
-    
-    public NetworkTopology getNetwork() {
-        return _network;
-    }
 
     public void setDuration( final Time duration ) {
         _duration = duration;

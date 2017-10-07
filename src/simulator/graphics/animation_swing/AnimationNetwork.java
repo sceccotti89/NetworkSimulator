@@ -1,7 +1,6 @@
 
 package simulator.graphics.animation_swing;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -17,7 +16,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.BoxLayout;
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
 
@@ -30,7 +31,6 @@ import simulator.graphics.animation_swing.elements.Packet;
 import simulator.graphics.animator_swing.interfaces.AnimationManager;
 import simulator.graphics.animator_swing.interfaces.MenuAnimationBar;
 import simulator.graphics.animator_swing.interfaces.NetworkDisplay;
-import simulator.graphics.animator_swing.interfaces.TimeAnimation;
 import simulator.topology.NetworkLink;
 import simulator.topology.NetworkNode;
 
@@ -40,7 +40,7 @@ public class AnimationNetwork
     private Timer timer;
     
     private NetworkDisplay nd;
-    private TimeAnimation tm;
+    private AnimationManager am;
     
     private final int height;
     private final int width;
@@ -102,10 +102,12 @@ public class AnimationNetwork
     
     private void addComponentsToPane( final Container pane, final float width, final float height )
     {
-        AnimationManager am = new AnimationManager( width, (height/100f)*10f );
-        pane.add( am, BorderLayout.PAGE_START );
-        pane.add( nd = new NetworkDisplay( am, width, (height/100f)*75f ), BorderLayout.CENTER );
-        pane.add( tm = new TimeAnimation( nd, width, (height/100f)*15f ), BorderLayout.PAGE_END );
+        //pane.setLayout( new GridBagLayout() );
+        //GridBagConstraints c = new GridBagConstraints();
+        
+        pane.setLayout( new BoxLayout( pane, BoxLayout.Y_AXIS ) );
+        pane.add( new JScrollPane( nd = new NetworkDisplay( width, (height/100f)*80f ) ) );
+        pane.add( am = new AnimationManager( nd, width, (height/100f)*20f ) );
     }
     
     /**
@@ -281,7 +283,7 @@ public class AnimationNetwork
         ActionListener listener = new ActionListener() {
             @Override
             public void actionPerformed( final ActionEvent e ) {
-                tm.update();
+                am.update();
                 nd.repaint();
             }
         };

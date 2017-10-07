@@ -517,6 +517,10 @@ public abstract class Device<I,O>
                 writer.close();
             }
         }
+        
+        if (_model != null) {
+            _model.close();
+        }
     }
     
     

@@ -6,8 +6,7 @@
         {"id":3, "name":"Server2", "delay":0, "xPos":400, "yPos":230, "color":"#FFD700"},
         {"id":4, "name":"Server3", "delay":0, "xPos":400, "yPos":300, "color":"#FFD700"},
         {"id":5, "name":"Server4", "delay":0, "xPos":400, "yPos":370, "color":"#FFD700"},
-        {"id":6, "name":"Server5", "delay":0, "xPos":400, "yPos":440, "color":"#FFD700"},
-        {"id":7, "name":"Oracle",  "delay":1, "xPos":550, "yPos":300, "color":"#7FFF00"}
+        {"id":6, "name":"Server5", "delay":0, "xPos":400, "yPos":440, "color":"#FFD700"}
     ],
     "links": [
         {"fromId":0, "destId":1, "bandwith":100.0, "delay":4, "linkType":"duplex"},
@@ -15,11 +14,6 @@
         {"fromId":1, "destId":3, "bandwith":100.0, "delay":4, "linkType":"duplex"},
         {"fromId":1, "destId":4, "bandwith":100.0, "delay":4, "linkType":"duplex"},
         {"fromId":1, "destId":5, "bandwith":100.0, "delay":4, "linkType":"duplex"},
-        {"fromId":1, "destId":6, "bandwith":100.0, "delay":4, "linkType":"duplex"},
-        {"fromId":2, "destId":7, "bandwith":100.0, "delay":4, "linkType":"duplex"},
-        {"fromId":3, "destId":7, "bandwith":100.0, "delay":4, "linkType":"duplex"},
-        {"fromId":4, "destId":7, "bandwith":100.0, "delay":4, "linkType":"duplex"},
-        {"fromId":5, "destId":7, "bandwith":100.0, "delay":4, "linkType":"duplex"},
-        {"fromId":6, "destId":7, "bandwith":100.0, "delay":4, "linkType":"duplex"}
+        {"fromId":1, "destId":6, "bandwith":100.0, "delay":4, "linkType":"duplex"}
  	]
 }

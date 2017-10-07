@@ -55,4 +55,9 @@ public class ClientModel extends Model<Object,Object>
     public Object eval( final Time now, final Object... params ) {
         return null;
     }
+    
+    @Override
+    public void close() {
+        // TODO Auto-generated method stub
+    }
 }

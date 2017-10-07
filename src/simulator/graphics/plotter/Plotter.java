@@ -54,7 +54,7 @@ import simulator.utils.Pair;
 import simulator.utils.Utils;
 import simulator.utils.resources.ResourceLoader;
 
-public class Plotter
+public class Plotter extends WindowAdapter implements ActionListener
 {
     private JFrame frame;
     
@@ -175,14 +175,7 @@ public class Plotter
         frame.pack();
         frame.setVisible( false );
         
-        frame.addWindowListener( new WindowAdapter() {
-            @Override
-            public void windowClosing( final WindowEvent e ) {
-                if (e.getID() == WindowEvent.WINDOW_CLOSING) {
-                    dispose();
-                }
-            }
-        });
+        frame.addWindowListener( this );
         
         // By default a timer of 30 FPS is added.
         setTimer( 30 );
@@ -207,12 +200,7 @@ public class Plotter
     */
     public void setTimer( final int FPS )
     {
-        ActionListener listener = new ActionListener() {
-            @Override
-            public void actionPerformed( final ActionEvent e ) {
-                plotter.repaint();
-            }
-        };
+        ActionListener listener = this;
         setTimer( FPS, listener );
     }
     
@@ -400,8 +388,26 @@ public class Plotter
         return settings;
     }
     
+    @Override
+    public void actionPerformed( final ActionEvent e ) {
+        plotter.repaint();
+    }
     
+    @Override
+    public void windowClosing( final WindowEvent e )
+    {
+        if (e.getID() == WindowEvent.WINDOW_CLOSING) {
+            dispose();
+        }
+    }
     
+    private void dispose() {
+        frame.dispose();
+        timer.stop();
+    }
+
+
+
     public static  class PlotterSettings
     {
         public boolean _settedXRangeByUser = false;
@@ -1022,8 +1028,6 @@ public class Plotter
             }
             
             if (!settings._settedXRangeByUser || !settings._settedYRangeByUser) {
-                // FIXME durante la simulazione il min e max della X si aggiornano costantemente
-                // FIXME dovrei rifletterlo anche nel setting.
                 for (Plot plot : _plots) {
                     try {
                         List<Pair<Double,Double>> points = plot.points;
@@ -1167,10 +1171,5 @@ public class Plotter
         public void componentResized( final ComponentEvent e ) {
             _legend.setXPosition( (int) (getWidth() - 370) );
         }
-    }
-    
-    private void dispose() {
-        frame.dispose();
-        timer.stop();
     }
 }

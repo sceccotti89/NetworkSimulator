@@ -140,9 +140,13 @@ public class ResultPlotting
         }
         plotter.addPlot( points, Color.YELLOW, Line.DASHED, "Tail latency (" + time_budget + "ms)" );
         
+        List<Pair<Double,Double>> percentiles = getPercentiles( "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
+                                                                "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_95th_Percentile.txt" );
+        plotter.addPlot( percentiles, "MONOLITHIC - PESOS (" + mode + ", t=" + time_budget + "ms)" );
+        
         for (int i = 1; i <= EnergyTestDIST2.NODES; i++) {
-            List<Pair<Double,Double>> percentiles = getPercentiles( "Results/PESOS_" + mode + "_" + time_budget + "ms_Node" + i + "_Tail_Latency.log",
-                                                                    "Results/PESOS_" + mode + "_" + time_budget + "ms_Node" + i + "_Tail_Latency_95th_Percentile.txt" );
+            percentiles = getPercentiles( "Results/PESOS_" + mode + "_" + time_budget + "ms_Node" + i + "_Tail_Latency.log",
+                                          "Results/PESOS_" + mode + "_" + time_budget + "ms_Node" + i + "_Tail_Latency_95th_Percentile.txt" );
             plotter.addPlot( percentiles, "Node " + i + " - PESOS (" + mode + ", t=" + time_budget + "ms)" );
         }
         

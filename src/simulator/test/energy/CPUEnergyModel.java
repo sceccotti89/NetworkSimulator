@@ -398,6 +398,9 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             catch ( IOException e ) { e.printStackTrace(); }
             return model;
         }
+
+        @Override
+        public void close() {}
     }
     
     public static class PERFmodel extends CPUEnergyModel
@@ -447,6 +450,9 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             catch ( IOException e ) { e.printStackTrace(); }
             return model;
         }
+
+        @Override
+        public void close() {}
     }
     
     public static class CONSmodel extends CPUEnergyModel
@@ -562,6 +568,9 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             catch ( IOException e ) { e.printStackTrace(); }
             return model;
         }
+
+        @Override
+        public void close() {}
     }
 
     public static class QueryInfo
@@ -664,6 +673,10 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             this.startTime    = startTime;
             this.currentTime  = startTime;
             this.endTime      = endTime;
+            
+            if (startTime.getTimeMicroseconds() == 16843812897L) {
+                System.out.println( "QUERY: " + this );
+            }
         }
         
         public void setEnergyConsumption( final double energy ) {
@@ -698,8 +711,15 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             
             //System.out.println( "ARRIVAL: " + arrivalTime + ", OLD TIME: " + endTime + ", NEW: " + newEndTime );
             
-            if (time.getTimeMicroseconds() == 19231494457L)
-                System.out.println( "CURRENT: " + time + ", OLD_END_TIME: " + endTime + ", NEW_END_TIME: " + newEndTime );
+            //if (time.getTimeMicroseconds() == 19231494457L)
+            //   System.out.println( "CURRENT: " + time + ", OLD_END_TIME: " + endTime + ", NEW_END_TIME: " + newEndTime );
+            
+            // FIXME ci sono molti errori di tempo che onestamente mi lasciano perplesso: se li sistemo avro' VINTO!!
+            if (endTime.compareTo( time ) < 0) {
+                System.out.println( "START: " + startTime + ", OLD_END: " + endTime + ", NEW_END: " + newEndTime + ", TIME: " + time );
+                System.out.println( "ERROR QUERY: " + this );
+                throw new RuntimeException();
+            }
             
             energyConsumption += elapsedEnergy + newEnergy - lastEnergy;
             previousEnergy = elapsedEnergy;

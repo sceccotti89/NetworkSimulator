@@ -43,4 +43,7 @@ public abstract class Model<E,P>
     */
     @SuppressWarnings("unchecked")
     public abstract E eval( final Time now, final P... params );
+    
+    /***/
+    public abstract void close();
 }

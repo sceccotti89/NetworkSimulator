@@ -1,3 +1,6 @@
+/**
+ * @author Stefano Ceccotti
+*/
 
 package simulator.graphics.animator_swing.interfaces;
 
@@ -7,14 +10,11 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.util.List;
 
 import javax.swing.JPanel;
-import javax.swing.JScrollBar;
 
 import simulator.graphics.animation_swing.AnimationNetwork;
 import simulator.graphics.animation_swing.elements.Info;
@@ -22,7 +22,7 @@ import simulator.graphics.animation_swing.elements.Link;
 import simulator.graphics.animation_swing.elements.Node;
 import simulator.graphics.animation_swing.elements.Packet;
 
-public class NetworkDisplay extends JPanel implements MouseMotionListener, ComponentListener
+public class NetworkDisplay extends JPanel implements MouseMotionListener
 {
     /** Generated Serial ID. */
     private static final long serialVersionUID = 6828820513635876566L;
@@ -32,8 +32,6 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener, Compo
     private int index;
     private int packetSize;
     private long timer = 0;
-    
-    private JScrollBar scrolls;
     
     public static Info info;
     
@@ -45,29 +43,24 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener, Compo
     private boolean pause;
     
     private Point mouse;
+    
+    private static final int SCROLL_WIDTH = 15;
+    
+    
 
-    public NetworkDisplay( final AnimationManager am, final float width, final float height )
+    public NetworkDisplay( final float width, final float height )
     {
         addMouseMotionListener( this );
-        addComponentListener( this );
         setDoubleBuffered( true );
         
         setPreferredSize( new Dimension( (int) width, (int) height ) );
         
-        this.am = am;
-        am.setNetworkDisplay( this );
-        
         mouse = new Point( -1, -1 );
         info = new Info();
-        
-        addComponentsToPane();
     }
     
-    private void addComponentsToPane()
-    {
-        scrolls = new JScrollBar( JScrollBar.VERTICAL );
-        //scrolls.setVisible( false );
-        add( scrolls );
+    public void setAnimationManager( final AnimationManager am ) {
+        this.am = am;
     }
     
     public void setElements( final List<Node> nodes, final List<Link> links, final List<Packet> packets )
@@ -77,6 +70,26 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener, Compo
         this.packets = packets;
         packetSize = packets.size();
         resetAnimation();
+        
+        // Get the panel dimension.
+        Dimension size = getPreferredSize();
+        double maxX = 0, maxY = 0;
+        for (Node node : nodes) {
+            maxX = Math.max( maxX, node.getArea().getMaxX() );
+            maxY = Math.max( maxY, node.getArea().getMaxY() + 1 );
+        }
+        
+        if (maxX > size.getWidth() && maxY > size.getHeight()) {
+            setPreferredSize( new Dimension( (int) maxX - SCROLL_WIDTH, (int) maxY - SCROLL_WIDTH ) );
+        } else {
+            if (maxY > size.getHeight()) {
+                setPreferredSize( new Dimension( (int) maxX - SCROLL_WIDTH, (int) maxY ) );
+            } else {
+                if (maxX > size.getWidth()) {
+                    setPreferredSize( new Dimension( (int) maxX, (int) maxY - SCROLL_WIDTH ) );
+                }
+            }
+        }
     }
     
     private void resetAnimation()
@@ -189,29 +202,5 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener, Compo
         info.render( g2 );
         
         g2.dispose();
-    }
-
-    @Override
-    public void componentResized( final ComponentEvent e ) {
-        remove( scrolls );
-        addComponentsToPane();
-    }
-
-    @Override
-    public void componentMoved(ComponentEvent e) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void componentShown(ComponentEvent e) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void componentHidden(ComponentEvent e) {
-        // TODO Auto-generated method stub
-        
     }
 }

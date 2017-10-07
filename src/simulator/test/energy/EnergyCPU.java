@@ -123,6 +123,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     public void addQuery( final long coreId, final QueryInfo q )
     {
         Core core = coresMap.get( coreId );
+        System.out.println( "SELEZIONATO CORE: " + coreId + ", TIME: " + core.getTime() );
         core.addQuery( q );
     }
     
@@ -258,9 +259,9 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         
         // If this is not the next query to compute, returns the maximum time (SIM_TIME - arrival).
         if (!core.isNextQuery( query )) {
-            //Time time = new Time( Long.MAX_VALUE, TimeUnit.MICROSECONDS );
             Time time = _evtScheduler.getTimeDuration();
             query.setTimeToComplete( Time.ZERO, Time.ZERO );
+            System.out.println( "QUERY: " + query.getId() + ", CORE: " + core.getId() + ", TIME: INFINITO (NON E' LA PROSSIMA IMMEDIATA)" );
             return time.subTime( query.getArrivalTime() );
         }
         
@@ -271,6 +272,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         Time startTime   = core.getTime();
         Time endTime     = startTime.clone().addTime( computeTime );
         query.setTimeToComplete( startTime, endTime );
+        System.out.println( "QUERY: " + query.getId() + ", CORE: " + core.getId() + ", START: " + startTime + ", END: " + endTime );
         
         computeEnergyConsumption( core, query, computeTime );
         core.setCompletedQuery( query );
@@ -471,6 +473,8 @@ public class EnergyCPU extends Device<Long,QueryInfo>
                     writeResult( frequency, currentQuery.getElapsedEnergy() );
                     this.time = currentQuery.getEndTime();
                     updateEventTime( currentQuery, this.time );
+                    
+                    System.out.println( "CORE: " + getId() + ", AGGIORNATA QUERY: " + currentQuery );
                 }
                 
                 frequency = newFrequency;
@@ -538,7 +542,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             return queryQueue.get( queryQueue.size() - 1 );
         }
         
-        public QueryInfo removeQuery( final int index ) {
+        private QueryInfo removeQuery( final int index ) {
             return queryQueue.remove( index );
         }
         
@@ -579,6 +583,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         public boolean checkQueryCompletion( final Time time )
         {
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+                System.out.println( "TIME: " + time + ", CORE: " + getId() + ", COMPLETATA QUERY: " + currentQuery );
                 addQueryOnSampling();
                 if (timeBudget != baseTimeBudget) {
                     timeBudget = baseTimeBudget;
@@ -610,14 +615,9 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             if (queryID != null && currentQuery != null && currentQuery.getId() == queryID) {
                 PESOSmodel model = (PESOSmodel) cpu.getModel();
                 model.setTimeBudget( timeBudget );
-                //if (hasMoreQueries()) {
-                    long frequency = cpu.evalFrequency( currentQuery.getStartTime(), this );
-                    System.out.println( "TIME: " + time + ", VALUTO LA NUOVA FREQUENZA DELLA QUERY: " + currentQuery );
-                    //19231494457
-                    //19231449186
-                    //long frequency = cpu.evalFrequency( t, this );
-                    setFrequency( time, frequency );
-                //}
+                long frequency = cpu.evalFrequency( currentQuery.getStartTime(), this );
+                //long frequency = cpu.evalFrequency( t, this );
+                setFrequency( time, frequency );
             }
         }
         
