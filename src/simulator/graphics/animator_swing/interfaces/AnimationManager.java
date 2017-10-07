@@ -145,14 +145,6 @@ public class AnimationManager extends JPanel implements ChangeListener, Componen
     public void componentHidden( final ComponentEvent e ) {}
     
     
-    protected void paintComponent( final Graphics g )
-    {
-        super.paintComponent( g );
-        
-        // TODO disegnare la barra del tempo dopo aver "creato" il suo spazio.
-        
-    }
-    
     public void resetButtons()
     {
         for (AbstractButton button : buttons) {
@@ -167,6 +159,7 @@ public class AnimationManager extends JPanel implements ChangeListener, Componen
         switch (button.getName()) {
             case( START ):
                 nd.startAnimation();
+                button.setSelected( true );
                 findButton( PAUSE ).setSelected( false );
                 break;
             case( STOP ):
@@ -178,5 +171,13 @@ public class AnimationManager extends JPanel implements ChangeListener, Componen
                 findButton( START ).setSelected( false );
                 break;
         }
+    }
+
+    protected void paintComponent( final Graphics g )
+    {
+        super.paintComponent( g );
+        
+        // TODO disegnare la barra del tempo dopo aver "creato" il suo spazio.
+        
     }
 }
