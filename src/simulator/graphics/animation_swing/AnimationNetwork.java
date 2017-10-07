@@ -102,9 +102,6 @@ public class AnimationNetwork
     
     private void addComponentsToPane( final Container pane, final float width, final float height )
     {
-        //pane.setLayout( new GridBagLayout() );
-        //GridBagConstraints c = new GridBagConstraints();
-        
         pane.setLayout( new BoxLayout( pane, BoxLayout.Y_AXIS ) );
         pane.add( new JScrollPane( nd = new NetworkDisplay( width, (height/100f)*80f ) ) );
         pane.add( am = new AnimationManager( nd, width, (height/100f)*20f ) );

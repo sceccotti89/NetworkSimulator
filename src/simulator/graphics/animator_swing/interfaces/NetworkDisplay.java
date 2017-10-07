@@ -139,7 +139,7 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener
     {
         if (timer > AnimationNetwork.timeSimulation) {
             stopAnimation();
-            am.resetButtons();
+            am.reset();
         } else if (!pause) {
             timer = timer + AnimationManager.frames;
         }
