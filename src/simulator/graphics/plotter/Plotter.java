@@ -950,7 +950,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             // Draw X and Y axis with their names.
             g.drawRect( plotLocation.x, (int) (plotLocation.y - yLength), (int) xLength, (int) yLength );
             g.drawString( xAxisName, (int) (plotLocation.getX() + xLength/2 - getWidth( xAxisName, g )/2),
-                                       (int) (plotLocation.getY() + offsetH / 2 + getHeight( xAxisName, g )) );
+                                     (int) (plotLocation.getY() + offsetH / 2 + getHeight( xAxisName, g )) );
             AffineTransform backupTransform = g.getTransform();
             g.rotate( -(Math.PI / 2), offsetW, plotLocation.getY() - yLength / 2 );
             g.drawString( yAxisName, (int) (offsetW - getWidth( yAxisName, g )/2),

@@ -8,7 +8,9 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
 
 public class TimeSlider
 {
@@ -19,8 +21,10 @@ public class TimeSlider
     
     private Rectangle area;
     private Ellipse2D cursor;
+    private Rectangle info;
     
     private Point mouse;
+    private boolean pressed = false;
     
     private static final int RADIUS = 10;
     
@@ -35,6 +39,8 @@ public class TimeSlider
         area = new Rectangle();
         cursor = new Ellipse2D.Double();
         setValue( value );
+        
+        info = new Rectangle();
         
         mouse = new Point( -1, -1 );
     }
@@ -62,16 +68,41 @@ public class TimeSlider
         return max;
     }
     
-    public boolean checkMouseClick( final Point p )
+    private double computeValue( final double x ) {
+        return ((x - area.getX()) / area.getWidth()) * (max - min);
+    }
+    
+    public boolean isPressed() {
+        return pressed;
+    }
+    
+    public boolean mouseMoved( final MouseEvent e )
     {
-        mouse = p;
-        if (area.contains( p )) {
-            double value = ((mouse.getX() - area.getX()) / area.getWidth()) * (max - min);
+        mouse = e.getPoint();
+        if (pressed) {
+            double value = computeValue( mouse.getX() );
+            setValue( value );
+        }
+        return area.contains( mouse );
+    }
+    
+    public boolean mousePressed( final MouseEvent e )
+    {
+        mouseMoved( e );
+        
+        if (area.contains( mouse )) {
+            pressed = true;
+            double value = computeValue( mouse.getX() );
             setValue( value );
             return true;
         }
         
+        pressed = false;
         return false;
+    }
+    
+    public void mouseReleased() {
+        pressed = false;
     }
     
     public void draw( final Graphics2D g )
@@ -88,12 +119,17 @@ public class TimeSlider
         
         if (area.contains( mouse )) {
             double offsetX = mouse.getX() - area.getX();
-            double time = (max - min) * (offsetX / area.getWidth());
-            //TODO inserire il valore
+            double val = (max - min) * (offsetX / area.getWidth());
             if (orientation == VERTICAL) {
                 
             } else {
-                
+                Rectangle2D sBounds = g.getFontMetrics().getStringBounds( val + "", g );
+                info.setBounds( (int) mouse.getX(), (int) area.getMaxY(), 100, 30 );
+                g.setColor( Color.LIGHT_GRAY );
+                g.fill( info );
+                g.setColor( Color.BLACK );
+                g.draw( info );
+                g.drawString( val + "", (float) info.getX(), (float) (info.getCenterY() + sBounds.getHeight()/2) );
             }
         }
     }

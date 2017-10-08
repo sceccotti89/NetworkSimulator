@@ -18,6 +18,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,7 @@ import javax.swing.JPanel;
 import simulator.graphics.animation_swing.AnimationNetwork;
 import simulator.graphics.animation_swing.elements.TimeSlider;
 
-public class AnimationManager extends JPanel implements ComponentListener, ActionListener, MouseListener
+public class AnimationManager extends JPanel implements ComponentListener, ActionListener, MouseListener, MouseMotionListener
 {
     /** Generated Serial ID. */
     private static final long serialVersionUID = 7463830294028112320L;
@@ -38,6 +39,8 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     private NetworkDisplay nd;
     
     private List<AbstractButton> buttons;
+    
+    private boolean animationStarted = false;
     
     private ImageIcon start;
     private ImageIcon pause;
@@ -57,6 +60,7 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     {
         setPreferredSize( new Dimension( (int) width, (int) height ) );
         addMouseListener( this );
+        addMouseMotionListener( this );
         
         // TODO utilizzare posizioni assolute, forse mi conviene...
         //setLayout( null );
@@ -170,7 +174,6 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     @Override
     public void componentHidden( final ComponentEvent e ) {}
     
-    
     public void reset()
     {
         slider.setValue( 0 );
@@ -179,50 +182,90 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
         //buttons.get( 0 ).setText( START );
     }
     
+    private void startAnimation( final AbstractButton button )
+    {
+        nd.startAnimation();
+        button.setName( PAUSE );
+        button.setIcon( pause );
+    }
+    
+    private void pauseAnimation( final AbstractButton button )
+    {
+        nd.pauseAnimation();
+        button.setName( START );
+        button.setIcon( start );
+    }
+    
     @Override
     public void actionPerformed( final ActionEvent e )
     {
         AbstractButton button = (AbstractButton) e.getSource();
         switch (button.getName()) {
             case( START ):
-                nd.startAnimation();
-                button.setName( PAUSE );
-                button.setIcon( pause );
+                startAnimation( button );
+                animationStarted = true;
                 //button.setText( PAUSE );
                 break;
             case( PAUSE ):
-                nd.pauseAnimation();
-                button.setName( START );
-                button.setIcon( start );
+                pauseAnimation( button );
+                animationStarted = false;
                 //button.setText( START );
                 break;
             case( STOP ):
                 nd.stopAnimation();
+                animationStarted = false;
                 reset();
                 break;
         }
     }
     
     @Override
-    public void mouseClicked( final MouseEvent e ) {}
-    
-    @Override
     public void mousePressed( final MouseEvent e )
     {
-        if (slider.checkMouseClick( e.getPoint() )) {
+        if (slider.mousePressed( e )) {
+            pauseAnimation( buttons.get( 0 ) );
             double value = slider.getValue();
             long timer = (long) (AnimationNetwork.timeSimulation * (value / slider.getMaximum()));
             nd.setTime( timer );
-            repaint();
         }
+        
+        repaint();
     }
     
     @Override
-    public void mouseReleased( final MouseEvent e ) {}
+    public void mouseReleased( final MouseEvent e )
+    {
+        if (slider.isPressed() && animationStarted) {
+            startAnimation( buttons.get( 0 ) );
+        }
+        slider.mouseReleased();
+    }
+    
+    @Override
+    public void mouseClicked( final MouseEvent e ) {}
     @Override
     public void mouseEntered( final MouseEvent e ) {}
     @Override
     public void mouseExited( final MouseEvent e ) {}
+    
+    @Override
+    public void mouseMoved( final MouseEvent e )
+    {
+        slider.mouseMoved( e );
+        repaint();
+    }
+    
+    @Override
+    public void mouseDragged( final MouseEvent e )
+    {
+        if (slider.mouseMoved( e )) {
+            double value = slider.getValue();
+            long timer = (long) (AnimationNetwork.timeSimulation * (value / slider.getMaximum()));
+            nd.setTime( timer );
+        }
+        
+        repaint();
+    }
     
     protected void paintComponent( final Graphics g )
     {
