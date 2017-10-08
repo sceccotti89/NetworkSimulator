@@ -22,9 +22,6 @@ public class TimeSlider
     
     private Point mouse;
     
-    private static final int CURSOR_WIDTH  = 15;
-    private static final int CURSOR_OFFSET = 5;
-    
     private static final int RADIUS = 10;
     
     public static final int HORIZONTAL = 0;
@@ -35,6 +32,7 @@ public class TimeSlider
         this.orientation = orientation;
         this.min = min;
         this.max = max;
+        area = new Rectangle();
         cursor = new Ellipse2D.Double();
         setValue( value );
         
@@ -49,9 +47,10 @@ public class TimeSlider
     
     public void setValue( final double value )
     {
-        // TODO sistemare
-        double offsetX = this.value - value;
-        //cursor.translate( , 0 );
+        int x = (int) (area.getX() + ((value/(max-min)) * area.getWidth()));
+        Rectangle bounds = cursor.getBounds();
+        bounds.setLocation( x - RADIUS, bounds.y );
+        cursor.setFrame( bounds );
         this.value = value;
     }
     
@@ -67,11 +66,8 @@ public class TimeSlider
     {
         mouse = p;
         if (area.contains( p )) {
-            int offsetX = (int) (mouse.getX() - cursor.getX());
-            Rectangle bounds = cursor.getBounds();
-            bounds.translate( offsetX - RADIUS, 0 );
-            cursor.setFrame( bounds );
-            setValue( (max - min) * offsetX );
+            double value = ((mouse.getX() - area.getX()) / area.getWidth()) * (max - min);
+            setValue( value );
             return true;
         }
         
@@ -80,29 +76,25 @@ public class TimeSlider
     
     public void draw( final Graphics2D g )
     {
-        if (orientation == VERTICAL) {
-            
-        } else {
-            // TODO per adesso disegnare qui (che e' quello che mi serve).
-            g.setColor( Color.RED );
-            g.fill( area );
-            g.setColor( Color.BLACK );
-            g.draw( area );
-            
-            g.setColor( Color.WHITE );
-            g.fill( cursor );
-            g.setColor( Color.BLACK );
-            g.draw( cursor );
-            
-            // TODO in base alla posizione del mouse scrivere il valore corrente
-            if (area.contains( mouse )) {
-                double offsetX = mouse.getX() - area.getX();
-                double time = (max - min) * offsetX;
-                //TODO inserire il valore
+        g.setColor( Color.RED );
+        g.fill( area );
+        g.setColor( Color.BLACK );
+        g.draw( area );
+        
+        g.setColor( Color.WHITE );
+        g.fill( cursor );
+        g.setColor( Color.BLACK );
+        g.draw( cursor );
+        
+        if (area.contains( mouse )) {
+            double offsetX = mouse.getX() - area.getX();
+            double time = (max - min) * (offsetX / area.getWidth());
+            //TODO inserire il valore
+            if (orientation == VERTICAL) {
+                
+            } else {
                 
             }
         }
-        
-        
     }
 }

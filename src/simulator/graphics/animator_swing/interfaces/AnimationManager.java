@@ -26,22 +26,16 @@ import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.plaf.metal.MetalSliderUI;
 
 import simulator.graphics.animation_swing.AnimationNetwork;
 import simulator.graphics.animation_swing.elements.TimeSlider;
 
-public class AnimationManager extends JPanel implements ChangeListener, ComponentListener, ActionListener, MouseListener
+public class AnimationManager extends JPanel implements ComponentListener, ActionListener, MouseListener
 {
     /** Generated Serial ID. */
     private static final long serialVersionUID = 7463830294028112320L;
     
     private NetworkDisplay nd;
-    
-    private JSlider time;
     
     private List<AbstractButton> buttons;
     
@@ -58,13 +52,14 @@ public class AnimationManager extends JPanel implements ChangeListener, Componen
     private static final String STOP  = "STOP";
     
     
-
+    
     public AnimationManager( final NetworkDisplay nd, final float width, final float height )
     {
         setPreferredSize( new Dimension( (int) width, (int) height ) );
         addMouseListener( this );
         
         // TODO utilizzare posizioni assolute, forse mi conviene...
+        //setLayout( null );
         setLayout( new GridBagLayout() );
         GridBagConstraints c = new GridBagConstraints();
         
@@ -75,8 +70,6 @@ public class AnimationManager extends JPanel implements ChangeListener, Componen
         
         slider = new TimeSlider( TimeSlider.HORIZONTAL, 0, 200, 0 );
         slider.setBounds( 50, 10, width - 100, 10 );
-        
-        addTimeBar();
         
         createButtonImages();
         
@@ -89,9 +82,10 @@ public class AnimationManager extends JPanel implements ChangeListener, Componen
         c.weightx = 0.5;
         c.weighty = 1;
         c.gridx = 0;
-        c.gridy = 1;
+        c.gridy = 2;
         buttons.add( button );
         add( button, c );
+        //add( button );
         
         buttons.add( button );
         button = new JButton(); 
@@ -102,16 +96,16 @@ public class AnimationManager extends JPanel implements ChangeListener, Componen
         c.weightx = 0.5;
         c.weighty = 1;
         c.gridx = 10;
-        c.gridy = 1;
-        add( button );
+        c.gridy = 2;
+        add( button, c );
         buttons.add( button );
     }
     
     private void createButtonImages()
     {
         final Color background = new JButton().getBackground();
-        final int WIDTH  = 30;
-        final int HEIGHT = 25;
+        final int WIDTH  = 25;
+        final int HEIGHT = 20;
         
         BufferedImage image = new BufferedImage( WIDTH + 1, HEIGHT + 1, BufferedImage.TYPE_INT_RGB );
         Graphics2D g = (Graphics2D) image.createGraphics();
@@ -153,47 +147,11 @@ public class AnimationManager extends JPanel implements ChangeListener, Componen
         stop = new ImageIcon( image );
     }
     
-    private void addTimeBar()
-    {
-        time = new JSlider( JSlider.HORIZONTAL, 0, 200, 0 );
-        time.setPreferredSize( new Dimension( getWidth() - 10, getHeight() ) );
-        time.setForeground( Color.RED );
-        time.setMajorTickSpacing( 1 );
-        time.setMinorTickSpacing( 1 );
-        time.addChangeListener( this );
-        //time.setPaintTicks( true );
-        //time.setPaintLabels( true );
-        add( time );
-        
-        time.setUI( new MetalSliderUI() {
-            @Override
-            protected void scrollDueToClickInTrack( final int direction )
-            {
-                int value = slider.getValue(); 
-                if (slider.getOrientation() == JSlider.HORIZONTAL) {
-                    value = valueForXPosition( slider.getMousePosition().x );
-                } else if (slider.getOrientation() == JSlider.VERTICAL) {
-                    value = valueForYPosition( slider.getMousePosition().y );
-                }
-                slider.setValue( value );
-            }
-        } );
-    }
-    
-    @Override
-    public void stateChanged( final ChangeEvent e )
-    {
-        double value = time.getValue();
-        long timer = (long) (AnimationNetwork.timeSimulation * (value / time.getMaximum()));
-        nd.setTime( timer );
-    }
-    
     public void update()
     {
         if (!nd.isPauseAnimation()) {
             long timer = nd.getTime();
             slider.setValue( (int) (slider.getMaximum() * (timer / (double) AnimationNetwork.timeSimulation)) );
-            //time.setValue( (int) (time.getMaximum() * (timer / (double) AnimationNetwork.timeSimulation)));
             repaint();
         }
     }
@@ -201,8 +159,8 @@ public class AnimationManager extends JPanel implements ChangeListener, Componen
     @Override
     public void componentResized( final ComponentEvent e )
     {
-        remove( time );
-        addTimeBar();
+        slider.setBounds( 50, 10, getWidth() - 100, 10 );
+        repaint();
     }
     
     @Override
@@ -215,12 +173,12 @@ public class AnimationManager extends JPanel implements ChangeListener, Componen
     
     public void reset()
     {
-        time.setValue( 0 );
+        slider.setValue( 0 );
         buttons.get( 0 ).setName( START );
         buttons.get( 0 ).setIcon( start );
         //buttons.get( 0 ).setText( START );
     }
-
+    
     @Override
     public void actionPerformed( final ActionEvent e )
     {
@@ -244,40 +202,28 @@ public class AnimationManager extends JPanel implements ChangeListener, Componen
                 break;
         }
     }
-
+    
     @Override
     public void mouseClicked( final MouseEvent e ) {}
-
+    
     @Override
     public void mousePressed( final MouseEvent e )
     {
         if (slider.checkMouseClick( e.getPoint() )) {
-            // TODO implementare
-            //double value = time.getValue();
-            //long timer = (long) (AnimationNetwork.timeSimulation * (value / time.getMaximum()));
-            //nd.setTime( timer );
+            double value = slider.getValue();
+            long timer = (long) (AnimationNetwork.timeSimulation * (value / slider.getMaximum()));
+            nd.setTime( timer );
             repaint();
         }
     }
-
+    
     @Override
-    public void mouseReleased(MouseEvent e) {
-        // TODO Auto-generated method stub
-        
-    }
-
+    public void mouseReleased( final MouseEvent e ) {}
     @Override
-    public void mouseEntered(MouseEvent e) {
-        // TODO Auto-generated method stub
-        
-    }
-
+    public void mouseEntered( final MouseEvent e ) {}
     @Override
-    public void mouseExited(MouseEvent e) {
-        // TODO Auto-generated method stub
-        
-    }
-
+    public void mouseExited( final MouseEvent e ) {}
+    
     protected void paintComponent( final Graphics g )
     {
         super.paintComponent( g );
