@@ -46,7 +46,7 @@ public class EnergyTestDIST
         //private static final String QUERY_TRACE = "Models/test_arrivals.txt";
         private static final int NUM_QUERIES = 10000;
         // Random generator seed.
-        private static final int SEED = 198; // FIXME 50000;
+        private static final int SEED = 50000;
         private static final Random RANDOM = new Random( SEED );
         
         private BufferedReader queryReader;
@@ -545,7 +545,7 @@ public class EnergyTestDIST
         // SIMULATOR: 
         // IDLE:         
     }
-
+    
     public static void testMultiCore( final long timeBudget, final Mode mode ) throws Exception
     {
         /*

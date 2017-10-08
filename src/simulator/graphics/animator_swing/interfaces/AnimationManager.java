@@ -16,6 +16,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +32,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.metal.MetalSliderUI;
 
 import simulator.graphics.animation_swing.AnimationNetwork;
+import simulator.graphics.animation_swing.elements.TimeSlider;
 
-public class AnimationManager extends JPanel implements ChangeListener, ComponentListener, ActionListener
+public class AnimationManager extends JPanel implements ChangeListener, ComponentListener, ActionListener, MouseListener
 {
     /** Generated Serial ID. */
     private static final long serialVersionUID = 7463830294028112320L;
@@ -46,6 +49,8 @@ public class AnimationManager extends JPanel implements ChangeListener, Componen
     private ImageIcon pause;
     private ImageIcon stop;
     
+    private TimeSlider slider;
+    
     public static int frames = 1;
     
     private static final String START = "START";
@@ -57,6 +62,8 @@ public class AnimationManager extends JPanel implements ChangeListener, Componen
     public AnimationManager( final NetworkDisplay nd, final float width, final float height )
     {
         setPreferredSize( new Dimension( (int) width, (int) height ) );
+        addMouseListener( this );
+        
         // TODO utilizzare posizioni assolute, forse mi conviene...
         setLayout( new GridBagLayout() );
         GridBagConstraints c = new GridBagConstraints();
@@ -65,6 +72,9 @@ public class AnimationManager extends JPanel implements ChangeListener, Componen
         
         this.nd = nd;
         nd.setAnimationManager( this );
+        
+        slider = new TimeSlider( TimeSlider.HORIZONTAL, 0, 200, 0 );
+        slider.setBounds( 50, 10, width - 100, 10 );
         
         addTimeBar();
         
@@ -182,7 +192,9 @@ public class AnimationManager extends JPanel implements ChangeListener, Componen
     {
         if (!nd.isPauseAnimation()) {
             long timer = nd.getTime();
-            time.setValue( (int) (time.getMaximum() * (timer / (double) AnimationNetwork.timeSimulation)));
+            slider.setValue( (int) (slider.getMaximum() * (timer / (double) AnimationNetwork.timeSimulation)) );
+            //time.setValue( (int) (time.getMaximum() * (timer / (double) AnimationNetwork.timeSimulation)));
+            repaint();
         }
     }
     
@@ -233,11 +245,48 @@ public class AnimationManager extends JPanel implements ChangeListener, Componen
         }
     }
 
+    @Override
+    public void mouseClicked( final MouseEvent e ) {}
+
+    @Override
+    public void mousePressed( final MouseEvent e )
+    {
+        if (slider.checkMouseClick( e.getPoint() )) {
+            // TODO implementare
+            //double value = time.getValue();
+            //long timer = (long) (AnimationNetwork.timeSimulation * (value / time.getMaximum()));
+            //nd.setTime( timer );
+            repaint();
+        }
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+        // TODO Auto-generated method stub
+        
+    }
+
     protected void paintComponent( final Graphics g )
     {
         super.paintComponent( g );
         
-        // TODO disegnare la barra del tempo dopo aver "creato" il suo spazio.
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setRenderingHint( RenderingHints.KEY_ANTIALIASING,
+                              RenderingHints.VALUE_ANTIALIAS_ON );
         
+        slider.draw( g2d );
+        g2d.dispose();
     }
 }
