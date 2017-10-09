@@ -182,7 +182,6 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
         slider.setValue( 0 );
         buttons.get( 0 ).setName( START );
         buttons.get( 0 ).setIcon( start );
-        //buttons.get( 0 ).setText( START );
         animationStarted = false;
         repaint();
     }
@@ -209,12 +208,10 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
             case( START ):
                 startAnimation( button );
                 animationStarted = true;
-                //button.setText( PAUSE );
                 break;
             case( PAUSE ):
                 pauseAnimation( button );
                 animationStarted = false;
-                //button.setText( START );
                 break;
             case( STOP ):
                 nd.stopAnimation();
@@ -230,7 +227,6 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
             pauseAnimation( buttons.get( 0 ) );
             nd.setTime( (long) slider.getValue() );
         }
-        
         repaint();
     }
     
@@ -263,10 +259,10 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
         if (slider.mouseMoved( e )) {
             nd.setTime( (long) slider.getValue() );
         }
-        
         repaint();
     }
     
+    @Override
     protected void paintComponent( final Graphics g )
     {
         super.paintComponent( g );
