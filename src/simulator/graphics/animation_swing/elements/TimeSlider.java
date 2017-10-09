@@ -68,8 +68,12 @@ public class TimeSlider
         return max;
     }
     
-    private double computeValue( final double x ) {
-        return ((x - area.getX()) / area.getWidth()) * (max - min);
+    private double computeValue( final double x )
+    {
+        double value = ((x - area.getX()) / area.getWidth()) * (max - min);
+        value = Math.max( min, value );
+        value = Math.min( value, max );
+        return value;
     }
     
     public boolean isPressed() {
@@ -94,6 +98,9 @@ public class TimeSlider
             pressed = true;
             double value = computeValue( mouse.getX() );
             setValue( value );
+            return true;
+        } else if (cursor.contains( mouse )){
+            pressed = true;
             return true;
         }
         
@@ -132,5 +139,11 @@ public class TimeSlider
                 g.drawString( val + "", (float) info.getX(), (float) (info.getCenterY() + sBounds.getHeight()/2) );
             }
         }
+        
+        Rectangle2D sBounds = g.getFontMetrics().getStringBounds( value + "/" + max, g );
+        g.setColor( Color.BLACK );
+        g.drawString( value + "/" + max,
+                      (float) (area.getCenterX() - sBounds.getWidth()/2),
+                      (float) (area.getMaxY() + sBounds.getHeight()) );
     }
 }

@@ -7,8 +7,8 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 
-import simulator.graphics.animator_swing.interfaces.AnimationManager;
-import simulator.graphics.animator_swing.interfaces.NetworkDisplay;
+import simulator.graphics.animation_swing.interfaces.AnimationManager;
+import simulator.graphics.animation_swing.interfaces.NetworkDisplay;
 
 public class Packet implements Comparable<Packet>
 {

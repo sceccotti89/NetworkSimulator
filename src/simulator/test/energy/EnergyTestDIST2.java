@@ -776,11 +776,12 @@ public class EnergyTestDIST2
     {
         final String dir = "Models/Monolithic/PESOS/MaxScore/";
         List<PrintWriter> writers = new ArrayList<>( NODES );
+        final double BASE_RANGE = 20;
         final double RANDOM_RANGE = 10;
         
         List<Double> ranges = new ArrayList<>( NODES );
         for (int i = 0; i < NODES; i++) {
-            ranges.add( Math.random() * RANDOM_RANGE + RANDOM_RANGE );
+            ranges.add( Math.random() * RANDOM_RANGE + BASE_RANGE );
         }
         
         String file = dir + "predictions.txt";
@@ -896,7 +897,7 @@ public class EnergyTestDIST2
         //createDistributedIndex();
         
         Utils.VERBOSE = false;
-        PESOS_CONTROLLER = false;
+        PESOS_CONTROLLER = true;
         
         testNetwork( Mode.PESOS_TIME_CONSERVATIVE,  500 );
         //testAnimationNetwork( Mode.PESOS_TIME_CONSERVATIVE, 1000 );
@@ -916,6 +917,12 @@ public class EnergyTestDIST2
         //CPU: 3, Energy: 568741.7000418168
         //CPU: 4, Energy: 541155.3514661172
         
+        //CPU: 0, Energy: 506491.95314079575
+        //CPU: 1, Energy: 565739.617606662
+        //CPU: 2, Energy: 463395.90331883176
+        //CPU: 3, Energy: 512846.60986002325
+        //CPU: 4, Energy: 441536.80974286504
+        
         // PESOS Controller Off
         //CPU: 0, Energy: 555912.9932714059
         //CPU: 1, Energy: 585812.2313076374
@@ -928,6 +935,12 @@ public class EnergyTestDIST2
         //CPU: 2, Energy: 521067.8054582341
         //CPU: 3, Energy: 569437.6807486733
         //CPU: 4, Energy: 541653.5317161166
+        
+        //CPU: 0, Energy: 506877.5768815482
+        //CPU: 1, Energy: 566193.0952826159
+        //CPU: 2, Energy: 463764.2394836715
+        //CPU: 3, Energy: 513363.84908512677
+        //CPU: 4, Energy: 442097.381008478
     }
     
     public static void testNetwork( final Mode mode, final long timeBudget ) throws Exception
