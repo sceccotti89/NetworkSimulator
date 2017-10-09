@@ -28,7 +28,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import simulator.graphics.animation_swing.AnimationNetwork;
 import simulator.graphics.animation_swing.elements.TimeSlider;
 
 public class AnimationManager extends JPanel implements ComponentListener, ActionListener, MouseListener, MouseMotionListener
@@ -72,8 +71,8 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
         this.nd = nd;
         nd.setAnimationManager( this );
         
-        slider = new TimeSlider( TimeSlider.HORIZONTAL, 0, 200, 0 );
-        slider.setBounds( 50, 10, width - 100, 10 );
+        slider = new TimeSlider( this, TimeSlider.HORIZONTAL, 0, 0, 0 );
+        slider.setBounds( 50, 30, width - 100, 10 );
         
         createButtonImages();
         
@@ -151,11 +150,15 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
         stop = new ImageIcon( image );
     }
     
+    public void setAnimationTime( final long time ) {
+        slider.setMaximum( time );
+    }
+    
     public void update()
     {
         if (!nd.isPauseAnimation()) {
             long timer = nd.getTime();
-            slider.setValue( (int) (slider.getMaximum() * (timer / (double) AnimationNetwork.timeSimulation)) );
+            slider.setValue( (int) (slider.getRange() * (timer / slider.getMaximum())) );
             repaint();
         }
     }
@@ -163,7 +166,7 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     @Override
     public void componentResized( final ComponentEvent e )
     {
-        slider.setBounds( 50, 10, getWidth() - 100, 10 );
+        slider.setBounds( 50, 20, getWidth() - 100, 10 );
         repaint();
     }
     
@@ -180,6 +183,8 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
         buttons.get( 0 ).setName( START );
         buttons.get( 0 ).setIcon( start );
         //buttons.get( 0 ).setText( START );
+        animationStarted = false;
+        repaint();
     }
     
     private void startAnimation( final AbstractButton button )
@@ -213,7 +218,6 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
                 break;
             case( STOP ):
                 nd.stopAnimation();
-                animationStarted = false;
                 reset();
                 break;
         }
@@ -224,9 +228,7 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     {
         if (slider.mousePressed( e )) {
             pauseAnimation( buttons.get( 0 ) );
-            double value = slider.getValue();
-            long timer = (long) (AnimationNetwork.timeSimulation * (value / slider.getMaximum()));
-            nd.setTime( timer );
+            nd.setTime( (long) slider.getValue() );
         }
         
         repaint();
@@ -259,9 +261,7 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     public void mouseDragged( final MouseEvent e )
     {
         if (slider.mouseMoved( e )) {
-            double value = slider.getValue();
-            long timer = (long) (AnimationNetwork.timeSimulation * (value / slider.getMaximum()));
-            nd.setTime( timer );
+            nd.setTime( (long) slider.getValue() );
         }
         
         repaint();

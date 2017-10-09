@@ -39,6 +39,8 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener
     private List<Link> links;
     private List<Packet> packets;
     
+    private long timeSimulation = 0;
+    
     private boolean start;
     private boolean pause;
     
@@ -70,6 +72,12 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener
         this.packets = packets;
         packetSize = packets.size();
         resetAnimation();
+        
+        for (Packet pkt : packets) {
+            if (pkt.getEndTime() > timeSimulation) {
+                timeSimulation = pkt.getEndTime();
+            }
+        }
         
         // Get the panel dimension.
         Dimension size = getPreferredSize();
@@ -137,7 +145,7 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener
     
     private void update( final Graphics2D g, final int delta )
     {
-        if (timer > AnimationNetwork.timeSimulation) {
+        if (timer > timeSimulation) {
             stopAnimation();
             am.reset();
         } else if (!pause) {

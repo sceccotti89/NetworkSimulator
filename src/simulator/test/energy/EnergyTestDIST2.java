@@ -797,7 +797,6 @@ public class EnergyTestDIST2
             String[] values = line.split( "\\t+" );
             long queryID    = Long.parseLong( values[0] );
             int terms       = Integer.parseInt( values[1] );
-            //int postings    = Integer.parseInt( values[2] ) / NODES;
             int postings    = Integer.parseInt( values[2] );
             for (int i = 0; i < NODES; i++) {
                 int difference = (int) (postings / 100d * ranges.get( i ));
@@ -854,8 +853,6 @@ public class EnergyTestDIST2
             }
             
             for (int i = 1; i < values.length; i+=2) {
-                //double qTime  = Double.parseDouble( values[i] ) / NODES;
-                //double energy = Double.parseDouble( values[i+1] ) / NODES;
                 double qTime  = Double.parseDouble( values[i] );
                 double energy = Double.parseDouble( values[i+1] );
                 for (int j = 0; j < NODES; j++) {

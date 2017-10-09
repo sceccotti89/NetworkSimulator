@@ -1,3 +1,6 @@
+/**
+ * @author Stefano Ceccotti
+*/
 
 package simulator.graphics.animation_swing;
 
@@ -34,7 +37,7 @@ import simulator.graphics.animation_swing.interfaces.NetworkDisplay;
 import simulator.topology.NetworkLink;
 import simulator.topology.NetworkNode;
 
-public class AnimationNetwork
+public class AnimationNetwork extends WindowAdapter
 {
     private JFrame frame;
     private Timer timer;
@@ -49,7 +52,7 @@ public class AnimationNetwork
     private List<Link> links;
     private List<Packet> packets;
     
-    public static long timeSimulation = 0;
+    private long timeSimulation = 0;
 	private final int limit = 1000000;
 	
 	public static int fps = 30;
@@ -90,14 +93,7 @@ public class AnimationNetwork
         frame.pack();
         frame.setVisible( false );
         
-        frame.addWindowListener( new WindowAdapter() {
-            @Override
-            public void windowClosing( final WindowEvent e ) {
-                if (e.getID() == WindowEvent.WINDOW_CLOSING) {
-                    dispose();
-                }
-            }
-        });
+        frame.addWindowListener( this );
     }
     
     private void addComponentsToPane( final Container pane, final float width, final float height )
@@ -124,7 +120,7 @@ public class AnimationNetwork
             
             final long from_ID = Long.parseLong( words[0] );
             final long startTime = Long.parseLong( words[1] );
-            Node from = getNode( from_ID );
+            final Node from = getNode( from_ID );
             final long dest_ID = Long.parseLong( words[2] );
             final Color color = from.getColor();
             final long endTime = Long.parseLong( words[3] );
@@ -148,6 +144,8 @@ public class AnimationNetwork
         for (Packet packet: packets) {
         	packet.setMeasure( measure );
         }
+        
+        am.setAnimationTime( timeSimulation );
         
         System.out.println( "Loading completed." );
     }
@@ -299,7 +297,15 @@ public class AnimationNetwork
         timer = new Timer( 1000 / FPS, listener );
     }
     
-    public void dispose() {
+    @Override
+    public void windowClosing( final WindowEvent e )
+    {
+        if (e.getID() == WindowEvent.WINDOW_CLOSING) {
+            dispose();
+        }
+    }
+    
+    private void dispose() {
         frame.dispose();
         timer.stop();
     }
