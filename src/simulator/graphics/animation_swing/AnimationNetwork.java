@@ -10,6 +10,8 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
@@ -37,13 +39,14 @@ import simulator.graphics.animation_swing.interfaces.NetworkDisplay;
 import simulator.topology.NetworkLink;
 import simulator.topology.NetworkNode;
 
-public class AnimationNetwork extends WindowAdapter
+public class AnimationNetwork extends WindowAdapter implements ComponentListener
 {
     private JFrame frame;
     private Timer timer;
     
     private NetworkDisplay nd;
     private AnimationManager am;
+    private JScrollPane scroll;
     
     private final int height;
     private final int width;
@@ -94,13 +97,15 @@ public class AnimationNetwork extends WindowAdapter
         frame.setVisible( false );
         
         frame.addWindowListener( this );
+        frame.addComponentListener( this );
     }
     
     private void addComponentsToPane( final Container pane, final float width, final float height )
     {
         pane.setLayout( new BoxLayout( pane, BoxLayout.Y_AXIS ) );
-        pane.add( new JScrollPane( nd = new NetworkDisplay( width, (height/100f)*80f ) ) );
-        pane.add( am = new AnimationManager( nd, width, (height/100f)*20f ) );
+        //pane.setLayout( new BorderLayout() );
+        pane.add( scroll = new JScrollPane( nd = new NetworkDisplay( width, height * 0.8f ) ) );
+        pane.add( am = new AnimationManager( nd, width, height * 0.2f ) );
     }
     
     /**
@@ -309,4 +314,22 @@ public class AnimationNetwork extends WindowAdapter
         frame.dispose();
         timer.stop();
     }
+
+    @Override
+    public void componentHidden( final ComponentEvent e ) {}
+
+    @Override
+    public void componentMoved( final ComponentEvent e ) {}
+
+    @Override
+    public void componentResized( final ComponentEvent e )
+    {
+        //System.out.println( "SIZE: " + frame.getSize() );
+        scroll.setPreferredSize( new Dimension( frame.getWidth(), (int) (frame.getHeight() * 0.8) ) );
+        nd.setSize( new Dimension( frame.getWidth(), (int) (frame.getHeight() * 0.8) ) );
+        am.setPreferredSize( new Dimension( frame.getWidth(), (int) (frame.getHeight() * 0.2) ) );
+    }
+
+    @Override
+    public void componentShown( final ComponentEvent e ) {}
 }

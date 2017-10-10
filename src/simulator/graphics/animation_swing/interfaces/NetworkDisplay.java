@@ -88,13 +88,13 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener
         }
         
         if (maxX > size.getWidth() && maxY > size.getHeight()) {
-            setPreferredSize( new Dimension( (int) maxX - SCROLL_WIDTH, (int) maxY - SCROLL_WIDTH ) );
+            setPreferredSize( new Dimension( (int) (maxX - SCROLL_WIDTH), (int) (maxY - SCROLL_WIDTH) ) );
         } else {
             if (maxY > size.getHeight()) {
-                setPreferredSize( new Dimension( (int) maxX - SCROLL_WIDTH, (int) maxY ) );
+                setPreferredSize( new Dimension( (int) (maxX - SCROLL_WIDTH), (int) maxY ) );
             } else {
                 if (maxX > size.getWidth()) {
-                    setPreferredSize( new Dimension( (int) maxX, (int) maxY - SCROLL_WIDTH ) );
+                    setPreferredSize( new Dimension( (int) maxX, (int) (maxY - SCROLL_WIDTH) ) );
                 }
             }
         }

@@ -21,7 +21,7 @@ import simulator.network.protocols.NetworkProtocol;
 import simulator.topology.NetworkNode;
 import simulator.utils.Time;
 
-public abstract class Agent
+public abstract class Agent extends Thread
 {
     protected long _id;
     protected NetworkNode _node;
@@ -265,6 +265,16 @@ public abstract class Agent
             return _availablePorts.remove( rand.nextInt( 64511 ) );
         }
     }
+    
+    @Override
+    public void run()
+    {
+        // TODO questo metodo dovrebbe richiamare il metodo execution()
+        // TODO nel quale uno puo' fare cio' che vuole..
+        //execution();
+    }
+    
+    //public abstract void execution();
     
     /**
      * Returns the next list of events.

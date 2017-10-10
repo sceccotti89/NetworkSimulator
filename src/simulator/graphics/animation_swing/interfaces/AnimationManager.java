@@ -20,8 +20,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
@@ -37,7 +35,8 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     
     private NetworkDisplay nd;
     
-    private List<AbstractButton> buttons;
+    private AbstractButton start_btn;
+    private AbstractButton stop_btn;
     
     private boolean animationStarted = false;
     
@@ -48,6 +47,8 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     private TimeSlider slider;
     
     public static int frames = 1;
+    
+    private static final int SLIDER_OFF_X = 50;
     
     private static final String START = "START";
     private static final String PAUSE = "PAUSE";
@@ -72,36 +73,32 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
         nd.setAnimationManager( this );
         
         slider = new TimeSlider( this, TimeSlider.HORIZONTAL, 0, 0, 0 );
-        slider.setBounds( 50, 30, width - 100, 10 );
+        slider.setBounds( SLIDER_OFF_X, 20, width - SLIDER_OFF_X * 2, 10 );
         
         createButtonImages();
         
-        buttons = new ArrayList<>();
-        JButton button = new JButton();
-        button.setName( START );
-        button.addActionListener( this );
-        button.setFocusable( false );
-        button.setIcon( start );
+        start_btn = new JButton();
+        start_btn.setName( START );
+        start_btn.addActionListener( this );
+        start_btn.setFocusable( false );
+        start_btn.setIcon( start );
         c.weightx = 0.5;
         c.weighty = 1;
         c.gridx = 0;
         c.gridy = 2;
-        buttons.add( button );
-        add( button, c );
+        add( start_btn, c );
         //add( button );
         
-        buttons.add( button );
-        button = new JButton(); 
-        button.setName( STOP );
-        button.addActionListener( this );
-        button.setFocusable( false );
-        button.setIcon( stop );
+        stop_btn = new JButton(); 
+        stop_btn.setName( STOP );
+        stop_btn.addActionListener( this );
+        stop_btn.setFocusable( false );
+        stop_btn.setIcon( stop );
         c.weightx = 0.5;
         c.weighty = 1;
         c.gridx = 10;
         c.gridy = 2;
-        add( button, c );
-        buttons.add( button );
+        add( stop_btn, c );
     }
     
     private void createButtonImages()
@@ -166,7 +163,7 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     @Override
     public void componentResized( final ComponentEvent e )
     {
-        slider.setBounds( 50, 20, getWidth() - 100, 10 );
+        slider.setBounds( SLIDER_OFF_X, 20, getWidth() - SLIDER_OFF_X * 2, 10 );
         repaint();
     }
     
@@ -180,24 +177,24 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     public void reset()
     {
         slider.setValue( 0 );
-        buttons.get( 0 ).setName( START );
-        buttons.get( 0 ).setIcon( start );
+        start_btn.setName( START );
+        start_btn.setIcon( start );
         animationStarted = false;
         repaint();
     }
     
-    private void startAnimation( final AbstractButton button )
+    private void startAnimation()
     {
         nd.startAnimation();
-        button.setName( PAUSE );
-        button.setIcon( pause );
+        start_btn.setName( PAUSE );
+        start_btn.setIcon( pause );
     }
     
-    private void pauseAnimation( final AbstractButton button )
+    private void pauseAnimation()
     {
         nd.pauseAnimation();
-        button.setName( START );
-        button.setIcon( start );
+        start_btn.setName( START );
+        start_btn.setIcon( start );
     }
     
     @Override
@@ -206,11 +203,11 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
         AbstractButton button = (AbstractButton) e.getSource();
         switch (button.getName()) {
             case( START ):
-                startAnimation( button );
+                startAnimation();
                 animationStarted = true;
                 break;
             case( PAUSE ):
-                pauseAnimation( button );
+                pauseAnimation();
                 animationStarted = false;
                 break;
             case( STOP ):
@@ -224,7 +221,7 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     public void mousePressed( final MouseEvent e )
     {
         if (slider.mousePressed( e )) {
-            pauseAnimation( buttons.get( 0 ) );
+            pauseAnimation();
             nd.setTime( (long) slider.getValue() );
         }
         repaint();
@@ -234,7 +231,7 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     public void mouseReleased( final MouseEvent e )
     {
         if (slider.isPressed() && animationStarted) {
-            startAnimation( buttons.get( 0 ) );
+            startAnimation();
         }
         slider.mouseReleased();
     }
