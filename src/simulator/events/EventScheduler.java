@@ -6,7 +6,7 @@ package simulator.events;
 
 import java.util.AbstractQueue;
 import java.util.List;
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.PriorityQueue;
 import java.util.concurrent.TimeUnit;
 
 import simulator.exception.TimeException;
@@ -28,7 +28,7 @@ public class EventScheduler
     public EventScheduler( final NetworkTopology network )
     {
         _network = network;
-        _events = new PriorityBlockingQueue<Event>( 1 << 18 );
+        _events = new PriorityQueue<Event>( 1 << 18 );
     }
     
     public void setNetwork( final NetworkTopology network ) {
