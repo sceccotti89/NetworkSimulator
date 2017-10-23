@@ -74,7 +74,7 @@ public abstract class EnergyModel
     {
         @Override
         public double computeEnergy( double energy, long frequency, Time interval, boolean idle) {
-            return computeEnergy( energy, frequency, interval.getTimeMicroseconds(), idle );
+            return computeEnergy( energy, frequency, interval.getTimeMicros(), idle );
         }
         
         @Override
@@ -84,7 +84,7 @@ public abstract class EnergyModel
         
         @Override
         public double getIdleEnergy( final long frequency, final Time interval ) {
-            return getIdleEnergy( 0L, interval.getTimeMicroseconds() );
+            return getIdleEnergy( 0L, interval.getTimeMicros() );
         }
         
         @Override
@@ -98,7 +98,7 @@ public abstract class EnergyModel
     {
         @Override
         public double computeEnergy( final double energy, final long frequency, final Time interval, final boolean idle ) {
-            return computeEnergy( energy, 0L, interval.getTimeMicroseconds(), idle );
+            return computeEnergy( energy, 0L, interval.getTimeMicros(), idle );
         }
         
         @Override
@@ -108,7 +108,7 @@ public abstract class EnergyModel
         
         @Override
         public double getIdleEnergy( final long frequency, final Time interval ) {
-            return getIdleEnergy( 0L, interval.getTimeMicroseconds() );
+            return getIdleEnergy( 0L, interval.getTimeMicros() );
         }
         
         @Override
@@ -125,7 +125,7 @@ public abstract class EnergyModel
         
         @Override
         public double computeEnergy( final double energy, final long frequency, final Time interval, final boolean idle ) {
-            return computeEnergy( 0d, frequency, interval.getTimeMicroseconds(), idle ) ;
+            return computeEnergy( 0d, frequency, interval.getTimeMicros(), idle ) ;
         }
         
         @Override
@@ -141,7 +141,7 @@ public abstract class EnergyModel
         
         @Override
         public double getIdleEnergy( final long frequency, final Time interval ) {
-            return getIdleEnergy( frequency, interval.getTimeMicroseconds() );
+            return getIdleEnergy( frequency, interval.getTimeMicros() );
         }
         
         @Override
@@ -159,7 +159,7 @@ public abstract class EnergyModel
         
         @Override
         public double computeEnergy( final double energy, final long frequency, final Time interval, final boolean idle ) {
-            return computeEnergy( energy, frequency, interval.getTimeMicroseconds(), idle ) ;
+            return computeEnergy( energy, frequency, interval.getTimeMicros(), idle ) ;
         }
         
         @Override
@@ -172,7 +172,7 @@ public abstract class EnergyModel
         
         @Override
         public double getIdleEnergy( final long frequency, final Time interval ) {
-            return getIdleEnergy( frequency, interval.getTimeMicroseconds() );
+            return getIdleEnergy( frequency, interval.getTimeMicros() );
         }
         
         @Override
@@ -188,7 +188,7 @@ public abstract class EnergyModel
         
         @Override
         public double computeEnergy( final double energy, final long frequency, final Time interval, final boolean idle ) {
-            return computeEnergy( 0d, frequency, interval.getTimeMicroseconds(), idle ) ;
+            return computeEnergy( 0d, frequency, interval.getTimeMicros(), idle ) ;
         }
         
         @Override
@@ -200,7 +200,7 @@ public abstract class EnergyModel
         
         @Override
         public double getIdleEnergy( final long frequency, final Time interval ) {
-            return getIdleEnergy( frequency, interval.getTimeMicroseconds() );
+            return getIdleEnergy( frequency, interval.getTimeMicros() );
         }
         
         @Override

@@ -201,7 +201,7 @@ public abstract class Event implements Comparable<Event>
                 Agent agent = node.getAgent();
                 if (nodeId != _source.getId()) {
                     //System.out.println( "[" + _time + "] Reached intermediate node: " + node );
-                    delay = getTcalc( node, node.getAgent() ).getTimeMicroseconds();
+                    delay = getTcalc( node, node.getAgent() ).getTimeMicros();
                     // Add event on queue only for nodes different from source.
                     agent.addEventOnQueue( this );
                 }
@@ -249,9 +249,9 @@ public abstract class Event implements Comparable<Event>
         long delay;
         if (agent.getEventHandler() != null) {
             Time t = agent.getEventHandler().handle( this, EventType.RECEIVED );
-            delay = t.getTimeMicroseconds();
+            delay = t.getTimeMicros();
         } else {
-            delay = node.getTcalc().getTimeMicroseconds();
+            delay = node.getTcalc().getTimeMicros();
         }
         
         return new Time( delay, TimeUnit.MICROSECONDS );

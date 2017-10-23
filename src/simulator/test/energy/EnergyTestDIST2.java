@@ -152,7 +152,10 @@ public class EnergyTestDIST2
         // Former value is number of arrived shards, the latter the completed ones.
         private Map<PesosQuery,Pair<Integer,Integer>> openQueries;
         
-        
+        private static final double WEIGHT = 0.9;
+
+
+
         public PesosController( final long timeBudget, final Mode mode )
         {
             cpuInfos = new HashMap<>( NODES );
@@ -209,7 +212,7 @@ public class EnergyTestDIST2
             // TODO potrei farlo in parallelo nel numero di nodi (se i core totali fossero troppi)!!!
             for (CpuInfo _cpu : cpuInfos.values()) {
                 for (CoreInfo _core : _cpu.getCores()) {
-                    long extraTime = evalTimeBudget( time.getTimeMicroseconds(), _cpu, _core );
+                    long extraTime = evalTimeBudget( time.getTimeMicros(), _cpu, _core );
                     long budget = timeBudget + extraTime;
                     if (_core.hasMoreQueries() && _core.checkTimeBudget( budget )) {
                         PESOScore core = (PESOScore) cpus.get( (int) _cpu.getId() - 2 ).getCore( _core.getCoreID() );
@@ -299,7 +302,7 @@ public class EnergyTestDIST2
                 status.setStatus( Status.WARNING, extraBudget );
             }*/
             
-            return (long) (extraBudget * 0.8);
+            return (long) (extraBudget * WEIGHT);
         }
         
         /*private static class Status
@@ -408,14 +411,14 @@ public class EnergyTestDIST2
             private long _initTimeBudget;
             private long _timeBudget;
             
-            private static final long DELTA_TIME_THRESHOLD = 50000;
+            private static final long DELTA_TIME_THRESHOLD = 1;//50000;
             
             public CoreInfo( final long cpuId, final long coreId, final PESOSmodel model ) throws IOException
             {
                 _cpuId = cpuId;
                 _coreId = coreId;
-                _initTimeBudget = model.getTimeBudget().getTimeMicroseconds() / 1000;
-                _timeBudget = model.getTimeBudget().getTimeMicroseconds() / 1000;
+                _initTimeBudget = model.getTimeBudget().getTimeMicros() / 1000;
+                _timeBudget = model.getTimeBudget().getTimeMicros() / 1000;
                 
                 queue = new ArrayList<>( 64 );
                 _model = model;
@@ -524,7 +527,7 @@ public class EnergyTestDIST2
             }
             
             public void setStartTime( final Time time ) {
-                _startTime = time.getTimeMicroseconds();
+                _startTime = time.getTimeMicros();
             }
             
             private Long getVersionId() {
@@ -708,7 +711,7 @@ public class EnergyTestDIST2
                 //System.out.println( "RECEIVED QUERY: " + p.getContent( Global.QUERY_ID ) );
                 query.setEvent( e );
                 query.setArrivalTime( e.getArrivalTime() );
-                long coreID = cpu.selectCore( e.getArrivalTime() );
+                long coreID = cpu.selectCore( e.getArrivalTime(), query );
                 cpu.addQuery( coreID, query );
                 
                 if (PESOS_CONTROLLER) {
@@ -797,7 +800,7 @@ public class EnergyTestDIST2
             String[] values = line.split( "\\t+" );
             long queryID    = Long.parseLong( values[0] );
             int terms       = Integer.parseInt( values[1] );
-            int postings    = Integer.parseInt( values[2] );
+            int postings    = Integer.parseInt( values[2] )/NODES;
             for (int i = 0; i < NODES; i++) {
                 int difference = (int) (postings / 100d * ranges.get( i ));
                 if (i % 2 == 0) {
@@ -853,8 +856,8 @@ public class EnergyTestDIST2
             }
             
             for (int i = 1; i < values.length; i+=2) {
-                double qTime  = Double.parseDouble( values[i] );
-                double energy = Double.parseDouble( values[i+1] );
+                double qTime  = Double.parseDouble( values[i] )/NODES;
+                double energy = Double.parseDouble( values[i+1] )/NODES;
                 for (int j = 0; j < NODES; j++) {
                     int difference = (int) (energy / 100d * ranges.get( j ));
                     if (j % 2 == 0) {
@@ -894,50 +897,22 @@ public class EnergyTestDIST2
         //createDistributedIndex();
         
         Utils.VERBOSE = false;
-        PESOS_CONTROLLER = true;
+        PESOS_CONTROLLER = false;
         
-        testNetwork( Mode.PESOS_TIME_CONSERVATIVE,  500 );
-        //testAnimationNetwork( Mode.PESOS_TIME_CONSERVATIVE, 1000 );
-        //testAnimationNetwork( Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
-        //testAnimationNetwork( Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
+        testNetwork( Mode.PESOS_TIME_CONSERVATIVE, 500 );
+        //testNetwork( Mode.PESOS_TIME_CONSERVATIVE, 1000 );
+        //testNetwork( Mode.PESOS_ENERGY_CONSERVATIVE, 500 );
+        //testNetwork( Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
         
         // PESOS Controller On
-        //CPU: 0, Energy: 555444.5424526711
-        //CPU: 1, Energy: 585278.6072130858
-        //CPU: 2, Energy: 520183.7749884479
-        //CPU: 3, Energy: 568740.5932662431
-        //CPU: 4, Energy: 541153.8486683817
-        
-        //CPU: 0, Energy: 555445.7511149022
-        //CPU: 1, Energy: 585286.0225204452
-        //CPU: 2, Energy: 520185.1532132929
-        //CPU: 3, Energy: 568741.7000418168
-        //CPU: 4, Energy: 541155.3514661172
-        
-        //CPU: 0, Energy: 506491.95314079575
-        //CPU: 1, Energy: 565739.617606662
-        //CPU: 2, Energy: 463395.90331883176
-        //CPU: 3, Energy: 512846.60986002325
-        //CPU: 4, Energy: 441536.80974286504
+        //CPU: 0, Energy: 158519.17846246733
+        //CPU: 1, Energy: 157247.85585520240
+        //CPU: 2, Energy: 159356.16066943863
+        //CPU: 3, Energy: 158181.95876967002
+        //CPU: 4, Energy: 160301.99143600624
         
         // PESOS Controller Off
-        //CPU: 0, Energy: 555912.9932714059
-        //CPU: 1, Energy: 585812.2313076374
-        //CPU: 2, Energy: 521066.4301939342
-        //CPU: 3, Energy: 569435.7938913363
-        //CPU: 4, Energy: 541652.1565429326
         
-        //CPU: 0, Energy: 555914.3697020420
-        //CPU: 1, Energy: 585820.1740164766
-        //CPU: 2, Energy: 521067.8054582341
-        //CPU: 3, Energy: 569437.6807486733
-        //CPU: 4, Energy: 541653.5317161166
-        
-        //CPU: 0, Energy: 506877.5768815482
-        //CPU: 1, Energy: 566193.0952826159
-        //CPU: 2, Energy: 463764.2394836715
-        //CPU: 3, Energy: 513363.84908512677
-        //CPU: 4, Energy: 442097.381008478
     }
     
     public static void testNetwork( final Mode mode, final long timeBudget ) throws Exception

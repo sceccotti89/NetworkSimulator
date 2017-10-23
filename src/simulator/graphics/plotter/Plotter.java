@@ -765,7 +765,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             description.setBounds( (int) startX, (int) centerY - pointRadius/2 - dHeight, dWidth, dHeight );
         }
 
-        private boolean drawPlot( final Graphics2D g, final Range range, final Plot plot )
+        private boolean drawPlot( final Graphics2D g, final Range range, final Plot plot, final boolean selected )
         {
             g.setColor( (theme == Theme.BLACK) ? Color.WHITE : Color.BLACK );
             
@@ -779,10 +779,12 @@ public class Plotter extends WindowAdapter implements ActionListener
                 double x = plotLocation.getX() + ((point.getFirst() - range.minX) * (xLength / range.getXRange()));
                 double y = plotLocation.getY() - ((point.getSecond() - range.minY) * (yLength / range.getYRange()));
                 p.setLocation( x, y );
-                Ellipse2D circle = new Ellipse2D.Double( x - pointRadius/2, y - pointRadius/2, pointRadius, pointRadius );
-                if (circle.contains( mouse.x, mouse.y )) {
-                    drawCircle = false;
-                    pointInfo = 0;
+                if (!selected) {
+                    Ellipse2D circle = new Ellipse2D.Double( x - pointRadius/2, y - pointRadius/2, pointRadius, pointRadius );
+                    if (circle.contains( mouse.x, mouse.y )) {
+                        drawCircle = false;
+                        pointInfo = 0;
+                    }
                 }
             }
             
@@ -815,7 +817,7 @@ public class Plotter extends WindowAdapter implements ActionListener
                 
                 g.drawLine( (int) p.getX(), (int) p.getY(), (int) x, (int) y );
                 
-                if (range.checkRange( point.getFirst(), point.getSecond() )) {
+                if (!selected && range.checkRange( point.getFirst(), point.getSecond() )) {
                     if (drawCircle) {
                         Ellipse2D circle = new Ellipse2D.Double( x - pointRadius/2, y - pointRadius/2, pointRadius, pointRadius );
                         if (circle.contains( mouse.x, mouse.y )) {
@@ -1128,7 +1130,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             boolean selectedPoint = false;
             for (Plot plot : _plots) {
                 if (plot.box.isSelected()) {
-                    selectedPoint |= drawPlot( g2d, range, plot );
+                    selectedPoint |= drawPlot( g2d, range, plot, selectedPoint );
                 }
             }
             

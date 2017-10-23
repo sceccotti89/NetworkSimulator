@@ -23,6 +23,7 @@ import simulator.graphics.AnimationNetwork;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
 import simulator.test.energy.CPUEnergyModel.CONSmodel;
+import simulator.test.energy.CPUEnergyModel.MY_model;
 import simulator.test.energy.CPUEnergyModel.Mode;
 import simulator.test.energy.CPUEnergyModel.PERFmodel;
 import simulator.test.energy.CPUEnergyModel.PESOSmodel;
@@ -256,7 +257,7 @@ public class EnergyTestMONO
                 //System.out.println( "RECEIVED QUERY: " + p.getContent( Global.QUERY_ID ) );
                 query.setEvent( e );
                 query.setArrivalTime( e.getArrivalTime() );
-                cpu.addQuery( cpu.selectCore( e.getArrivalTime() ), query );
+                cpu.addQuery( cpu.selectCore( e.getArrivalTime(), query ), query );
             }
         }
         
@@ -307,20 +308,23 @@ public class EnergyTestMONO
         
         CPUEnergyModel model = null;
         
-        model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
-        //model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );
-        //model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
-        //model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
+        //model = loadModel( Mode.PESOS_TIME_CONSERVATIVE,  500 );
+        //model = loadModel( Mode.PESOS_TIME_CONSERVATIVE, 1000 );
+        //model = loadModel( Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
+        //model = loadModel( Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
         
         //model = loadModel( Type.PERF );
         //model = loadModel( Type.CONS );
+        
+        model = new MY_model( 500, Mode.PESOS_TIME_CONSERVATIVE, "Models/Monolithic/PESOS/MaxScore/" );
+        model.loadModel();
         
         testMultiCore( model );
         //testSingleCore( model );
         //testAnimationNetwork( model );
     }
     
-    protected static CPUEnergyModel loadModel( final Type type, final Mode mode, final long timeBudget ) throws Exception
+    protected static CPUEnergyModel loadModel( final Mode mode, final long timeBudget ) throws Exception
     {
         // PESOS loading model.
         CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" );
@@ -332,9 +336,9 @@ public class EnergyTestMONO
     {
         CPUEnergyModel model = null;
         switch ( type ) {
-            case PERF:  model = new PERFmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
-            case CONS:  model = new CONSmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
-            default:    break;
+            case PERF: model = new PERFmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
+            case CONS: model = new CONSmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
+            default:   break;
         }
         model.loadModel();
         return model;
@@ -508,6 +512,10 @@ public class EnergyTestMONO
         // 
         // SIMULATOR:  911862.87644774050   557117.85926009370    639790.48538287170     510740.82836311805 (12%)
         // IDLE:       207028.73735399803    70245.49618359195     79377.59104444605      74404.69254638738
+        
+        //600729.1560297232J
+        //587592.5552513064J
+        // 13137 (2%) Joule in meno!!
     }
     
     public static void testSingleCore( final CPUEnergyModel model ) throws Exception

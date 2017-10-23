@@ -299,7 +299,7 @@ public class EnergyTestDIST
                 System.out.println( "TIME: " + e.getTime() + ", AGGIUNTA QUERY AL NODO: " + getId() + ", QUERY: " + query );
                 query.setEvent( e );
                 query.setArrivalTime( e.getTime() );
-                cpu.addQuery( cpu.selectCore( e.getTime() ), query );
+                cpu.addQuery( cpu.selectCore( e.getTime(), query ), query );
             }
         }
         

@@ -103,6 +103,9 @@ public class ResultPlotting
         //List<Pair<Double,Double>> consPercentiles = getPercentiles( "Results/CONS_Tail_Latency.log",
         //                                                            "Results/CONS_Latency_95th_Percentile.txt" );
         
+        List<Pair<Double,Double>> myPercentiles = getPercentiles( "Results/MY Model_Tail_Latency.log",
+                                                                  "Results/MY Model_Tail_Latency_95th_Percentile.txt" );
+        
         Plotter plotter = new Plotter( "Tail Latency 95-th Percentile", 800, 600 );
         plotter.setAxisName( "Time (h)", "95th-tile response time (ms)" );
         double yRange = time_budget * 1000d + 200000d;
@@ -117,6 +120,7 @@ public class ResultPlotting
         plotter.addPlot( pesosPercentiles, Color.GREEN, Line.UNIFORM, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
         //plotter.addPlot( perfPercentiles, Color.RED, Line.UNIFORM, "Perf" );
         //plotter.addPlot( consPercentiles, Color.GREEN, Line.UNIFORM, "CONS" );
+        plotter.addPlot( myPercentiles, Color.RED, Line.UNIFORM, "MY Model" );
         plotter.addPlot( points, Color.YELLOW, Line.DASHED, "Tail latency (" + time_budget + "ms)" );
         plotter.setVisible( true );
     }
@@ -159,7 +163,7 @@ public class ResultPlotting
         final Mode mode        = Mode.PESOS_TIME_CONSERVATIVE;
         
         //plotEnergy( time_budget, mode.toString() );
-        //plotTailLatency( time_budget, mode.toString() );
-        plotDistributedTailLatency( time_budget, mode.toString() );
+        plotTailLatency( time_budget, mode.toString() );
+        //plotDistributedTailLatency( time_budget, mode.toString() );
     }
 }

@@ -78,6 +78,7 @@ public class PlotsPanel implements MouseListener, FocusListener
     {
         int offset = x - this.x;
         this.x = x;
+        target.translate( offset, 0 );
         targetOpen.translate( offset, 0 );
         targetClose.translate( offset, 0 );
     }

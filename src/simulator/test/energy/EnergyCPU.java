@@ -7,6 +7,7 @@ package simulator.test.energy;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -87,7 +88,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             } else {
                 String file;
                 if (cpuModel.getType() == Type.PESOS) {
-                    long timeBudget = cpuModel.getTimeBudget().getTimeMicroseconds()/1000;
+                    long timeBudget = cpuModel.getTimeBudget().getTimeMicros()/1000;
                     file = "PESOS_" + timeBudget + "_" + cpuModel.getMode();
                 } else {
                     file = "CONS_" + cpuModel.getMode();
@@ -104,11 +105,11 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             switch (cpuModel.getType()) {
                 case PESOS:
                     PESOScore core = new PESOScore( this, i, getMaxFrequency() );
-                    core.setBaseTimeBudget( getTime(), cpuModel.getTimeBudget().getTimeMicroseconds() );
+                    core.setBaseTimeBudget( getTime(), cpuModel.getTimeBudget().getTimeMicros() );
                     coresMap.put( i, core );
                     break;
-                case PERF:  coresMap.put( i, new PERFcore( this, i, getMaxFrequency() ) ); break;
-                case CONS:  coresMap.put( i, new CONScore( this, i, getMaxFrequency() ) ); break;
+                case PERF: coresMap.put( i, new PERFcore( this, i, getMaxFrequency() ) ); break;
+                case CONS: coresMap.put( i, new CONScore( this, i, getMaxFrequency() ) ); break;
             }
         }
         
@@ -124,7 +125,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     {
         Core core = coresMap.get( coreId );
         //System.out.println( "SELEZIONATO CORE: " + coreId + ", TIME: " + core.getTime() );
-        core.addQuery( q );
+        core.addQuery( q, true );
     }
     
     @Override
@@ -152,10 +153,10 @@ public class EnergyCPU extends Device<Long,QueryInfo>
     /**
      * Returns the "best" available core to assign the next task.
     */
-    public long selectCore( final Time time )
+    public long selectCore( final Time time, final QueryInfo query )
     {
         //System.out.println( "SELECTING CORE AT: " + time );
-        long id = -1;
+        /*long id = -1;
         double utilization = Integer.MAX_VALUE;
         int tiedSelection  = Integer.MAX_VALUE;
         boolean tieSituation = false;
@@ -180,7 +181,12 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             getCore( id ).tieSelected++;
         }
         
-        return lastSelectedCore = id;
+        return lastSelectedCore = id;*/
+        return ((CPUEnergyModel) _model).selectCore( time, this, query );
+    }
+    
+    public Collection<Core> getCores() {
+        return coresMap.values();
     }
     
     public double getCPUcores() {
@@ -288,9 +294,9 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         double energy = query.getEnergy( frequency );
         CPUEnergyModel model = (CPUEnergyModel) getModel();
         if (model.getType() == Type.CONS) {
-            long time = query.getTime( frequency ).getTimeMicroseconds();
+            long time = query.getTime( frequency ).getTimeMicros();
             double energyUnit = energy/time;
-            energy = energyUnit * computeTime.getTimeMicroseconds();
+            energy = energyUnit * computeTime.getTimeMicros();
         }
         
         energy = energyModel.computeEnergy( energy, frequency, computeTime, false );
@@ -381,7 +387,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         protected long idleTimeInterval = 0;
         private int queriesExecuted = 0;
         // Number of times this core has been selected in a tied situation.
-        private int tieSelected = 0;
+        protected int tieSelected = 0;
         
         // TODO implementare i context di ogni core della CPU (se proprio c'e' bisogno).
         
@@ -409,7 +415,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             Time endTime     = currentQuery.getEndTime();
             Time tailLatency = endTime.clone().subTime( currentQuery.getArrivalTime() );
             cpu.addSampledValue( Global.TAIL_LATENCY_SAMPLING, endTime,
-                                 endTime, tailLatency.getTimeMicroseconds() );
+                                 endTime, tailLatency.getTimeMicros() );
             
             cpu.addSampledValue( Global.ENERGY_SAMPLING, startTime,
                                  endTime, currentQuery.getEnergyConsumption() );
@@ -439,6 +445,10 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             
             cpu.addSampledValue( Global.ENERGY_SAMPLING, startTime, time, idleEnergy );
             cpu.addSampledValue( Global.IDLE_ENERGY_SAMPLING, startTime, time, idleEnergy );
+        }
+        
+        protected void setFrequency( final long frequency ) {
+            this.frequency = frequency;
         }
         
         protected void setFrequency( final Time time, final long newFrequency )
@@ -489,7 +499,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         {
             if (this.time.compareTo( time ) <= 0) {
                 // This is idle time.
-                long elapsedTime = time.getTimeMicroseconds() - this.time.getTimeMicroseconds();
+                long elapsedTime = time.getTimeMicros() - this.time.getTimeMicros();
                 idleTime += elapsedTime;
                 this.time.setTime( time );
             }
@@ -528,7 +538,13 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             idleTime = 0;
         }
         
-        public abstract void addQuery( final QueryInfo q );
+        /**
+         * Adds a query into the core.
+         * 
+         * @param query              the query to add.
+         * @param updateFrequency    check if the frequency have to be added.
+        */
+        public abstract void addQuery( final QueryInfo query, final boolean updateFrequency );
         
         public boolean isNextQuery( final QueryInfo query ) {
             return queryQueue.get( 0 ).equals( query );
@@ -542,8 +558,12 @@ public class EnergyCPU extends Device<Long,QueryInfo>
             return queryQueue.get( queryQueue.size() - 1 );
         }
         
-        private QueryInfo removeQuery( final int index ) {
+        public QueryInfo removeQuery( final int index ) {
             return queryQueue.remove( index );
+        }
+        
+        public void removeQuery( final QueryInfo q ) {
+            queryQueue.remove( q );
         }
         
         public long getIdleTime() {
@@ -571,12 +591,16 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         }
         
         @Override
-        public void addQuery( final QueryInfo q )
+        public void addQuery( final QueryInfo q, final boolean updateFrequency )
         {
             q.setCoreId( coreId );
             queryQueue.add( q );
             long frequency = cpu.evalFrequency( q.getArrivalTime(), this );
-            setFrequency( q.getArrivalTime(), frequency );
+            if (updateFrequency) {
+                setFrequency( q.getArrivalTime(), frequency );
+            } else {
+                this.frequency = frequency;
+            }
         }
         
         @Override
@@ -660,7 +684,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         }
         
         @Override
-        public void addQuery( final QueryInfo q )
+        public void addQuery( final QueryInfo q, final boolean updateFrequency )
         {
             q.setCoreId( coreId );
             queryQueue.add( q );
@@ -706,7 +730,7 @@ public class EnergyCPU extends Device<Long,QueryInfo>
         }
         
         @Override
-        public void addQuery( final QueryInfo q )
+        public void addQuery( final QueryInfo q, final boolean updateFrequency )
         {
             q.setCoreId( coreId );
             queryQueue.add( q );

@@ -303,8 +303,8 @@ public abstract class Device<I,O>
      * @param value          value to add
     */
     protected void addSampledValue( final String sampler, final Time startTime, final Time endTime, final double value ) {
-        addSampledValue( sampler, startTime.getTimeMicroseconds(),
-                         endTime.getTimeMicroseconds(), value );
+        addSampledValue( sampler, startTime.getTimeMicros(),
+                         endTime.getTimeMicros(), value );
     }
     
     /**
@@ -555,10 +555,10 @@ public abstract class Device<I,O>
         {
             values = new ArrayList<>( initialCapacity );
             elements = new ArrayList<>( initialCapacity );
-            if (interval != null && interval.getTimeMicroseconds() > 0) {
+            if (interval != null && interval.getTimeMicros() > 0) {
                 values.add( new Pair<>( 0d, 0d ) );
                 elements.add( 0L );
-                this.interval = interval.getTimeMicroseconds();
+                this.interval = interval.getTimeMicros();
             }
             if (logFile != null) {
                 Utils.checkFile( this.logFile = logFile );

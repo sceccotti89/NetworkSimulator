@@ -72,7 +72,7 @@ public class Time implements Comparable<Time>
         this.unit = unit;
     }
     
-    public Long getTimeMicroseconds() {
+    public Long getTimeMicros() {
         return time;
     }
     
@@ -86,7 +86,7 @@ public class Time implements Comparable<Time>
     }
     
     public Time setTime( final Time time ) {
-        this.time = time.getTimeMicroseconds();
+        this.time = time.getTimeMicros();
         return this;
     }
     
@@ -96,13 +96,13 @@ public class Time implements Comparable<Time>
     }
     
     public Time addTime( final Time i ) {
-        addTime( i.getTimeMicroseconds(), TimeUnit.MICROSECONDS );
+        addTime( i.getTimeMicros(), TimeUnit.MICROSECONDS );
         return this;
     }
     
     @Override
     public int compareTo( final Time o ) {
-        return getTimeMicroseconds().compareTo( o.getTimeMicroseconds() ); 
+        return getTimeMicros().compareTo( o.getTimeMicros() ); 
     }
     
     /**
@@ -129,7 +129,7 @@ public class Time implements Comparable<Time>
      * @return
     */
     public Time subTime( final Time i ) {
-        return subTime( i.getTimeMicroseconds(), TimeUnit.MICROSECONDS );
+        return subTime( i.getTimeMicros(), TimeUnit.MICROSECONDS );
     }
     
     /**

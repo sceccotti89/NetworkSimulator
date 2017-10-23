@@ -54,7 +54,7 @@ public class NetworkLink
         _destId = destId;
         
         _bandwith = new Size<Double>( bandwith, SizeUnit.MEGABIT );
-        _delay = new Time( delay, TimeUnit.MILLISECONDS ).getTimeMicroseconds();
+        _delay = new Time( delay, TimeUnit.MILLISECONDS ).getTimeMicros();
         
         _linkType = linkType;
     }
