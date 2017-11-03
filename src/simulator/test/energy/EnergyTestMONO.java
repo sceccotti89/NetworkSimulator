@@ -23,7 +23,6 @@ import simulator.graphics.AnimationNetwork;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
 import simulator.test.energy.CPUEnergyModel.CONSmodel;
-import simulator.test.energy.CPUEnergyModel.MY_model;
 import simulator.test.energy.CPUEnergyModel.Mode;
 import simulator.test.energy.CPUEnergyModel.PERFmodel;
 import simulator.test.energy.CPUEnergyModel.PESOSmodel;
@@ -39,6 +38,8 @@ public class EnergyTestMONO
     private static final int CPU_CORES = 4;
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
     
+    private static boolean CENTRALIZED_PESOS_QUEUE;
+    
     
     
     private static class ClientGenerator extends EventGenerator
@@ -47,8 +48,10 @@ public class EnergyTestMONO
         //private static final String QUERY_TRACE = "Models/test_arrivals.txt";
         private static final int NUM_QUERIES = 10000;
         // Random generator seed.
-        private static final int SEED = 50000;
-        private static final Random RANDOM = new Random( SEED );
+        //private static final int SEED = 1;
+        public static int SEED = 50000;
+        //private static final Random RANDOM = new Random( SEED );
+        private Random RANDOM;
         
         private BufferedReader queryReader;
         private boolean closed = false;
@@ -67,6 +70,8 @@ public class EnergyTestMONO
             queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
             model = new ClientModel( "Models/Monolithic/PESOS/MaxScore/time_energy.txt" );
             model.loadModel();
+            
+            RANDOM = new Random( SEED );
         }
         
         @Override
@@ -247,7 +252,12 @@ public class EnergyTestMONO
         public void addEventOnQueue( final Event e )
         {
             Packet p = e.getPacket();
-            EnergyCPU cpu = getDevice( new EnergyCPU() );
+            CPU cpu;
+            if (CENTRALIZED_PESOS_QUEUE) {
+                cpu = getDevice( new PESOScpu() );
+            } else {
+                cpu = getDevice( new EnergyCPU() );
+            }
             
             if (p.hasContent( Global.CONS_CONTROL )) {
                 cpu.evalCONSparameters( e.getTime() );
@@ -264,7 +274,13 @@ public class EnergyTestMONO
         @Override
         public Time handle( final Event e, final EventType type )
         {
-            EnergyCPU cpu = getDevice( new EnergyCPU() );
+            CPU cpu;
+            if (CENTRALIZED_PESOS_QUEUE) {
+                cpu = getDevice( new PESOScpu() );
+            } else {
+                cpu = getDevice( new EnergyCPU() );
+            }
+            
             Packet p = e.getPacket();
             if (p.hasContent( Global.CONS_CONTROL )) {
                 return Time.ZERO;
@@ -282,7 +298,7 @@ public class EnergyTestMONO
                         }
                     }
                 } else {
-                    // Compute the time to complete the query.
+                    // Compute the time to complete the last received query.
                     return cpu.timeToCompute( null );
                 }
             }
@@ -291,8 +307,15 @@ public class EnergyTestMONO
         }
         
         @Override
-        public double getNodeUtilization( final Time time ) {
-            return getDevice( new EnergyCPU() ).getUtilization( time );
+        public double getNodeUtilization( final Time time )
+        {
+            CPU cpu;
+            if (CENTRALIZED_PESOS_QUEUE) {
+                cpu = getDevice( new PESOScpu() );
+            } else {
+                cpu = getDevice( new EnergyCPU() );
+            }
+            return cpu.getUtilization( time );
         }
     }
     
@@ -302,13 +325,15 @@ public class EnergyTestMONO
     
     
     
+    //public static int executed;
     public static void main( final String[] args ) throws Exception
     {
         Utils.VERBOSE = false;
+        CENTRALIZED_PESOS_QUEUE = true;
         
         CPUEnergyModel model = null;
         
-        //model = loadModel( Mode.PESOS_TIME_CONSERVATIVE,  500 );
+        model = loadModel( Mode.PESOS_TIME_CONSERVATIVE,  500 );
         //model = loadModel( Mode.PESOS_TIME_CONSERVATIVE, 1000 );
         //model = loadModel( Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
         //model = loadModel( Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
@@ -316,12 +341,18 @@ public class EnergyTestMONO
         //model = loadModel( Type.PERF );
         //model = loadModel( Type.CONS );
         
-        model = new MY_model( 500, Mode.PESOS_TIME_CONSERVATIVE, "Models/Monolithic/PESOS/MaxScore/" );
+        //model = new MY_model( 500, Mode.PESOS_TIME_CONSERVATIVE, "Models/Monolithic/PESOS/MaxScore/" );
         model.loadModel();
         
-        testMultiCore( model );
-        //testSingleCore( model );
-        //testAnimationNetwork( model );
+        //while (true) {
+            testMultiCore( model );
+            //testSingleCore( model );
+            //testAnimationNetwork( model );
+            //if (executed != 5) break;
+            //ClientGenerator.SEED++;
+        //}
+        
+        //System.out.println( "EXEC: " + executed + ", SEED: " + ClientGenerator.SEED );
     }
     
     protected static CPUEnergyModel loadModel( final Mode mode, final long timeBudget ) throws Exception
@@ -427,7 +458,12 @@ public class EnergyTestMONO
         
         final Time duration = new Time( 24, TimeUnit.HOURS );
         
-        EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
+        CPU cpu;
+        if (!CENTRALIZED_PESOS_QUEUE) {
+            cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
+        } else {
+            cpu = new PESOScpu( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
+        }
         cpu.setModel( model );
         
         String modelType = model.getModelType( true );
@@ -516,6 +552,9 @@ public class EnergyTestMONO
         //600729.1560297232J
         //587592.5552513064J
         // 13137 (2%) Joule in meno!!
+        
+        //SINGOLA CODA
+        //592223.9542908694
     }
     
     public static void testSingleCore( final CPUEnergyModel model ) throws Exception

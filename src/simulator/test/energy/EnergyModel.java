@@ -1,8 +1,6 @@
 
 package simulator.test.energy;
 
-import java.util.Arrays;
-
 import simulator.utils.Time;
 import simulator.utils.Utils;
 
@@ -125,7 +123,7 @@ public abstract class EnergyModel
         
         @Override
         public double computeEnergy( final double energy, final long frequency, final Time interval, final boolean idle ) {
-            return computeEnergy( 0d, frequency, interval.getTimeMicros(), idle ) ;
+            return computeEnergy( 0d, frequency, interval.getTimeMicros(), idle );
         }
         
         @Override
@@ -159,7 +157,7 @@ public abstract class EnergyModel
         
         @Override
         public double computeEnergy( final double energy, final long frequency, final Time interval, final boolean idle ) {
-            return computeEnergy( energy, frequency, interval.getTimeMicros(), idle ) ;
+            return computeEnergy( energy, frequency, interval.getTimeMicros(), idle );
         }
         
         @Override
@@ -181,7 +179,7 @@ public abstract class EnergyModel
         }
     }
     
-    public static class MatteoEnergyModel extends EnergyModel
+    /*public static class MatteoEnergyModel extends EnergyModel
     {
         private static double[] a = { 0.00095,0.00126,0.00216,0.00261,0.00328,0.00413,0.00530,0.00584,0.00662,0.00830,0.00940,0.01055,0.01186,0.01363,0.01607 };
         private static long[] b   = {  800000,1000000,1200000,1400000,1600000,1800000,2000000,2100000,2300000,2500000,2700000,2900000,3100000,3300000,3500000 };
@@ -207,5 +205,5 @@ public abstract class EnergyModel
         public double getIdleEnergy( final long frequency, final long interval ) {
             return ENERGY_IDLE * (interval / Utils.MILLION);
         }
-    }
+    }*/
 }

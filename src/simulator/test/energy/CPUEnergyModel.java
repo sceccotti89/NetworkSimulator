@@ -14,9 +14,9 @@ import java.util.concurrent.TimeUnit;
 
 import simulator.core.Model;
 import simulator.events.Event;
+import simulator.test.energy.CPU.Core;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.test.energy.EnergyCPU.CONScore;
-import simulator.test.energy.EnergyCPU.Core;
 import simulator.utils.Pair;
 import simulator.utils.Time;
 import simulator.utils.Utils;
@@ -310,23 +310,23 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             int ppcRMSE = regressors.get( "class." + query.getTerms() + ".rmse" ).intValue();
             long pcost = query.getPostings() + ppcRMSE;
             Time budget = timeBudget.clone();
-            Time startTime = query.getStartTime();
-            if (startTime.getTimeMicros() > 0) {
-                budget.subTime( startTime.clone().subTime( query.getArrivalTime() ) );
-            } else {
-                budget.subTime( now.clone().subTime( query.getArrivalTime() ) );
-            }
+            budget.subTime( now.clone().subTime( query.getArrivalTime() ) );
             long target = getTargetFrequency( query.getTerms(), pcost, budget.getTimeMicros() );
             
             int maxCount = 1;
             for (Long frequency : _device.getFrequencies()) {
                 if (frequency >= target) {
-                    // Evaluate the completion time at the current frequency of the first query.
+                    // Evaluate the residual completion time at the current frequency of the first query.
                     ppcRMSE = regressors.get( "class." + query.getTerms() + ".rmse" ).intValue();
                     pcost = query.getPostings() + ppcRMSE;
                     Time service = predictServiceTime( query.getTerms(), pcost, frequency );
-                    //service.subTime( now.clone().subTime( startTime ) );
-                    Time endTime = startTime.clone().addTime( service );
+                    Time startTime = query.getStartTime();
+                    if (startTime.getTimeMicros() == 0) {
+                        startTime.setTime( now );
+                    }
+                    // TODO in teoria dovrei calcolare l'attuale percentuale e utilizzarla per ottenere il nuovo tempo.
+                    service.subTime( now.clone().subTime( startTime ) );
+                    Time endTime = now.clone().addTime( service );
                     
                     int count = 1;
                     for (int i = 1; i < queries.length; i++) {
@@ -355,7 +355,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             }
             
             if (maxCount < queries.length) {
-                // Can't meet the time budget for all the queries: returns the maximum frequency.
+                // Can't meet the time budget for all the queries: return the maximum frequency.
                 return _device.getMaxFrequency();
             }
             
@@ -418,7 +418,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             //       based on the frequency evaluation.
             long id = -1;
             long minFrequency = Long.MAX_VALUE;
-            int tiedSelection = Integer.MAX_VALUE;
+            long tiedSelection = Long.MAX_VALUE;
             boolean tieSituation = false;
             for (Core core : cpu.getCores()) {
                 long frequency = core.getFrequency();
@@ -641,7 +641,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             //       based on the frequency evaluation.
             long id = -1;
             long minFrequency = Long.MAX_VALUE;
-            int tiedSelection = Integer.MAX_VALUE;
+            long tiedSelection = Long.MAX_VALUE;
             boolean tieSituation = false;
             for (Core core : cpu.getCores()) {
                 long frequency = core.getFrequency();
@@ -738,7 +738,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             //System.out.println( "SELECTING CORE AT: " + time );
             long id = -1;
             double utilization = Integer.MAX_VALUE;
-            int tiedSelection  = Integer.MAX_VALUE;
+            long tiedSelection = Long.MAX_VALUE;
             boolean tieSituation = false;
             for (Core core : cpu.getCores()) {
                 double coreUtilization = core.getUtilization( time );
@@ -893,7 +893,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             //System.out.println( "SELECTING CORE AT: " + time );
             long id = -1;
             double utilization = Integer.MAX_VALUE;
-            int tiedSelection  = Integer.MAX_VALUE;
+            long tiedSelection = Long.MAX_VALUE;
             boolean tieSituation = false;
             for (Core core : cpu.getCores()) {
                 double coreUtilization = core.getUtilization( time );
@@ -1034,13 +1034,9 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         
         public void setTimeToComplete( final Time startTime, final Time endTime )
         {
-            this.startTime    = startTime;
-            this.currentTime  = startTime;
-            this.endTime      = endTime;
-            
-            if (startTime.getTimeMicros() == 16843812897L) {
-                System.out.println( "QUERY: " + this );
-            }
+            this.startTime   = startTime;
+            this.currentTime = startTime;
+            this.endTime     = endTime;
         }
         
         public void setEnergyConsumption( final double energy ) {

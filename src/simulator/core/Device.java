@@ -149,7 +149,7 @@ public abstract class Device<I,O>
     }
     
     /**
-     * Adds a new sampler to collect some informations about this device with a default
+     * Adds a new sampler to collect some informations with a default
      * initial capacity (2^12 elements).</br>
      * By default the sampling interval is 60 seconds.</br>
      * If the given interval is {@code null} or its time is <= 0 the sampling mode is ignored.
@@ -168,7 +168,7 @@ public abstract class Device<I,O>
     }
     
     /**
-     * Adds a new sampler to collect some informations about this device with a specified
+     * Adds a new sampler to collect some informations with a specified
      * initial capacity.</br>
      * By default the sampling interval is 60 seconds.</br>
      * If the given interval is {@code null} or its time is <= 0 the sampling mode is ignored.
@@ -502,8 +502,8 @@ public abstract class Device<I,O>
     public abstract String getID();
     
     /**
-     * Shutdown the device closing all the opened resources
-     * and writing on file any pending requests.
+     * Shutdowns the device, closing all the opened resources
+     * and writing on file any registered sampling.
     */
     public void shutdown() throws IOException
     {

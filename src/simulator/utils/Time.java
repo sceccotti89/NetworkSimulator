@@ -62,7 +62,7 @@ public class Time implements Comparable<Time>
     */
     //public static final Time DYNAMIC = new ImmutableTime( -1, TimeUnit.MICROSECONDS );
     
-    /** Current time.*/
+    /** Current time. */
     private long time;
     
     
@@ -74,6 +74,26 @@ public class Time implements Comparable<Time>
     
     public Long getTimeMicros() {
         return time;
+    }
+    
+    public Long getTimeMillis() {
+        return time / 1000L;
+    }
+    
+    public Long getTimeSeconds() {
+        return time / 1000000L;
+    }
+    
+    public Long getTimeMinutes() {
+        return time / 60000000L;
+    }
+    
+    public Long getTimeHours() {
+        return time / 3600000000L;
+    }
+    
+    public Long getTimeDays() {
+        return time / 86400000000L;
     }
     
     public TimeUnit getTimeUnit() {

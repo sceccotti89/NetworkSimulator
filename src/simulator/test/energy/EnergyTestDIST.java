@@ -362,9 +362,9 @@ public class EnergyTestDIST
     
     private static void execute( final Mode mode, final long timeBudget ) throws Exception
     {
-        //testMultiCore( timeBudget, mode );
+        testMultiCore( timeBudget, mode );
         //testSingleCore( timeBudget, mode );
-        testAnimationNetwork( timeBudget, mode );
+        //testAnimationNetwork( timeBudget, mode );
     }
     
     public static void testAnimationNetwork( final long timeBudget, final Mode mode ) throws Exception

@@ -1,14 +1,12 @@
+/**
+ * @author Stefano Ceccotti
+*/
 
 package simulator.core;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import simulator.events.Packet;
-
-public class Task
+public abstract class Task
 {
-    private Map<String,Object> _contents;
+    /*private Map<String,Object> _contents;
     
     public Task() {
         this( null );
@@ -30,5 +28,5 @@ public class Task
     @SuppressWarnings("unchecked")
     public <T> T getContent( final String field ) {
         return (T) _contents.get( field );
-    }
+    }*/
 }
