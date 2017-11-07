@@ -449,7 +449,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         
         @Override
         public String getModelType( final boolean delimeters ) {
-            return "My Model";
+            return "My_Model_" + timeBudget;
         }
     
         @Override
@@ -610,9 +610,9 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
         {
             //System.out.println( "SELECTING CORE AT: " + time );
-            /*long id = -1;
+            long id = -1;
             double utilization = Integer.MAX_VALUE;
-            int tiedSelection  = Integer.MAX_VALUE;
+            long tiedSelection  = Long.MAX_VALUE;
             boolean tieSituation = false;
             for (Core core : cpu.getCores()) {
                 double coreUtilization = core.getUtilization( time );
@@ -621,25 +621,28 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                     utilization = coreUtilization;
                     tiedSelection = core.tieSelected;
                     tieSituation = false;
-                } else if (coreUtilization == utilization) {
+                }/* else if (coreUtilization == utilization) {
                     if (core.tieSelected < tiedSelection) {
                         id = core.getId();
                         utilization = coreUtilization;
                         tiedSelection = core.tieSelected;
                     }
                     tieSituation = true;
-                }
+                }*/
             }
             
             if (tieSituation) {
                 cpu.getCore( id ).tieSelected++;
             }
             
-            return cpu.lastSelectedCore = id;*/
+            return cpu.lastSelectedCore = id;
             
+            // TODO Mettere questo dopo aver testato se il decremento di frequenza di PESOS
+            // TODO sia corretto.
             // NOTE: This is a new core selection technique,
             //       based on the frequency evaluation.
-            long id = -1;
+            
+            /*long id = -1;
             long minFrequency = Long.MAX_VALUE;
             long tiedSelection = Long.MAX_VALUE;
             boolean tieSituation = false;
@@ -667,7 +670,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                 cpu.getCore( id ).tieSelected++;
             }
             
-            return cpu.lastSelectedCore = id;
+            return cpu.lastSelectedCore = id;*/
         }
         
         @Override

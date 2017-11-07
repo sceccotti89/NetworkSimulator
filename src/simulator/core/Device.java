@@ -224,9 +224,9 @@ public abstract class Device<I,O>
     }
 
     /**
-     * Sets the current frequency expressed in KHz.
+     * Sets the new frequency, expressed in KHz.
      * 
-     * @param frequency    the clock frequency
+     * @param frequency    the clock frequency.
     */
     public void setFrequency( final long frequency ) {
         _frequency = frequency;

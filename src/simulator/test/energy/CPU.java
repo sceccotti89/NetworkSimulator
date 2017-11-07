@@ -267,7 +267,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
                             int val = 100 / 0;
                             System.out.println( "VAL: " + val );
                         } catch ( Exception e ){
-                            //e.printStackTrace();
+                            e.printStackTrace();
                             System.out.println( "TIME: " + time + ", " + frequency + " => " + newFrequency + ", QUEUE: " );
                             for (QueryInfo query : queryQueue) {
                                 System.out.println( query.getId() +

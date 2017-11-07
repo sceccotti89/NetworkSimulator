@@ -48,7 +48,7 @@ public class EnergyTestMONO
         //private static final String QUERY_TRACE = "Models/test_arrivals.txt";
         private static final int NUM_QUERIES = 10000;
         // Random generator seed.
-        //private static final int SEED = 1;
+        //private static final int SEED = 50000;
         public static int SEED = 50000;
         //private static final Random RANDOM = new Random( SEED );
         private Random RANDOM;
@@ -329,7 +329,7 @@ public class EnergyTestMONO
     public static void main( final String[] args ) throws Exception
     {
         Utils.VERBOSE = false;
-        CENTRALIZED_PESOS_QUEUE = true;
+        CENTRALIZED_PESOS_QUEUE = false;
         
         CPUEnergyModel model = null;
         
@@ -341,15 +341,16 @@ public class EnergyTestMONO
         //model = loadModel( Type.PERF );
         //model = loadModel( Type.CONS );
         
-        //model = new MY_model( 500, Mode.PESOS_TIME_CONSERVATIVE, "Models/Monolithic/PESOS/MaxScore/" );
+        //model = new MY_model( 1000, Mode.PESOS_TIME_CONSERVATIVE, "Models/Monolithic/PESOS/MaxScore/" );
         model.loadModel();
         
         //while (true) {
+            System.out.println( "SEED: " + ClientGenerator.SEED );
             testMultiCore( model );
             //testSingleCore( model );
             //testAnimationNetwork( model );
             //if (executed != 5) break;
-            //ClientGenerator.SEED++;
+            ClientGenerator.SEED++;
         //}
         
         //System.out.println( "EXEC: " + executed + ", SEED: " + ClientGenerator.SEED );
@@ -392,7 +393,7 @@ public class EnergyTestMONO
         Agent switchAgent = new SwitchAgent( 1, anyGen );
         net.addAgent( switchAgent );
         
-        String modelType = model.getModelType( true );
+        final String modelType = model.getModelType( true );
         
         client.getEventGenerator( 0 ).connect( switchAgent );
         
@@ -552,6 +553,7 @@ public class EnergyTestMONO
         //600729.1560297232J
         //587592.5552513064J
         // 13137 (2%) Joule in meno!!
+        // Sia arriva a un netto 10% (circa 40k Joule) in meno per TC 1000ms
         
         //SINGOLA CODA
         //592223.9542908694

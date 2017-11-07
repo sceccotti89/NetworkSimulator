@@ -26,14 +26,18 @@ import simulator.core.Task;
 import simulator.events.Event;
 import simulator.events.EventHandler;
 import simulator.events.Packet;
+import simulator.events.generator.CBRGenerator;
 import simulator.events.generator.EventGenerator;
 import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
+import simulator.test.energy.CPUEnergyModel.CONSmodel;
 import simulator.test.energy.CPUEnergyModel.Mode;
+import simulator.test.energy.CPUEnergyModel.PERFmodel;
 import simulator.test.energy.CPUEnergyModel.PESOSmodel;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
+import simulator.test.energy.CPUEnergyModel.Type;
 import simulator.test.energy.EnergyCPU.PESOScore;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Pair;
@@ -49,6 +53,8 @@ public class EnergyTestDIST2
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
     
     private static boolean PESOS_CONTROLLER = true;
+    
+    private static final EnergyCPU CPU = new EnergyCPU();
     
     private static List<EnergyCPU> cpus;
     private static PesosController controller;
@@ -363,7 +369,7 @@ public class EnergyTestDIST2
                 _id = id;
                 coresMap = new HashMap<>();
                 for (long i = 0; i < CPU_CORES; i++) {
-                    coresMap.put( i, new CoreInfo( _id, i, model ) );
+                    coresMap.put( i, new CoreInfo( /*_id, */i, model ) );
                 }
             }
             
@@ -405,7 +411,7 @@ public class EnergyTestDIST2
         {
             private PESOSmodel _model;
             private List<PesosQuery> queue;
-            private long _cpuId;
+            //private long _cpuId;
             private long _coreId;
             
             private long _initTimeBudget;
@@ -413,9 +419,9 @@ public class EnergyTestDIST2
             
             private static final long DELTA_TIME_THRESHOLD = 1;//50000;
             
-            public CoreInfo( final long cpuId, final long coreId, final PESOSmodel model ) throws IOException
+            public CoreInfo( /*final long cpuId, */final long coreId, final PESOSmodel model ) throws IOException
             {
-                _cpuId = cpuId;
+                //_cpuId = cpuId;
                 _coreId = coreId;
                 _initTimeBudget = model.getTimeBudget().getTimeMicros() / 1000;
                 _timeBudget = model.getTimeBudget().getTimeMicros() / 1000;
@@ -448,7 +454,7 @@ public class EnergyTestDIST2
                 return queue;
             }
             
-            public void printQueue()
+            /*public void printQueue()
             {
                 System.out.print( "CPU: " + _cpuId + ", CORE: " + _coreId + " = [" );
                 int index = 0;
@@ -460,7 +466,7 @@ public class EnergyTestDIST2
                     }
                 }
                 System.out.println( "]" );
-            }
+            }*/
             
             public PesosQuery getFirstQuery() {
                 return queue.get( 0 );
@@ -551,7 +557,7 @@ public class EnergyTestDIST2
         }
     }
     
-    private static class PESOSmessage
+    /*private static class PESOSmessage
     {
         private long _coreID;
         private long _queryID;
@@ -575,7 +581,7 @@ public class EnergyTestDIST2
         public long getTimeBudget() {
             return _timeBudget;
         }
-    }
+    }*/
     
     private static class SwitchGenerator extends EventGenerator
     {
@@ -684,6 +690,23 @@ public class EnergyTestDIST2
     
     
     
+    private static class ServerConsGenerator extends CBRGenerator
+    {
+        public static final Time PERIOD = new Time( CONSmodel.PERIOD, TimeUnit.MILLISECONDS );
+        
+        public ServerConsGenerator( final Time duration ) {
+            super( Time.ZERO, duration, PERIOD, PACKET, PACKET );
+        }
+        
+        @Override
+        public Packet makePacket( final Event e, final long destination )
+        {
+            Packet packet = getRequestPacket();
+            packet.addContent( Global.CONS_CONTROL, "" );
+            return packet;
+        }
+    }
+    
     private static class MulticoreGenerator extends EventGenerator
     {
         public MulticoreGenerator( final Time duration ) {
@@ -717,18 +740,20 @@ public class EnergyTestDIST2
         public void addEventOnQueue( final Event e )
         {
             Packet p = e.getPacket();
-            EnergyCPU cpu = getDevice( new EnergyCPU() );
+            EnergyCPU cpu = getDevice( CPU );
             PESOSmodel model = (PESOSmodel) cpu.getModel();
             
             //System.out.println( "RECEIVED QUERY: " + e.getPacket().getContents() );
             
             if (p.hasContent( Global.PESOS_TIME_BUDGET )) {
-                PESOSmessage message = p.getContent( Global.PESOS_TIME_BUDGET );
-                PESOScore core = (PESOScore) cpu.getCore( message.getCoreID() );
-                core.setTimeBudget( e.getTime(), message.getTimeBudget(), message.getQueryID() );
+                //PESOSmessage message = p.getContent( Global.PESOS_TIME_BUDGET );
+                //PESOScore core = (PESOScore) cpu.getCore( message.getCoreID() );
+                //core.setTimeBudget( e.getTime(), message.getTimeBudget(), message.getQueryID() );
             }
             
-            if (p.hasContent( Global.QUERY_ID )) {
+            if (p.hasContent( Global.CONS_CONTROL )) {
+                cpu.evalCONSparameters( e.getTime() );
+            } else {
                 QueryInfo query = model.getQuery( p.getContent( Global.QUERY_ID ) );
                 //System.out.println( "RECEIVED QUERY: " + p.getContent( Global.QUERY_ID ) );
                 query.setEvent( e );
@@ -747,7 +772,7 @@ public class EnergyTestDIST2
         public Time handle( final Event e, final EventType type )
         {
             if (e instanceof ResponseEvent) {
-                EnergyCPU cpu = getDevice( new EnergyCPU() );
+                EnergyCPU cpu = getDevice( CPU );
                 if (type == EventType.GENERATED) {
                     QueryInfo query = cpu.getLastQuery();
                     Packet p = e.getPacket();
@@ -769,7 +794,7 @@ public class EnergyTestDIST2
             } else {
                 if (e.getPacket().hasContent( Global.QUERY_ID )) {
                     // Compute the time to complete the query.
-                    EnergyCPU cpu = getDevice( new EnergyCPU() );
+                    EnergyCPU cpu = getDevice( CPU );
                     return cpu.timeToCompute( null );
                 } else {
                     return Time.ZERO;
@@ -781,13 +806,13 @@ public class EnergyTestDIST2
         
         @Override
         public double getNodeUtilization( final Time time ) {
-            return getDevice( new EnergyCPU() ).getUtilization( time );
+            return getDevice( CPU ).getUtilization( time );
         }
         
         @Override
         public void shutdown()
         {
-            EnergyCPU cpu = getDevice( new EnergyCPU() );
+            EnergyCPU cpu = getDevice( CPU );
             cpu.computeIdleEnergy( getEventScheduler().getTimeDuration() );
             super.shutdown();
         }
@@ -923,10 +948,19 @@ public class EnergyTestDIST2
         Utils.VERBOSE = false;
         PESOS_CONTROLLER = false;
         
-        testNetwork( Mode.PESOS_TIME_CONSERVATIVE, 500 );
-        //testNetwork( Mode.PESOS_TIME_CONSERVATIVE, 1000 );
-        //testNetwork( Mode.PESOS_ENERGY_CONSERVATIVE, 500 );
-        //testNetwork( Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
+        CPUEnergyModel model = null;
+        
+        model = loadModel( Mode.PESOS_TIME_CONSERVATIVE,  500 );
+        //model = loadModel( Mode.PESOS_TIME_CONSERVATIVE, 1000 );
+        //model = loadModel( Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
+        //model = loadModel( Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
+        
+        //model = loadModel( Type.PERF );
+        //model = loadModel( Type.CONS );
+        
+        model.loadModel();
+        
+        testNetwork( model );
         
         /* Controller OFF
         CPU: 0, Energy: 505852.3532120938
@@ -941,10 +975,32 @@ public class EnergyTestDIST2
         */
     }
     
-    public static void testNetwork( final Mode mode, final long timeBudget ) throws Exception
+    protected static CPUEnergyModel loadModel( final Mode mode, final long timeBudget ) throws Exception
     {
-        NetworkTopology net = new NetworkTopology( "Topology/Animation/Topology_distributed_multiCore.json" );
-        //NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_multiCore.json" );
+        // PESOS loading model.
+        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" );
+        model.loadModel();
+        return model;
+    }
+    
+    protected static CPUEnergyModel loadModel( final Type type ) throws Exception
+    {
+        CPUEnergyModel model = null;
+        switch ( type ) {
+            case PERF: model = new PERFmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
+            case CONS: model = new CONSmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
+            default:   break;
+        }
+        model.loadModel();
+        return model;
+    }
+    
+    public static void testNetwork( final CPUEnergyModel model ) throws Exception
+    {
+        final Time duration = new Time( 24, TimeUnit.HOURS );
+        
+        //NetworkTopology net = new NetworkTopology( "Topology/Animation/Topology_distributed_multiCore.json" );
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_multiCore.json" );
         //net.setTrackingEvent( "Results/distr_multi_core.txt" );
         System.out.println( net.toString() );
         
@@ -961,10 +1017,15 @@ public class EnergyTestDIST2
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
         
-        // Create PESOS oracle.
-        controller = new PesosController( timeBudget * 1000, mode );
+        Mode mode = model.getMode();
+        final long timeBudget = model.getTimeBudget().getTimeMillis();
         
-        final String modelType = "PESOS_" + mode + "_" + timeBudget + "ms";
+        // Create PESOS controller.
+        if (model.getType() == Type.PESOS) {
+            controller = new PesosController( timeBudget * 1000, mode );
+        }
+        
+        final String modelType = model.getModelType( true );
         Plotter plotter = new Plotter( "DISTRIBUTED MULTI_CORE - " + modelType, 800, 600 );
         
         cpus = new ArrayList<>( NODES );
@@ -976,14 +1037,20 @@ public class EnergyTestDIST2
             cpus.add( cpu );
             
             // Add the PESOS model to the corresponding cpu.
-            CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + (i+1) + "/PESOS/MaxScore/" );
-            model.loadModel();
-            cpu.setModel( model );
+            CPUEnergyModel p_model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + (i+1) + "/PESOS/MaxScore/" );
+            p_model.loadModel();
+            cpu.setModel( p_model );
             
             EventGenerator sink = new MulticoreGenerator( Time.INFINITE );
             Agent agentCore = new MulticoreAgent( 2 + i, sink );
             agentCore.addDevice( cpu );
             net.addAgent( agentCore );
+            
+            if (model.getType() == Type.CONS) {
+                EventGenerator evtGen = new ServerConsGenerator( duration );
+                evtGen.connect( agentCore );
+                agentCore.addEventGenerator( evtGen );
+            }
             
             plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) + " " + model.getModelType( false ) );
             
@@ -998,7 +1065,7 @@ public class EnergyTestDIST2
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         plotter.setVisible( true );
         
-        sim.start( new Time( 24, TimeUnit.HOURS ), false );
+        sim.start( duration, false );
         //sim.start( new Time( 53100, TimeUnit.MICROSECONDS ), false );
         sim.close();
         

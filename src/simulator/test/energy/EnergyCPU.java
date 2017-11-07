@@ -171,6 +171,14 @@ public class EnergyCPU extends CPU
         }
     }
     
+    public void setFrequency( final Time now, final long frequency )
+    {
+        for (Core core : getCores()) {
+            core.setFrequency( now, frequency );
+        }
+        super.setFrequency( frequency );
+    }
+    
     /**
      * Evaluates which is the "best" frequency
      * to process the remaining tasks.
