@@ -64,7 +64,8 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     {
         PESOS( "PESOS" ),
         PERF( "PERF" ),
-        CONS( "CONS" );
+        CONS( "CONS" ),
+        PEGASUS( "PEGASUS" );
         
         private Mode mode;
         private String name;
@@ -229,13 +230,42 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     }
     
     /**
-     * Returns the "best" available core to assign the next task.
+     * Returns the "best" available core to assign the next task.</br>
+     * By default the core with the minor number of queries in the queue is chosen.
      * 
      * @param time    time of evaluation.
      * @param cpu     the associated cpu.
      * @param q       the query to add.
     */
-    public abstract long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q );
+    public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
+    {
+        long id = -1;
+        double utilization = Integer.MAX_VALUE;
+        long tiedSelection = Long.MAX_VALUE;
+        boolean tieSituation = false;
+        for (Core core : cpu.getCores()) {
+            double coreUtilization = core.getUtilization( time );
+            if (coreUtilization < utilization) {
+                id = core.getId();
+                utilization = coreUtilization;
+                tiedSelection = core.tieSelected;
+                tieSituation = false;
+            } else if (coreUtilization == utilization) {
+                if (core.tieSelected < tiedSelection) {
+                    id = core.getId();
+                    utilization = coreUtilization;
+                    tiedSelection = core.tieSelected;
+                }
+                tieSituation = true;
+            }
+        }
+        
+        if (tieSituation) {
+            cpu.getCore( id ).tieSelected++;
+        }
+        
+        return cpu.lastSelectedCore = id;
+    }
     
     /**
      * Clones this model.
@@ -736,38 +766,6 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }
         
         @Override
-        public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
-        {
-            //System.out.println( "SELECTING CORE AT: " + time );
-            long id = -1;
-            double utilization = Integer.MAX_VALUE;
-            long tiedSelection = Long.MAX_VALUE;
-            boolean tieSituation = false;
-            for (Core core : cpu.getCores()) {
-                double coreUtilization = core.getUtilization( time );
-                if (coreUtilization < utilization) {
-                    id = core.getId();
-                    utilization = coreUtilization;
-                    tiedSelection = core.tieSelected;
-                    tieSituation = false;
-                } else if (coreUtilization == utilization) {
-                    if (core.tieSelected < tiedSelection) {
-                        id = core.getId();
-                        utilization = coreUtilization;
-                        tiedSelection = core.tieSelected;
-                    }
-                    tieSituation = true;
-                }
-            }
-            
-            if (tieSituation) {
-                cpu.getCore( id ).tieSelected++;
-            }
-            
-            return cpu.lastSelectedCore = id;
-        }
-        
-        @Override
         public String getModelType( final boolean delimeters ) {
             return type.toString();
         }
@@ -891,38 +889,6 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }
         
         @Override
-        public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
-        {
-            //System.out.println( "SELECTING CORE AT: " + time );
-            long id = -1;
-            double utilization = Integer.MAX_VALUE;
-            long tiedSelection = Long.MAX_VALUE;
-            boolean tieSituation = false;
-            for (Core core : cpu.getCores()) {
-                double coreUtilization = core.getUtilization( time );
-                if (coreUtilization < utilization) {
-                    id = core.getId();
-                    utilization = coreUtilization;
-                    tiedSelection = core.tieSelected;
-                    tieSituation = false;
-                } else if (coreUtilization == utilization) {
-                    if (core.tieSelected < tiedSelection) {
-                        id = core.getId();
-                        utilization = coreUtilization;
-                        tiedSelection = core.tieSelected;
-                    }
-                    tieSituation = true;
-                }
-            }
-            
-            if (tieSituation) {
-                cpu.getCore( id ).tieSelected++;
-            }
-            
-            return cpu.lastSelectedCore = id;
-        }
-        
-        @Override
         public String getModelType( final boolean delimeters ) {
             return type.toString();
         }
@@ -936,6 +902,41 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             return model;
         }
 
+        @Override
+        public void close() {}
+    }
+    
+    public static class PEGASUSmodel extends CPUEnergyModel
+    {
+        public PEGASUSmodel( final long time_budget, final String dir, final String... files ){
+            this( new Time( time_budget, TimeUnit.MILLISECONDS ), dir, files );
+        }
+        
+        public PEGASUSmodel( final Time time_budget, final String dir, final String... files )
+        {
+            super( Type.PEGASUS, dir, files );
+            timeBudget = time_budget;
+        }
+        
+        @Override
+        public String getModelType( final boolean delimeters ) {
+            return type.toString();
+        }
+        
+        @Override
+        protected CPUEnergyModel cloneModel()
+        {
+            PEGASUSmodel model = new PEGASUSmodel( timeBudget.clone(), _directory, _postings, _effective_time_energy );
+            try { model.loadModel(); }
+            catch ( IOException e ) { e.printStackTrace(); }
+            return model;
+        }
+        
+        @Override
+        public Long eval( final Time now, final QueryInfo... params ) {
+            return _device.getFrequency();
+        }
+        
         @Override
         public void close() {}
     }

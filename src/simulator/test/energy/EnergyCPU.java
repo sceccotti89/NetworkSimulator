@@ -70,20 +70,19 @@ public class EnergyCPU extends CPU
         
         CPUEnergyModel cpuModel = (CPUEnergyModel) model;
         try {
-            if (cpuModel.getType() == Type.PERF) {
-                coeffWriter = new PrintWriter( "Results/Coefficients/PERF_Freq_Energy.txt", "UTF-8" );
-            } else {
-                String file;
-                if (cpuModel.getType() == Type.PESOS) {
-                    long timeBudget = cpuModel.getTimeBudget().getTimeMicros()/1000;
+            String file = null;
+            switch (cpuModel.getType()) {
+                case PERF    : file = "PERF"; break;
+                case PESOS   :
+                    long timeBudget = cpuModel.getTimeBudget().getTimeMillis();
                     file = "PESOS_" + timeBudget + "_" + cpuModel.getMode();
-                } else {
-                    file = "CONS_" + cpuModel.getMode();
-                }
-                file += (_cores == 1) ? "_distr" : "_mono";
-                Utils.checkDirectory( "Results/Coefficients" );
-                coeffWriter = new PrintWriter( "Results/Coefficients/" + file + "_Freq_Energy.txt", "UTF-8" );
+                    break;
+                case CONS    : file = "CONS_" + cpuModel.getMode(); break;
+                case PEGASUS : file = "PEGASUS"; break;
             }
+            Utils.checkDirectory( "Results/Coefficients" );
+            file += (_cores == 1) ? "_distr" : "_mono";
+            coeffWriter = new PrintWriter( "Results/Coefficients/" + file + "_Freq_Energy.txt", "UTF-8" );
         } catch ( IOException e ) {
             e.printStackTrace();
         }
@@ -95,8 +94,9 @@ public class EnergyCPU extends CPU
                     core.setBaseTimeBudget( getTime(), cpuModel.getTimeBudget().getTimeMicros() );
                     coresMap.put( i, core );
                     break;
-                case PERF: coresMap.put( i, new PERFcore( this, i, getMaxFrequency() ) ); break;
-                case CONS: coresMap.put( i, new CONScore( this, i, getMaxFrequency() ) ); break;
+                case PERF:    coresMap.put( i, new PERFcore( this, i, getMaxFrequency() ) ); break;
+                case CONS:    coresMap.put( i, new CONScore( this, i, getMaxFrequency() ) ); break;
+                case PEGASUS: coresMap.put( i, new PEGASUScore( this, i, getMaxFrequency() ) ); break;
             }
         }
         
@@ -455,6 +455,48 @@ public class EnergyCPU extends CPU
             receivedQueries = 0;
             processedQueries = 0;
             cumulativeTime = 0;
+        }
+        
+        @Override
+        public double getIdleEnergy()
+        {
+            double idleEnergy = 0;
+            if (idleTime > 0) {
+                idleEnergy = cpu.energyModel.getIdleEnergy( frequency, idleTime );
+                idleTimeInterval += idleTime;
+                writeResult( frequency, idleEnergy );
+                idleTime = 0;
+            }
+            return idleEnergy;
+        }
+    }
+    
+    private static class PEGASUScore extends Core
+    {
+
+        public PEGASUScore( final CPU cpu, final long coreId, final long initFrequency ) {
+            super( cpu, coreId, initFrequency );
+        }
+        
+        @Override
+        public boolean checkQueryCompletion( final Time time )
+        {
+            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+                addQueryOnSampling();
+                if (hasMoreQueries()) {
+                    cpu.computeTime( getFirstQueryInQueue(), this );
+                }
+                return true;
+            } else {
+                return false;
+            }
+        }
+        
+        @Override
+        public void addQuery( final QueryInfo q, boolean updateFrequency )
+        {
+            q.setCoreId( coreId );
+            queryQueue.add( q );
         }
         
         @Override

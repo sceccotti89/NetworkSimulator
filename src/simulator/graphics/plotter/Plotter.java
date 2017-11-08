@@ -121,6 +121,13 @@ public class Plotter extends WindowAdapter implements ActionListener
     
     
     
+    /**
+     * Constructs a plotter with the default size (800 x 600).
+    */
+    public Plotter() {
+        this( "Plotter", 800, 600 );
+    }
+    
     public Plotter( final String title, final int width, final int height )
     {
         plotter = new GraphicPlotter();

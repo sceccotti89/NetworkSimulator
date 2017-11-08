@@ -34,6 +34,7 @@ import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
 import simulator.test.energy.CPUEnergyModel.CONSmodel;
 import simulator.test.energy.CPUEnergyModel.Mode;
+import simulator.test.energy.CPUEnergyModel.PEGASUSmodel;
 import simulator.test.energy.CPUEnergyModel.PERFmodel;
 import simulator.test.energy.CPUEnergyModel.PESOSmodel;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
@@ -613,7 +614,7 @@ public class EnergyTestDIST2
         private List<QueryLatency> queries;
         private PEGASUS pegasus;
         
-        public SwitchAgent( final long id, final Time target, final EventGenerator evGenerator ) throws IOException
+        public SwitchAgent( final long id, final long target, final EventGenerator evGenerator ) throws IOException
         {
             super( id );
             addEventGenerator( evGenerator );
@@ -623,7 +624,7 @@ public class EnergyTestDIST2
             queries = new ArrayList<>( 1 << 10 );
             
             if (PEGASUS_CONTROLLER) {
-                pegasus = new PEGASUS( cpus, target.getTimeMicros() );
+                pegasus = new PEGASUS( cpus, target );
             }
         }
         
@@ -752,7 +753,7 @@ public class EnergyTestDIST2
         {
             Packet p = e.getPacket();
             EnergyCPU cpu = getDevice( CPU );
-            PESOSmodel model = (PESOSmodel) cpu.getModel();
+            CPUEnergyModel model = (CPUEnergyModel) cpu.getModel();
             
             //System.out.println( "RECEIVED QUERY: " + e.getPacket().getContents() );
             
@@ -957,21 +958,36 @@ public class EnergyTestDIST2
         //createDistributedIndex();
         
         Utils.VERBOSE = false;
-        PESOS_CONTROLLER = false;
+        PESOS_CONTROLLER   = false;
+        PEGASUS_CONTROLLER = false;
         
-        CPUEnergyModel model = null;
+        //CPUEnergyModel model = null;
         
-        model = loadModel( Mode.PESOS_TIME_CONSERVATIVE,  500 );
-        //model = loadModel( Mode.PESOS_TIME_CONSERVATIVE, 1000 );
-        //model = loadModel( Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
-        //model = loadModel( Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
+        //model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
+        //model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );
+        //model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
+        //model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
         
         //model = loadModel( Type.PERF );
         //model = loadModel( Type.CONS );
         
-        model.loadModel();
+        //model = loadModel( Type.PEGASUS, null,  500 );
+        //model = loadModel( Type.PEGASUS, null, 1000 );
         
-        testNetwork( model );
+        //model.loadModel();
+        
+        //testNetwork( model );
+        
+        testNetwork( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
+        //testNetwork( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );
+        //testNetwork( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
+        //testNetwork( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
+        
+        //testNetwork( Type.PERF, null, 0 );
+        //testNetwork( Type.CONS, null, 0 );
+        
+        //testNetwork( Type.PEGASUS, null,  500 );
+        //testNetwork( Type.PEGASUS, null, 1000 );
         
         /* Controller OFF
         CPU: 0, Energy: 505852.3532120938
@@ -986,10 +1002,14 @@ public class EnergyTestDIST2
         */
     }
     
-    protected static CPUEnergyModel loadModel( final Mode mode, final long timeBudget ) throws Exception
+    /*protected static CPUEnergyModel loadModel( final Type type, final Mode mode, final long timeBudget ) throws Exception
     {
-        // PESOS loading model.
-        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" );
+        CPUEnergyModel model = null;
+        switch ( type ) {
+            case PESOS  : model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" );
+            case PEGASUS: model = new PEGASUSmodel( timeBudget, "Models/Monolithic/PESOS/MaxScore/" );
+            default     : break;
+        }
         model.loadModel();
         return model;
     }
@@ -1000,13 +1020,35 @@ public class EnergyTestDIST2
         switch ( type ) {
             case PERF: model = new PERFmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
             case CONS: model = new CONSmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
-            default:   break;
+            default  : break;
         }
+        model.loadModel();
+        return model;
+    }*/
+    
+    private static CPUEnergyModel getModel( final Type type, final Mode mode,
+                                            final long timeBudget, final int node )
+    {
+        CPUEnergyModel model = null;
+        switch ( type ) {
+            case PESOS  : model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
+            case PERF   : model = new PERFmodel( "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
+            case CONS   : model = new CONSmodel( "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
+            case PEGASUS: model = new PEGASUSmodel( timeBudget, "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
+            default     : break;
+        }
+        return model;
+    }
+    
+    private static CPUEnergyModel loadModel( final Type type, final Mode mode,
+                                             final long timeBudget, final int node ) throws Exception
+    {
+        CPUEnergyModel model = getModel( type, mode, timeBudget, node );
         model.loadModel();
         return model;
     }
     
-    public static void testNetwork( final CPUEnergyModel model ) throws Exception
+    public static void testNetwork( final Type type, final Mode mode, final long timeBudget ) throws Exception
     {
         final Time duration = new Time( 24, TimeUnit.HOURS );
         
@@ -1024,18 +1066,16 @@ public class EnergyTestDIST2
         
         // Create switch.
         EventGenerator switchGen = new SwitchGenerator( Time.INFINITE );
-        Agent switchAgent = new SwitchAgent( 1, model.getTimeBudget(), switchGen );
+        Agent switchAgent = new SwitchAgent( 1, timeBudget * 1000, switchGen );
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
         
-        Mode mode = model.getMode();
-        final long timeBudget = model.getTimeBudget().getTimeMillis();
-        
         // Create PESOS controller.
-        if (model.getType() == Type.PESOS) {
+        if (type == Type.PESOS) {
             controller = new PesosController( timeBudget * 1000, mode );
         }
         
+        CPUEnergyModel model = getModel( type, mode, timeBudget, 1 );
         final String modelType = model.getModelType( true );
         Plotter plotter = new Plotter( "DISTRIBUTED MULTI_CORE - " + modelType, 800, 600 );
         
@@ -1046,8 +1086,8 @@ public class EnergyTestDIST2
             cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Node" + (i+1) + "_Tail_Latency.log" );
             cpus.add( cpu );
             
-            // Add the PESOS model to the corresponding cpu.
-            CPUEnergyModel p_model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + (i+1) + "/PESOS/MaxScore/" );
+            // Add the model to the corresponding cpu.
+            CPUEnergyModel p_model = loadModel( type, mode, timeBudget, i+1 );
             p_model.loadModel();
             cpu.setModel( p_model );
             
@@ -1056,13 +1096,13 @@ public class EnergyTestDIST2
             agentCore.addDevice( cpu );
             net.addAgent( agentCore );
             
-            if (model.getType() == Type.CONS) {
+            if (type == Type.CONS) {
                 EventGenerator evtGen = new ServerConsGenerator( duration );
                 evtGen.connect( agentCore );
                 agentCore.addEventGenerator( evtGen );
             }
             
-            plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) + " " + model.getModelType( false ) );
+            plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) + " " + p_model.getModelType( false ) );
             
             switchGen.connect( agentCore );
             controller.connect( agentCore );
