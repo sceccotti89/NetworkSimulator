@@ -53,10 +53,11 @@ public class EnergyTestDIST2
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
     
     private static boolean PESOS_CONTROLLER = true;
+    private static boolean PEGASUS_CONTROLLER = false;
     
     private static final EnergyCPU CPU = new EnergyCPU();
     
-    private static List<EnergyCPU> cpus;
+    private static List<EnergyCPU> cpus = new ArrayList<>( NODES );
     private static PesosController controller;
     
     
@@ -610,8 +611,9 @@ public class EnergyTestDIST2
     {
         private PrintWriter writer;
         private List<QueryLatency> queries;
+        private PEGASUS pegasus;
         
-        public SwitchAgent( final long id, final EventGenerator evGenerator ) throws IOException
+        public SwitchAgent( final long id, final Time target, final EventGenerator evGenerator ) throws IOException
         {
             super( id );
             addEventGenerator( evGenerator );
@@ -619,6 +621,10 @@ public class EnergyTestDIST2
             
             writer = new PrintWriter( "Results/Distributed_Latencies.txt", "UTF-8" );
             queries = new ArrayList<>( 1 << 10 );
+            
+            if (PEGASUS_CONTROLLER) {
+                pegasus = new PEGASUS( cpus, target.getTimeMicros() );
+            }
         }
         
         @Override
@@ -643,8 +649,13 @@ public class EnergyTestDIST2
                     if (++query.count == NODES) {
                         // Save on file and remove from list.
                         Time endTime = e.getTime();
-                        writer.println( endTime + " " + e.getTime().subTime( query.startTime ) );
+                        Time completionTime = e.getTime().subTime( query.startTime );
+                        writer.println( endTime + " " + completionTime );
                         queries.remove( index );
+                        
+                        if (PEGASUS_CONTROLLER) {
+                            pegasus.setCompletedQuery( endTime, completionTime );
+                        }
                     }
                 }
             }
@@ -1013,7 +1024,7 @@ public class EnergyTestDIST2
         
         // Create switch.
         EventGenerator switchGen = new SwitchGenerator( Time.INFINITE );
-        Agent switchAgent = new SwitchAgent( 1, switchGen );
+        Agent switchAgent = new SwitchAgent( 1, model.getTimeBudget(), switchGen );
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
         
@@ -1028,7 +1039,6 @@ public class EnergyTestDIST2
         final String modelType = model.getModelType( true );
         Plotter plotter = new Plotter( "DISTRIBUTED MULTI_CORE - " + modelType, 800, 600 );
         
-        cpus = new ArrayList<>( NODES );
         for (int i = 0; i < NODES; i++) {
             EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
             cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );

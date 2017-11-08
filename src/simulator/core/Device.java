@@ -231,6 +231,28 @@ public abstract class Device<I,O>
     public void setFrequency( final long frequency ) {
         _frequency = frequency;
     }
+    
+    /**
+     * Increments the current frequency of the given steps.</br>
+     * The new frequency cannot be higher than the maximum.
+    */
+    public void incrementFrequency( final int steps )
+    {
+        int index = _frequencies.indexOf( _frequency );
+        index = Math.min( index + steps, _frequencies.size() - 1 );
+        setFrequency( _frequencies.get( index ) );
+    }
+    
+    /**
+     * Decrements the current frequency of the given steps.</br>
+     * The new frequency cannot be lower than the minimum.
+    */
+    public void decreaseFrequency( final int steps )
+    {
+        int index = _frequencies.indexOf( _frequency );
+        index = Math.max( index - steps, 0 );
+        setFrequency( _frequencies.get( index ) );
+    }
 
     /**
      * Returns the time spent to compute the given task.</br>

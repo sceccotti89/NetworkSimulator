@@ -176,7 +176,23 @@ public class EnergyCPU extends CPU
         for (Core core : getCores()) {
             core.setFrequency( now, frequency );
         }
-        super.setFrequency( frequency );
+        setFrequency( frequency );
+    }
+    
+    public void incrementFrequency( final Time now, final int steps )
+    {
+        incrementFrequency( steps );
+        for (Core core : getCores()) {
+            core.setFrequency( now, getFrequency() );
+        }
+    }
+    
+    public void decreaseFrequency( final Time now, final int steps )
+    {
+        decreaseFrequency( steps );
+        for (Core core : getCores()) {
+            core.setFrequency( now, getFrequency() );
+        }
     }
     
     /**

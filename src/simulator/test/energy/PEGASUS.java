@@ -75,32 +75,22 @@ public class PEGASUS
         } else if (instantaneous > target) {
             // TODO Increase power by 7% => incrementare di 4 la frequenza?
             // TODO da qui in poi devo settare la frequenza per ogni core o di tutti quanti?
-            // TODO Sembrerebbe che ogni core abbia la stessa "POTENZA",
-            // TODO cio' non vuol dire che abbiano la stessa frequenza.
+            // TODO Sembrerebbe che ogni nodo abbia la stessa "POTENZA".
             for (EnergyCPU node : nodes) {
-                node.setFrequency( now, node.getFrequency() );
+                node.incrementFrequency( now, 4 );
             }
         } else if(instantaneous >= 0.85 * target && instantaneous <= target) {
             // Keep current power.
         } else if (instantaneous < 0.60 * target) {
             // TODO Lower power by 3% => decrementare di 2 la frequenza?
             for (EnergyCPU node : nodes) {
-                node.setFrequency( now, node.getMaxFrequency() );
+                node.decreaseFrequency( now, 2 );
             }
         } else if (instantaneous < 0.85 * target) {
             // TODO Lower power by 1% => decrementare di 1 la frequenza?
             for (EnergyCPU node : nodes) {
-                node.setFrequency( now, node.getMaxFrequency() );
+                node.decreaseFrequency( now, 1 );
             }
         }
     }
-    
-    /*private long computeAverage()
-    {
-        long average = 0;
-        for (Time time : queries) {
-            average += time.getTimeMicros();
-        }
-        return average / queries.size();
-    }*/
 }
