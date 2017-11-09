@@ -23,6 +23,7 @@ import simulator.graphics.AnimationNetwork;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
 import simulator.test.energy.CPUEnergyModel.CONSmodel;
+import simulator.test.energy.CPUEnergyModel.LOAD_SENSITIVEmodel;
 import simulator.test.energy.CPUEnergyModel.Mode;
 import simulator.test.energy.CPUEnergyModel.PERFmodel;
 import simulator.test.energy.CPUEnergyModel.PESOSmodel;
@@ -333,10 +334,15 @@ public class EnergyTestMONO
         
         CPUEnergyModel model = null;
         
-        model = loadModel( Mode.PESOS_TIME_CONSERVATIVE,  500 );
-        //model = loadModel( Mode.PESOS_TIME_CONSERVATIVE, 1000 );
-        //model = loadModel( Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
-        //model = loadModel( Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
+        //model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
+        //model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );
+        //model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
+        //model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
+        
+        model = loadModel( Type.LOAD_SENSITIVE , Mode.PESOS_TIME_CONSERVATIVE,  500 );
+        //model = loadModel( Type.LOAD_SENSITIVE , Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
+        //model = loadModel( Type.LOAD_SENSITIVE , Mode.PESOS_TIME_CONSERVATIVE, 1000 );
+        //model = loadModel( Type.LOAD_SENSITIVE , Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
         
         //model = loadModel( Type.PERF );
         //model = loadModel( Type.CONS );
@@ -350,16 +356,20 @@ public class EnergyTestMONO
             //testSingleCore( model );
             //testAnimationNetwork( model );
             //if (executed != 5) break;
-            ClientGenerator.SEED++;
+            //ClientGenerator.SEED++;
         //}
         
         //System.out.println( "EXEC: " + executed + ", SEED: " + ClientGenerator.SEED );
     }
     
-    protected static CPUEnergyModel loadModel( final Mode mode, final long timeBudget ) throws Exception
+    protected static CPUEnergyModel loadModel( final Type type, final Mode mode, final long timeBudget ) throws Exception
     {
-        // PESOS loading model.
-        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" );
+        CPUEnergyModel model = null;
+        switch ( type ) {
+            case PESOS          : model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" ); break;
+            case LOAD_SENSITIVE : model = new LOAD_SENSITIVEmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" ); break;
+            default             : break;
+        }
         model.loadModel();
         return model;
     }
@@ -368,9 +378,9 @@ public class EnergyTestMONO
     {
         CPUEnergyModel model = null;
         switch ( type ) {
-            case PERF: model = new PERFmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
-            case CONS: model = new CONSmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
-            default:   break;
+            case PERF : model = new PERFmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
+            case CONS : model = new CONSmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
+            default   : break;
         }
         model.loadModel();
         return model;

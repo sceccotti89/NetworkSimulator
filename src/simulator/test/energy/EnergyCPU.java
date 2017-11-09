@@ -71,14 +71,15 @@ public class EnergyCPU extends CPU
         CPUEnergyModel cpuModel = (CPUEnergyModel) model;
         try {
             String file = null;
+            long timeBudget = cpuModel.getTimeBudget().getTimeMillis();
             switch (cpuModel.getType()) {
                 case PERF    : file = "PERF"; break;
                 case PESOS   :
-                    long timeBudget = cpuModel.getTimeBudget().getTimeMillis();
                     file = "PESOS_" + timeBudget + "_" + cpuModel.getMode();
                     break;
-                case CONS    : file = "CONS_" + cpuModel.getMode(); break;
-                case PEGASUS : file = "PEGASUS"; break;
+                case CONS           : file = "CONS_" + cpuModel.getMode(); break;
+                case LOAD_SENSITIVE : file = "LOAD_SENSITIVE_" + timeBudget; break;
+                case PEGASUS        : file = "PEGASUS"; break;
             }
             Utils.checkDirectory( "Results/Coefficients" );
             file += (_cores == 1) ? "_distr" : "_mono";
@@ -89,14 +90,15 @@ public class EnergyCPU extends CPU
         
         for (long i = 0; i < _cores; i++) {
             switch (cpuModel.getType()) {
-                case PESOS:
+                case PESOS :
                     PESOScore core = new PESOScore( this, i, getMaxFrequency() );
                     core.setBaseTimeBudget( getTime(), cpuModel.getTimeBudget().getTimeMicros() );
                     coresMap.put( i, core );
                     break;
-                case PERF:    coresMap.put( i, new PERFcore( this, i, getMaxFrequency() ) ); break;
-                case CONS:    coresMap.put( i, new CONScore( this, i, getMaxFrequency() ) ); break;
-                case PEGASUS: coresMap.put( i, new PEGASUScore( this, i, getMaxFrequency() ) ); break;
+                case PERF           : coresMap.put( i, new PERFcore( this, i, getMaxFrequency() ) ); break;
+                case CONS           : coresMap.put( i, new CONScore( this, i, getMaxFrequency() ) ); break;
+                case LOAD_SENSITIVE : coresMap.put( i, new LOAD_SENSITIVEcore( this, i, getMaxFrequency() ) ); break;
+                case PEGASUS        : coresMap.put( i, new PEGASUScore( this, i, getMaxFrequency() ) ); break;
             }
         }
         
@@ -455,6 +457,58 @@ public class EnergyCPU extends CPU
             receivedQueries = 0;
             processedQueries = 0;
             cumulativeTime = 0;
+        }
+        
+        @Override
+        public double getIdleEnergy()
+        {
+            double idleEnergy = 0;
+            if (idleTime > 0) {
+                idleEnergy = cpu.energyModel.getIdleEnergy( frequency, idleTime );
+                idleTimeInterval += idleTime;
+                writeResult( frequency, idleEnergy );
+                idleTime = 0;
+            }
+            return idleEnergy;
+        }
+    }
+    
+    private static class LOAD_SENSITIVEcore extends Core
+    {
+        public LOAD_SENSITIVEcore( final CPU cpu, final long coreId, final long initFrequency ) {
+            super( cpu, coreId, initFrequency );
+        }
+        
+        @Override
+        public boolean checkQueryCompletion( final Time time )
+        {
+            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+                //long queryId = currentQuery.getId();
+                //System.out.println( "TIME: " + time + ", CORE: " + getId() + ", COMPLETATA QUERY: " + currentQuery );
+                addQueryOnSampling();
+                
+                if (hasMoreQueries()) {
+                    long frequency = cpu.evalFrequency( time, this );
+                    setFrequency( time, frequency );
+                    cpu.computeTime( getFirstQueryInQueue(), this );
+                }
+                return true;
+            } else {
+                return false;
+            }
+        }
+        
+        @Override
+        public void addQuery( final QueryInfo q, final boolean updateFrequency )
+        {
+            q.setCoreId( coreId );
+            queryQueue.add( q );
+            long frequency = cpu.evalFrequency( q.getArrivalTime(), this );
+            if (updateFrequency) {
+                setFrequency( q.getArrivalTime(), frequency );
+            } else {
+                this.frequency = frequency;
+            }
         }
         
         @Override

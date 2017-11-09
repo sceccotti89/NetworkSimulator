@@ -65,6 +65,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         PESOS( "PESOS" ),
         PERF( "PERF" ),
         CONS( "CONS" ),
+        LOAD_SENSITIVE( "LOAD_SENSITIVE" ),
         PEGASUS( "PEGASUS" );
         
         private Mode mode;
@@ -138,7 +139,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     @Override
     public void loadModel() throws IOException
     {
-        if (type == Type.PESOS) {
+        if (_regressors != null) {
             loadRegressors();
         }
         loadPostingsPredictors();
@@ -494,7 +495,127 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         @Override
         public void close() {}
     }
-
+    
+    public static class LOAD_SENSITIVEmodel extends CPUEnergyModel
+    {
+        private static final String REGRESSORS_TIME_CONSERVATIVE   = "regressors.txt";
+        private static final String REGRESSORS_ENERGY_CONSERVATIVE = "regressors_normse.txt";
+        
+        /**
+         * Creates a new LOAD SENSITIVE model.
+         * 
+         * @param time_budget    time limit to complete a query (in ms).
+         * @param mode           the model regressors type.
+         * @param directory      directory used to load the files.
+         * 
+         * @throws IOException if a file doesn't exists or is malformed.
+        */
+        public LOAD_SENSITIVEmodel( final long time_budget, final Mode mode, final String directory ) {
+            this( new Time( time_budget, TimeUnit.MILLISECONDS ), directory,
+                            POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY,
+                            (mode == Mode.PESOS_ENERGY_CONSERVATIVE) ? REGRESSORS_ENERGY_CONSERVATIVE :
+                                                                       REGRESSORS_TIME_CONSERVATIVE );
+        }
+        
+        public LOAD_SENSITIVEmodel( final long time_budget, final String dir, final String... files ){
+            this( new Time( time_budget, TimeUnit.MILLISECONDS ), dir, files );
+        }
+        
+        public LOAD_SENSITIVEmodel( final Time time_budget, final String dir, final String... files )
+        {
+            super( Type.LOAD_SENSITIVE, dir, files );
+            timeBudget = time_budget;
+        }
+        
+        @Override
+        public String getModelType( final boolean delimeters )
+        {
+            if (delimeters) {
+                return "LOAD_SENSITIVE_" + getTimeBudget().getTimeMillis() + "ms";
+            } else {
+                return "LOAD_SENSITIVE (t = " + getTimeBudget().getTimeMillis() + "ms)";
+            }
+        }
+        
+        @Override
+        protected CPUEnergyModel cloneModel()
+        {
+            CPUEnergyModel model = new LOAD_SENSITIVEmodel( timeBudget, _directory, _postings, _effective_time_energy, _regressors );
+            try { model.loadModel(); }
+            catch ( IOException e ) { e.printStackTrace(); }
+            return model;
+        }
+        
+        @Override
+        public Long eval( final Time now, final QueryInfo... queries )
+        {
+            QueryInfo currentQuery = queries[0];
+            Time currentDeadline = currentQuery.getArrivalTime().addTime( timeBudget );
+            if (currentDeadline.compareTo( now ) <= 0) {
+                // Time to complete the query is already over.
+                return _device.getMaxFrequency();
+            }
+            
+            QueryInfo last = queries[queries.length-1];
+            Time deltaN = (last.getArrivalTime().addTime( timeBudget )).subTime( now );
+            
+            // Get the predicted time, at max speed, for the remaining queries.
+            Time predictedTimeToCompute = new Time( 0, TimeUnit.MICROSECONDS );
+            for (int i = 0; i < queries.length - 1; i++) {
+                QueryInfo query = queries[i];
+                int ppcRMSE = regressors.get( "class." + query.getTerms() + ".rmse" ).intValue();
+                long pcost = query.getPostings() + ppcRMSE;
+                long time = predictServiceTimeAtMaxFrequency( query.getTerms(), pcost );
+                predictedTimeToCompute.addTime( new Time( time, TimeUnit.MICROSECONDS ) );
+            }
+            
+            //Time deltaNsigned = deltaN.subTime( predictedTimeToCompute );
+            deltaN.subTime( predictedTimeToCompute );
+            if (deltaN.getTimeMicros() == 0) {
+                return _device.getMaxFrequency();
+            } else {
+                // Get the slack time.
+                int ppcRMSE = regressors.get( "class." + currentQuery.getTerms() + ".rmse" ).intValue();
+                long pcost = currentQuery.getPostings() + ppcRMSE;
+                Time extimatedTime = new Time( predictServiceTimeAtMaxFrequency( currentQuery.getTerms(), pcost ) +
+                                               deltaN.getTimeMicros() / queries.length,
+                                               TimeUnit.MICROSECONDS );
+                Time delta1 = (currentQuery.getArrivalTime().addTime( timeBudget )).subTime( now );
+                Time targetTime = extimatedTime.min( delta1 );
+                return identifyTargetFrequency( currentQuery.getTerms(), currentQuery.getPostings(), targetTime.getTimeMicros() );
+            }
+        }
+        
+        private long predictServiceTimeAtMaxFrequency( final int terms, final long postings )
+        {
+            String base  = _device.getMaxFrequency() + "." + terms;
+            double alpha = regressors.get( base + ".alpha" );
+            double beta  = regressors.get( base + ".beta" );
+            double rmse  = regressors.get( base + ".rmse" );
+            return Utils.getTimeInMicroseconds( alpha * postings + beta + rmse, TimeUnit.MILLISECONDS );
+        }
+        
+        private long identifyTargetFrequency( final int terms, final long postings, final long targetTime )
+        {
+            for (Long frequency : _device.getFrequencies()) {
+                final String base = frequency + "." + terms;
+                double alpha = regressors.get( base + ".alpha" );
+                double beta  = regressors.get( base + ".beta" );
+                double rmse  = regressors.get( base + ".rmse" );
+                
+                long extimatedTime = Utils.getTimeInMicroseconds( alpha * postings + beta + rmse, TimeUnit.MILLISECONDS );
+                if (extimatedTime <= targetTime) {
+                    return frequency;
+                }
+            }
+            
+            return _device.getMaxFrequency(); 
+        }
+        
+        @Override
+        public void close() {}
+    }
+    
     public static class PESOSmodel extends CPUEnergyModel
     {
         private static final String REGRESSORS_TIME_CONSERVATIVE   = "regressors.txt";
@@ -707,9 +828,9 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         public String getModelType( final boolean delimeters )
         {
             if (delimeters) {
-                return "PESOS_" + getMode() + "_" + getTimeBudget().getTimeMicros()/1000L + "ms";
+                return "PESOS_" + getMode() + "_" + getTimeBudget().getTimeMillis() + "ms";
             } else {
-                return "PESOS (" + getMode() + ", t = " + getTimeBudget().getTimeMicros()/1000L + "ms)";
+                return "PESOS (" + getMode() + ", t = " + getTimeBudget().getTimeMillis() + "ms)";
             }
         }
 
@@ -751,15 +872,6 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             super( Type.PERF, directory, files );
         }
         
-        /**
-         * Evaluates the input parameters to decide which is the "best" frequency
-         * to complete the current queue of queries.
-         * 
-         * @param now       time of evaluation.
-         * @param queries   list of parameters.
-         * 
-         * @return the "best" frequency, expressed in KHz.
-        */
         @Override
         public Long eval( final Time now, final QueryInfo... queries ) {
             return _device.getMaxFrequency();
@@ -908,6 +1020,18 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     
     public static class PEGASUSmodel extends CPUEnergyModel
     {
+        /**
+         * Creates a new PEGASUS model.
+         * 
+         * @param time_budget    time limit to complete a query (in ms).
+         * @param directory      directory used to load the files.
+         * 
+         * @throws IOException if a file doesn't exists or is malformed.
+        */
+        public PEGASUSmodel( final long time_budget, final String directory ) {
+            this( new Time( time_budget, TimeUnit.MILLISECONDS ), directory, POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY );
+        }
+        
         public PEGASUSmodel( final long time_budget, final String dir, final String... files ){
             this( new Time( time_budget, TimeUnit.MILLISECONDS ), dir, files );
         }
@@ -919,14 +1043,19 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }
         
         @Override
-        public String getModelType( final boolean delimeters ) {
-            return type.toString();
+        public String getModelType( final boolean delimeters )
+        {
+            if (delimeters) {
+                return "PEGASUS_" + getTimeBudget().getTimeMillis() + "ms";
+            } else {
+                return "PEGASUS (t = " + getTimeBudget().getTimeMillis() + "ms)";
+            }
         }
         
         @Override
         protected CPUEnergyModel cloneModel()
         {
-            PEGASUSmodel model = new PEGASUSmodel( timeBudget.clone(), _directory, _postings, _effective_time_energy );
+            CPUEnergyModel model = new PEGASUSmodel( timeBudget, _directory, _postings, _effective_time_energy );
             try { model.loadModel(); }
             catch ( IOException e ) { e.printStackTrace(); }
             return model;

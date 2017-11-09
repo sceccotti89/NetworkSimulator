@@ -87,7 +87,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
         if (!core.isNextQuery( query )) {
             Time time = _evtScheduler.getTimeDuration();
             query.setTimeToComplete( Time.ZERO, Time.ZERO );
-            System.out.println( "QUERY: " + query.getId() + ", CORE: " + core.getId() + ", TIME: INFINITO (NON E' LA PROSSIMA IMMEDIATA)" );
+            //System.out.println( "QUERY: " + query.getId() + ", CORE: " + core.getId() + ", TIME: INFINITO (NON E' LA PROSSIMA IMMEDIATA)" );
             return time.subTime( query.getArrivalTime() );
         }
         
@@ -98,7 +98,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
         Time startTime   = core.getTime();
         Time endTime     = startTime.clone().addTime( computeTime );
         query.setTimeToComplete( startTime, endTime );
-        System.out.println( "QUERY: " + query.getId() + ", CORE: " + core.getId() + ", START: " + startTime + ", END: " + endTime );
+        //System.out.println( "QUERY: " + query.getId() + ", CORE: " + core.getId() + ", START: " + startTime + ", END: " + endTime );
         
         computeEnergyConsumption( core, query, computeTime );
         core.setCompletedQuery( query );
@@ -285,7 +285,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
                                                                    false );
                     currentQuery.updateTimeEnergy( time, newFrequency, energy );
                     //TODO writeResult( frequency, currentQuery.getElapsedEnergy() );
-                    System.out.println( "TIME: " + time + ", CORE: " + coreId + ", QUERY: " + currentQuery.getId() + ", NEW_END_TIME: " + currentQuery.getEndTime() );
+                    //System.out.println( "TIME: " + time + ", CORE: " + coreId + ", QUERY: " + currentQuery.getId() + ", NEW_END_TIME: " + currentQuery.getEndTime() );
                     this.time = currentQuery.getEndTime();
                     updateEventTime( currentQuery, this.time );
                     
