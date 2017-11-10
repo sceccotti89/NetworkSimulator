@@ -104,8 +104,8 @@ public class ResultPlotting
         //                                                            "Results/Perf_Tail_Latency_95th_Percentile.txt" );
         //List<Pair<Double,Double>> consPercentiles = getPercentiles( "Results/CONS_Tail_Latency.log",
         //                                                            "Results/CONS_Latency_95th_Percentile.txt" );
-        List<Pair<Double,Double>> loadSensitivePercentiles = getPercentiles( "Results/LOAD_SENSITIVE_" + time_budget + "ms_Tail_Latency.log",
-                                                                             "Results/LOAD_SENSITIVE_" + time_budget + "ms_Tail_Latency_95th_Percentile.txt" );
+        List<Pair<Double,Double>> loadSensitivePercentiles = getPercentiles( "Results/LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
+                                                                             "Results/LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency_95th_Percentile.txt" );
         //List<Pair<Double,Double>> myPercentiles = getPercentiles( "Results/MY_Model_" + time_budget + "_Tail_Latency.log",
         //                                                          "Results/MY_Model_" + time_budget + "_Tail_Latency_95th_Percentile.txt" );
         
@@ -124,7 +124,7 @@ public class ResultPlotting
         //plotter.addPlot( pesosPercentiles, Color.GREEN, Line.UNIFORM, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
         //plotter.addPlot( perfPercentiles, Color.RED, Line.UNIFORM, "Perf" );
         //plotter.addPlot( consPercentiles, Color.GREEN, Line.UNIFORM, "CONS" );
-        plotter.addPlot( loadSensitivePercentiles, Color.GREEN, Line.UNIFORM, "LS (" + mode + ", t=" + time_budget + "ms)" );
+        plotter.addPlot( loadSensitivePercentiles, Color.RED, Line.UNIFORM, "LS (" + mode + ", t=" + time_budget + "ms)" );
         //plotter.addPlot( myPercentiles, Color.RED, Line.UNIFORM, "MY Model" );
         plotter.addPlot( points, Color.YELLOW, Line.DASHED, "Tail latency (" + time_budget + "ms)" );
         plotter.setVisible( true );
@@ -164,8 +164,8 @@ public class ResultPlotting
     
     public static void main( final String argv[] ) throws IOException
     {
-        final long time_budget = 500;
-        final Mode mode        = Mode.PESOS_TIME_CONSERVATIVE;
+        final long time_budget = 450;
+        final Mode mode        = Mode.TIME_CONSERVATIVE;
         
         //plotEnergy( time_budget, mode.toString() );
         plotTailLatency( time_budget, mode.toString() );

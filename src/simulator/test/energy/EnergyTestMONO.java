@@ -334,20 +334,21 @@ public class EnergyTestMONO
         
         CPUEnergyModel model = null;
         
-        //model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
-        //model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );
-        //model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
-        //model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
+        //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
+        //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
+        //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
-        model = loadModel( Type.LOAD_SENSITIVE , Mode.PESOS_TIME_CONSERVATIVE,  500 );
-        //model = loadModel( Type.LOAD_SENSITIVE , Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
-        //model = loadModel( Type.LOAD_SENSITIVE , Mode.PESOS_TIME_CONSERVATIVE, 1000 );
-        //model = loadModel( Type.LOAD_SENSITIVE , Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
+        model = loadModel( Type.LOAD_SENSITIVE , Mode.TIME_CONSERVATIVE,  450 );
+        //model = loadModel( Type.LOAD_SENSITIVE , Mode.TIME_CONSERVATIVE,  500 );
+        //model = loadModel( Type.LOAD_SENSITIVE , Mode.TIME_CONSERVATIVE, 1000 );
+        //model = loadModel( Type.LOAD_SENSITIVE , Mode.ENERGY_CONSERVATIVE,  500 );
+        //model = loadModel( Type.LOAD_SENSITIVE , Mode.ENERGY_CONSERVATIVE, 1000 );
         
         //model = loadModel( Type.PERF );
         //model = loadModel( Type.CONS );
         
-        //model = new MY_model( 1000, Mode.PESOS_TIME_CONSERVATIVE, "Models/Monolithic/PESOS/MaxScore/" );
+        //model = new MY_model( 1000, Mode.TIME_CONSERVATIVE, "Models/Monolithic/PESOS/MaxScore/" );
         model.loadModel();
         
         //while (true) {
@@ -559,6 +560,15 @@ public class EnergyTestMONO
         // 
         // SIMULATOR:  911862.87644774050   557117.85926009370    639790.48538287170     510740.82836311805 (12%)
         // IDLE:       207028.73735399803    70245.49618359195     79377.59104444605      74404.69254638738
+        
+        // LOAD SENSITIVE 500ms
+        //
+        // SIMULATOR:  569903.93600279400 (senza scegliere il piu' basso in frequenza)
+        //             578166.19423384720 (scegliendo il piu' basso in frequenza: STRANO!!)
+        
+        // LOAD SENSITIVE 1000ms
+        //
+        // SIMULATOR:  454620.37087130814 (solo 3% meglio di PESOS TC 1000ms)
         
         //600729.1560297232J
         //587592.5552513064J

@@ -181,9 +181,9 @@ public class EnergyCPU extends CPU
         setFrequency( frequency );
     }
     
-    public void incrementFrequency( final Time now, final int steps )
+    public void increaseFrequency( final Time now, final int steps )
     {
-        incrementFrequency( steps );
+        increaseFrequency( steps );
         for (Core core : getCores()) {
             core.setFrequency( now, getFrequency() );
         }
@@ -483,10 +483,7 @@ public class EnergyCPU extends CPU
         public boolean checkQueryCompletion( final Time time )
         {
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
-                //long queryId = currentQuery.getId();
-                //System.out.println( "TIME: " + time + ", CORE: " + getId() + ", COMPLETATA QUERY: " + currentQuery );
                 addQueryOnSampling();
-                
                 if (hasMoreQueries()) {
                     long frequency = cpu.evalFrequency( time, this );
                     setFrequency( time, frequency );

@@ -655,7 +655,7 @@ public class EnergyTestDIST2
                         queries.remove( index );
                         
                         if (PEGASUS_CONTROLLER) {
-                            pegasus.setCompletedQuery( endTime, completionTime );
+                            pegasus.setCompletedQuery( endTime, getId(), completionTime );
                         }
                     }
                 }
@@ -798,7 +798,7 @@ public class EnergyTestDIST2
                     } else {
                         for (long i = 0; i < CPU_CORES; i++) {
                             if (cpu.getCore( i ).checkQueryCompletion( e.getTime() )) {
-                                controller.completedQuery( e.getTime(), getId(), i );
+                                controller.completedQuery( e.getTime(), getId()-2, i );
                             }
                         }
                     }
@@ -963,10 +963,10 @@ public class EnergyTestDIST2
         
         //CPUEnergyModel model = null;
         
-        //model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
-        //model = loadModel( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );
-        //model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
-        //model = loadModel( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
+        //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
+        //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
+        //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
         //model = loadModel( Type.PERF );
         //model = loadModel( Type.CONS );
@@ -978,10 +978,10 @@ public class EnergyTestDIST2
         
         //testNetwork( model );
         
-        testNetwork( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE,  500 );
-        //testNetwork( Type.PESOS, Mode.PESOS_TIME_CONSERVATIVE, 1000 );
-        //testNetwork( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
-        //testNetwork( Type.PESOS, Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
+        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
+        //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
+        //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
         //testNetwork( Type.PERF, null, 0 );
         //testNetwork( Type.CONS, null, 0 );

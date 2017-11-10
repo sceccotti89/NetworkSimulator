@@ -1,11 +1,7 @@
-/**
- * @author Stefano Ceccotti
-*/
 
 package simulator.test.energy;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -19,14 +15,10 @@ import simulator.test.energy.CPUEnergyModel.PESOSmodel;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.test.energy.EnergyModel.QueryEnergyModel;
 import simulator.utils.Time;
-import simulator.utils.Utils;
 
 public class PESOScpu extends CPU
 {
     private static final long QUEUE_CHECK = TimeUnit.SECONDS.toMicros( 1 );
-    
-    // TODO File usato per testing
-    protected static PrintWriter coeffWriter;
     
     private Map<Long,List<QueryInfo>> coreQueue;
     private LinkedList<QueryReference> queries;
@@ -70,21 +62,7 @@ public class PESOScpu extends CPU
     @Override
     public void setModel( final Model<Long,QueryInfo> model )
     {
-        // TODO RIMUOVERE IL WRITER DOPO I TEST
-        if (coeffWriter != null)
-            coeffWriter.close();
-        
         CPUEnergyModel cpuModel = (CPUEnergyModel) model;
-        try {
-            long timeBudget = cpuModel.getTimeBudget().getTimeMicros()/1000;
-            String file = "PESOS_" + timeBudget + "_" + cpuModel.getMode();
-            file += (_cores == 1) ? "_distr" : "_mono";
-            Utils.checkDirectory( "Results/Coefficients" );
-            coeffWriter = new PrintWriter( "Results/Coefficients/" + file + "_Freq_Energy.txt", "UTF-8" );
-        } catch ( IOException e ) {
-            e.printStackTrace();
-        }
-        
         for (long i = 0; i < _cores; i++) {
             PESOScore core = new PESOScore( this, i, getMaxFrequency() );
             core.setBaseTimeBudget( getTime(), cpuModel.getTimeBudget().getTimeMicros() );
@@ -204,6 +182,9 @@ public class PESOScpu extends CPU
         }
     }
     
+    // TODO forse un miglior scheduler potrebbe essere quello che controlla il tempo di
+    // TODO completamento delle varie query e le assegna in base ai tempi e non alla frequenza.
+    
     /**
      * Returns the first query associated to the requesting core.
      * 
@@ -253,18 +234,6 @@ public class PESOScpu extends CPU
         energy = energyModel.computeEnergy( energy, frequency, computeTime, false );
         query.setEnergyConsumption( energy );
         core.addIdleEnergy( query.getStartTime(), true );
-    }
-    
-    // TODO rimuovere dopo i test
-    public static void writeResult( final long frequency, final double energy ) {
-        coeffWriter.println( frequency + " " + energy + " " );
-    }
-    
-    @Override
-    public Double getResultSampled( final String sampler ) {
-        // TODO RIMUOVERE QUESTO METODO DOPO I TEST
-        coeffWriter.close();
-        return super.getResultSampled( sampler );
     }
     
     @Override
@@ -366,18 +335,15 @@ public class PESOScpu extends CPU
                 if (idleTimeInterval + idleTime < QUEUE_CHECK) {
                     idleEnergy = cpu.energyModel.getIdleEnergy( frequency, idleTime );
                     idleTimeInterval += idleTime;
-                    writeResult( frequency, idleEnergy );
                 } else {
                     // Set the minimum frequency if the time elapsed between two consecutive queries
                     // is at least QUEUE_CHECK microseconds.
                     long timeAtMaxFreq = QUEUE_CHECK - idleTimeInterval;
                     idleEnergy = cpu.energyModel.getIdleEnergy( frequency, timeAtMaxFreq );
-                    writeResult( frequency, idleEnergy );
                     
                     frequency = cpu.getMinFrequency();
                     double energy = cpu.energyModel.getIdleEnergy( frequency, idleTime - timeAtMaxFreq );
                     idleEnergy += energy;
-                    writeResult( frequency, energy );
                     
                     idleTimeInterval = 0;
                 }

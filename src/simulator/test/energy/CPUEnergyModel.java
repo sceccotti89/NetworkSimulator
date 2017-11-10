@@ -90,16 +90,16 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     }
     
     /**
-     * PESOS modality:
+     * Model modality:
      * <p><lu>
-     * <li>PESOS_TIME_CONSERVATIVE:   consumes more energy, reducing the tail latency.
-     * <li>PESOS_ENERGY_CONSERVATIVE: consumes less energy at a higher tail latency.
+     * <li>TIME_CONSERVATIVE:   consumes more energy, reducing the tail latency.
+     * <li>ENERGY_CONSERVATIVE: consumes less energy at a higher tail latency.
      * </lu>
     */
     public enum Mode
     {
-        PESOS_TIME_CONSERVATIVE( "TC" ),
-        PESOS_ENERGY_CONSERVATIVE( "EC" );
+        TIME_CONSERVATIVE( "TC" ),
+        ENERGY_CONSERVATIVE( "EC" );
         
         private final String name;
         private Mode( final String name ) {
@@ -297,8 +297,8 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         {
             this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory,
                   POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY,
-                  (mode == Mode.PESOS_ENERGY_CONSERVATIVE) ? REGRESSORS_ENERGY_CONSERVATIVE :
-                                                             REGRESSORS_TIME_CONSERVATIVE );
+                  (mode == Mode.ENERGY_CONSERVATIVE) ? REGRESSORS_ENERGY_CONSERVATIVE :
+                                                       REGRESSORS_TIME_CONSERVATIVE );
         }
         
         /**
@@ -511,40 +511,65 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
          * @throws IOException if a file doesn't exists or is malformed.
         */
         public LOAD_SENSITIVEmodel( final long time_budget, final Mode mode, final String directory ) {
-            this( new Time( time_budget, TimeUnit.MILLISECONDS ), directory,
+            this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory,
                             POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY,
-                            (mode == Mode.PESOS_ENERGY_CONSERVATIVE) ? REGRESSORS_ENERGY_CONSERVATIVE :
-                                                                       REGRESSORS_TIME_CONSERVATIVE );
+                            (mode == Mode.ENERGY_CONSERVATIVE) ? REGRESSORS_ENERGY_CONSERVATIVE :
+                                                                 REGRESSORS_TIME_CONSERVATIVE );
         }
         
-        public LOAD_SENSITIVEmodel( final long time_budget, final String dir, final String... files ){
-            this( new Time( time_budget, TimeUnit.MILLISECONDS ), dir, files );
+        public LOAD_SENSITIVEmodel( final long time_budget, final Mode mode, final String dir, final String... files ){
+            this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, dir, files );
         }
         
-        public LOAD_SENSITIVEmodel( final Time time_budget, final String dir, final String... files )
+        public LOAD_SENSITIVEmodel( final Time time_budget, final Mode mode, final String dir, final String... files )
         {
-            super( Type.LOAD_SENSITIVE, dir, files );
+            super( getType( mode ), dir, files );
             timeBudget = time_budget;
         }
         
-        @Override
-        public String getModelType( final boolean delimeters )
+        private static Type getType( final Mode mode )
         {
-            if (delimeters) {
-                return "LOAD_SENSITIVE_" + getTimeBudget().getTimeMillis() + "ms";
-            } else {
-                return "LOAD_SENSITIVE (t = " + getTimeBudget().getTimeMillis() + "ms)";
-            }
+            Type type = Type.LOAD_SENSITIVE;
+            type.setMode( mode );
+            return type;
         }
         
-        @Override
-        protected CPUEnergyModel cloneModel()
+        /*@Override
+        public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
         {
-            CPUEnergyModel model = new LOAD_SENSITIVEmodel( timeBudget, _directory, _postings, _effective_time_energy, _regressors );
-            try { model.loadModel(); }
-            catch ( IOException e ) { e.printStackTrace(); }
-            return model;
-        }
+            // NOTE: This is a new core selection technique,
+            //       based on the frequency evaluation.
+            
+            long id = -1;
+            long minFrequency = Long.MAX_VALUE;
+            long tiedSelection = Long.MAX_VALUE;
+            boolean tieSituation = false;
+            for (Core core : cpu.getCores()) {
+                long frequency = core.getFrequency();
+                core.addQuery( q, false );
+                if (core.getFrequency() < minFrequency) {
+                    id = core.getId();
+                    minFrequency = core.getFrequency();
+                    tiedSelection = core.tieSelected;
+                    tieSituation = false;
+                } else if (core.getFrequency() == minFrequency) {
+                    if (core.tieSelected < tiedSelection) {
+                        id = core.getId();
+                        minFrequency = core.getFrequency();
+                        tiedSelection = core.tieSelected;
+                    }
+                    tieSituation = true;
+                }
+                core.removeQuery( core.getQueue().size() - 1 );
+                core.setFrequency( frequency );
+            }
+            
+            if (tieSituation) {
+                cpu.getCore( id ).tieSelected++;
+            }
+            
+            return cpu.lastSelectedCore = id;
+        }*/
         
         @Override
         public Long eval( final Time now, final QueryInfo... queries )
@@ -613,6 +638,25 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }
         
         @Override
+        public String getModelType( final boolean delimeters )
+        {
+            if (delimeters) {
+                return "LOAD_SENSITIVE_" + getMode() + "_" + getTimeBudget().getTimeMillis() + "ms";
+            } else {
+                return "LOAD_SENSITIVE (" + getMode() + ", t = " + getTimeBudget().getTimeMillis() + "ms)";
+            }
+        }
+
+        @Override
+        protected CPUEnergyModel cloneModel()
+        {
+            CPUEnergyModel model = new LOAD_SENSITIVEmodel( timeBudget, getMode(), _directory, _postings, _effective_time_energy, _regressors );
+            try { model.loadModel(); }
+            catch ( IOException e ) { e.printStackTrace(); }
+            return model;
+        }
+
+        @Override
         public void close() {}
     }
     
@@ -635,7 +679,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         {
             this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory,
                   POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY,
-                  (mode == Mode.PESOS_ENERGY_CONSERVATIVE) ? REGRESSORS_ENERGY_CONSERVATIVE : REGRESSORS_TIME_CONSERVATIVE );
+                  (mode == Mode.ENERGY_CONSERVATIVE) ? REGRESSORS_ENERGY_CONSERVATIVE : REGRESSORS_TIME_CONSERVATIVE );
         }
         
         /**
@@ -757,43 +801,13 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             return _device.getMaxFrequency(); 
         }
         
-        @Override
+        /*@Override
         public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
         {
-            //System.out.println( "SELECTING CORE AT: " + time );
-            long id = -1;
-            double utilization = Integer.MAX_VALUE;
-            long tiedSelection  = Long.MAX_VALUE;
-            boolean tieSituation = false;
-            for (Core core : cpu.getCores()) {
-                double coreUtilization = core.getUtilization( time );
-                if (coreUtilization < utilization) {
-                    id = core.getId();
-                    utilization = coreUtilization;
-                    tiedSelection = core.tieSelected;
-                    tieSituation = false;
-                }/* else if (coreUtilization == utilization) {
-                    if (core.tieSelected < tiedSelection) {
-                        id = core.getId();
-                        utilization = coreUtilization;
-                        tiedSelection = core.tieSelected;
-                    }
-                    tieSituation = true;
-                }*/
-            }
-            
-            if (tieSituation) {
-                cpu.getCore( id ).tieSelected++;
-            }
-            
-            return cpu.lastSelectedCore = id;
-            
-            // TODO Mettere questo dopo aver testato se il decremento di frequenza di PESOS
-            // TODO sia corretto.
             // NOTE: This is a new core selection technique,
             //       based on the frequency evaluation.
             
-            /*long id = -1;
+            long id = -1;
             long minFrequency = Long.MAX_VALUE;
             long tiedSelection = Long.MAX_VALUE;
             boolean tieSituation = false;
@@ -821,8 +835,8 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                 cpu.getCore( id ).tieSelected++;
             }
             
-            return cpu.lastSelectedCore = id;*/
-        }
+            return cpu.lastSelectedCore = id;
+        }*/
         
         @Override
         public String getModelType( final boolean delimeters )
@@ -837,7 +851,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         @Override
         protected CPUEnergyModel cloneModel()
         {
-            PESOSmodel model = new PESOSmodel( timeBudget.clone(), getMode(), "", _postings, _effective_time_energy, _regressors );
+            PESOSmodel model = new PESOSmodel( timeBudget.clone(), getMode(), _directory, _postings, _effective_time_energy, _regressors );
             try { model.loadModel(); }
             catch ( IOException e ) { e.printStackTrace(); }
             return model;

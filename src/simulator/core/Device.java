@@ -233,10 +233,12 @@ public abstract class Device<I,O>
     }
     
     /**
-     * Increments the current frequency of the given steps.</br>
+     * Increases the current frequency by the given steps.</br>
      * The new frequency cannot be higher than the maximum.
+     * 
+     * @param steps    number of steps to increase.
     */
-    public void incrementFrequency( final int steps )
+    public void increaseFrequency( final int steps )
     {
         int index = _frequencies.indexOf( _frequency );
         index = Math.min( index + steps, _frequencies.size() - 1 );
@@ -244,8 +246,10 @@ public abstract class Device<I,O>
     }
     
     /**
-     * Decrements the current frequency of the given steps.</br>
+     * Decreases the current frequency by the given steps.</br>
      * The new frequency cannot be lower than the minimum.
+     * 
+     * @param steps    number of steps to decrease.
     */
     public void decreaseFrequency( final int steps )
     {

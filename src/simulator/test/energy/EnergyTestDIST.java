@@ -354,10 +354,10 @@ public class EnergyTestDIST
     {
         Utils.VERBOSE = false;
         
-        execute( Mode.PESOS_TIME_CONSERVATIVE,  500 );
-        //execute( Mode.PESOS_TIME_CONSERVATIVE, 1000 );
-        //execute( Mode.PESOS_ENERGY_CONSERVATIVE,  500 );
-        //execute( Mode.PESOS_ENERGY_CONSERVATIVE, 1000 );
+        execute( Mode.TIME_CONSERVATIVE,  500 );
+        //execute( Mode.TIME_CONSERVATIVE, 1000 );
+        //execute( Mode.ENERGY_CONSERVATIVE,  500 );
+        //execute( Mode.ENERGY_CONSERVATIVE, 1000 );
     }
     
     private static void execute( final Mode mode, final long timeBudget ) throws Exception
