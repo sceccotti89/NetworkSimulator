@@ -563,14 +563,17 @@ public class EnergyTestMONO
         
         // TODO Per l'effettiva tail latency di LOAD_SENSITIVE dovrei testarlo sulla macchina fisica.
         // LOAD SENSITIVE TC 450ms (la tail latency e' leggermente oltre il target)
+        // TARGET: 
         //
         // SIMULATOR:  570345.43547608330 (4% in meno di PESOS TC 500ms)
         
         // LOAD SENSITIVE TC 500ms (la tail latency pero' va troppo oltre il target)
+        // TARGET: 
         //
         // SIMULATOR:  546691.55218955160 (8 % in meno di PESOS TC 500ms)
         
         // LOAD SENSITIVE TC 1000ms
+        // TARGET: 
         //
         // SIMULATOR:  432603.40357559910 (8% in meno di PESOS TC 1000ms)
         
