@@ -164,7 +164,7 @@ public class ResultPlotting
     
     public static void main( final String argv[] ) throws IOException
     {
-        final long time_budget = 450;
+        final long time_budget = 500;
         final Mode mode        = Mode.TIME_CONSERVATIVE;
         
         //plotEnergy( time_budget, mode.toString() );

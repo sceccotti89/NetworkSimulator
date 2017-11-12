@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import simulator.core.Model;
 import simulator.core.Task;
 import simulator.test.energy.CPUEnergyModel.CONSmodel;
+import simulator.test.energy.CPUEnergyModel.LOAD_SENSITIVEmodel;
 import simulator.test.energy.CPUEnergyModel.PESOSmodel;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.test.energy.CPUEnergyModel.Type;
@@ -115,35 +116,7 @@ public class EnergyCPU extends CPU
     }
     
     @Override
-    public long selectCore( final Time time, final QueryInfo query )
-    {
-        //System.out.println( "SELECTING CORE AT: " + time );
-        /*long id = -1;
-        double utilization = Integer.MAX_VALUE;
-        int tiedSelection  = Integer.MAX_VALUE;
-        boolean tieSituation = false;
-        for (Core core : coresMap.values()) {
-            double coreUtilization = core.getUtilization( time );
-            if (coreUtilization < utilization) {
-                id = core.getId();
-                utilization = coreUtilization;
-                tiedSelection = core.tieSelected;
-                tieSituation = false;
-            } else if (coreUtilization == utilization) {
-                if (core.tieSelected < tiedSelection) {
-                    id = core.getId();
-                    utilization = coreUtilization;
-                    tiedSelection = core.tieSelected;
-                }
-                tieSituation = true;
-            }
-        }
-        
-        if (tieSituation) {
-            getCore( id ).tieSelected++;
-        }
-        
-        return lastSelectedCore = id;*/
+    public long selectCore( final Time time, final QueryInfo query ) {
         return ((CPUEnergyModel) _model).selectCore( time, this, query );
     }
     
@@ -261,6 +234,8 @@ public class EnergyCPU extends CPU
         private long baseTimeBudget;
         private long timeBudget;
         
+        private int queryExecutionTime = 0;
+        
         public PESOScore( final EnergyCPU cpu, final long coreId, final long initFrequency ) {
             super( cpu, coreId, initFrequency );
         }
@@ -272,6 +247,10 @@ public class EnergyCPU extends CPU
             queryQueue.add( q );
             long frequency = cpu.evalFrequency( q.getArrivalTime(), this );
             if (updateFrequency) {
+                PESOSmodel model = (PESOSmodel) cpu.getModel();
+                final int postings = q.getPostings() + model.getRegressor( q.getTerms() );
+                queryExecutionTime += model.predictServiceTimeAtMaxFrequency( q.getTerms(), postings );
+                
                 setFrequency( q.getArrivalTime(), frequency );
             } else {
                 this.frequency = frequency;
@@ -284,10 +263,14 @@ public class EnergyCPU extends CPU
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
                 //long queryId = currentQuery.getId();
                 //System.out.println( "TIME: " + time + ", CORE: " + getId() + ", COMPLETATA QUERY: " + currentQuery );
+                PESOSmodel model = (PESOSmodel) cpu.getModel();
+                final int postings = currentQuery.getPostings() + model.getRegressor( currentQuery.getTerms() );
+                queryExecutionTime -= model.predictServiceTimeAtMaxFrequency( currentQuery.getTerms(), postings );
+                
                 addQueryOnSampling();
                 if (timeBudget != baseTimeBudget) {
                     timeBudget = baseTimeBudget;
-                    PESOSmodel model = (PESOSmodel) cpu.getModel();
+                    //PESOSmodel model = (PESOSmodel) cpu.getModel();
                     model.setTimeBudget( timeBudget );
                 }
                 
@@ -319,6 +302,10 @@ public class EnergyCPU extends CPU
                 //long frequency = cpu.evalFrequency( t, this );
                 setFrequency( time, frequency );
             }
+        }
+        
+        public int getQueryExecutionTime() {
+            return queryExecutionTime;
         }
         
         @Override
@@ -473,8 +460,10 @@ public class EnergyCPU extends CPU
         }
     }
     
-    private static class LOAD_SENSITIVEcore extends Core
+    public static class LOAD_SENSITIVEcore extends Core
     {
+        private int queryExecutionTime = 0;
+        
         public LOAD_SENSITIVEcore( final CPU cpu, final long coreId, final long initFrequency ) {
             super( cpu, coreId, initFrequency );
         }
@@ -483,6 +472,10 @@ public class EnergyCPU extends CPU
         public boolean checkQueryCompletion( final Time time )
         {
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+                LOAD_SENSITIVEmodel model = (LOAD_SENSITIVEmodel) cpu.getModel();
+                final int postings = currentQuery.getPostings() + model.getRegressor( currentQuery.getTerms() );
+                queryExecutionTime -= model.predictServiceTimeAtMaxFrequency( currentQuery.getTerms(), postings );
+                
                 addQueryOnSampling();
                 if (hasMoreQueries()) {
                     long frequency = cpu.evalFrequency( time, this );
@@ -502,10 +495,18 @@ public class EnergyCPU extends CPU
             queryQueue.add( q );
             long frequency = cpu.evalFrequency( q.getArrivalTime(), this );
             if (updateFrequency) {
+                LOAD_SENSITIVEmodel model = (LOAD_SENSITIVEmodel) cpu.getModel();
+                final int postings = q.getPostings() + model.getRegressor( q.getTerms() );
+                queryExecutionTime += model.predictServiceTimeAtMaxFrequency( q.getTerms(), postings );
+                
                 setFrequency( q.getArrivalTime(), frequency );
             } else {
                 this.frequency = frequency;
             }
+        }
+        
+        public int getQueryExecutionTime() {
+            return queryExecutionTime;
         }
         
         @Override

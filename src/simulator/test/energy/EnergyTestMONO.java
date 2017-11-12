@@ -339,11 +339,11 @@ public class EnergyTestMONO
         //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
-        model = loadModel( Type.LOAD_SENSITIVE , Mode.TIME_CONSERVATIVE,  450 );
-        //model = loadModel( Type.LOAD_SENSITIVE , Mode.TIME_CONSERVATIVE,  500 );
-        //model = loadModel( Type.LOAD_SENSITIVE , Mode.TIME_CONSERVATIVE, 1000 );
-        //model = loadModel( Type.LOAD_SENSITIVE , Mode.ENERGY_CONSERVATIVE,  500 );
-        //model = loadModel( Type.LOAD_SENSITIVE , Mode.ENERGY_CONSERVATIVE, 1000 );
+        //model = loadModel( Type.LOAD_SENSITIVE, Mode.TIME_CONSERVATIVE,  450 );
+        model = loadModel( Type.LOAD_SENSITIVE, Mode.TIME_CONSERVATIVE,  500 );
+        //model = loadModel( Type.LOAD_SENSITIVE, Mode.TIME_CONSERVATIVE, 1000 );
+        //model = loadModel( Type.LOAD_SENSITIVE, Mode.ENERGY_CONSERVATIVE,  500 );
+        //model = loadModel( Type.LOAD_SENSITIVE, Mode.ENERGY_CONSERVATIVE, 1000 );
         
         //model = loadModel( Type.PERF );
         //model = loadModel( Type.CONS );
@@ -561,14 +561,18 @@ public class EnergyTestMONO
         // SIMULATOR:  911862.87644774050   557117.85926009370    639790.48538287170     510740.82836311805 (12%)
         // IDLE:       207028.73735399803    70245.49618359195     79377.59104444605      74404.69254638738
         
-        // LOAD SENSITIVE 500ms
+        // TODO Per l'effettiva tail latency dovrei testarlo sulla macchina fisica.
+        // LOAD SENSITIVE TC 450ms (la tail latency e' leggermente oltre il target)
         //
-        // SIMULATOR:  569903.93600279400 (senza scegliere il piu' basso in frequenza)
-        //             578166.19423384720 (scegliendo il piu' basso in frequenza: STRANO!!)
+        // SIMULATOR:  570345.43547608330 (4% in meno di PESOS TC 500ms)
         
-        // LOAD SENSITIVE 1000ms
+        // LOAD SENSITIVE TC 500ms (la tail latency pero' va troppo oltre il target)
         //
-        // SIMULATOR:  454620.37087130814 (solo 3% meglio di PESOS TC 1000ms)
+        // SIMULATOR:  546691.55218955160 (8 % in meno di PESOS TC 500ms)
+        
+        // LOAD SENSITIVE TC 1000ms
+        //
+        // SIMULATOR:  432603.40357559910 (8% in meno di PESOS TC 1000ms)
         
         //600729.1560297232J
         //587592.5552513064J

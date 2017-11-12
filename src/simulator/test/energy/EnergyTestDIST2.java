@@ -514,8 +514,11 @@ public class EnergyTestDIST2
                 _postings = postings;
             }
             
-            public void predictServiceTime( final PESOSmodel model ) {
-                _serviceTime = model.predictServiceTimeAtMaxFrequency( _terms, _postings );
+            public void predictServiceTime( final PESOSmodel model )
+            {
+                // TODO testare questa soluzione ora che ho sistemato i postings: testare per tutti e 4 i casi.
+                int ppcRMSE = model.getRegressor( _terms );
+                _serviceTime = model.predictServiceTimeAtMaxFrequency( _terms, _postings + ppcRMSE );
                 //System.out.println( "QUERY: " + _id + ", PREDICTED: " + _serviceTime + ", REAL: " + model.getQuery( _id ).getTime( 3500000 )  );
             }
             

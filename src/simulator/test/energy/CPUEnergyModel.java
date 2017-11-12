@@ -17,6 +17,7 @@ import simulator.events.Event;
 import simulator.test.energy.CPU.Core;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.test.energy.EnergyCPU.CONScore;
+import simulator.test.energy.EnergyCPU.LOAD_SENSITIVEcore;
 import simulator.utils.Pair;
 import simulator.utils.Time;
 import simulator.utils.Utils;
@@ -251,7 +252,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                 utilization = coreUtilization;
                 tiedSelection = core.tieSelected;
                 tieSituation = false;
-            } else if (coreUtilization == utilization) {
+            } else if (coreUtilization == utilization) { // TODO per testare l'abbassamento di frequenze di PESOS dovrei commentare questa parte
                 if (core.tieSelected < tiedSelection) {
                     id = core.getId();
                     utilization = coreUtilization;
@@ -355,7 +356,6 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                     if (startTime.getTimeMicros() == 0) {
                         startTime.setTime( now );
                     }
-                    // TODO in teoria dovrei calcolare l'attuale percentuale e utilizzarla per ottenere il nuovo tempo.
                     service.subTime( now.clone().subTime( startTime ) );
                     Time endTime = now.clone().addTime( service );
                     
@@ -572,6 +572,37 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }*/
         
         @Override
+        public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
+        {
+            long id = -1;
+            long minExecutionTime = Long.MAX_VALUE;
+            long tiedSelection = Long.MAX_VALUE;
+            boolean tieSituation = false;
+            for (Core core : cpu.getCores()) {
+                int executionTime = ((LOAD_SENSITIVEcore) core).getQueryExecutionTime();
+                if (executionTime < minExecutionTime) {
+                    id = core.getId();
+                    minExecutionTime = executionTime;
+                    tiedSelection = core.tieSelected;
+                    tieSituation = false;
+                } else if (executionTime == minExecutionTime) {
+                    if (core.tieSelected < tiedSelection) {
+                        id = core.getId();
+                        minExecutionTime = executionTime;
+                        tiedSelection = core.tieSelected;
+                    }
+                    tieSituation = true;
+                }
+            }
+            
+            if (tieSituation) {
+                cpu.getCore( id ).tieSelected++;
+            }
+            
+            return cpu.lastSelectedCore = id;
+        }
+        
+        @Override
         public Long eval( final Time now, final QueryInfo... queries )
         {
             QueryInfo currentQuery = queries[0];
@@ -611,7 +642,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             }
         }
         
-        private long predictServiceTimeAtMaxFrequency( final int terms, final long postings )
+        public long predictServiceTimeAtMaxFrequency( final int terms, final long postings )
         {
             String base  = _device.getMaxFrequency() + "." + terms;
             double alpha = regressors.get( base + ".alpha" );
@@ -635,6 +666,10 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             }
             
             return _device.getMaxFrequency(); 
+        }
+        
+        public int getRegressor( final int terms ) {
+            return regressors.get( "class." + terms + ".rmse" ).intValue();
         }
         
         @Override
@@ -801,7 +836,12 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             return _device.getMaxFrequency(); 
         }
         
-        /*@Override
+        public int getRegressor( final int terms ) {
+            return regressors.get( "class." + terms + ".rmse" ).intValue();
+        }
+        
+        // TODO Per PESOS utilizzare questo: vince (di molto) nei 1000ms ma perde (di poco) nei 500ms.
+        @Override
         public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
         {
             // NOTE: This is a new core selection technique,
@@ -829,6 +869,37 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
                 }
                 core.removeQuery( core.getQueue().size() - 1 );
                 core.setFrequency( frequency );
+            }
+            
+            if (tieSituation) {
+                cpu.getCore( id ).tieSelected++;
+            }
+            
+            return cpu.lastSelectedCore = id;
+        }
+        
+        /*@Override
+        public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
+        {
+            long id = -1;
+            long minExecutionTime = Long.MAX_VALUE;
+            long tiedSelection = Long.MAX_VALUE;
+            boolean tieSituation = false;
+            for (Core core : cpu.getCores()) {
+                int executionTime = ((PESOScore) core).getQueryExecutionTime();
+                if (executionTime < minExecutionTime) {
+                    id = core.getId();
+                    minExecutionTime = executionTime;
+                    tiedSelection = core.tieSelected;
+                    tieSituation = false;
+                } else if (executionTime == minExecutionTime) {
+                    if (core.tieSelected < tiedSelection) {
+                        id = core.getId();
+                        minExecutionTime = executionTime;
+                        tiedSelection = core.tieSelected;
+                    }
+                    tieSituation = true;
+                }
             }
             
             if (tieSituation) {
