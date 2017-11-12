@@ -261,8 +261,8 @@ public abstract class CPU extends Device<Long,QueryInfo>
                 //System.out.println( "TIME_BUDGET: " + ((PESOSmodel) cpu.getModel()).getTimeBudget() );
                 //System.out.println( "TIME: " + time + ", NEW: " + newFrequency + ", OLD: " + frequency );
                 if (currentQuery != null) {
-                    /*if (newFrequency < frequency) {
-                        // FIXME abbassamento frequenza PESOS.
+                    if (newFrequency < frequency) {
+                        // FIXME abbassamento frequenza (in genere con PESOS).
                         try {
                             int val = 100 / 0;
                             System.out.println( "VAL: " + val );
@@ -276,7 +276,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
                             }
                             System.exit( 0 );
                         }
-                    }*/
+                    }
                     
                     // Update the termination time and the energy consumption of the current query.
                     double energy = cpu.energyModel.computeEnergy( currentQuery.getEnergy( newFrequency ),

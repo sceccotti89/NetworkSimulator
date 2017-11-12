@@ -335,12 +335,12 @@ public class EnergyTestMONO
         CPUEnergyModel model = null;
         
         //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
-        //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
+        model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
         //model = loadModel( Type.LOAD_SENSITIVE, Mode.TIME_CONSERVATIVE,  450 );
-        model = loadModel( Type.LOAD_SENSITIVE, Mode.TIME_CONSERVATIVE,  500 );
+        //model = loadModel( Type.LOAD_SENSITIVE, Mode.TIME_CONSERVATIVE,  500 );
         //model = loadModel( Type.LOAD_SENSITIVE, Mode.TIME_CONSERVATIVE, 1000 );
         //model = loadModel( Type.LOAD_SENSITIVE, Mode.ENERGY_CONSERVATIVE,  500 );
         //model = loadModel( Type.LOAD_SENSITIVE, Mode.ENERGY_CONSERVATIVE, 1000 );
@@ -561,7 +561,7 @@ public class EnergyTestMONO
         // SIMULATOR:  911862.87644774050   557117.85926009370    639790.48538287170     510740.82836311805 (12%)
         // IDLE:       207028.73735399803    70245.49618359195     79377.59104444605      74404.69254638738
         
-        // TODO Per l'effettiva tail latency dovrei testarlo sulla macchina fisica.
+        // TODO Per l'effettiva tail latency di LOAD_SENSITIVE dovrei testarlo sulla macchina fisica.
         // LOAD SENSITIVE TC 450ms (la tail latency e' leggermente oltre il target)
         //
         // SIMULATOR:  570345.43547608330 (4% in meno di PESOS TC 500ms)
