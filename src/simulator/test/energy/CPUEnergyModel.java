@@ -580,7 +580,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             long tiedSelection = Long.MAX_VALUE;
             boolean tieSituation = false;
             for (Core core : cpu.getCores()) {
-                int executionTime = ((LOAD_SENSITIVEcore) core).getQueryExecutionTime();
+                long executionTime = ((LOAD_SENSITIVEcore) core).getQueryExecutionTime( time );
                 if (executionTime < minExecutionTime) {
                     id = core.getId();
                     minExecutionTime = executionTime;
@@ -669,7 +669,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             return _device.getMaxFrequency(); 
         }
         
-        public int getRegressor( final int terms ) {
+        public int getRMSE( final int terms ) {
             return regressors.get( "class." + terms + ".rmse" ).intValue();
         }
         
@@ -837,7 +837,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             return _device.getMaxFrequency(); 
         }
         
-        public int getRegressor( final int terms ) {
+        public int getRMSE( final int terms ) {
             return regressors.get( "class." + terms + ".rmse" ).intValue();
         }
         
@@ -887,7 +887,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             long tiedSelection = Long.MAX_VALUE;
             boolean tieSituation = false;
             for (Core core : cpu.getCores()) {
-                int executionTime = ((PESOScore) core).getQueryExecutionTime();
+                long executionTime = ((PESOScore) core).getQueryExecutionTime( time );
                 if (executionTime < minExecutionTime) {
                     id = core.getId();
                     minExecutionTime = executionTime;

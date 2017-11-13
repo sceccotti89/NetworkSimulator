@@ -234,7 +234,7 @@ public class EnergyCPU extends CPU
         private long baseTimeBudget;
         private long timeBudget;
         
-        private int queryExecutionTime = 0;
+        private long queryExecutionTime = 0;
         
         public PESOScore( final EnergyCPU cpu, final long coreId, final long initFrequency ) {
             super( cpu, coreId, initFrequency );
@@ -248,7 +248,7 @@ public class EnergyCPU extends CPU
             long frequency = cpu.evalFrequency( q.getArrivalTime(), this );
             if (updateFrequency) {
                 PESOSmodel model = (PESOSmodel) cpu.getModel();
-                final int postings = q.getPostings() + model.getRegressor( q.getTerms() );
+                final int postings = q.getPostings() + model.getRMSE( q.getTerms() );
                 queryExecutionTime += model.predictServiceTimeAtMaxFrequency( q.getTerms(), postings );
                 
                 setFrequency( q.getArrivalTime(), frequency );
@@ -264,7 +264,7 @@ public class EnergyCPU extends CPU
                 //long queryId = currentQuery.getId();
                 //System.out.println( "TIME: " + time + ", CORE: " + getId() + ", COMPLETATA QUERY: " + currentQuery );
                 PESOSmodel model = (PESOSmodel) cpu.getModel();
-                final int postings = currentQuery.getPostings() + model.getRegressor( currentQuery.getTerms() );
+                final int postings = currentQuery.getPostings() + model.getRMSE( currentQuery.getTerms() );
                 queryExecutionTime -= model.predictServiceTimeAtMaxFrequency( currentQuery.getTerms(), postings );
                 
                 addQueryOnSampling();
@@ -304,7 +304,15 @@ public class EnergyCPU extends CPU
             }
         }
         
-        public int getQueryExecutionTime() {
+        public long getQueryExecutionTime( final Time time )
+        {
+            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+                PESOSmodel model = (PESOSmodel) cpu.getModel();
+                final int postings = currentQuery.getPostings() + model.getRMSE( currentQuery.getTerms() );
+                long predictedTime = model.predictServiceTimeAtMaxFrequency( currentQuery.getTerms(), postings );
+                return queryExecutionTime - predictedTime;
+            }
+            
             return queryExecutionTime;
         }
         
@@ -462,7 +470,7 @@ public class EnergyCPU extends CPU
     
     public static class LOAD_SENSITIVEcore extends Core
     {
-        private int queryExecutionTime = 0;
+        private long queryExecutionTime = 0;
         
         public LOAD_SENSITIVEcore( final CPU cpu, final long coreId, final long initFrequency ) {
             super( cpu, coreId, initFrequency );
@@ -473,7 +481,7 @@ public class EnergyCPU extends CPU
         {
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
                 LOAD_SENSITIVEmodel model = (LOAD_SENSITIVEmodel) cpu.getModel();
-                final int postings = currentQuery.getPostings() + model.getRegressor( currentQuery.getTerms() );
+                final int postings = currentQuery.getPostings() + model.getRMSE( currentQuery.getTerms() );
                 queryExecutionTime -= model.predictServiceTimeAtMaxFrequency( currentQuery.getTerms(), postings );
                 
                 addQueryOnSampling();
@@ -496,7 +504,7 @@ public class EnergyCPU extends CPU
             long frequency = cpu.evalFrequency( q.getArrivalTime(), this );
             if (updateFrequency) {
                 LOAD_SENSITIVEmodel model = (LOAD_SENSITIVEmodel) cpu.getModel();
-                final int postings = q.getPostings() + model.getRegressor( q.getTerms() );
+                final int postings = q.getPostings() + model.getRMSE( q.getTerms() );
                 queryExecutionTime += model.predictServiceTimeAtMaxFrequency( q.getTerms(), postings );
                 
                 setFrequency( q.getArrivalTime(), frequency );
@@ -505,7 +513,15 @@ public class EnergyCPU extends CPU
             }
         }
         
-        public int getQueryExecutionTime() {
+        public long getQueryExecutionTime( final Time time )
+        {
+            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+                LOAD_SENSITIVEmodel model = (LOAD_SENSITIVEmodel) cpu.getModel();
+                final int postings = currentQuery.getPostings() + model.getRMSE( currentQuery.getTerms() );
+                long predictedTime = model.predictServiceTimeAtMaxFrequency( currentQuery.getTerms(), postings );
+                return queryExecutionTime - predictedTime;
+            }
+            
             return queryExecutionTime;
         }
         
