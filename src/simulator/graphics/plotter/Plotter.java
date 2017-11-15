@@ -590,7 +590,7 @@ public class Plotter extends WindowAdapter implements ActionListener
                 }
             } );
             
-            _legend = new PlotsPanel( this, (int) (width - 370), 350, 200 );
+            _legend = new PlotsPanel( this, (int) (width - 370), 350 );
         }
         
         private String makeBoxTitle( final String title )

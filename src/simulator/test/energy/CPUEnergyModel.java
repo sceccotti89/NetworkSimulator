@@ -19,7 +19,6 @@ import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.test.energy.EnergyCPU.CONScore;
 import simulator.test.energy.EnergyCPU.LOAD_SENSITIVEcore;
 import simulator.test.energy.EnergyCPU.MY_MODELcore;
-import simulator.test.energy.EnergyCPU.PESOScore;
 import simulator.utils.Pair;
 import simulator.utils.Time;
 import simulator.utils.Utils;
@@ -965,7 +964,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }
         
         // TODO Per PESOS utilizzare questo: vince (di molto) nei 1000ms ma perde (di poco) nei 500ms.
-        /*@Override
+        @Override
         public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
         {
             // NOTE: This is a new core selection technique,
@@ -1000,9 +999,9 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             }
             
             return cpu.lastSelectedCore = id;
-        }*/
+        }
         
-        @Override
+        /*@Override
         public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
         {
             long id = -1;
@@ -1031,7 +1030,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             }
             
             return cpu.lastSelectedCore = id;
-        }
+        }*/
         
         @Override
         public String getModelType( final boolean delimeters )

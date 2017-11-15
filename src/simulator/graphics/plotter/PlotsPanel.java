@@ -53,7 +53,7 @@ public class PlotsPanel implements MouseListener, FocusListener
     
     
     
-    public PlotsPanel( final GraphicPlotter plotter, final int x, final int width, final int height )
+    public PlotsPanel( final GraphicPlotter plotter, final int x, final int width )
     {
         this.plotter = plotter;
         text = "Plots";
@@ -61,7 +61,7 @@ public class PlotsPanel implements MouseListener, FocusListener
         selected = true;
         background = new Color( 200, 200, 220 );
         this.x = x;
-        size = new Dimension( width, height );
+        size = new Dimension( width, getHeight() );
         
         int[] xPoly = { x + PAD + 3, x + PAD + 9, x + PAD + 15 };
         int[] yPoly = { PAD + 4, PAD + 16, PAD + 4 };
