@@ -20,6 +20,8 @@ import simulator.utils.Pair;
 
 public class ResultPlotting
 {
+    private static final int PERCENTILE = 95;
+    
     public static void plotEnergy( final long time_budget, final String mode ) throws IOException
     {
         Plotter plotter = new Plotter( "Energy Consumption", 800, 600 );
@@ -36,7 +38,7 @@ public class ResultPlotting
     
     private static List<Pair<Double,Double>> getPercentiles( final String fileName, final String saveFileName ) throws IOException
     {
-        double percentile = 0.95d;
+        double percentile = PERCENTILE * 0.01d;
         double interval = TimeUnit.MINUTES.toMicros( 5 );
         
         FileReader fReader = new FileReader( fileName );
@@ -97,20 +99,20 @@ public class ResultPlotting
         
         // Using NULL the percentiles will not be saved on file.
         //List<Pair<Double,Double>> percentiles = getPercentiles( "Results/Distributed_Latencies.txt",
-        //                                                        "Results/Distributed_Tail_Latency_95th_Percentile.txt" );
+        //                                                        "Results/Distributed_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
         List<Pair<Double,Double>> pesosPercentiles = getPercentiles( "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
-                                                                     "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_95th_Percentile.txt" );
+                                                                     "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
         //List<Pair<Double,Double>> perfPercentiles = getPercentiles( "Results/Perf_Tail_Latency.log",
-        //                                                            "Results/Perf_Tail_Latency_95th_Percentile.txt" );
+        //                                                            "Results/Perf_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
         //List<Pair<Double,Double>> consPercentiles = getPercentiles( "Results/CONS_Tail_Latency.log",
-        //                                                            "Results/CONS_Latency_95th_Percentile.txt" );
+        //                                                            "Results/CONS_Latency_" + PERCENTILE + "th_Percentile.txt" );
         //List<Pair<Double,Double>> loadSensitivePercentiles = getPercentiles( "Results/LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
-        //                                                                     "Results/LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency_95th_Percentile.txt" );
+        //                                                                     "Results/LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
         List<Pair<Double,Double>> myPercentiles = getPercentiles( "Results/MY_Model_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
-                                                                  "Results/MY_Model_" + mode + "_" + time_budget + "ms_Tail_Latency_95th_Percentile.txt" );
+                                                                  "Results/MY_Model_" + mode + "_" + time_budget + "ms_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
         
-        Plotter plotter = new Plotter( "Tail Latency 95-th Percentile", 800, 600 );
-        plotter.setAxisName( "Time (h)", "95th-tile response time (ms)" );
+        Plotter plotter = new Plotter( "Tail Latency " + PERCENTILE + "-th Percentile", 800, 600 );
+        plotter.setAxisName( "Time (h)", PERCENTILE + "th-tile response time (ms)" );
         double yRange = time_budget * 1000d + 200000d;
         plotter.setRange( Axis.Y, 0, yRange );
         plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
@@ -132,8 +134,8 @@ public class ResultPlotting
     
     public static void plotDistributedTailLatency( final long time_budget, final String mode ) throws IOException
     {
-        Plotter plotter = new Plotter( "Tail Latency 95-th Percentile", 800, 600 );
-        plotter.setAxisName( "Time (h)", "95th-tile response time (ms)" );
+        Plotter plotter = new Plotter( "Tail Latency " + PERCENTILE + "-th Percentile", 800, 600 );
+        plotter.setAxisName( "Time (h)", PERCENTILE + "th-tile response time (ms)" );
         double yRange = time_budget * 1000d + 200000d;
         plotter.setRange( Axis.Y, 0, yRange );
         plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
@@ -150,12 +152,12 @@ public class ResultPlotting
         plotter.addPlot( points, Color.YELLOW, Line.DASHED, "Tail latency (" + time_budget + "ms)" );
         
         List<Pair<Double,Double>> percentiles = getPercentiles( "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
-                                                                "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_95th_Percentile.txt" );
+                                                                "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
         plotter.addPlot( percentiles, "MONOLITHIC - PESOS (" + mode + ", t=" + time_budget + "ms)" );
         
         for (int i = 1; i <= EnergyTestDIST2.NODES; i++) {
             percentiles = getPercentiles( "Results/PESOS_" + mode + "_" + time_budget + "ms_Node" + i + "_Tail_Latency.log",
-                                          "Results/PESOS_" + mode + "_" + time_budget + "ms_Node" + i + "_Tail_Latency_95th_Percentile.txt" );
+                                          "Results/PESOS_" + mode + "_" + time_budget + "ms_Node" + i + "_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
             plotter.addPlot( percentiles, "Node " + i + " - PESOS (" + mode + ", t=" + time_budget + "ms)" );
         }
         
