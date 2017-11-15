@@ -224,6 +224,9 @@ public abstract class CPU extends Device<Long,QueryInfo>
             cpu.addSampledValue( Global.ENERGY_SAMPLING, startTime,
                                  endTime, currentQuery.getEnergyConsumption() );
             
+            cpu.addSampledValue( Global.MEAN_COMPLETION_TIME, endTime,
+                                 endTime, tailLatency.getTimeMicros() );
+            
             // TODO writeResult( currentQuery.getFrequency(), currentQuery.getLastEnergy() );
             
             // Compute the current idle energy.

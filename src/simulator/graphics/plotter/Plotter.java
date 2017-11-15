@@ -242,6 +242,10 @@ public class Plotter extends WindowAdapter implements ActionListener
         addPlot( points, null, Line.UNIFORM, title );
     }
     
+    public void addPlot( final List<Pair<Double,Double>> points, final Line line, final String title ) {
+        addPlot( points, null, line, title );
+    }
+    
     public void addPlot( final List<Pair<Double,Double>> points, final Color color, final String title ) {
         addPlot( points, color, Line.UNIFORM, title );
     }
@@ -360,24 +364,31 @@ public class Plotter extends WindowAdapter implements ActionListener
     
     /**
      * Create an image specifying only the title.
+     * 
+     * @param fileName     name of the file
+     * @param directory    name of the directory
     */
-    public void createImage( final String fileName ) throws IOException
+    public void createImage( final String fileName, final String directory ) throws IOException
     {
         int index = fileName.lastIndexOf( '.' );
         if (index >= 0) {
             String extension = fileName.substring( index + 1 );
-            createImage( fileName.substring( 0, index ), extension );
+            createImage( fileName.substring( 0, index ), extension, directory );
         } else {
-            createImage( fileName, ".png" );
+            createImage( fileName, "png", directory );
         }
     }
     
     /**
      * Create an image specifying the title and its extension.
+     * 
+     * @param fileName         name of the file
+     * @param fileExtension    extension of the file
+     * @param directory        name of the directory
     */
-    public void createImage( final String fileName, final String fileExtension ) throws IOException
+    public void createImage( final String fileName, final String fileExtension, final String directory ) throws IOException
     {
-        Utils.checkDirectory( Utils.IMAGES_DIR );
+        Utils.checkDirectory( directory );
         
         Dimension size = plotter.getSize();
         BufferedImage image = new BufferedImage( size.width, size.height, BufferedImage.TYPE_INT_RGB );
@@ -385,10 +396,10 @@ public class Plotter extends WindowAdapter implements ActionListener
         creatingImage = true;
         plotter.paintComponent( g );
         creatingImage = false;
-        File outputfile = new File( Utils.IMAGES_DIR + fileName + "." + fileExtension );
-        ImageIO.write( image, fileExtension, outputfile );
-        
-        System.out.println( "Image \"" + fileName + "." + fileExtension + "\" saved in \"" + Utils.IMAGES_DIR + "\"." );
+        File outputfile = new File( directory + "\\" + fileName + "." + fileExtension );
+        if (ImageIO.write( image, fileExtension, outputfile )) {
+            System.out.println( "Image \"" + fileName + "." + fileExtension + "\" saved in \"" + directory + "\"." );
+        }
     }
     
     public PlotterSettings getSettings() {

@@ -18,6 +18,7 @@ import simulator.test.energy.CPU.Core;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.test.energy.EnergyCPU.CONScore;
 import simulator.test.energy.EnergyCPU.LOAD_SENSITIVEcore;
+import simulator.test.energy.EnergyCPU.MY_MODELcore;
 import simulator.test.energy.EnergyCPU.PESOScore;
 import simulator.utils.Pair;
 import simulator.utils.Time;
@@ -68,7 +69,8 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         PERF( "PERF" ),
         CONS( "CONS" ),
         LOAD_SENSITIVE( "LOAD_SENSITIVE" ),
-        PEGASUS( "PEGASUS" );
+        PEGASUS( "PEGASUS" ),
+        MY_MODEL( "MY_MODEL" );
         
         private Mode mode;
         private String name;
@@ -324,12 +326,12 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         
         private static Type getType( final Mode mode )
         {
-            Type type = Type.PESOS;
+            Type type = Type.MY_MODEL;
             type.setMode( mode );
             return type;
         }
         
-        @Override
+        /*@Override
         public Long eval( final Time now, final QueryInfo... queries )
         {
             QueryInfo query = queries[0];
@@ -419,57 +421,30 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             }
             
             return _device.getMaxFrequency(); 
-        }
+        }*/
         
         @Override
         public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
         {
-            //System.out.println( "SELECTING CORE AT: " + time );
-            /*long id = -1;
-            double utilization = Integer.MAX_VALUE;
-            int tiedSelection  = Integer.MAX_VALUE;
-            boolean tieSituation = false;
-            for (Core core : cpu.getCores()) {
-                double coreUtilization = core.getUtilization( time );
-                if (coreUtilization < utilization) {
-                    id = core.getId();
-                    utilization = coreUtilization;
-                    tiedSelection = core.tieSelected;
-                    tieSituation = false;
-                } else if (coreUtilization == utilization) {
-                    if (core.tieSelected < tiedSelection) {
-                        id = core.getId();
-                        utilization = coreUtilization;
-                        tiedSelection = core.tieSelected;
-                    }
-                    tieSituation = true;
-                }
-            }*/
-            
-            // NOTE: This is a new core selection technique,
-            //       based on the frequency evaluation.
             long id = -1;
-            long minFrequency = Long.MAX_VALUE;
-            long tiedSelection = Long.MAX_VALUE;
+            long minExecutionTime = Long.MAX_VALUE;
+            long tiedSelection    = Long.MAX_VALUE;
             boolean tieSituation = false;
             for (Core core : cpu.getCores()) {
-                long frequency = core.getFrequency();
-                core.addQuery( q, false );
-                if (core.getFrequency() < minFrequency) {
+                long executionTime = ((MY_MODELcore) core).getQueryExecutionTime( time );
+                if (executionTime < minExecutionTime) {
                     id = core.getId();
-                    minFrequency = core.getFrequency();
+                    minExecutionTime = executionTime;
                     tiedSelection = core.tieSelected;
                     tieSituation = false;
-                } else if (core.getFrequency() == minFrequency) {
+                } else if (executionTime == minExecutionTime) {
                     if (core.tieSelected < tiedSelection) {
                         id = core.getId();
-                        minFrequency = core.getFrequency();
+                        minExecutionTime = executionTime;
                         tiedSelection = core.tieSelected;
                     }
                     tieSituation = true;
                 }
-                core.removeQuery( core.getQueue().size() - 1 );
-                core.setFrequency( frequency );
             }
             
             if (tieSituation) {
@@ -480,19 +455,166 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }
         
         @Override
-        public String getModelType( final boolean delimeters ) {
-            return "My_Model_" + timeBudget;
+        public Long eval( final Time now, final QueryInfo... queries )
+        {
+            QueryInfo query = queries[0];
+            Time currentDeadline = query.getArrivalTime().addTime( timeBudget );
+            if (currentDeadline.compareTo( now ) <= 0) {
+                // Time to complete the query is already over.
+                return _device.getMaxFrequency();
+            }
+            
+            // Get the maximum time budget evaluated by the 2 algorithms.
+            long LOAD_SENSITIVEbudget = evalLOAD_SENSITIVEtimeBudget( now, queries );
+            long PESOSbudget = evalPESOStimeBudget( now, queries );
+            final long targetTime = Math.max( LOAD_SENSITIVEbudget, PESOSbudget );
+            
+            int ppcRMSE = regressors.get( "class." + query.getTerms() + ".rmse" ).intValue();
+            final long pcost = query.getPostings() + ppcRMSE;
+            return identifyTargetFrequency( query.getTerms(), pcost, targetTime );
         }
-    
+        
+        private long evalLOAD_SENSITIVEtimeBudget( final Time now, final QueryInfo... queries )
+        {
+            QueryInfo currentQuery = queries[0];
+            QueryInfo last = queries[queries.length-1];
+            Time deltaN = (last.getArrivalTime().addTime( timeBudget )).subTime( now );
+            
+            // Get the predicted time, at max speed, for the remaining queries.
+            Time predictedTimeToCompute = new Time( 0, TimeUnit.MICROSECONDS );
+            for (int i = 0; i < queries.length - 1; i++) {
+                QueryInfo query = queries[i];
+                int ppcRMSE = regressors.get( "class." + query.getTerms() + ".rmse" ).intValue();
+                long pcost = query.getPostings() + ppcRMSE;
+                long time = predictServiceTimeAtMaxFrequency( query.getTerms(), pcost );
+                predictedTimeToCompute.addTime( new Time( time, TimeUnit.MICROSECONDS ) );
+            }
+            
+            deltaN.subTime( predictedTimeToCompute );
+            if (deltaN.getTimeMicros() == 0) {
+                return 0;
+            } else {
+                // Get the slack time.
+                int ppcRMSE = regressors.get( "class." + currentQuery.getTerms() + ".rmse" ).intValue();
+                final long pcost = currentQuery.getPostings() + ppcRMSE;
+                Time extimatedTime = new Time( predictServiceTimeAtMaxFrequency( currentQuery.getTerms(), pcost ) +
+                                               deltaN.getTimeMicros() / queries.length,
+                                               TimeUnit.MICROSECONDS );
+                Time delta1 = (currentQuery.getArrivalTime().addTime( timeBudget )).subTime( now );
+                Time targetTime = extimatedTime.min( delta1 );
+                return targetTime.getTimeMicros();
+            }
+        }
+        
+        private long evalPESOStimeBudget( final Time now, final QueryInfo... queries )
+        {
+            QueryInfo currentQuery = queries[0];
+            Time currentDeadline = currentQuery.getArrivalTime().addTime( timeBudget );
+            long lateness = getLateness( now, queries );
+            currentDeadline.subTime( lateness, TimeUnit.MICROSECONDS );
+            if (currentDeadline.compareTo( now ) <= 0) {
+                return 0;
+            }
+            
+            int ppcRMSE = regressors.get( "class." + currentQuery.getTerms() + ".rmse" ).intValue();
+            long pcost = currentQuery.getPostings() + ppcRMSE;
+            long volume = pcost;
+            double maxDensity = volume / currentDeadline.subTime( now ).getTimeMicros();
+            
+            for (int i = 1; i < queries.length; i++) {
+                QueryInfo q = queries[i];
+                
+                ppcRMSE = regressors.get( "class." + q.getTerms() + ".rmse" ).intValue();
+                volume += q.getPostings() + ppcRMSE;
+                
+                Time qArrivalTime = q.getArrivalTime();
+                Time deadline = qArrivalTime.addTime( timeBudget.clone().subTime( lateness, TimeUnit.MICROSECONDS ) );
+                if (deadline.compareTo( now ) <= 0) {
+                    return 0;
+                } else {
+                    double density = volume / (deadline.subTime( now ).getTimeMicros());
+                    if (density > maxDensity) {
+                        maxDensity = density;
+                    }
+                }
+            }
+            
+            return (long) (pcost/maxDensity);
+        }
+        
+        private long getLateness( final Time now, final QueryInfo[] queries )
+        {
+            double lateness = 0;
+            int cnt = 0;
+            
+            for (int i = 0; i < queries.length; i++) {
+                QueryInfo q = queries[i];
+                int ppcRMSE = regressors.get( "class." + q.getTerms() + ".rmse" ).intValue();
+                long pcost = q.getPostings() + ppcRMSE;
+                long predictedTimeMaxFreq = predictServiceTimeAtMaxFrequency( q.getTerms(), pcost );
+                Time qArrivalTime = q.getArrivalTime();
+                long budget = timeBudget.clone().subTime( now.clone().subTime( qArrivalTime ) ).getTimeMicros();
+                
+                if (predictedTimeMaxFreq > budget) {
+                    lateness += predictedTimeMaxFreq - budget;
+                } else {
+                    cnt++;
+                }
+            }
+            
+            double result = lateness / cnt;
+            return Utils.getTimeInMicroseconds( result, TimeUnit.MICROSECONDS );
+        }
+        
+        public long predictServiceTimeAtMaxFrequency( final int terms, final long postings )
+        {
+            String base  = _device.getMaxFrequency() + "." + terms;
+            double alpha = regressors.get( base + ".alpha" );
+            double beta  = regressors.get( base + ".beta" );
+            double rmse  = regressors.get( base + ".rmse" );
+            return Utils.getTimeInMicroseconds( alpha * postings + beta + rmse, TimeUnit.MILLISECONDS );
+        }
+        
+        private long identifyTargetFrequency( final int terms, final long postings, final double targetTime )
+        {
+            for (Long frequency : _device.getFrequencies()) {
+                final String base = frequency + "." + terms;
+                double alpha = regressors.get( base + ".alpha" );
+                double beta  = regressors.get( base + ".beta" );
+                double rmse  = regressors.get( base + ".rmse" );
+                
+                long extimatedTime = Utils.getTimeInMicroseconds( alpha * postings + beta + rmse, TimeUnit.MILLISECONDS );
+                if (extimatedTime <= targetTime) {
+                    return frequency;
+                }
+            }
+            
+            return _device.getMaxFrequency(); 
+        }
+        
+        public int getRMSE( final int terms ) {
+            return regressors.get( "class." + terms + ".rmse" ).intValue();
+        }
+        
+        @Override
+        public String getModelType( final boolean delimeters )
+        {
+            if (delimeters) {
+                return "MY_Model_" + getMode() + "_" + getTimeBudget().getTimeMillis() + "ms";
+            } else {
+                return "MY_Model (" + getMode() + ", t = " + getTimeBudget().getTimeMillis() + "ms)";
+            }
+        }
+        
         @Override
         protected CPUEnergyModel cloneModel()
         {
-            PESOSmodel model = new PESOSmodel( timeBudget.clone(), getMode(), "", _postings, _effective_time_energy, _regressors );
+            MY_model model = new MY_model( timeBudget.clone(), getMode(), _directory, _postings, _effective_time_energy, _regressors );
             try { model.loadModel(); }
             catch ( IOException e ) { e.printStackTrace(); }
             return model;
         }
-    
+        
         @Override
         public void close() {}
     }
@@ -572,12 +694,13 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             return cpu.lastSelectedCore = id;
         }*/
         
+        // TODO Miglior soluzione per LOAD SENSITIVE
         @Override
         public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
         {
             long id = -1;
             long minExecutionTime = Long.MAX_VALUE;
-            long tiedSelection = Long.MAX_VALUE;
+            long tiedSelection    = Long.MAX_VALUE;
             boolean tieSituation = false;
             for (Core core : cpu.getCores()) {
                 long executionTime = ((LOAD_SENSITIVEcore) core).getQueryExecutionTime( time );
@@ -633,13 +756,13 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             } else {
                 // Get the slack time.
                 int ppcRMSE = regressors.get( "class." + currentQuery.getTerms() + ".rmse" ).intValue();
-                long pcost = currentQuery.getPostings() + ppcRMSE;
+                final long pcost = currentQuery.getPostings() + ppcRMSE;
                 Time extimatedTime = new Time( predictServiceTimeAtMaxFrequency( currentQuery.getTerms(), pcost ) +
                                                deltaN.getTimeMicros() / queries.length,
                                                TimeUnit.MICROSECONDS );
                 Time delta1 = (currentQuery.getArrivalTime().addTime( timeBudget )).subTime( now );
                 Time targetTime = extimatedTime.min( delta1 );
-                return identifyTargetFrequency( currentQuery.getTerms(), currentQuery.getPostings(), targetTime.getTimeMicros() );
+                return identifyTargetFrequency( currentQuery.getTerms(), pcost, targetTime.getTimeMicros() );
             }
         }
         
@@ -652,7 +775,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             return Utils.getTimeInMicroseconds( alpha * postings + beta + rmse, TimeUnit.MILLISECONDS );
         }
         
-        private long identifyTargetFrequency( final int terms, final long postings, final long targetTime )
+        private long identifyTargetFrequency( final int terms, final long postings, final double targetTime )
         {
             for (Long frequency : _device.getFrequencies()) {
                 final String base = frequency + "." + terms;

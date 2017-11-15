@@ -24,6 +24,7 @@ import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
 import simulator.test.energy.CPUEnergyModel.CONSmodel;
 import simulator.test.energy.CPUEnergyModel.LOAD_SENSITIVEmodel;
+import simulator.test.energy.CPUEnergyModel.MY_model;
 import simulator.test.energy.CPUEnergyModel.Mode;
 import simulator.test.energy.CPUEnergyModel.PERFmodel;
 import simulator.test.energy.CPUEnergyModel.PESOSmodel;
@@ -339,16 +340,17 @@ public class EnergyTestMONO
         //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
-        model = loadModel( Type.LOAD_SENSITIVE, Mode.TIME_CONSERVATIVE,  450 );
         //model = loadModel( Type.LOAD_SENSITIVE, Mode.TIME_CONSERVATIVE,  500 );
         //model = loadModel( Type.LOAD_SENSITIVE, Mode.TIME_CONSERVATIVE, 1000 );
         //model = loadModel( Type.LOAD_SENSITIVE, Mode.ENERGY_CONSERVATIVE,  500 );
         //model = loadModel( Type.LOAD_SENSITIVE, Mode.ENERGY_CONSERVATIVE, 1000 );
         
+        //model = loadModel( Type.MY_MODEL, Mode.TIME_CONSERVATIVE,  500 );
+        model = loadModel( Type.MY_MODEL, Mode.TIME_CONSERVATIVE, 1000 );
+        
         //model = loadModel( Type.PERF );
         //model = loadModel( Type.CONS );
         
-        //model = new MY_model( 1000, Mode.TIME_CONSERVATIVE, "Models/Monolithic/PESOS/MaxScore/" );
         model.loadModel();
         
         //while (true) {
@@ -369,6 +371,7 @@ public class EnergyTestMONO
         switch ( type ) {
             case PESOS          : model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" ); break;
             case LOAD_SENSITIVE : model = new LOAD_SENSITIVEmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" ); break;
+            case MY_MODEL       : model = new MY_model( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" ); break;
             default             : break;
         }
         model.loadModel();
@@ -425,7 +428,7 @@ public class EnergyTestMONO
             
             switchAgent.getEventGenerator( 0 ).connect( agentCore );
             
-            plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), null, "Node " + i + " " + model.getModelType( true ) );
+            plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + i + " " + model.getModelType( true ) );
         }
         
         plotter.setAxisName( "Time (h)", "Energy (J)" );
@@ -479,10 +482,13 @@ public class EnergyTestMONO
         cpu.setModel( model );
         
         String modelType = model.getModelType( true );
-        
-        cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
-        cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
+        final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
+        cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
+        cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
         cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
+        if (model.getType() == Type.PERF) {
+            cpu.addSampler( Global.MEAN_COMPLETION_TIME, samplingTime, Sampling.AVERAGE, "Log/Mean_Completion_Time.log" );
+        }
         
         NetworkTopology net = new NetworkTopology( "Topology/Topology_mono_multiCore.json" );
         System.out.println( net.toString() );
@@ -561,29 +567,29 @@ public class EnergyTestMONO
         // SIMULATOR:  911862.87644774050   557117.85926009370    639790.48538287170     510740.82836311805 (12%)
         // IDLE:       207028.73735399803    70245.49618359195     79377.59104444605      74404.69254638738
         
-        // TODO Per l'effettiva tail latency di LOAD_SENSITIVE dovrei testarlo sulla macchina fisica.
-        // LOAD SENSITIVE TC 450ms (la tail latency e' leggermente oltre il target, ma direi accettabile)
+        // LOAD SENSITIVE TC 500ms
         // TARGET: 
         //
-        // SIMULATOR:  570345.43547608330 (4% in meno di PESOS TC 500ms)
-        // IDLE:        73169.61885615322
-        
-        // LOAD SENSITIVE TC 500ms (la tail latency pero' va troppo oltre il target)
-        // TARGET: 
-        //
-        // SIMULATOR:  546691.55218955160 (8 % in meno di PESOS TC 500ms)
-        // IDLE:        71183.30212862523
+        // SIMULATOR:  604005.33409397130 (2% in piu' di PESOS TC 500ms)
+        // IDLE:        77181.24141460801
         
         // LOAD SENSITIVE TC 1000ms
         // TARGET: 
         //
-        // SIMULATOR:  432603.40357559910 (8% in meno di PESOS TC 1000ms)
-        // IDLE:        59334.39802422880
+        // SIMULATOR:  445819.36355780874 (5% in meno di PESOS TC 1000ms)
+        // IDLE:        62591.81413098734
         
+        // Con la tecnica nuova (quella di scegliere il core con la minor frequenza predittata)
         //600729.1560297232J
         //587592.5552513064J
         // 13137 (2%) Joule in meno!!
         // Sia arriva a un netto 10% (circa 40k Joule) in meno per TC 1000ms
+        
+        // Nuova strategia: prendo il massimo tra il budget predittato da PESOS e da LOAD_SENSITIVE
+        // La Tail Latency e' rispettata.
+        //
+        // 582892.3328821139 (circa il 2% meglio di PESOS TC 500ms)
+        // 439574.9182948345 (circa il 6% meglio di PESOS TC 1000ms)
         
         //SINGOLA CODA
         //592223.9542908694
@@ -625,10 +631,11 @@ public class EnergyTestMONO
         
         List<EnergyCPU> cpus = new ArrayList<>( CPU_CORES );
         Plotter plotter = new Plotter( "MONOLITHIC SINGLE_CORE - " + model.getModelType( false ), 800, 600 );
+        final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         for (int i = 0; i < CPU_CORES; i++) {
             EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/cpu_frequencies.txt" );
-            cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
-            cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
+            cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
+            cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
             cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
             cpu.setModel( model.clone() );
             cpus.add( cpu );

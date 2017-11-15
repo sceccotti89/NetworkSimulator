@@ -98,16 +98,16 @@ public class ResultPlotting
         // Using NULL the percentiles will not be saved on file.
         //List<Pair<Double,Double>> percentiles = getPercentiles( "Results/Distributed_Latencies.txt",
         //                                                        "Results/Distributed_Tail_Latency_95th_Percentile.txt" );
-        //List<Pair<Double,Double>> pesosPercentiles = getPercentiles( "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
-        //                                                             "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_95th_Percentile.txt" );
+        List<Pair<Double,Double>> pesosPercentiles = getPercentiles( "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
+                                                                     "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_95th_Percentile.txt" );
         //List<Pair<Double,Double>> perfPercentiles = getPercentiles( "Results/Perf_Tail_Latency.log",
         //                                                            "Results/Perf_Tail_Latency_95th_Percentile.txt" );
         //List<Pair<Double,Double>> consPercentiles = getPercentiles( "Results/CONS_Tail_Latency.log",
         //                                                            "Results/CONS_Latency_95th_Percentile.txt" );
-        List<Pair<Double,Double>> loadSensitivePercentiles = getPercentiles( "Results/LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
-                                                                             "Results/LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency_95th_Percentile.txt" );
-        //List<Pair<Double,Double>> myPercentiles = getPercentiles( "Results/MY_Model_" + time_budget + "_Tail_Latency.log",
-        //                                                          "Results/MY_Model_" + time_budget + "_Tail_Latency_95th_Percentile.txt" );
+        //List<Pair<Double,Double>> loadSensitivePercentiles = getPercentiles( "Results/LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
+        //                                                                     "Results/LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency_95th_Percentile.txt" );
+        List<Pair<Double,Double>> myPercentiles = getPercentiles( "Results/MY_Model_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
+                                                                  "Results/MY_Model_" + mode + "_" + time_budget + "ms_Tail_Latency_95th_Percentile.txt" );
         
         Plotter plotter = new Plotter( "Tail Latency 95-th Percentile", 800, 600 );
         plotter.setAxisName( "Time (h)", "95th-tile response time (ms)" );
@@ -120,12 +120,12 @@ public class ResultPlotting
         plotter.setTicks( Axis.X, 24, 2 );
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         
-        //plotter.addPlot( percentiles, Color.GREEN, Line.UNIFORM, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
-        //plotter.addPlot( pesosPercentiles, Color.GREEN, Line.UNIFORM, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
-        //plotter.addPlot( perfPercentiles, Color.RED, Line.UNIFORM, "Perf" );
-        //plotter.addPlot( consPercentiles, Color.GREEN, Line.UNIFORM, "CONS" );
-        plotter.addPlot( loadSensitivePercentiles, Color.RED, Line.UNIFORM, "LS (" + mode + ", t=" + time_budget + "ms)" );
-        //plotter.addPlot( myPercentiles, Color.RED, Line.UNIFORM, "MY Model" );
+        //plotter.addPlot( percentiles, Line.UNIFORM, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
+        plotter.addPlot( pesosPercentiles, Line.UNIFORM, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
+        //plotter.addPlot( perfPercentiles, Line.UNIFORM, "Perf" );
+        //plotter.addPlot( consPercentiles, Line.UNIFORM, "CONS" );
+        //plotter.addPlot( loadSensitivePercentiles, Line.UNIFORM, "LS (" + mode + ", t=" + time_budget + "ms)" );
+        plotter.addPlot( myPercentiles, Line.UNIFORM, "MY Model (" + mode + ", t=" + time_budget + "ms)" );
         plotter.addPlot( points, Color.YELLOW, Line.DASHED, "Tail latency (" + time_budget + "ms)" );
         plotter.setVisible( true );
     }
@@ -162,6 +162,23 @@ public class ResultPlotting
         plotter.setVisible( true );
     }
     
+    public static void plotMeanCompletionTime() throws IOException
+    {
+        Plotter plotter = new Plotter( "Mean Response Time", 800, 600 );
+        plotter.setAxisName( "Time (h)", "Mean response time (ms)" );
+        plotter.setRange( Axis.Y, 0, 200000 );
+        plotter.setTicks( Axis.Y, (int) (200000 / 100000) );
+        plotter.setScaleY( 1000d );
+        
+        plotter.setRange( Axis.X, 0, TimeUnit.HOURS.toMicros( 24 ) );
+        plotter.setTicks( Axis.X, 24, 2 );
+        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
+        
+        plotter.addPlot( "Results/Mean_Completion_Time.log", "Mean Response Time" );
+        
+        plotter.setVisible( true );
+    }
+    
     public static void main( final String argv[] ) throws IOException
     {
         final long time_budget = 500;
@@ -170,5 +187,7 @@ public class ResultPlotting
         //plotEnergy( time_budget, mode.toString() );
         plotTailLatency( time_budget, mode.toString() );
         //plotDistributedTailLatency( time_budget, mode.toString() );
+        
+        //plotMeanCompletionTime();
     }
 }

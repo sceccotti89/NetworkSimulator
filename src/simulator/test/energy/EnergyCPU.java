@@ -15,6 +15,7 @@ import simulator.core.Model;
 import simulator.core.Task;
 import simulator.test.energy.CPUEnergyModel.CONSmodel;
 import simulator.test.energy.CPUEnergyModel.LOAD_SENSITIVEmodel;
+import simulator.test.energy.CPUEnergyModel.MY_model;
 import simulator.test.energy.CPUEnergyModel.PESOSmodel;
 import simulator.test.energy.CPUEnergyModel.QueryInfo;
 import simulator.test.energy.CPUEnergyModel.Type;
@@ -72,14 +73,20 @@ public class EnergyCPU extends CPU
         CPUEnergyModel cpuModel = (CPUEnergyModel) model;
         try {
             String file = null;
-            long timeBudget = cpuModel.getTimeBudget().getTimeMillis();
+            long timeBudget;
             switch (cpuModel.getType()) {
                 case PERF    : file = "PERF"; break;
                 case PESOS   :
+                    timeBudget = cpuModel.getTimeBudget().getTimeMillis();
                     file = "PESOS_" + timeBudget + "_" + cpuModel.getMode();
                     break;
                 case CONS           : file = "CONS_" + cpuModel.getMode(); break;
-                case LOAD_SENSITIVE : file = "LOAD_SENSITIVE_" + timeBudget; break;
+                case LOAD_SENSITIVE :
+                    timeBudget = cpuModel.getTimeBudget().getTimeMillis();
+                    file = "LOAD_SENSITIVE_" + timeBudget; break;
+                case MY_MODEL :
+                    timeBudget = cpuModel.getTimeBudget().getTimeMillis();
+                    file = "MY_MODEL_" + timeBudget; break;
                 case PEGASUS        : file = "PEGASUS"; break;
             }
             Utils.checkDirectory( "Results/Coefficients" );
@@ -99,6 +106,7 @@ public class EnergyCPU extends CPU
                 case PERF           : coresMap.put( i, new PERFcore( this, i, getMaxFrequency() ) ); break;
                 case CONS           : coresMap.put( i, new CONScore( this, i, getMaxFrequency() ) ); break;
                 case LOAD_SENSITIVE : coresMap.put( i, new LOAD_SENSITIVEcore( this, i, getMaxFrequency() ) ); break;
+                case MY_MODEL       : coresMap.put( i, new MY_MODELcore( this, i, getMaxFrequency() ) ); break;
                 case PEGASUS        : coresMap.put( i, new PEGASUScore( this, i, getMaxFrequency() ) ); break;
             }
         }
@@ -228,6 +236,8 @@ public class EnergyCPU extends CPU
     public String getID() {
         return "EnergyCPU";
     }
+    
+    
     
     public static class PESOScore extends Core
     {
@@ -477,6 +487,23 @@ public class EnergyCPU extends CPU
         }
         
         @Override
+        public void addQuery( final QueryInfo q, final boolean updateFrequency )
+        {
+            q.setCoreId( coreId );
+            queryQueue.add( q );
+            long frequency = cpu.evalFrequency( q.getArrivalTime(), this );
+            if (updateFrequency) {
+                LOAD_SENSITIVEmodel model = (LOAD_SENSITIVEmodel) cpu.getModel();
+                final int postings = q.getPostings() + model.getRMSE( q.getTerms() );
+                queryExecutionTime += model.predictServiceTimeAtMaxFrequency( q.getTerms(), postings );
+                
+                setFrequency( q.getArrivalTime(), frequency );
+            } else {
+                this.frequency = frequency;
+            }
+        }
+
+        @Override
         public boolean checkQueryCompletion( final Time time )
         {
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
@@ -493,23 +520,6 @@ public class EnergyCPU extends CPU
                 return true;
             } else {
                 return false;
-            }
-        }
-        
-        @Override
-        public void addQuery( final QueryInfo q, final boolean updateFrequency )
-        {
-            q.setCoreId( coreId );
-            queryQueue.add( q );
-            long frequency = cpu.evalFrequency( q.getArrivalTime(), this );
-            if (updateFrequency) {
-                LOAD_SENSITIVEmodel model = (LOAD_SENSITIVEmodel) cpu.getModel();
-                final int postings = q.getPostings() + model.getRMSE( q.getTerms() );
-                queryExecutionTime += model.predictServiceTimeAtMaxFrequency( q.getTerms(), postings );
-                
-                setFrequency( q.getArrivalTime(), frequency );
-            } else {
-                this.frequency = frequency;
             }
         }
         
@@ -539,6 +549,79 @@ public class EnergyCPU extends CPU
         }
     }
     
+    public static class MY_MODELcore extends Core
+    {
+        private long queryExecutionTime = 0;
+        
+        public MY_MODELcore( final EnergyCPU cpu, final long coreId, final long initFrequency ) {
+            super( cpu, coreId, initFrequency );
+        }
+        
+        @Override
+        public void addQuery( final QueryInfo q, final boolean updateFrequency )
+        {
+            q.setCoreId( coreId );
+            queryQueue.add( q );
+            long frequency = cpu.evalFrequency( q.getArrivalTime(), this );
+            if (updateFrequency) {
+                MY_model model = (MY_model) cpu.getModel();
+                final int postings = q.getPostings() + model.getRMSE( q.getTerms() );
+                queryExecutionTime += model.predictServiceTimeAtMaxFrequency( q.getTerms(), postings );
+                
+                setFrequency( q.getArrivalTime(), frequency );
+            } else {
+                this.frequency = frequency;
+            }
+        }
+        
+        @Override
+        public boolean checkQueryCompletion( final Time time )
+        {
+            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+                //long queryId = currentQuery.getId();
+                //System.out.println( "TIME: " + time + ", CORE: " + getId() + ", COMPLETATA QUERY: " + currentQuery );
+                MY_model model = (MY_model) cpu.getModel();
+                final int postings = currentQuery.getPostings() + model.getRMSE( currentQuery.getTerms() );
+                queryExecutionTime -= model.predictServiceTimeAtMaxFrequency( currentQuery.getTerms(), postings );
+                
+                addQueryOnSampling();                
+                if (hasMoreQueries()) {
+                    long frequency = cpu.evalFrequency( time, this );
+                    setFrequency( time, frequency );
+                    cpu.computeTime( getFirstQueryInQueue(), this );
+                }
+                return true;
+            } else {
+                return false;
+            }
+        }
+        
+        public long getQueryExecutionTime( final Time time )
+        {
+            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+                MY_model model = (MY_model) cpu.getModel();
+                final int postings = currentQuery.getPostings() + model.getRMSE( currentQuery.getTerms() );
+                long predictedTime = model.predictServiceTimeAtMaxFrequency( currentQuery.getTerms(), postings );
+                return queryExecutionTime - predictedTime;
+            }
+            
+            return queryExecutionTime;
+        }
+        
+        @Override
+        public double getIdleEnergy()
+        {
+            double idleEnergy = 0;
+            if (idleTime > 0) {
+                idleEnergy = cpu.energyModel.getIdleEnergy( frequency, idleTime );
+                idleTimeInterval += idleTime;
+                writeResult( frequency, idleEnergy );
+                idleTime = 0;
+            }
+            return idleEnergy;
+        }
+    }
+
     private static class PEGASUScore extends Core
     {
 
