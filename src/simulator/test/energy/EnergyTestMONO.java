@@ -43,7 +43,6 @@ public class EnergyTestMONO
     private static boolean CENTRALIZED_PESOS_QUEUE;
     
     
-    
     private static class ClientGenerator extends EventGenerator
     {
         private static final String QUERY_TRACE = "Models/msn.day2.arrivals.txt";
