@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import simulator.core.Device;
 import simulator.events.Event;
-import simulator.test.energy.CPUEnergyModel.QueryInfo;
+import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.utils.Time;
 
 public abstract class CPU extends Device<Long,QueryInfo>

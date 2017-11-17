@@ -11,8 +11,8 @@ import java.util.concurrent.TimeUnit;
 
 import simulator.core.Model;
 import simulator.core.Task;
-import simulator.test.energy.CPUEnergyModel.PESOSmodel;
-import simulator.test.energy.CPUEnergyModel.QueryInfo;
+import simulator.test.energy.CPUModel.PESOSmodel;
+import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.EnergyModel.QueryEnergyModel;
 import simulator.utils.Time;
 
@@ -62,7 +62,7 @@ public class PESOScpu extends CPU
     @Override
     public void setModel( final Model<Long,QueryInfo> model )
     {
-        CPUEnergyModel cpuModel = (CPUEnergyModel) model;
+        CPUModel cpuModel = (CPUModel) model;
         for (long i = 0; i < _cores; i++) {
             PESOScore core = new PESOScore( this, i, getMaxFrequency() );
             core.setBaseTimeBudget( getTime(), cpuModel.getTimeBudget().getTimeMicros() );

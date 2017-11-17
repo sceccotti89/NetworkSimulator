@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import simulator.core.Device;
 import simulator.events.Event;
-import simulator.test.energy.CPUEnergyModel.QueryInfo;
+import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.EnergyModel;
 import simulator.test.energy.Global;
 import simulator.utils.Time;

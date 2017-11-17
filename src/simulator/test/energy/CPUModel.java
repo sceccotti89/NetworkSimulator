@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 import simulator.core.Model;
 import simulator.events.Event;
 import simulator.test.energy.CPU.Core;
-import simulator.test.energy.CPUEnergyModel.QueryInfo;
+import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.EnergyCPU.CONScore;
 import simulator.test.energy.EnergyCPU.LOAD_SENSITIVEcore;
 import simulator.test.energy.EnergyCPU.MY_MODELcore;
@@ -24,7 +24,7 @@ import simulator.utils.Time;
 import simulator.utils.Utils;
 import simulator.utils.resources.ResourceLoader;
 
-public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cloneable
+public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneable
 {
     private static final String POSTINGS_PREDICTORS   = "predictions.txt";
     private static final String EFFECTIVE_TIME_ENERGY = "time_energy.txt";
@@ -121,13 +121,13 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     /**
      * Creates a new energy model.
      * 
-     * @param type     type of model (see {@linkplain CPUEnergyModel.Type Type}).
+     * @param type     type of model (see {@linkplain CPUModel.Type Type}).
      * @param dir      directory used to load the fiels.
      * @param files    list of files used to load the model.
      * 
      * @throws IOException if a file doesn't exists or is malformed.
     */
-    public CPUEnergyModel( final Type type, final String dir, final String... files )
+    public CPUModel( final Type type, final String dir, final String... files )
     {
         this.type = type;
         
@@ -274,14 +274,14 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
     /**
      * Clones this model.
     */
-    protected abstract CPUEnergyModel cloneModel();
+    protected abstract CPUModel cloneModel();
     
     @Override
-    protected CPUEnergyModel clone() {
+    protected CPUModel clone() {
         return cloneModel();
     }
     
-    public static class MY_model extends CPUEnergyModel
+    public static class MY_model extends CPUModel
     {
         private static final String REGRESSORS_TIME_CONSERVATIVE   = "regressors.txt";
         private static final String REGRESSORS_ENERGY_CONSERVATIVE = "regressors_normse.txt";
@@ -291,7 +291,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
          * Creates MY PERSONAL model.
          * 
          * @param time_budget    time limit to complete a query (in us).
-         * @param mode           PESOS modality (see {@linkplain CPUEnergyModel.Mode Mode}).
+         * @param mode           PESOS modality (see {@linkplain CPUModel.Mode Mode}).
          * @param directory      directory used to load the files.
          * 
          * @throws IOException if a file doesn't exists or is malformed.
@@ -308,7 +308,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
          * Creates MY PERSONAL model.
          * 
          * @param time_budget    time limit to complete a query (in us).
-         * @param mode           PESOS modality (see {@linkplain CPUEnergyModel.Mode Mode}).
+         * @param mode           PESOS modality (see {@linkplain CPUModel.Mode Mode}).
          * @param directory      directory used to load the files.
          * @param files          list of file used to load the model.
          * 
@@ -606,7 +606,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }
         
         @Override
-        protected CPUEnergyModel cloneModel()
+        protected CPUModel cloneModel()
         {
             MY_model model = new MY_model( timeBudget.clone(), getMode(), _directory, _postings, _effective_time_energy, _regressors );
             try { model.loadModel(); }
@@ -618,7 +618,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         public void close() {}
     }
     
-    public static class LOAD_SENSITIVEmodel extends CPUEnergyModel
+    public static class LOAD_SENSITIVEmodel extends CPUModel
     {
         private static final String REGRESSORS_TIME_CONSERVATIVE   = "regressors.txt";
         private static final String REGRESSORS_ENERGY_CONSERVATIVE = "regressors_normse.txt";
@@ -806,9 +806,9 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }
 
         @Override
-        protected CPUEnergyModel cloneModel()
+        protected CPUModel cloneModel()
         {
-            CPUEnergyModel model = new LOAD_SENSITIVEmodel( timeBudget, getMode(), _directory, _postings, _effective_time_energy, _regressors );
+            CPUModel model = new LOAD_SENSITIVEmodel( timeBudget, getMode(), _directory, _postings, _effective_time_energy, _regressors );
             try { model.loadModel(); }
             catch ( IOException e ) { e.printStackTrace(); }
             return model;
@@ -818,7 +818,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         public void close() {}
     }
     
-    public static class PESOSmodel extends CPUEnergyModel
+    public static class PESOSmodel extends CPUModel
     {
         private static final String REGRESSORS_TIME_CONSERVATIVE   = "regressors.txt";
         private static final String REGRESSORS_ENERGY_CONSERVATIVE = "regressors_normse.txt";
@@ -828,7 +828,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
          * Creates a new PESOS model.
          * 
          * @param time_budget    time limit to complete a query (in ms).
-         * @param mode           PESOS modality (see {@linkplain CPUEnergyModel.Mode Mode}).
+         * @param mode           PESOS modality (see {@linkplain CPUModel.Mode Mode}).
          * @param directory      directory used to load the files.
          * 
          * @throws IOException if a file doesn't exists or is malformed.
@@ -844,7 +844,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
          * Creates a new PESOS model.
          * 
          * @param time_budget    time limit to complete a query (in ms).
-         * @param mode           PESOS modality (see {@linkplain CPUEnergyModel.Mode Mode}).
+         * @param mode           PESOS modality (see {@linkplain CPUModel.Mode Mode}).
          * @param directory      directory used to load the files.
          * @param files          list of file used to load the model.
          * 
@@ -959,13 +959,13 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             return _device.getMaxFrequency(); 
         }
         
-        public int getRMSE( final int terms ) {
+        public int getRMSE( int terms ) {
             return regressors.get( "class." + terms + ".rmse" ).intValue();
         }
         
         // TODO Per PESOS utilizzare questo: vince (di molto) nei 1000ms ma perde (di poco) nei 500ms.
         @Override
-        public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
+        public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
         {
             // NOTE: This is a new core selection technique,
             //       based on the frequency evaluation.
@@ -1002,7 +1002,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }
         
         /*@Override
-        public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
+        public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
         {
             long id = -1;
             long minExecutionTime = Long.MAX_VALUE;
@@ -1033,7 +1033,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }*/
         
         @Override
-        public String getModelType( final boolean delimeters )
+        public String getModelType( boolean delimeters )
         {
             if (delimeters) {
                 return "PESOS_" + getMode() + "_" + getTimeBudget().getTimeMillis() + "ms";
@@ -1043,7 +1043,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }
 
         @Override
-        protected CPUEnergyModel cloneModel()
+        protected CPUModel cloneModel()
         {
             PESOSmodel model = new PESOSmodel( timeBudget.clone(), getMode(), _directory, _postings, _effective_time_energy, _regressors );
             try { model.loadModel(); }
@@ -1055,7 +1055,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         public void close() {}
     }
     
-    public static class PERFmodel extends CPUEnergyModel
+    public static class PERFmodel extends CPUModel
     {
         /**
          * Creates a new PERF model.
@@ -1064,7 +1064,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
          * 
          * @throws IOException if a file doesn't exists or is malformed.
         */
-        public PERFmodel( final String directory ) {
+        public PERFmodel( String directory ) {
             super( Type.PERF, directory, POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY );
         }
         
@@ -1076,22 +1076,22 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
          * 
          * @throws IOException if a file doesn't exists or is malformed.
         */
-        public PERFmodel( final String directory, final String... files ) {
+        public PERFmodel( String directory, String... files ) {
             super( Type.PERF, directory, files );
         }
         
         @Override
-        public Long eval( final Time now, final QueryInfo... queries ) {
+        public Long eval( Time now, QueryInfo... queries ) {
             return _device.getMaxFrequency();
         }
         
         @Override
-        public String getModelType( final boolean delimeters ) {
+        public String getModelType( boolean delimeters ) {
             return type.toString();
         }
         
         @Override
-        protected CPUEnergyModel cloneModel()
+        protected CPUModel cloneModel()
         {
             PERFmodel model = new PERFmodel( _directory, _postings, _effective_time_energy );
             try { model.loadModel(); }
@@ -1103,7 +1103,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         public void close() {}
     }
     
-    public static class CONSmodel extends CPUEnergyModel
+    public static class CONSmodel extends CPUModel
     {
         private static final double TARGET = 0.70;
         private static final double UP_THRESHOLD = 0.80;
@@ -1117,7 +1117,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
          * 
          * @throws IOException if a file doesn't exists or is malformed.
         */
-        public CONSmodel( final String directory ) {
+        public CONSmodel( String directory ) {
             super( Type.CONS, directory, POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY );
         }
         
@@ -1129,7 +1129,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
          * 
          * @throws IOException if a file doesn't exists or is malformed.
         */
-        public CONSmodel( final String directory, final String... files ) {
+        public CONSmodel( String directory, String... files ) {
             super( Type.CONS, directory, files );
         }
         
@@ -1143,14 +1143,14 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
          * @return the "best" frequency, expressed in KHz.
         */
         @Override
-        public Long eval( final Time now, final QueryInfo... queries )
+        public Long eval( Time now, QueryInfo... queries )
         {
             EnergyCPU cpu = (EnergyCPU) _device;
             CONScore core = (CONScore) cpu.getCore( cpu.getCurrentCoreId() );
             return controlCPUfrequency( core );
         }
         
-        private long controlCPUfrequency( final CONScore core )
+        private long controlCPUfrequency( CONScore core )
         {
             double utilization = getUtilization( core );
             if (utilization >= UP_THRESHOLD || utilization <= DOWN_THRESHOLD) {
@@ -1163,7 +1163,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             return core.getFrequency();
         }
         
-        private double getUtilization( final CONScore core )
+        private double getUtilization( CONScore core )
         {
             double utilization;
             double serviceRate = core.getServiceRate();
@@ -1182,7 +1182,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             return utilization;
         }
         
-        private long getFrequencyGEQ( final long targetFrequency )
+        private long getFrequencyGEQ( long targetFrequency )
         {
             for (Long frequency : _device.getFrequencies()) {
                 if (frequency >= targetFrequency) {
@@ -1192,7 +1192,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
             return _device.getMaxFrequency();
         }
         
-        private long computeTargetFrequency( final CONScore core )
+        private long computeTargetFrequency( CONScore core )
         {
             double serviceRate       = core.getServiceRate();
             double targetServiceRate = core.getArrivalRate() / TARGET;
@@ -1209,12 +1209,12 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }
         
         @Override
-        public String getModelType( final boolean delimeters ) {
+        public String getModelType( boolean delimeters ) {
             return type.toString();
         }
         
         @Override
-        protected CPUEnergyModel cloneModel()
+        protected CPUModel cloneModel()
         {
             CONSmodel model = new CONSmodel( _directory, _postings, _effective_time_energy );
             try { model.loadModel(); }
@@ -1226,7 +1226,7 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         public void close() {}
     }
     
-    public static class PEGASUSmodel extends CPUEnergyModel
+    public static class PEGASUSmodel extends CPUModel
     {
         /**
          * Creates a new PEGASUS model.
@@ -1236,15 +1236,15 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
          * 
          * @throws IOException if a file doesn't exists or is malformed.
         */
-        public PEGASUSmodel( final long time_budget, final String directory ) {
+        public PEGASUSmodel( long time_budget, String directory ) {
             this( new Time( time_budget, TimeUnit.MILLISECONDS ), directory, POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY );
         }
         
-        public PEGASUSmodel( final long time_budget, final String dir, final String... files ){
+        public PEGASUSmodel( long time_budget, String dir, String... files ){
             this( new Time( time_budget, TimeUnit.MILLISECONDS ), dir, files );
         }
         
-        public PEGASUSmodel( final Time time_budget, final String dir, final String... files )
+        public PEGASUSmodel( Time time_budget, String dir, String... files )
         {
             super( Type.PEGASUS, dir, files );
             timeBudget = time_budget;
@@ -1261,9 +1261,9 @@ public abstract class CPUEnergyModel extends Model<Long,QueryInfo> implements Cl
         }
         
         @Override
-        protected CPUEnergyModel cloneModel()
+        protected CPUModel cloneModel()
         {
-            CPUEnergyModel model = new PEGASUSmodel( timeBudget, _directory, _postings, _effective_time_energy );
+            CPUModel model = new PEGASUSmodel( timeBudget, _directory, _postings, _effective_time_energy );
             try { model.loadModel(); }
             catch ( IOException e ) { e.printStackTrace(); }
             return model;

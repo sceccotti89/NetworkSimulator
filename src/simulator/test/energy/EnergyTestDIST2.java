@@ -30,13 +30,13 @@ import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
-import simulator.test.energy.CPUEnergyModel.CONSmodel;
-import simulator.test.energy.CPUEnergyModel.Mode;
-import simulator.test.energy.CPUEnergyModel.PEGASUSmodel;
-import simulator.test.energy.CPUEnergyModel.PERFmodel;
-import simulator.test.energy.CPUEnergyModel.PESOSmodel;
-import simulator.test.energy.CPUEnergyModel.QueryInfo;
-import simulator.test.energy.CPUEnergyModel.Type;
+import simulator.test.energy.CPUModel.CONSmodel;
+import simulator.test.energy.CPUModel.Mode;
+import simulator.test.energy.CPUModel.PEGASUSmodel;
+import simulator.test.energy.CPUModel.PERFmodel;
+import simulator.test.energy.CPUModel.PESOSmodel;
+import simulator.test.energy.CPUModel.QueryInfo;
+import simulator.test.energy.CPUModel.Type;
 import simulator.test.energy.EnergyCPU.PESOScore;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Pair;
@@ -755,7 +755,7 @@ public class EnergyTestDIST2
         {
             Packet p = e.getPacket();
             EnergyCPU cpu = getDevice( CPU );
-            CPUEnergyModel model = (CPUEnergyModel) cpu.getModel();
+            CPUModel model = (CPUModel) cpu.getModel();
             
             //System.out.println( "RECEIVED QUERY: " + e.getPacket().getContents() );
             
@@ -1028,10 +1028,10 @@ public class EnergyTestDIST2
         return model;
     }*/
     
-    private static CPUEnergyModel getModel( final Type type, final Mode mode,
+    private static CPUModel getModel( final Type type, final Mode mode,
                                             final long timeBudget, final int node )
     {
-        CPUEnergyModel model = null;
+        CPUModel model = null;
         switch ( type ) {
             case PESOS  : model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
             case PERF   : model = new PERFmodel( "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
@@ -1042,10 +1042,10 @@ public class EnergyTestDIST2
         return model;
     }
     
-    private static CPUEnergyModel loadModel( final Type type, final Mode mode,
+    private static CPUModel loadModel( final Type type, final Mode mode,
                                              final long timeBudget, final int node ) throws Exception
     {
-        CPUEnergyModel model = getModel( type, mode, timeBudget, node );
+        CPUModel model = getModel( type, mode, timeBudget, node );
         model.loadModel();
         return model;
     }
@@ -1077,7 +1077,7 @@ public class EnergyTestDIST2
             controller = new PesosController( timeBudget * 1000, mode );
         }
         
-        CPUEnergyModel model = getModel( type, mode, timeBudget, 1 );
+        CPUModel model = getModel( type, mode, timeBudget, 1 );
         final String modelType = model.getModelType( true );
         Plotter plotter = new Plotter( "DISTRIBUTED MULTI_CORE - " + modelType, 800, 600 );
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
@@ -1089,7 +1089,7 @@ public class EnergyTestDIST2
             cpus.add( cpu );
             
             // Add the model to the corresponding cpu.
-            CPUEnergyModel p_model = loadModel( type, mode, timeBudget, i+1 );
+            CPUModel p_model = loadModel( type, mode, timeBudget, i+1 );
             p_model.loadModel();
             cpu.setModel( p_model );
             

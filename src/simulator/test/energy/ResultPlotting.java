@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
 import simulator.graphics.plotter.Plotter.Line;
-import simulator.test.energy.CPUEnergyModel.Mode;
+import simulator.test.energy.CPUModel.Mode;
 import simulator.utils.Pair;
 
 public class ResultPlotting

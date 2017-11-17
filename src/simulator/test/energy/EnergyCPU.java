@@ -13,12 +13,12 @@ import java.util.concurrent.TimeUnit;
 
 import simulator.core.Model;
 import simulator.core.Task;
-import simulator.test.energy.CPUEnergyModel.CONSmodel;
-import simulator.test.energy.CPUEnergyModel.LOAD_SENSITIVEmodel;
-import simulator.test.energy.CPUEnergyModel.MY_model;
-import simulator.test.energy.CPUEnergyModel.PESOSmodel;
-import simulator.test.energy.CPUEnergyModel.QueryInfo;
-import simulator.test.energy.CPUEnergyModel.Type;
+import simulator.test.energy.CPUModel.CONSmodel;
+import simulator.test.energy.CPUModel.LOAD_SENSITIVEmodel;
+import simulator.test.energy.CPUModel.MY_model;
+import simulator.test.energy.CPUModel.PESOSmodel;
+import simulator.test.energy.CPUModel.QueryInfo;
+import simulator.test.energy.CPUModel.Type;
 import simulator.test.energy.EnergyModel.QueryEnergyModel;
 import simulator.utils.Time;
 import simulator.utils.Utils;
@@ -70,7 +70,7 @@ public class EnergyCPU extends CPU
         if (coeffWriter != null)
             coeffWriter.close();
         
-        CPUEnergyModel cpuModel = (CPUEnergyModel) model;
+        CPUModel cpuModel = (CPUModel) model;
         try {
             String file = null;
             long timeBudget;
@@ -127,7 +127,7 @@ public class EnergyCPU extends CPU
     public long selectCore( final Time time, final QueryInfo query )
     {
         addSampledValue( Global.QUERY_PER_TIME_SLOT, time, time, 1 );
-        return ((CPUEnergyModel) _model).selectCore( time, this, query );
+        return ((CPUModel) _model).selectCore( time, this, query );
     }
     
     @Override
@@ -146,7 +146,7 @@ public class EnergyCPU extends CPU
     */
     private void evalCONSfrequency( final Time time )
     {
-        CPUEnergyModel model = (CPUEnergyModel) getModel();
+        CPUModel model = (CPUModel) getModel();
         
         // Evaluate the "best" frequency to use.
         for (Core core : coresMap.values()) {
@@ -209,7 +209,7 @@ public class EnergyCPU extends CPU
     {
         long frequency = core.getFrequency();
         double energy = query.getEnergy( frequency );
-        CPUEnergyModel model = (CPUEnergyModel) getModel();
+        CPUModel model = (CPUModel) getModel();
         if (model.getType() == Type.CONS) {
             long time = query.getTime( frequency ).getTimeMicros();
             double energyUnit = energy/time;

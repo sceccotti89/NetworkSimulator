@@ -21,9 +21,9 @@ import simulator.events.impl.ResponseEvent;
 import simulator.graphics.AnimationNetwork;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
-import simulator.test.energy.CPUEnergyModel.Mode;
-import simulator.test.energy.CPUEnergyModel.PESOSmodel;
-import simulator.test.energy.CPUEnergyModel.QueryInfo;
+import simulator.test.energy.CPUModel.Mode;
+import simulator.test.energy.CPUModel.PESOSmodel;
+import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.topology.NetworkTopology;
 import simulator.utils.SizeUnit;
 import simulator.utils.Time;
@@ -399,7 +399,7 @@ public class EnergyTestDIST
             
             // Add the PESOS model to the corresponding cpu.
             final String directory = "Models/Distributed/Node_" + (i+1) + "/PESOS/MaxScore/";
-            CPUEnergyModel model = new PESOSmodel( timeBudget, mode, directory );
+            CPUModel model = new PESOSmodel( timeBudget, mode, directory );
             model.loadModel();
             cpu.setModel( model );
             
@@ -460,7 +460,7 @@ public class EnergyTestDIST
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
         
-        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/",
+        CPUModel model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/",
                                                "predictions.txt", "time_energy.txt", "regressors.txt" );
         model.loadModel();
         String modelType = model.getModelType( true );
@@ -578,7 +578,7 @@ public class EnergyTestDIST
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
         
-        CPUEnergyModel model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" );
+        CPUModel model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" );
         model.loadModel();
         String modelType = model.getModelType( true );
         

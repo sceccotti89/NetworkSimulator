@@ -28,13 +28,13 @@ import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
-import simulator.test.energy.CPUEnergyModel.CONSmodel;
-import simulator.test.energy.CPUEnergyModel.Mode;
-import simulator.test.energy.CPUEnergyModel.PEGASUSmodel;
-import simulator.test.energy.CPUEnergyModel.PERFmodel;
-import simulator.test.energy.CPUEnergyModel.PESOSmodel;
-import simulator.test.energy.CPUEnergyModel.QueryInfo;
-import simulator.test.energy.CPUEnergyModel.Type;
+import simulator.test.energy.CPUModel.CONSmodel;
+import simulator.test.energy.CPUModel.Mode;
+import simulator.test.energy.CPUModel.PEGASUSmodel;
+import simulator.test.energy.CPUModel.PERFmodel;
+import simulator.test.energy.CPUModel.PESOSmodel;
+import simulator.test.energy.CPUModel.QueryInfo;
+import simulator.test.energy.CPUModel.Type;
 import simulator.test.energy.EnergyCPU.PESOScore;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Pair;
@@ -79,7 +79,7 @@ public class EnergyTestREPLICA_DIST
         
         
         
-        public ClientGenerator( final Packet reqPacket, final Packet resPacket ) throws IOException
+        public ClientGenerator( Packet reqPacket, Packet resPacket ) throws IOException
         {
             super( Time.INFINITE, Time.ZERO, reqPacket, resPacket );
             startAt( Time.ZERO );
@@ -92,7 +92,7 @@ public class EnergyTestREPLICA_DIST
         }
         
         @Override
-        public Packet makePacket( final Event e, final long destination )
+        public Packet makePacket( Event e, long destination )
         {
             Packet packet = getRequestPacket();
             while (true) {
@@ -108,7 +108,7 @@ public class EnergyTestREPLICA_DIST
         }
         
         @Override
-        public Time computeDepartureTime( final Event e )
+        public Time computeDepartureTime( Event e )
         {
             if (!closed) {
                 try {
@@ -134,7 +134,7 @@ public class EnergyTestREPLICA_DIST
     
     private static class ClientAgent extends Agent
     {
-        public ClientAgent( final long id, final EventGenerator evGenerator )
+        public ClientAgent( long id, EventGenerator evGenerator )
         {
             super( id );
             addEventGenerator( evGenerator );
@@ -161,7 +161,7 @@ public class EnergyTestREPLICA_DIST
 
 
 
-        public PesosController( final long timeBudget, final Mode mode )
+        public PesosController( long timeBudget, Mode mode )
         {
             cpuInfos = new HashMap<>( NODES );
             this.timeBudget = timeBudget;
@@ -170,14 +170,14 @@ public class EnergyTestREPLICA_DIST
             openQueries = new TreeMap<>();
         }
         
-        public void connect( final Agent to )
+        public void connect( Agent to )
         {
             final long index = to.getId() / 2 + to.getId() % 2;
             try { cpuInfos.put( to.getId(), new CpuInfo( timeBudget, mode, to.getId(), index ) ); }
             catch ( IOException e ) {}
         }
         
-        public void addQuery( final Time time, final long nodeID, final long coreID, final long queryID, final long versionId )
+        public void addQuery( Time time, long nodeID, long coreID, long queryID, final long versionId )
         {
             PesosQuery query = new PesosQuery( queryID, versionId );
             
@@ -195,8 +195,7 @@ public class EnergyTestREPLICA_DIST
             
             analyzeSystem( time );
         }
-        
-        public void completedQuery( final Time time, final long nodeID, final long coreID )
+                public void completedQuery( Time time, long nodeID, long coreID )
         {
             CpuInfo cpu = cpuInfos.get( nodeID );
             PesosQuery query = cpu.getCore( coreID ).getFirstQuery();
@@ -213,7 +212,7 @@ public class EnergyTestREPLICA_DIST
             analyzeSystem( time );
         }
         
-        private void analyzeSystem( final Time time )
+        private void analyzeSystem( Time time )
         {
             // TODO potrei farlo in parallelo nel numero di nodi (se i core totali fossero troppi)!!!
             for (CpuInfo _cpu : cpuInfos.values()) {
@@ -228,15 +227,15 @@ public class EnergyTestREPLICA_DIST
             }
         }
         
-        private boolean lastToComplete( final PesosQuery query ) {
+        private boolean lastToComplete( PesosQuery query ) {
             return openQueries.get( query ).getSecond() == cpuInfos.size() - 1;
         }
         
-        private boolean allShardsArrived( final PesosQuery query ) {
+        private boolean allShardsArrived( PesosQuery query ) {
             return openQueries.get( query ).getFirst() == cpuInfos.size();
         }
         
-        private boolean checkForEmptyCore( final long cpuId )
+        private boolean checkForEmptyCore( long cpuId )
         {
             for (CpuInfo cpu : cpuInfos.values()) {
                 if (cpu.getId() != cpuId) {
@@ -251,7 +250,7 @@ public class EnergyTestREPLICA_DIST
             return false;
         }
         
-        private long evalTimeBudget( final long time, final CpuInfo cpu, final CoreInfo core )
+        private long evalTimeBudget( long time, CpuInfo cpu, CoreInfo core )
         {
             long extraBudget = 0;
             final boolean emptyCore = checkForEmptyCore( cpu.getId() );
@@ -358,7 +357,7 @@ public class EnergyTestREPLICA_DIST
             private Map<Long,CoreInfo> coresMap;
             
             
-            public CpuInfo( final long timeBudget, final Mode mode, final long id, final long index ) throws IOException
+            public CpuInfo( long timeBudget, Mode mode, long id, long index ) throws IOException
             {
                 super( "", "Models/cpu_frequencies.txt" );
                 
@@ -373,15 +372,15 @@ public class EnergyTestREPLICA_DIST
                 }
             }
             
-            public void addQuery( final Time time, final long coreID, final PesosQuery query ) {
+            public void addQuery( Time time, long coreID, PesosQuery query ) {
                 coresMap.get( coreID ).addQuery( time, query );
             }
             
-            public void completedQuery( final Time time, final long coreID ) {
+            public void completedQuery( Time time, long coreID ) {
                 coresMap.get( coreID ).completedQuery( time );
             }
             
-            public CoreInfo getCore( final long coreID ) {
+            public CoreInfo getCore( long coreID ) {
                 return coresMap.get( coreID );
             }
             
@@ -394,11 +393,11 @@ public class EnergyTestREPLICA_DIST
             }
             
             @Override
-            public Time timeToCompute( final Task task ) {
+            public Time timeToCompute( Task task ) {
                 return null;
             }
             @Override
-            public double getUtilization( final Time time ) {
+            public double getUtilization( Time time ) {
                 return 0;
             }
             @Override
@@ -419,7 +418,7 @@ public class EnergyTestREPLICA_DIST
             
             private static final long DELTA_TIME_THRESHOLD = 1;//50000;
             
-            public CoreInfo( /*final long cpuId, */final long coreId, final PESOSmodel model ) throws IOException
+            public CoreInfo( /*long cpuId, */long coreId, PESOSmodel model ) throws IOException
             {
                 //_cpuId = cpuId;
                 _coreId = coreId;
@@ -430,7 +429,7 @@ public class EnergyTestREPLICA_DIST
                 _model = model;
             }
             
-            public void addQuery( final Time time, final PesosQuery query )
+            public void addQuery( Time time, PesosQuery query )
             {
                 QueryInfo q = _model.getQuery( query.getId() );
                 query.setInfo( q.getTerms(), q.getPostings() );
@@ -441,7 +440,7 @@ public class EnergyTestREPLICA_DIST
                 queue.add( query );
             }
             
-            public void completedQuery( final Time time )
+            public void completedQuery( Time time )
             {
                 queue.remove( 0 );
                 if (hasMoreQueries()) {
@@ -476,7 +475,7 @@ public class EnergyTestREPLICA_DIST
                 return !queue.isEmpty();
             }
             
-            public boolean checkTimeBudget( final long timeBudget )
+            public boolean checkTimeBudget( long timeBudget )
             {
                 if (Math.abs( timeBudget - _timeBudget ) >= DELTA_TIME_THRESHOLD) {
                     _timeBudget = timeBudget;
@@ -500,19 +499,19 @@ public class EnergyTestREPLICA_DIST
             private long _serviceTime;
             private long _startTime = -1;
             
-            public PesosQuery( final long id, final long versionId )
+            public PesosQuery( long id, long versionId )
             {
                 _id = id;
                 _versionId = versionId;
             }
             
-            public void setInfo( final int terms, final int postings )
+            public void setInfo( int terms, int postings )
             {
                 _terms = terms;
                 _postings = postings;
             }
             
-            public void predictServiceTime( final PESOSmodel model )
+            public void predictServiceTime( PESOSmodel model )
             {
                 // TODO testare questa soluzione ora che ho sistemato i postings: testare per tutti e 4 i casi.
                 int ppcRMSE = model.getRMSE( _terms );
@@ -525,7 +524,7 @@ public class EnergyTestREPLICA_DIST
              * 
              * @param time    time of evaluation.
             */
-            public long getResidualServiceTime( final long time )
+            public long getResidualServiceTime( long time )
             {
                 if (_startTime == -1) {
                     return _serviceTime;
@@ -535,7 +534,7 @@ public class EnergyTestREPLICA_DIST
                 }
             }
             
-            public void setStartTime( final Time time ) {
+            public void setStartTime( Time time ) {
                 _startTime = time.getTimeMicros();
             }
             
@@ -548,7 +547,7 @@ public class EnergyTestREPLICA_DIST
             }
 
             @Override
-            public int compareTo( final PesosQuery query )
+            public int compareTo( PesosQuery query )
             {
                 int compare = query.getId().compareTo( getId() );
                 if (compare == 0) {
@@ -588,14 +587,14 @@ public class EnergyTestREPLICA_DIST
     
     private static class BrokerGenerator extends EventGenerator
     {
-        public BrokerGenerator( final Time duration )
+        public BrokerGenerator( Time duration )
         {
             super( duration, Time.ZERO, PACKET, PACKET );
             setDelayedResponse( true );
         }
         
         @Override
-        public Packet makePacket( final Event e, final long destination )
+        public Packet makePacket( Event e, long destination )
         {
             System.out.println( "DESTINATION: " + destination );
             Packet packet;
@@ -616,7 +615,7 @@ public class EnergyTestREPLICA_DIST
         private List<QueryLatency> queries;
         private PEGASUS pegasus;
         
-        public BrokerAgent( final long id, final long target, final EventGenerator evGenerator ) throws IOException
+        public BrokerAgent( long id, long target, EventGenerator evGenerator ) throws IOException
         {
             super( id );
             addEventGenerator( evGenerator );
@@ -627,13 +626,12 @@ public class EnergyTestREPLICA_DIST
         }
         
         @Override
-        public Time handle( final Event e, final EventType type )
+        public Time handle( Event e, EventType type )
         {
             if (type == EventType.RECEIVED) {
                 long queryId = e.getPacket().getContent( Global.QUERY_ID );
                 if (e.getSource().getId() == 0) {
                     queries.add( new QueryLatency( queryId, e.getTime() ) );
-                    //System.out.println( "RICEVUTO: " + p.getContents() );
                 } else {
                     QueryLatency query = null;
                     int index;
@@ -663,7 +661,7 @@ public class EnergyTestREPLICA_DIST
         }
         
         @Override
-        public double getNodeUtilization( final Time time )
+        public double getNodeUtilization( Time time )
         {
             double utilization = 0;
             for (Agent agent : _evtGenerators.get( 0 ).getDestinations()) {
@@ -686,7 +684,7 @@ public class EnergyTestREPLICA_DIST
             private Time startTime;
             private int count;
             
-            public QueryLatency( final long id, final Time startTime )
+            public QueryLatency( long id, Time startTime )
             {
                 this.id = id;
                 this.startTime = startTime;
@@ -704,12 +702,12 @@ public class EnergyTestREPLICA_DIST
     {
         public static final Time PERIOD = new Time( CONSmodel.PERIOD, TimeUnit.MILLISECONDS );
         
-        public ServerConsGenerator( final Time duration ) {
+        public ServerConsGenerator( Time duration ) {
             super( Time.ZERO, duration, PERIOD, PACKET, PACKET );
         }
         
         @Override
-        public Packet makePacket( final Event e, final long destination )
+        public Packet makePacket( Event e, long destination )
         {
             Packet packet = getRequestPacket();
             packet.addContent( Global.CONS_CONTROL, "" );
@@ -719,12 +717,12 @@ public class EnergyTestREPLICA_DIST
     
     private static class MulticoreGenerator extends EventGenerator
     {
-        public MulticoreGenerator( final Time duration ) {
+        public MulticoreGenerator( Time duration ) {
             super( duration, Time.ZERO, PACKET, PACKET );
         }
         
         @Override
-        protected Packet makePacket( final Event e, final long destination )
+        protected Packet makePacket( Event e, long destination )
         {
             //System.out.println( "SERVER PACKET: " + e.getPacket().hasContent( Global.PESOS_CPU_FREQUENCY ) );
             if (e.getPacket().hasContent( Global.PESOS_TIME_BUDGET )) {
@@ -739,7 +737,7 @@ public class EnergyTestREPLICA_DIST
     {
         private long _versionId = 0;
         
-        public MulticoreAgent( final long id, final EventGenerator evtGenerator )
+        public MulticoreAgent( long id, EventGenerator evtGenerator )
         {
             super( id );
             addEventGenerator( evtGenerator );
@@ -747,11 +745,11 @@ public class EnergyTestREPLICA_DIST
         }
         
         @Override
-        public void addEventOnQueue( final Event e )
+        public void addEventOnQueue( Event e )
         {
             Packet p = e.getPacket();
             EnergyCPU cpu = getDevice( CPU );
-            CPUEnergyModel model = (CPUEnergyModel) cpu.getModel();
+            CPUModel model = (CPUModel) cpu.getModel();
             
             //System.out.println( "RECEIVED QUERY: " + e.getPacket().getContents() );
             
@@ -779,7 +777,7 @@ public class EnergyTestREPLICA_DIST
         }
         
         @Override
-        public Time handle( final Event e, final EventType type )
+        public Time handle( Event e, EventType type )
         {
             if (e instanceof ResponseEvent) {
                 EnergyCPU cpu = getDevice( CPU );
@@ -815,7 +813,7 @@ public class EnergyTestREPLICA_DIST
         }
         
         @Override
-        public double getNodeUtilization( final Time time ) {
+        public double getNodeUtilization( Time time ) {
             return getDevice( CPU ).getUtilization( time );
         }
         
@@ -832,9 +830,9 @@ public class EnergyTestREPLICA_DIST
     
     private static class SwitchGenerator extends EventGenerator
     {
-        public SwitchGenerator( final Time duration,
-                                final Packet reqPacket,
-                                final Packet resPacket )
+        public SwitchGenerator( Time duration,
+                                Packet reqPacket,
+                                Packet resPacket )
         {
             super( duration, Time.ZERO, reqPacket, resPacket );
             setDelayedResponse( true );
@@ -842,7 +840,7 @@ public class EnergyTestREPLICA_DIST
         }
         
         @Override
-        public Packet makePacket( final Event e, final long destination )
+        public Packet makePacket( Event e, long destination )
         {
             if (e instanceof RequestEvent) {
                 return super.makePacket( e, destination );
@@ -853,9 +851,10 @@ public class EnergyTestREPLICA_DIST
         }
         
         @Override
-        protected int selectDestination( final Time time )
+        protected int selectDestination( Time time )
         {
             // TODO la destinazione andra' stabilita in base al risultato del modello!!
+            
             double minUtilization = Double.MAX_VALUE;
             int nextDestination = -1;
             for (int i = 0; i < _destinations.size(); i++) {
@@ -873,14 +872,14 @@ public class EnergyTestREPLICA_DIST
     
     private static class SwitchAgent extends Agent
     {
-        public SwitchAgent( final long id, final EventGenerator evGenerator )
+        public SwitchAgent( long id, EventGenerator evGenerator )
         {
             super( id );
             addEventGenerator( evGenerator );
         }
         
         @Override
-        public double getNodeUtilization( final Time time )
+        public double getNodeUtilization( Time time )
         {
             double utilization = 0;
             for (Agent agent : _evtGenerators.get( 0 ).getDestinations()) {
@@ -896,7 +895,7 @@ public class EnergyTestREPLICA_DIST
     
     
     
-    public static void main( final String[] args ) throws Exception
+    public static void main( String[] args ) throws Exception
     {
         Utils.VERBOSE      = false;
         PESOS_CONTROLLER   = false;
@@ -914,10 +913,9 @@ public class EnergyTestREPLICA_DIST
         //testNetwork( Type.PEGASUS, null, 1000 );
     }
     
-    private static CPUEnergyModel getModel( final Type type, final Mode mode,
-                                            final long timeBudget, final int node )
+    private static CPUModel getModel( Type type, Mode mode, long timeBudget, int node )
     {
-        CPUEnergyModel model = null;
+        CPUModel model = null;
         switch ( type ) {
             case PESOS  : model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
             case PERF   : model = new PERFmodel( "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
@@ -928,15 +926,14 @@ public class EnergyTestREPLICA_DIST
         return model;
     }
     
-    private static CPUEnergyModel loadModel( final Type type, final Mode mode,
-                                             final long timeBudget, final int node ) throws Exception
+    private static CPUModel loadModel( Type type, Mode mode, long timeBudget, int node ) throws Exception
     {
-        CPUEnergyModel model = getModel( type, mode, timeBudget, node );
+        CPUModel model = getModel( type, mode, timeBudget, node );
         model.loadModel();
         return model;
     }
     
-    public static void testNetwork( final Type type, final Mode mode, final long timeBudget ) throws Exception
+    public static void testNetwork( Type type, Mode mode, long timeBudget ) throws Exception
     {
         final Time duration = new Time( 24, TimeUnit.HOURS );
         
@@ -963,13 +960,13 @@ public class EnergyTestREPLICA_DIST
             controller = new PesosController( timeBudget * 1000, mode );
         }
         
-        CPUEnergyModel model = getModel( type, mode, timeBudget, 1 );
+        CPUModel model = getModel( type, mode, timeBudget, 1 );
         final String modelType = model.getModelType( true );
         Plotter plotter = new Plotter( "DISTRIBUTED REPLICA MULTI_CORE - " + modelType, 800, 600 );
         
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         for (int i = 0; i < NODES; i++) {
-            // Create the switch associated to any REPLICA nodes.
+            // Create the switch associated to the REPLICA nodes.
             EventGenerator switchGen = new SwitchGenerator( duration, PACKET, PACKET );
             Agent switchNode = new SwitchAgent( 2 + i * REPLICA_PER_NODE + i, switchGen );
             net.addAgent( switchNode );
@@ -984,7 +981,7 @@ public class EnergyTestREPLICA_DIST
                 cpus.add( cpu );
                 
                 // Add the model to the corresponding cpu.
-                CPUEnergyModel p_model = loadModel( type, mode, timeBudget, i+1 );
+                CPUModel p_model = loadModel( type, mode, timeBudget, i+1 );
                 p_model.loadModel();
                 cpu.setModel( p_model );
                 
