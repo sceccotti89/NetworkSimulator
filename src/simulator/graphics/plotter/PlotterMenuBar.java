@@ -123,7 +123,8 @@ public class PlotterMenuBar extends JMenuBar implements ActionListener
                     @Override
                     public void approveSelection()
                     {
-                        String file = getCurrentDirectory().toString() + "/" + getSelectedFile().getName();
+                        String directory = getCurrentDirectory().getAbsolutePath();
+                        String file = directory + "/" + getSelectedFile().getName();
                         boolean save = false;
                         if (!Utils.existsFile( file )) {
                             save = true;
@@ -145,7 +146,7 @@ public class PlotterMenuBar extends JMenuBar implements ActionListener
                         
                         if (save) {
                             try {
-                                plotter.createImage( getSelectedFile().getName() );
+                                plotter.createImage( getSelectedFile().getName(), directory );
                             } catch ( IOException e1 ) {
                                 e1.printStackTrace();
                             }

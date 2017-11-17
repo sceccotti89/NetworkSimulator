@@ -496,7 +496,7 @@ public class EnergyTestDIST
                 
                 switchNode.getEventGenerator( 0 ).connect( agentCore );
                 
-                plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), null, "Node " + id + " " + model.getModelType( true ) );
+                plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + id + " " + model.getModelType( true ) );
             }
         }
         

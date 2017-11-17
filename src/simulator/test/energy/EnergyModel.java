@@ -6,6 +6,7 @@ import simulator.utils.Utils;
 
 public abstract class EnergyModel
 {
+    // TODO su internet ho trovato che il TDP in idle di un i7 4770k e' di 2W.
     private static final double ENERGY_IDLE = 1.3d / 4d;
     
     public EnergyModel()

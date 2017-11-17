@@ -154,10 +154,13 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
     
     private void saveValues()
     {
+        // TODO prima di salvare i valori dovrei prima controllare la loro correttezza??
         // Save the inserted values.
         int index = 0;
         double value;
         double min = 0;
+        double oldMinX = settings._range.getMinX();
+        double oldMinY = settings._range.getMinY();
         for (JTextField field : fields) {
             if (!field.getText().isEmpty()) {
                 value = Double.parseDouble( field.getText() );
@@ -178,13 +181,13 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
                         settings._range.setMinX( min = value ); break;
                     case( 5 ):
                         if (value < 0) { showErrorDialog( "X maximum range cannot be less then 0." ); return; }
-                        if (value < min) { showErrorDialog( "X maximum range cannot be less then the minimum." ); return; }
+                        if (value < min) { settings._range.setMinX( oldMinX ); showErrorDialog( "X maximum range cannot be less then the minimum." ); return; }
                         settings._range.setMaxX( value ); break;
                     case( 6 ):
                         settings._range.setMinY( min = value ); break;
                     case( 7 ):
                         if (value < 0) { showErrorDialog( "Y maximum range cannot be less then 0." ); return; }
-                        if (value < min) { showErrorDialog( "Y maximum range cannot be less then the minimum." ); return; }
+                        if (value < min) { settings._range.setMinY( oldMinY ); showErrorDialog( "Y maximum range cannot be less then the minimum." ); return; }
                         settings._range.setMaxY( value ); break;
                     case( 8 ):
                         if (value <= 0) { showErrorDialog( "X scale cannot be less or equal then 0." ); return; }
@@ -235,7 +238,6 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
     {
         if (e.getKeyCode() == KeyEvent.VK_ENTER) {
             saveValues();
-            dispose();
         }
         if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
             dispose();
