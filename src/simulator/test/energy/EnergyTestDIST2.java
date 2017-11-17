@@ -16,8 +16,6 @@ import java.util.Random;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
-import org.newdawn.slick.util.ResourceLoader;
-
 import simulator.core.Agent;
 import simulator.core.Device;
 import simulator.core.Device.Sampler.Sampling;
@@ -45,6 +43,7 @@ import simulator.utils.Pair;
 import simulator.utils.SizeUnit;
 import simulator.utils.Time;
 import simulator.utils.Utils;
+import simulator.utils.resources.ResourceLoader;
 
 public class EnergyTestDIST2
 {
@@ -1081,11 +1080,11 @@ public class EnergyTestDIST2
         CPUEnergyModel model = getModel( type, mode, timeBudget, 1 );
         final String modelType = model.getModelType( true );
         Plotter plotter = new Plotter( "DISTRIBUTED MULTI_CORE - " + modelType, 800, 600 );
-        
+        final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         for (int i = 0; i < NODES; i++) {
             EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
-            cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
-            cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
+            cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
+            cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
             cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Node" + (i+1) + "_Tail_Latency.log" );
             cpus.add( cpu );
             

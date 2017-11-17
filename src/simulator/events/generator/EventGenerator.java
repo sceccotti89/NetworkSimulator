@@ -427,7 +427,8 @@ public abstract class EventGenerator
     /**
      * Generates a new request messages.
      * 
-     * @param e    the current received event. It can be {@code null}.
+     * @param e    the current received event.
+     *             It can be {@code null}.
      * 
      * @return the request messages.
     */
@@ -442,22 +443,24 @@ public abstract class EventGenerator
         if (reqPacket == null || !_isBroadcasted) {
             reqPacket = makePacket( e, (_isBroadcasted) ? -1 : dest.getId() );
         }
+        
         if (reqPacket != null) {
             _session.increaseSentPackets();
             event = new RequestEvent( _time, _agent, dest, reqPacket.clone() );
             event.setFlowId( _session.getId() );
+            event.setGeneratorID( getId() );
         }
-        
-        event.setGeneratorID( getId() );
         
         return event;
     }
     
     /**
-     * Select the next destination node at the specified time.
+     * Select the next destination node at the specified time.</br>
+     * By default it returns the next available node, in a Round-Robin fashion.
      * 
-     * @param time    time to check the destination. Useful in multicast/anycast transmissions
-     *                where, for instance, the destination node is selected based on its workload.
+     * @param time    time to select the destination. Useful in multicast/anycast transmissions
+     *                where, for instance, the destination node is selected based on
+     *                the workload at the given time.
      * 
      * @return Index of the next destination.</br>
      *         It must be in the range <b>[0 - #destinations)</b>

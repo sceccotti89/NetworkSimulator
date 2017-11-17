@@ -226,6 +226,9 @@ public abstract class CPU extends Device<Long,QueryInfo>
             cpu.addSampledValue( Global.ENERGY_SAMPLING, startTime,
                                  endTime, currentQuery.getEnergyConsumption() );
             
+            cpu.addSampledValue( Global.MEAN_COMPLETION_TIME, endTime,
+                                 endTime, tailLatency.getTimeMicros() );
+            
             // TODO writeResult( currentQuery.getFrequency(), currentQuery.getLastEnergy() );
             
             // Compute the current idle energy.
@@ -263,7 +266,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
                 //System.out.println( "TIME_BUDGET: " + ((PESOSmodel) cpu.getModel()).getTimeBudget() );
                 //System.out.println( "TIME: " + time + ", NEW: " + newFrequency + ", OLD: " + frequency );
                 if (currentQuery != null) {
-                    if (newFrequency < frequency) {
+                    /*if (newFrequency < frequency) {
                         // FIXME abbassamento frequenza (in genere con PESOS).
                         try {
                             int val = 100 / 0;
@@ -278,7 +281,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
                             }
                             System.exit( 0 );
                         }
-                    }
+                    }*/
                     
                     // Update the termination time and the energy consumption of the current query.
                     double energy = cpu.energyModel.computeEnergy( currentQuery.getEnergy( newFrequency ),

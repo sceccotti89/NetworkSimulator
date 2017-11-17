@@ -467,6 +467,7 @@ public class EnergyTestDIST
         
         Plotter plotter = new Plotter( "DISTRIBUTED SINGLE_CORE - " + model.getModelType( false ), 800, 600 );
         List<EnergyCPU> cpus = new ArrayList<>( NODES * CPU_CORES );
+        final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         // Add the CPU nodes.
         for (int i = 0; i < NODES; i++) {
             EventGenerator anyGen = new AnycastGenerator( Time.INFINITE, PACKET, PACKET );
@@ -477,8 +478,8 @@ public class EnergyTestDIST
             // Add the core to each CPU node.
             for (int j = 0; j < NODES; j++) {
                 EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/cpu_frequencies.txt" );
-                cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
-                cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
+                cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
+                cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
                 cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
                 cpus.add( cpu );
                 
@@ -489,7 +490,7 @@ public class EnergyTestDIST
                 cpu.setModel( model );
                 
                 EventGenerator sink = new MulticoreGenerator( Time.INFINITE );
-                long id = i * (CPU_CORES + 1) + 3 + j;
+                final long id = i * (CPU_CORES + 1) + 3 + j;
                 Agent agentCore = new MulticoreAgent( id, sink );
                 agentCore.addDevice( cpu );
                 net.addAgent( agentCore );
