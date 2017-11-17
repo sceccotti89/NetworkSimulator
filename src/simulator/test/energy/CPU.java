@@ -348,12 +348,15 @@ public abstract class CPU extends Device<Long,QueryInfo>
         
         /**
          * Adds a query into the core.
-         * 
+         *
          * @param query              the query to add.
          * @param updateFrequency    check if the frequency have to be updated.
         */
         public abstract void addQuery( final QueryInfo query, final boolean updateFrequency );
         
+        /**
+         * Checks if the input query is the next one for this core.
+        */
         public boolean isNextQuery( final QueryInfo query ) {
             return !queryQueue.isEmpty() && queryQueue.get( 0 ).equals( query );
         }

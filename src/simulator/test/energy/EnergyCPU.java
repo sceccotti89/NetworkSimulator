@@ -124,7 +124,9 @@ public class EnergyCPU extends CPU
     }
     
     @Override
-    public long selectCore( final Time time, final QueryInfo query ) {
+    public long selectCore( final Time time, final QueryInfo query )
+    {
+        addSampledValue( Global.QUERY_PER_TIME_SLOT, time, time, 1 );
         return ((CPUEnergyModel) _model).selectCore( time, this, query );
     }
     
@@ -359,8 +361,7 @@ public class EnergyCPU extends CPU
     
     private static class PERFcore extends Core
     {
-        public PERFcore( final EnergyCPU cpu, final long coreId, final long initFrequency )
-        {
+        public PERFcore( final EnergyCPU cpu, final long coreId, final long initFrequency ) {
             super( cpu, coreId, initFrequency );
         }
         

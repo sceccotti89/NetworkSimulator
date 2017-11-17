@@ -14,4 +14,5 @@ public class Global
     public static final String IDLE_ENERGY_SAMPLING  = "IdleEnergy";
     public static final String TAIL_LATENCY_SAMPLING = "TailLatency";
     public static final String MEAN_COMPLETION_TIME  = "MeanCompletionTime";
+    public static final String QUERY_PER_TIME_SLOT   = "QueryPerTimeSlot";
 }

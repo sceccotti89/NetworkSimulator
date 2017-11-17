@@ -329,8 +329,7 @@ public abstract class Device<I,O>
      * @param value          value to add
     */
     protected void addSampledValue( final String sampler, final Time startTime, final Time endTime, final double value ) {
-        addSampledValue( sampler, startTime.getTimeMicros(),
-                         endTime.getTimeMicros(), value );
+        addSampledValue( sampler, startTime.getTimeMicros(), endTime.getTimeMicros(), value );
     }
     
     /**

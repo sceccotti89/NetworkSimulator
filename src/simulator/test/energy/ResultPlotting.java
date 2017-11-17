@@ -169,7 +169,7 @@ public class ResultPlotting
         Plotter plotter = new Plotter( "Mean Response Time", 800, 600 );
         plotter.setAxisName( "Time (h)", "Mean response time (ms)" );
         plotter.setRange( Axis.Y, 0, 200000 );
-        plotter.setTicks( Axis.Y, (int) (200000 / 100000) );
+        //plotter.setTicks( Axis.Y, (int) (200000 / 100000) );
         plotter.setScaleY( 1000d );
         
         plotter.setRange( Axis.X, 0, TimeUnit.HOURS.toMicros( 24 ) );
@@ -181,15 +181,31 @@ public class ResultPlotting
         plotter.setVisible( true );
     }
     
+    public static void plotMeanArrivalTime() throws IOException
+    {
+        Plotter plotter = new Plotter( "Query Per Time Slot", 800, 600 );
+        plotter.setAxisName( "Time (h)", "Query Per Time Slot (15min)" );
+        plotter.setRange( Axis.Y, 0, 12000 );
+        
+        plotter.setRange( Axis.X, 0, TimeUnit.HOURS.toMicros( 24 ) );
+        plotter.setTicks( Axis.X, 24, 2 );
+        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
+        
+        plotter.addPlot( "Results/QueryPerTimeSlot.log", "Query Per Time Slot" );
+        
+        plotter.setVisible( true );
+    }
+    
     public static void main( final String argv[] ) throws IOException
     {
         final long time_budget = 500;
         final Mode mode        = Mode.TIME_CONSERVATIVE;
         
         //plotEnergy( time_budget, mode.toString() );
-        plotTailLatency( time_budget, mode.toString() );
+        //plotTailLatency( time_budget, mode.toString() );
         //plotDistributedTailLatency( time_budget, mode.toString() );
         
         //plotMeanCompletionTime();
+        plotMeanArrivalTime();
     }
 }

@@ -335,7 +335,7 @@ public class EnergyTestMONO
         
         CPUEnergyModel model = null;
         
-        model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
@@ -348,7 +348,7 @@ public class EnergyTestMONO
         //model = loadModel( Type.MY_MODEL, Mode.TIME_CONSERVATIVE,  500 );
         //model = loadModel( Type.MY_MODEL, Mode.TIME_CONSERVATIVE, 1000 );
         
-        //model = loadModel( Type.PERF );
+        model = loadModel( Type.PERF );
         //model = loadModel( Type.CONS );
         
         model.loadModel();
@@ -483,11 +483,13 @@ public class EnergyTestMONO
         
         String modelType = model.getModelType( true );
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
+        final Time meanSamplingTime = new Time( 15, TimeUnit.MINUTES );
         cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
         cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
         cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
         if (model.getType() == Type.PERF) {
-            cpu.addSampler( Global.MEAN_COMPLETION_TIME, samplingTime, Sampling.AVERAGE, "Log/Mean_Completion_Time.log" );
+            cpu.addSampler( Global.MEAN_COMPLETION_TIME, meanSamplingTime, Sampling.AVERAGE, "Log/Mean_Completion_Time.log" );
+            cpu.addSampler( Global.QUERY_PER_TIME_SLOT, meanSamplingTime, Sampling.CUMULATIVE, "Log/QueryPerTimeSlot.log" );
         }
         
         NetworkTopology net = new NetworkTopology( "Topology/Topology_mono_multiCore.json" );
