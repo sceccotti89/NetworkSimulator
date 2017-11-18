@@ -89,6 +89,10 @@ public abstract class EventGenerator
         dummyResEvent.setGeneratorID( _id );
     }
     
+    public Agent getAgent() {
+        return _agent;
+    }
+    
     public EventGenerator connect( Agent to )
     {
         _destinations.add( to );
