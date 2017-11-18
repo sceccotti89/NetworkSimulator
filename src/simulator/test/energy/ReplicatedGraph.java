@@ -26,6 +26,10 @@ public class ReplicatedGraph
         nodes.get( fromIndex ).addLink( link );
     }
     
+    public boolean hasNode( int index ) {
+        return nodes.containsKey( index );
+    }
+
     public void computeMinimumPath()
     {
         // TODO completare

@@ -932,8 +932,9 @@ public class EnergyTestREPLICA_DIST
                 // Compute the minimum path among all the possibles.
                 graph = new ReplicatedGraph( meanCompletionTime.size() );
                 graph.addNode( 0, 0 );
-                allReplicas = new ArrayList<>( 128 );
+                //allReplicas = new ArrayList<>( 128 );
                 createGraph( 0, 0, 0 );
+                /*TODO allReplicas = */graph.computeMinimumPath();
             } else {
                 arrivals = 0;
                 currentArrivals = new ArrayList<>( 2 );
@@ -1049,20 +1050,20 @@ public class EnergyTestREPLICA_DIST
             double completionExtimation = meanCompletionTime.get( slotIndex );
             double arrivalExtimation    = meanArrivalTime.get( slotIndex );
             
-            // FIXME BUG: se creo cosi' i nodi rischio di creare duplicati: 
-            //            il numero di query presenti nel time slot non posso salvarlo nel nodo
             final long Ts = SwitchTimeSlotGenerator.TIME_SLOT.getTimeMicros();
             for (int nodes = 1; nodes <= REPLICA_PER_NODE; nodes++) {
                 // Predict the queries for the suqsequent node.
-                int nextQueries = (int) (queries - ((nodes * Ts) / completionExtimation) + arrivalExtimation);
                 final int index = slotIndex * REPLICA_PER_NODE + nodes;
-                graph.addNode( index, nextQueries );
-                double power   = getPowerCost( nodes );
-                double latency = getLatencyCost( queries, arrivalExtimation, completionExtimation, nodes );
-                double weight  = LAMBDA * power + (1 - LAMBDA) * latency;
-                graph.addLink( nodeIndex, index, weight );
-                
-                createGraph( index, nextQueries, slotIndex + 1 );
+                if (!graph.hasNode( index )) {
+                    int nextQueries = Math.max( 0, (int) (queries - ((nodes * Ts) / completionExtimation) + arrivalExtimation) );
+                    graph.addNode( index, nextQueries );
+                    double power   = getPowerCost( nodes );
+                    double latency = getLatencyCost( queries, arrivalExtimation, completionExtimation, nodes );
+                    double weight  = LAMBDA * power + (1 - LAMBDA) * latency;
+                    graph.addLink( nodeIndex, index, weight );
+                    
+                    createGraph( index, nextQueries, slotIndex + 1 );
+                }
             }
         }
         
@@ -1222,7 +1223,7 @@ public class EnergyTestREPLICA_DIST
         for (int i = 0; i < NODES * REPLICA_PER_NODE; i++) {
             EnergyCPU cpu = cpus.get( i );
             double energy = cpu.getResultSampled( Global.ENERGY_SAMPLING );
-            System.out.println( "CPU: " + i + ", Energy: " + energy );
+            System.out.println( "CPU (" + (i/2 + 1) + "-" + (i%2) + ") => Energy: " + energy );
         }
         
         // Show the animation.
