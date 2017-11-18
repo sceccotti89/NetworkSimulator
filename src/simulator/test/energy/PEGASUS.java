@@ -26,7 +26,7 @@ public class PEGASUS
     
     private Map<Long,NodeInfo> _nodes;
     
-    public PEGASUS( final List<EnergyCPU> nodes, final long target )
+    public PEGASUS( List<EnergyCPU> nodes, long target )
     {
         //this.nodes = nodes;
         //this.target = target;
@@ -39,7 +39,7 @@ public class PEGASUS
         }
     }
     
-    public void setCompletedQuery( final Time now, final long nodeId, final Time completionTime )
+    public void setCompletedQuery( Time now, long nodeId, Time completionTime )
     {
         _nodes.get( nodeId ).setCompletedQuery( now, completionTime );
         
@@ -120,14 +120,14 @@ public class PEGASUS
         private boolean power_holding = false;
         private static final Time HOLD_TIME = new Time( 5, TimeUnit.MINUTES );
         
-        public NodeInfo( final EnergyCPU node, final long target )
+        public NodeInfo( EnergyCPU node, long target )
         {
             this.node = node;
             this.target = target;
             queries = new LinkedList<>();
         }
         
-        public void setCompletedQuery( final Time now, final Time completionTime )
+        public void setCompletedQuery( Time now, Time completionTime )
         {
             final Time lowerBound = now.clone().subTime( WINDOW );
             while (size > 0) {

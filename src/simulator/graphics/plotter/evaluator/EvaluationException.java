@@ -13,19 +13,19 @@ public class EvaluationException extends RuntimeException
         super();
     }
     
-    public EvaluationException( final String message, final Throwable cause, final boolean enableSuppression, final boolean writableStackTrace ) {
+    public EvaluationException( String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace ) {
         super( message, cause, enableSuppression, writableStackTrace );
     }
     
-    public EvaluationException( final String message, final Throwable cause ) {
+    public EvaluationException( String message, Throwable cause ) {
         super( message, cause );
     }
     
-    public EvaluationException( final String message ) {
+    public EvaluationException( String message ) {
         super( message );
     }
     
-    public EvaluationException( final Throwable cause ) {
+    public EvaluationException( Throwable cause ) {
         super( cause );
     }
 }

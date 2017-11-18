@@ -23,7 +23,7 @@ public enum SizeUnit
     
     
     
-    public double getBytes( final double value )
+    public double getBytes( double value )
     {
         switch( this ) {
             case BIT :     return value / BYTES;
@@ -42,7 +42,7 @@ public enum SizeUnit
         return value;
     }
     
-    public static double getBytes( final double value, final SizeUnit size )
+    public static double getBytes( double value, SizeUnit size )
     {
         switch( size ) {
             case BIT :     return value / BYTES;
@@ -61,7 +61,7 @@ public enum SizeUnit
         return value;
     }
     
-    public double getBits( final double value )
+    public double getBits( double value )
     {
         switch( this ) {
             case BIT :     return value;
@@ -79,7 +79,7 @@ public enum SizeUnit
         return value;
     }
     
-    public static double getBits( final double value, final SizeUnit size )
+    public static double getBits( double value, SizeUnit size )
     {
         switch( size ) {
             case BIT :     return value;

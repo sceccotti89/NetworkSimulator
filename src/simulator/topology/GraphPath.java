@@ -21,9 +21,9 @@ public class GraphPath
         // Empty constructor.
     }
     
-    public void computeAllSourcesShortestPath( final NetworkTopology net,
-                                               final Map<Long,NetworkNode> nodes,
-                                               final Map<Long,List<NetworkLink>> links )
+    public void computeAllSourcesShortestPath( NetworkTopology net,
+                                               Map<Long,NetworkNode> nodes,
+                                               Map<Long,List<NetworkLink>> links )
     {
         for (NetworkNode node : nodes.values()) {
             NetworkNode[] pred = getShortestPath( node.getId(), net, nodes, links );
@@ -31,10 +31,10 @@ public class GraphPath
         }
     }
     
-    public NetworkNode[] getShortestPath( final long sourceId,
-                                          final NetworkTopology net,
-                                          final Map<Long,NetworkNode> nodes,
-                                          final Map<Long,List<NetworkLink>> links )
+    public NetworkNode[] getShortestPath( long sourceId,
+                                          NetworkTopology net,
+                                          Map<Long,NetworkNode> nodes,
+                                          Map<Long,List<NetworkLink>> links )
     {
         NetworkNode[] pred = shortestPaths.get( sourceId );
         if (pred != null) {
@@ -46,10 +46,10 @@ public class GraphPath
         }
     }
     
-    private NetworkNode[] computeShortestPath( final long sourceId,
-                                               final NetworkTopology net,
-                                               final Map<Long,NetworkNode> nodes,
-                                               final Map<Long,List<NetworkLink>> links )
+    private NetworkNode[] computeShortestPath( long sourceId,
+                                               NetworkTopology net,
+                                               Map<Long,NetworkNode> nodes,
+                                               Map<Long,List<NetworkLink>> links )
     {
         int size = nodes.size();
         Map<Long, List<QueueNode>> neighbours = new HashMap<>( size );
@@ -109,9 +109,9 @@ public class GraphPath
         return predecessors;
     }
     
-    /*private static NetworkLink getLink( final Map<Long,List<NetworkLink>> links,
-                                        final long sourceId,
-                                        final long destId )
+    /*private static NetworkLink getLink( Map<Long,List<NetworkLink>> links,
+                                        long sourceId,
+                                        long destId )
     {
         for (NetworkLink link : links.get( sourceId )) {
             if (link.getDestId() == destId)
@@ -128,17 +128,17 @@ public class GraphPath
         
         private static final double INFINITE = Double.MAX_VALUE;
         
-        public QueueNode( final NetworkNode node )
+        public QueueNode( NetworkNode node )
         { this( node.getId(), INFINITE, node.getIndex() ); }
         
-        public QueueNode( final long id, final double distance, final int index )
+        public QueueNode( long id, double distance, int index )
         {
             _id = id;
             _distance = distance;
             _index = index;
         }
         
-        public void setDistance( final long sourceId ) {
+        public void setDistance( long sourceId ) {
             _distance = (_id == sourceId) ? 0L : INFINITE;
         }
         
@@ -146,12 +146,12 @@ public class GraphPath
         { return _distance == INFINITE; }
         
         @Override
-        public boolean equals( final Object e ) {
+        public boolean equals( Object e ) {
             return ((QueueNode) e)._id == _id;
         }
         
         @Override
-        public int compareTo( final QueueNode node )
+        public int compareTo( QueueNode node )
         { return _distance.compareTo( node._distance ); }
     }
 }

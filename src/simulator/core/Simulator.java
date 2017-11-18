@@ -37,15 +37,15 @@ public class Simulator implements AutoCloseable
         this( (List<NetworkTopology>) null );
     }
     
-    public Simulator( final String filename ) throws IOException {
+    public Simulator( String filename ) throws IOException {
         this( build( filename ) );
     }
     
-    public Simulator( final NetworkTopology net ) {
+    public Simulator( NetworkTopology net ) {
         this( Collections.singletonList( net ) );
     }
     
-    public Simulator( final List<NetworkTopology> networks )
+    public Simulator( List<NetworkTopology> networks )
     {
         PropertyConfigurator.configure( ResourceLoader.getResourceAsStream( "Settings/log4j.properties" ) );
         BasicConfigurator.configure();
@@ -59,7 +59,7 @@ public class Simulator implements AutoCloseable
         }
     }
     
-    private static List<NetworkTopology> build( final String filename ) throws IOException
+    private static List<NetworkTopology> build( String filename ) throws IOException
     {
         List<NetworkTopology> networks = new ArrayList<>();
         
@@ -92,7 +92,7 @@ public class Simulator implements AutoCloseable
      * 
      * @param net    the network to set.
     */
-    public void setNetwork( final NetworkTopology net )
+    public void setNetwork( NetworkTopology net )
     {
         net.computeShortestPaths();
         _network = net;
@@ -107,7 +107,7 @@ public class Simulator implements AutoCloseable
      * @param parExe    {@code true} lets the simulation to start in parallel,
      *                  {@code false} otherwise.
     */
-    public void start( final boolean parExe ) {
+    public void start( boolean parExe ) {
         start( Time.INFINITE, parExe );
     }
     
@@ -118,7 +118,7 @@ public class Simulator implements AutoCloseable
      * @param parExe      {@code true} lets the simulation to start in parallel,
      *                    {@code false} otherwise.
     */
-    public void start( final Time duration, final boolean parExe )
+    public void start( Time duration, boolean parExe )
     {
         //List<SimulatorExecution> simExes = new ArrayList<>( _evtSchedulers.size() );
         for (NetworkNode node : _network.getNodes()) {
@@ -161,7 +161,7 @@ public class Simulator implements AutoCloseable
     {
         private final NetworkTopology net;
         
-        public SimulatorExecution( final NetworkTopology net ) {
+        public SimulatorExecution( NetworkTopology net ) {
             this.net = net;
         }
         
@@ -170,7 +170,7 @@ public class Simulator implements AutoCloseable
             startSimulation( net );
         }
         
-        private static final void startSimulation( final NetworkTopology net )
+        private static final void startSimulation( NetworkTopology net )
         {
             Utils.LOGGER.info( "Simulation start!" );
             long currentTime = System.currentTimeMillis();

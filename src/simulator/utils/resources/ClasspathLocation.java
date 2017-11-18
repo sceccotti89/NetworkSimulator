@@ -13,14 +13,14 @@ import java.net.URL;
 public class ClasspathLocation implements ResourceLocation
 {
     @Override
-    public URL getResource( final String ref )
+    public URL getResource( String ref )
     {
         String cpRef = ref.replace( '\\', '/' );
         return ResourceLoader.class.getClassLoader().getResource( cpRef );
     }
 
     @Override
-    public InputStream getResourceAsStream( final String ref )
+    public InputStream getResourceAsStream( String ref )
     {
         String cpRef = ref.replace( '\\', '/' );
         return ResourceLoader.class.getClassLoader().getResourceAsStream( cpRef );    

@@ -35,7 +35,7 @@ public class Utils
     
     
     
-    public static long getTimeInMicroseconds( final double time, final TimeUnit tUnit )
+    public static long getTimeInMicroseconds( double time, TimeUnit tUnit )
     {
         if (time != Double.POSITIVE_INFINITY || time != Double.MAX_VALUE) {
             switch ( tUnit ) {
@@ -53,7 +53,7 @@ public class Utils
         return (long) time;
     }
     
-    public static long getNormalizedTime( final TimeUnit tUnit )
+    public static long getNormalizedTime( TimeUnit tUnit )
     {
         switch ( tUnit ) {
             case DAYS:         return 24 * 60 * 60 * 1000L * 1000L;
@@ -76,7 +76,7 @@ public class Utils
      * 
      * @return the byte serialization of the object, if no error happens, null otherwise
     */
-    public static <T extends Serializable> byte[] serializeObject( final T obj )
+    public static <T extends Serializable> byte[] serializeObject( T obj )
     {
         if(obj instanceof String)
             return ((String) obj).getBytes( StandardCharsets.UTF_8 );
@@ -102,7 +102,7 @@ public class Utils
      * @return the deserialization of the object,
      *            casted to the type specified in {@link T}
     */
-    public static <T extends Serializable> T deserializeObject( final byte data[] )
+    public static <T extends Serializable> T deserializeObject( byte data[] )
     {
         try {
             ByteArrayInputStream in = new ByteArrayInputStream( data );
@@ -119,13 +119,13 @@ public class Utils
         }
     }
     
-    public static boolean existsFile( final String filename )
+    public static boolean existsFile( String filename )
     {
         File file = new File( filename );
         return file.exists();
     }
     
-    public static void checkFile( final String filename ) throws IOException
+    public static void checkFile( String filename ) throws IOException
     {
         File file = new File( filename );
         if (file.exists()) {
@@ -136,7 +136,7 @@ public class Utils
         }
     }
     
-    public static void checkDirectory( final String filename )
+    public static void checkDirectory( String filename )
     {
         File file = new File( filename );
         if (!file.exists()) {

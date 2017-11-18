@@ -14,12 +14,12 @@ public class FunctionInterpreter
     private final Expr e;
     private Map<String,Double> values;
     
-    public FunctionInterpreter( final Expr e ) {
+    public FunctionInterpreter( Expr e ) {
         this.e = e;
         values = new HashMap<>();
     }
     
-    public void putVariable( final String variable, final double value ) {
+    public void putVariable( String variable, double value ) {
         values.put( variable, value );
     }
     
@@ -27,7 +27,7 @@ public class FunctionInterpreter
         return evalExpr( e );
     }
     
-    private double evalExpr( final Expr e )
+    private double evalExpr( Expr e )
     {
         switch (e.getOp().getType()) {
             case( Token.T_NUMBER):      return e.getExpr1().getOp().value;
@@ -54,7 +54,7 @@ public class FunctionInterpreter
         return 0;
     }
     
-    private double getValue( final Token token )
+    private double getValue( Token token )
     {
         Double result = values.get( token.stringValue );
         if (result == null) {

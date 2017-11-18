@@ -46,14 +46,14 @@ public class NetworkTopology
 
 
 
-    public NetworkTopology( final JSONObject settings ) throws IOException
+    public NetworkTopology( JSONObject settings ) throws IOException
     {
         netID = getNextID();
         build( settings );
         agents = new HashMap<>();
     }
 	
-    public NetworkTopology( final String filename ) throws IOException
+    public NetworkTopology( String filename ) throws IOException
     {
         netID = getNextID();
         agents = new HashMap<>();
@@ -69,7 +69,7 @@ public class NetworkTopology
      * 
      * @param filename  name of the file where nodes and links are loaded from
     */
-    private void build( final String filename ) throws IOException
+    private void build( String filename ) throws IOException
     {
         InputStream stream = ResourceLoader.getResourceAsStream( filename );
         BufferedReader br = new BufferedReader( new InputStreamReader( stream ) );
@@ -91,7 +91,7 @@ public class NetworkTopology
      * 
      * @param filename  name of the file where nodes and links are loaded from
     */
-    private void build( final JSONObject settings ) throws IOException
+    private void build( JSONObject settings ) throws IOException
     {
         /** File structure:
          * 
@@ -140,7 +140,7 @@ public class NetworkTopology
         return netID;
     }
     
-    public void setEventScheduler( final EventScheduler evtScheduler )
+    public void setEventScheduler( EventScheduler evtScheduler )
     {
         this.evtScheduler = evtScheduler;
         evtScheduler.setNetwork( this );
@@ -149,7 +149,7 @@ public class NetworkTopology
         }
     }
     
-    public void addAgent( final Agent agent )
+    public void addAgent( Agent agent )
     {
         if (!containsNode( agent.getId() ))
             throw new SimulatorException( "No node found for ID: " + agent.getId() );
@@ -159,7 +159,7 @@ public class NetworkTopology
         agents.put( agent.getId(), agent );
     }
     
-    public void addAgents( final Agent... agents )
+    public void addAgents( Agent... agents )
     {
         for (Agent agent : agents) {
             addAgent( agent );
@@ -170,14 +170,14 @@ public class NetworkTopology
         return agents.values();
     }
 
-    public void addLink( final long fromId, final long destId,
-                         final double bandwith, final long delay,
-                         final String linkType )
+    public void addLink( long fromId, long destId,
+                         double bandwith, long delay,
+                         String linkType )
     {
         addLink( new NetworkLink( fromId, destId, bandwith, delay, linkType ) );
     }
     
-    public void addLink( final NetworkLink link )
+    public void addLink( NetworkLink link )
     {
         if (!nodes.containsKey( link.getSourceId() ))
         	throw new SimulatorException( "Node '" + link.getSourceId() + "' not found." );
@@ -187,7 +187,7 @@ public class NetworkTopology
     	insertLink( link );
     }
     
-    private void insertLink( final NetworkLink link )
+    private void insertLink( NetworkLink link )
     {
         List<NetworkLink> sLinks = links.get( link.getSourceId() );
         if (sLinks == null) sLinks = new ArrayList<NetworkLink>();
@@ -195,15 +195,15 @@ public class NetworkTopology
         links.put( link.getSourceId(), sLinks );
     }
     
-    public void connectToNetwork( final NetworkTopology net,
-                                  final long fromId, final long destId,
-                                  final double bandwith, final long delay,
-                                  final String linkType )
+    public void connectToNetwork( NetworkTopology net,
+                                  long fromId, long destId,
+                                  double bandwith, long delay,
+                                  String linkType )
     {
         connectToNetwork( net, new NetworkLink( fromId, destId, bandwith, delay, linkType ) );
     }
     
-    public void connectToNetwork( final NetworkTopology net, final NetworkLink link )
+    public void connectToNetwork( NetworkTopology net, NetworkLink link )
     {
         if (!nodes.containsKey( link.getSourceId() ))
             throw new SimulatorException( "Node '" + link.getSourceId() + "' not found." );
@@ -216,7 +216,7 @@ public class NetworkTopology
         }
     }
     
-    public NetworkLink getLink( final long sourceId, final long destId )
+    public NetworkLink getLink( long sourceId, long destId )
     {
     	for (NetworkLink link : links.get( sourceId )) {
     		if (link.getDestId() == destId)
@@ -225,22 +225,22 @@ public class NetworkTopology
     	return null;
     }
     
-    public void addNode( final long id, final String name, final long delay,
-                         final int xPos, final int yPos ) {
+    public void addNode( long id, String name, long delay,
+                         int xPos, int yPos ) {
         addNode( new NetworkNode( this, id, name, delay, xPos, yPos ) );
     }
     
-    public void addNode( final NetworkNode node )
+    public void addNode( NetworkNode node )
     {
     	node.setIndex( _nextIndex++ );
         nodes.put( node.getId(), node );
     }
     
-    public boolean containsNode( final long nodeId ) {
+    public boolean containsNode( long nodeId ) {
         return nodes.containsKey( nodeId );
     }
     
-    public NetworkNode getNode( final long nodeId ) {
+    public NetworkNode getNode( long nodeId ) {
         return nodes.get( nodeId );
     }
     
@@ -259,7 +259,7 @@ public class NetworkTopology
      * 
      * @param events    the "external" events
     */
-    public void addExternalEvents( final List<ExternalEvent> events ) {
+    public void addExternalEvents( List<ExternalEvent> events ) {
         for (ExternalEvent event : events) {
             evtScheduler.schedule( event );
         }
@@ -272,7 +272,7 @@ public class NetworkTopology
      * 
      * @param event    the "external" event
     */
-    public void addExternalEvent( final ExternalEvent event ) {
+    public void addExternalEvent( ExternalEvent event ) {
         evtScheduler.schedule( event );
     }
     
@@ -283,7 +283,7 @@ public class NetworkTopology
      * 
      * @param message    the input message.
     */
-    public void trackEvent( final String message ) {
+    public void trackEvent( String message ) {
         if (eventsWriter != null) {
             eventsWriter.println( message );
         }
@@ -294,7 +294,7 @@ public class NetworkTopology
      * 
      * @param eventsFile    name of the file.
     */
-    public void setTrackingEvent( final String eventsFile ) throws FileNotFoundException
+    public void setTrackingEvent( String eventsFile ) throws FileNotFoundException
     {
         File file = new File( eventsFile );
         if (!file.exists()) {
@@ -321,7 +321,7 @@ public class NetworkTopology
      * 
      * @return the next node, if founded, {@code null} otherwise.
     */
-    public NetworkNode nextNode( final long sourceId, final long destId )
+    public NetworkNode nextNode( long sourceId, long destId )
     {
     	@SuppressWarnings("deprecation")
         NetworkNode[] predecessors = gp.getShortestPath( sourceId, this, nodes, links );

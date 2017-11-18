@@ -11,7 +11,7 @@ import simulator.topology.NetworkTopology;
 
 public class Switch extends Agent
 {
-    public Switch( final NetworkNode node, final NetworkTopology net )
+    public Switch( NetworkNode node, NetworkTopology net )
     {
         super( node );
         

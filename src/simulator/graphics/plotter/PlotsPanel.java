@@ -53,7 +53,7 @@ public class PlotsPanel implements MouseListener, FocusListener
     
     
     
-    public PlotsPanel( final GraphicPlotter plotter, final int x, final int width )
+    public PlotsPanel( GraphicPlotter plotter, int x, int width )
     {
         this.plotter = plotter;
         text = "Plots";
@@ -74,7 +74,7 @@ public class PlotsPanel implements MouseListener, FocusListener
         target = new Rectangle( x + PAD + 3, PAD + 4, 12, 12 );
     }
     
-    public void setXPosition( final int x )
+    public void setXPosition( int x )
     {
         int offset = x - this.x;
         this.x = x;
@@ -91,7 +91,7 @@ public class PlotsPanel implements MouseListener, FocusListener
         return POLY_SIZE;
     }
     
-    public JCheckBox addPlot( final GraphicPlotter plotter, final String title )
+    public JCheckBox addPlot( GraphicPlotter plotter, String title )
     {
         int maxWidth = 0;
         int y = startY;
@@ -112,14 +112,14 @@ public class PlotsPanel implements MouseListener, FocusListener
         return box;
     }
     
-    public void checkClicked( final MouseEvent e )
+    public void checkClicked( MouseEvent e )
     {
         if (target.contains( e.getPoint() )) {
             selected = !selected;
         }
     }
     
-    private void updatePosition( final List<Plot> plots )
+    private void updatePosition( List<Plot> plots )
     {
         int y = startY;
         for (Plot plot : plots) {
@@ -136,7 +136,7 @@ public class PlotsPanel implements MouseListener, FocusListener
     }
     
     @Override
-    public void mouseClicked( final MouseEvent e )
+    public void mouseClicked( MouseEvent e )
     {
         if (SwingUtilities.isRightMouseButton( e ) || e.isControlDown()) {
             JCheckBox box = (JCheckBox) e.getSource();
@@ -155,7 +155,7 @@ public class PlotsPanel implements MouseListener, FocusListener
             JMenuItem new_file = new JMenuItem( "Save as file" );
             new_file.addActionListener( new ActionListener() {
                 @Override
-                public void actionPerformed( final ActionEvent e ) {
+                public void actionPerformed( ActionEvent e ) {
                     JFileChooser f = new JFileChooser() {
                         // Generated serial ID.
                         private static final long serialVersionUID = 768969466487289338L;
@@ -199,7 +199,7 @@ public class PlotsPanel implements MouseListener, FocusListener
             JMenuItem modify = new JMenuItem( "Modify" );
             modify.addActionListener( new ActionListener() {
                 @Override
-                public void actionPerformed( final ActionEvent e ) {
+                public void actionPerformed( ActionEvent e ) {
                     PlotEditDialog dialog = new PlotEditDialog( plotter.getFrame(), plotter.getPlots().get( index ) );
                     dialog.setVisible( true );
                 }
@@ -209,7 +209,7 @@ public class PlotsPanel implements MouseListener, FocusListener
             JMenuItem remove = new JMenuItem( "Remove" );
             remove.addActionListener( new ActionListener() {
                 @Override
-                public void actionPerformed( final ActionEvent e ) {
+                public void actionPerformed( ActionEvent e ) {
                     plotter.removePlot( index );
                     updatePosition( plotter.getPlots() );
                 }
@@ -222,29 +222,29 @@ public class PlotsPanel implements MouseListener, FocusListener
     }
     
     @Override
-    public void mouseReleased( final MouseEvent e ) {}
+    public void mouseReleased( MouseEvent e ) {}
     @Override
-    public void mousePressed( final MouseEvent e ) {}
+    public void mousePressed( MouseEvent e ) {}
     @Override
-    public void mouseExited( final MouseEvent e ) {}
+    public void mouseExited( MouseEvent e ) {}
     @Override
-    public void mouseEntered( final MouseEvent e ) {}
+    public void mouseEntered( MouseEvent e ) {}
     
     @Override
-    public void focusLost( final FocusEvent e )
+    public void focusLost( FocusEvent e )
     {
         JCheckBox box = (JCheckBox) e.getSource();
         box.setBackground( new Color( 0, 0, 0, 0 ) );
     }
     
     @Override
-    public void focusGained( final FocusEvent e )
+    public void focusGained( FocusEvent e )
     {
         JCheckBox box = (JCheckBox) e.getSource();
         box.setBackground( new Color( 100, 100, 100, 120 ) );
     }
 
-    public void draw( final GraphicPlotter plotter, final Graphics2D g )
+    public void draw( GraphicPlotter plotter, Graphics2D g )
     {
         final int xArea = x + PAD;
         final int yArea = PAD;

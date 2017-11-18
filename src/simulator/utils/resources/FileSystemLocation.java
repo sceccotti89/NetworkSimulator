@@ -23,14 +23,14 @@ public class FileSystemLocation implements ResourceLocation
      * 
      * @param root The root of the file system to search
     */
-    public FileSystemLocation( final File root ) {
+    public FileSystemLocation( File root ) {
         this.root = root;
     }
     
     /**
      * @see ResourceLocation#getResource(String)
     */
-    public URL getResource( final String ref )
+    public URL getResource( String ref )
     {
         try {
             File file = new File( root, ref );
@@ -50,7 +50,7 @@ public class FileSystemLocation implements ResourceLocation
     /**
      * @see ResourceLocation#getResourceAsStream(String)
     */
-    public InputStream getResourceAsStream( final String ref )
+    public InputStream getResourceAsStream( String ref )
     {
         try {
             File file = new File( root, ref );

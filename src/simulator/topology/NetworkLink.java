@@ -40,15 +40,15 @@ public class NetworkLink
     
     
     
-    public NetworkLink( final long sourceId, final long destId,
-                        final double bandwith, final long delay )
+    public NetworkLink( long sourceId, long destId,
+                        double bandwith, long delay )
     {
         this( sourceId, destId, bandwith, delay, UNIDIRECTIONAL );
     }
     
-    public NetworkLink( final long sourceId,   final long destId,
-                        final double bandwith, final long delay,
-                        final String linkType )
+    public NetworkLink( long sourceId,   long destId,
+                        double bandwith, long delay,
+                        String linkType )
     {
         _sourceId = sourceId;
         _destId = destId;
@@ -75,7 +75,7 @@ public class NetworkLink
         return _linkType;
     }
     
-    public long getTtrasm( final long size )
+    public long getTtrasm( long size )
     {
         // Ttrasm = size/bandwith
         double Ttrasm = size / _bandwith.getBits();
@@ -86,7 +86,7 @@ public class NetworkLink
         return _delay;
     }
     
-    public void setError( final double errorValue ) {
+    public void setError( double errorValue ) {
         errorLink = errorValue;
     }
     
@@ -102,7 +102,7 @@ public class NetworkLink
         return MTU;
     }
     
-    public void setMTU( final long value ) {
+    public void setMTU( long value ) {
         MTU = value;
     }
     
@@ -114,7 +114,7 @@ public class NetworkLink
         return new NetworkLink( _destId, _sourceId, _bandwith.getSize(), _delay/1000L, _linkType );
     }
     
-    public void setActive( final boolean flag ) {
+    public void setActive( boolean flag ) {
         _active = flag;
     }
     

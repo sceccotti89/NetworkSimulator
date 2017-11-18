@@ -13,11 +13,11 @@ public class FunctionParser
     private static Token token;
     private static boolean readNext = true;
     
-    public FunctionParser( final String expression ) {
+    public FunctionParser( String expression ) {
         tokenizer = new Tokenizer( expression );
     }
     
-    public static Expr parse( final String expression ) {
+    public static Expr parse( String expression ) {
         tokenizer = new Tokenizer( expression );
         return parseEXPR();
     }
@@ -41,7 +41,7 @@ public class FunctionParser
         return parseSUM_OP( parseSIGNED_TERM() );
     }
     
-    private static Expr parseSUM_OP( final Expr e )
+    private static Expr parseSUM_OP( Expr e )
     {
         if (readNext)
             token = tokenizer.nextToken();
@@ -76,7 +76,7 @@ public class FunctionParser
         return parseTERM_OP( e );
     }
     
-    private static Expr parseTERM_OP( final Expr e )
+    private static Expr parseTERM_OP( Expr e )
     {
         if (readNext)
             token = tokenizer.nextToken();
@@ -108,7 +108,7 @@ public class FunctionParser
         return parseFACTOR_OP( parseARGUMENT() );
     }
     
-    private static Expr parseFACTOR_OP( final Expr e )
+    private static Expr parseFACTOR_OP( Expr e )
     {
         if (readNext)
             token = tokenizer.nextToken();

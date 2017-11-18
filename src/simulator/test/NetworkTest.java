@@ -24,9 +24,9 @@ public class NetworkTest
     
     private static class ClientGenerator extends EventGenerator
     {
-        public ClientGenerator( final Time duration,
-                                final Packet reqPacket,
-                                final Packet resPacket )
+        public ClientGenerator( Time duration,
+                                Packet reqPacket,
+                                Packet resPacket )
         {
             super( duration, Time.ZERO, reqPacket, resPacket );
             startAt( Time.ZERO );
@@ -35,9 +35,9 @@ public class NetworkTest
     
     private static class MulticastGenerator extends EventGenerator
     {
-        public MulticastGenerator( final Time duration,
-                                   final Packet reqPacket,
-                                   final Packet resPacket )
+        public MulticastGenerator( Time duration,
+                                   Packet reqPacket,
+                                   Packet resPacket )
         {
             super( duration, Time.ZERO, reqPacket, resPacket );
             setDelayedResponse( true );
@@ -46,14 +46,14 @@ public class NetworkTest
     
     private static class SwitchAgent extends Agent
     {
-        public SwitchAgent( final long id, final EventGenerator evGenerator )
+        public SwitchAgent( long id, EventGenerator evGenerator )
         {
             super( id );
             addEventGenerator( evGenerator );
         }
         
         @Override
-        public double getNodeUtilization( final Time time )
+        public double getNodeUtilization( Time time )
         {
             double utilization = 0;
             for (Agent agent : _evtGenerators.get( 0 ).getDestinations()) {
@@ -65,15 +65,15 @@ public class NetworkTest
     
     private static class SinkGenerator extends EventGenerator
     {
-        public SinkGenerator( final Time duration,
-                              final Packet reqPacket,
-                              final Packet resPacket )
+        public SinkGenerator( Time duration,
+                              Packet reqPacket,
+                              Packet resPacket )
         {
             super( duration, Time.ZERO, reqPacket, resPacket );
         }
         
         @Override
-        public Packet makePacket( final Event e, final long destination )
+        public Packet makePacket( Event e, long destination )
         {
             if (e instanceof RequestEvent) {
                 return new Packet( 20, SizeUnit.KILOBYTE );
@@ -85,7 +85,7 @@ public class NetworkTest
     
     private static class ClientAgent extends Agent
     {
-        public ClientAgent( final long id, final EventGenerator evGenerator )
+        public ClientAgent( long id, EventGenerator evGenerator )
         {
             super( id );
             addEventGenerator( evGenerator );
@@ -94,7 +94,7 @@ public class NetworkTest
     
     private static class ServerAgent extends Agent
     {
-        public ServerAgent( final long id )
+        public ServerAgent( long id )
         {
             super( id );
         }
@@ -102,14 +102,14 @@ public class NetworkTest
     
     private static class ResponseServerAgent extends Agent
     {
-        public ResponseServerAgent( final long id, final EventGenerator generator )
+        public ResponseServerAgent( long id, EventGenerator generator )
         {
             super( id );
             addEventGenerator( generator );
         }
     }
     
-    public static void main( final String argv[] ) throws Exception
+    public static void main( String argv[] ) throws Exception
     {
         Utils.VERBOSE = false;
     	//example1();

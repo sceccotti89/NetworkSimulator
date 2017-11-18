@@ -11,7 +11,7 @@ import simulator.topology.NetworkTopology;
 
 public class Router extends Agent
 {
-    public Router( final NetworkNode node, final NetworkTopology net, final long id )
+    public Router( NetworkNode node, NetworkTopology net, long id )
     {
         super( node );
         

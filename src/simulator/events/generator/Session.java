@@ -30,7 +30,7 @@ public class Session
         this( nextFlowID() );
     }
     
-    public Session( final long id ) {
+    public Session( long id ) {
         _id = id;
     }
     
@@ -41,14 +41,14 @@ public class Session
         return _id;
     }
     
-    public void setMaximumFlyingPackets( final long max ) {
+    public void setMaximumFlyingPackets( long max ) {
         _maxPacketsInFlight = max;
     }
     
     /**
      * Sets the request packet associated with this session.
     */
-    public void setPacket( final Packet packet ) {
+    public void setPacket( Packet packet ) {
         _reqPacket = packet;
     }
     
@@ -59,7 +59,7 @@ public class Session
         return _reqPacket;
     }
     
-    public void setSource( final Agent agent ) {
+    public void setSource( Agent agent ) {
         _source = agent;
     }
     
@@ -78,7 +78,7 @@ public class Session
     /**
      * Returns the next destination index.
     */
-    public int getNextDestination( final int destinations ) {
+    public int getNextDestination( int destinations ) {
         return _nextDestIndex = (_nextDestIndex + 1) % destinations;
     }
     

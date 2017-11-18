@@ -15,7 +15,7 @@ import simulator.utils.Time;
 */
 public class ProtocolEvent extends Event
 {
-    public ProtocolEvent( final Time time, final Agent agent, final String protocolID )
+    public ProtocolEvent( Time time, Agent agent, String protocolID )
     {
         super( time, agent );
         _processedByAgent = false;

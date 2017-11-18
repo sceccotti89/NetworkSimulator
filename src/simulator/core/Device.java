@@ -62,7 +62,7 @@ public abstract class Device<I,O>
      * @param name              name of the device
      * @param frequency_file    file where the frequencies are taken.
     */
-    public Device( final String name, final String frequency_file ) throws IOException {
+    public Device( String name, String frequency_file ) throws IOException {
         this( name, readFrequencies( frequency_file ) );
     }
     
@@ -72,7 +72,7 @@ public abstract class Device<I,O>
      * @param name           name of the device.
      * @param frequencies    list of frequencies.
     */
-    public Device( final String name, final List<Long> frequencies )
+    public Device( String name, List<Long> frequencies )
     {
         _name = name;
         _time = new Time( 0, TimeUnit.MILLISECONDS );
@@ -94,7 +94,7 @@ public abstract class Device<I,O>
      * 
      * @return the list of available frequencies
     */
-    protected static List<Long> readFrequencies( final String frequencies_file ) throws IOException
+    protected static List<Long> readFrequencies( String frequencies_file ) throws IOException
     {
         final Pattern p = Pattern.compile( "\\w+" );
         
@@ -118,7 +118,7 @@ public abstract class Device<I,O>
     /**
      * Assigns the cost model.
     */
-    public void setModel( final Model<I,O> model ) {
+    public void setModel( Model<I,O> model ) {
         _model = model;
     }
     
@@ -126,7 +126,7 @@ public abstract class Device<I,O>
         return _model;
     }
     
-    public void setEventScheduler( final EventScheduler evtScheduler ) {
+    public void setEventScheduler( EventScheduler evtScheduler ) {
         _evtScheduler = evtScheduler;
     }
     
@@ -137,7 +137,7 @@ public abstract class Device<I,O>
     /**
      * Sets the device time.
     */
-    public void setTime( final Time time ) {
+    public void setTime( Time time ) {
         _time.setTime( time );
     }
     
@@ -162,8 +162,8 @@ public abstract class Device<I,O>
      * @throws RuntimeException if the sampler name already exists.
      * @throws IOException if the path specified by the logFile parameter is not valid.
     */
-    public void addSampler( final String samplerId, final Time interval,
-                            final Sampling mode, final String logFile ) throws IOException {
+    public void addSampler( String samplerId, Time interval,
+                            Sampling mode, String logFile ) throws IOException {
         addSampler( samplerId, interval, mode, logFile, 1 << 12 );
     }
     
@@ -182,9 +182,9 @@ public abstract class Device<I,O>
      * @throws RuntimeException if the sampler name already exists.
      * @throws IOException if the path specified by the logFile parameter is not valid.
     */
-    public void addSampler( final String samplerId, final Time interval,
-                            final Sampling mode, final String logFile,
-                            final int initialCapacity ) throws IOException {
+    public void addSampler( String samplerId, Time interval,
+                            Sampling mode, String logFile,
+                            int initialCapacity ) throws IOException {
         addSampler( samplerId, new Sampler( interval, logFile, mode, initialCapacity ) );
     }
     
@@ -196,7 +196,7 @@ public abstract class Device<I,O>
      * 
      * @throws RuntimeException if the samplerId already exists.
     */
-    public void addSampler( final String samplerId, final Sampler sampler )
+    public void addSampler( String samplerId, Sampler sampler )
     {
         if (samplings.containsKey( samplerId )) {
             throw new RuntimeException( "Selected name \"" + samplerId + "\" already exists." );
@@ -228,7 +228,7 @@ public abstract class Device<I,O>
      * 
      * @param frequency    the clock frequency.
     */
-    public void setFrequency( final long frequency ) {
+    public void setFrequency( long frequency ) {
         _frequency = frequency;
     }
     
@@ -238,7 +238,7 @@ public abstract class Device<I,O>
      * 
      * @param steps    number of steps to increase.
     */
-    public void increaseFrequency( final int steps )
+    public void increaseFrequency( int steps )
     {
         int index = _frequencies.indexOf( _frequency );
         index = Math.min( index + steps, _frequencies.size() - 1 );
@@ -251,7 +251,7 @@ public abstract class Device<I,O>
      * 
      * @param steps    number of steps to decrease.
     */
-    public void decreaseFrequency( final int steps )
+    public void decreaseFrequency( int steps )
     {
         int index = _frequencies.indexOf( _frequency );
         index = Math.max( index - steps, 0 );
@@ -266,7 +266,7 @@ public abstract class Device<I,O>
      * 
      * @return time spent to compute the input task.
     */
-    public abstract Time timeToCompute( final Task task );
+    public abstract Time timeToCompute( Task task );
     
     /**
      * Inserts a value in the corresponding interval.
@@ -276,8 +276,8 @@ public abstract class Device<I,O>
      * @param value           the value to add
      * @param elements        number of elements in the current bucket
     */
-    private double insertSampledValue( final Sampling mode, final double currentValue,
-                                       final double value, final long elements )
+    private double insertSampledValue( Sampling mode, double currentValue,
+                                       double value, long elements )
     {
         switch (mode) {
             case CUMULATIVE: return currentValue + value;
@@ -302,8 +302,8 @@ public abstract class Device<I,O>
      * @return the last interval generated by this method.
     */
     private Pair<Double, Double> scanInterval( double nextInterval, final double interval,
-                                               final double time, final double valueUnit,
-                                               final List<Long> elements, final List<Pair<Double,Double>> values )
+                                               double time, double valueUnit,
+                                               List<Long> elements, List<Pair<Double,Double>> values )
     {
         Pair<Double,Double> currentInterval = values.get( values.size() - 1 );
         // Check for the interval position.
@@ -328,7 +328,7 @@ public abstract class Device<I,O>
      * @param endTime        ending time of the event
      * @param value          value to add
     */
-    protected void addSampledValue( final String sampler, final Time startTime, final Time endTime, final double value ) {
+    protected void addSampledValue( String sampler, Time startTime, Time endTime, double value ) {
         addSampledValue( sampler, startTime.getTimeMicros(), endTime.getTimeMicros(), value );
     }
     
@@ -344,7 +344,7 @@ public abstract class Device<I,O>
      * @param endTime        ending time of the event
      * @param value          value to add
     */
-    protected void addSampledValue( final String sampler, final double startTime, final double endTime, final double value )
+    protected void addSampledValue( String sampler, double startTime, double endTime, double value )
     {
         Sampler samplerObj = samplings.get( sampler );
         if (samplerObj == null) {
@@ -489,7 +489,7 @@ public abstract class Device<I,O>
      * @return {@code null} if the requested sampler is not present,
      *         its list of values otherwise.
     */
-    public List<Pair<Double,Double>> getSampledValues( final String sampler )
+    public List<Pair<Double,Double>> getSampledValues( String sampler )
     {
         if (!samplings.containsKey( sampler )) {
             return null;
@@ -506,7 +506,7 @@ public abstract class Device<I,O>
      * @return {@code null} if the requested sampler is not present,
      *         its result value otherwise.
     */
-    public Double getResultSampled( final String sampler ) {
+    public Double getResultSampled( String sampler ) {
         if (!samplings.containsKey( sampler )) {
             return null;
         } else {
@@ -519,7 +519,7 @@ public abstract class Device<I,O>
      * 
      * @param time    time to check the device utilization
     */
-    public abstract double getUtilization( final Time time );
+    public abstract double getUtilization( Time time );
     
     /**
      * Returns the associated ID.
@@ -572,11 +572,11 @@ public abstract class Device<I,O>
         */
         public enum Sampling{ CUMULATIVE, AVERAGE, MIN, MAX };
         
-        public Sampler( final Time interval, final String logFile, final Sampling mode ) throws IOException {
+        public Sampler( Time interval, String logFile, Sampling mode ) throws IOException {
             this( interval, logFile, mode, 1 << 12 );
         }
         
-        public Sampler( final Time interval, final String logFile, final Sampling mode, final int initialCapacity ) throws IOException
+        public Sampler( Time interval, String logFile, Sampling mode, int initialCapacity ) throws IOException
         {
             values = new ArrayList<>( initialCapacity );
             elements = new ArrayList<>( initialCapacity );

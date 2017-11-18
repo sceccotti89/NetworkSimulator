@@ -22,7 +22,7 @@ public class ResultPlotting
 {
     private static final int PERCENTILE = 95;
     
-    public static void plotEnergy( final long time_budget, final String mode ) throws IOException
+    public static void plotEnergy( long time_budget, String mode ) throws IOException
     {
         Plotter plotter = new Plotter( "Energy Consumption", 800, 600 );
         plotter.setAxisName( "Time (h)", "Energy (J)" );
@@ -36,7 +36,7 @@ public class ResultPlotting
         plotter.setVisible( true );
     }
     
-    private static List<Pair<Double,Double>> getPercentiles( final String fileName, final String saveFileName ) throws IOException
+    private static List<Pair<Double,Double>> getPercentiles( String fileName, String saveFileName ) throws IOException
     {
         double percentile = PERCENTILE * 0.01d;
         double interval = TimeUnit.MINUTES.toMicros( 5 );
@@ -90,7 +90,7 @@ public class ResultPlotting
         return percentiles;
     }
     
-    public static void plotTailLatency( final long time_budget, final String mode ) throws IOException
+    public static void plotTailLatency( long time_budget, String mode ) throws IOException
     {
         List<Pair<Double, Double>> points = new ArrayList<>();
         for(int i = 0; i <= 1; i++) {
@@ -132,7 +132,7 @@ public class ResultPlotting
         plotter.setVisible( true );
     }
     
-    public static void plotDistributedTailLatency( final long time_budget, final String mode ) throws IOException
+    public static void plotDistributedTailLatency( long time_budget, String mode ) throws IOException
     {
         Plotter plotter = new Plotter( "Tail Latency " + PERCENTILE + "-th Percentile", 800, 600 );
         plotter.setAxisName( "Time (h)", PERCENTILE + "th-tile response time (ms)" );
@@ -196,7 +196,7 @@ public class ResultPlotting
         plotter.setVisible( true );
     }
     
-    public static void main( final String argv[] ) throws IOException
+    public static void main( String argv[] ) throws IOException
     {
         final long time_budget = 500;
         final Mode mode        = Mode.TIME_CONSERVATIVE;

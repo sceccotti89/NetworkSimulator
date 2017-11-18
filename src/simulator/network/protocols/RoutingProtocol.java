@@ -15,5 +15,5 @@ public interface RoutingProtocol
      * 
      * @return the next node in the graph.
     */
-    public NetworkNode getNextNode( final long destID );
+    public NetworkNode getNextNode( long destID );
 }

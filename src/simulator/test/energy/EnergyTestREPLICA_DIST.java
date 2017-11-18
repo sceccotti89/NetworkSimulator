@@ -177,7 +177,7 @@ public class EnergyTestREPLICA_DIST
             catch ( IOException e ) {}
         }
         
-        public void addQuery( Time time, long nodeID, long coreID, long queryID, final long versionId )
+        public void addQuery( Time time, long nodeID, long coreID, long queryID, long versionId )
         {
             PesosQuery query = new PesosQuery( queryID, versionId );
             
@@ -323,11 +323,11 @@ public class EnergyTestREPLICA_DIST
             private static final double CRITICAL_COEFFICIENT = 0.7;
             
             
-            public Status( final String status, final long time ) {
+            public Status( String status, long time ) {
                 setStatus( status, time );
             }
             
-            public void setStatus( final String status, final long time )
+            public void setStatus( String status, long time )
             {
                 _status = status;
                 if (status == WARNING) {
@@ -565,7 +565,7 @@ public class EnergyTestREPLICA_DIST
         private long _queryID;
         private long _timeBudget;
         
-        public PESOSmessage( final long coreID, final long queryID, final long timeBudget )
+        public PESOSmessage( long coreID, long queryID, long timeBudget )
         {
             _coreID = coreID;
             _queryID = queryID;
@@ -828,11 +828,26 @@ public class EnergyTestREPLICA_DIST
     
     
     
+    private static class SwitchTimeSlotGenerator extends CBRGenerator
+    {
+        private static final Time TIME_SLOT = new Time( 15, TimeUnit.MINUTES );
+        
+        public SwitchTimeSlotGenerator( Time duration ) {
+            super( Time.ZERO, duration, TIME_SLOT, PACKET, PACKET );
+        }
+        
+        @Override
+        public Packet makePacket( Event e, long destination )
+        {
+            Packet packet = getRequestPacket();
+            packet.addContent( Global.SWITCH_TIME_SLOT, "" );
+            return packet;
+        }
+    }
+    
     private static class SwitchGenerator extends EventGenerator
     {
-        public SwitchGenerator( Time duration,
-                                Packet reqPacket,
-                                Packet resPacket )
+        public SwitchGenerator( Time duration, Packet reqPacket, Packet resPacket )
         {
             super( duration, Time.ZERO, reqPacket, resPacket );
             setDelayedResponse( true );

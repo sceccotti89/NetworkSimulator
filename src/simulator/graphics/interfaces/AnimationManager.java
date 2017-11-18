@@ -39,7 +39,7 @@ public class AnimationManager implements AnimationInterface
     
     private String frameLenght = "" + frames;
     
-    public AnimationManager( final GameContainer gc, final float startY, final float widthM, final float heightM ) throws SlickException
+    public AnimationManager( GameContainer gc, float startY, float widthM, float heightM ) throws SlickException
     {
     	this.startY = startY;
     	
@@ -66,7 +66,7 @@ public class AnimationManager implements AnimationInterface
         buttons.add( plus );
     }
     
-    private void setFrames( final int index, final NetworkDisplay nd ) {
+    private void setFrames( int index, NetworkDisplay nd ) {
         int add;
         if (index == 4) {
             add = 1;
@@ -94,7 +94,7 @@ public class AnimationManager implements AnimationInterface
     	index = -1;
     }
     
-    public boolean checkClick( final Event event, final NetworkDisplay nd ) {
+    public boolean checkClick( Event event, NetworkDisplay nd ) {
     	if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
 	    	if (index == -1) {
 	    		for (ImageButton button : buttons) {
@@ -116,7 +116,7 @@ public class AnimationManager implements AnimationInterface
     }
     
     @Override
-    public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd, final boolean mouseEvent )
+    public void update( int delta, GameContainer gc, AnimationManager am, Event event, NetworkDisplay nd, boolean mouseEvent )
     {        
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();
@@ -171,7 +171,7 @@ public class AnimationManager implements AnimationInterface
     }
     
     @Override
-    public void render( final GameContainer gc )
+    public void render( GameContainer gc )
     {        
         Graphics g = gc.getGraphics();
         
@@ -200,7 +200,7 @@ public class AnimationManager implements AnimationInterface
         }
     }
     
-    private void resetButtons( final ImageButton button ) {
+    private void resetButtons( ImageButton button ) {
         for (ImageButton imButton: buttons) {
             if (imButton != button) {
                 imButton.setPressed( false );

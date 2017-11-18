@@ -11,7 +11,7 @@ import simulator.utils.Time;
 
 public class ResponseEvent extends Event
 {
-    public ResponseEvent( final Time time, final Agent from, final Agent to, final Packet packet ) {
+    public ResponseEvent( Time time, Agent from, Agent to, Packet packet ) {
         super( time, from, to, packet );
     }
     

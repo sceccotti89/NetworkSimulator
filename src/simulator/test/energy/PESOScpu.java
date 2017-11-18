@@ -33,14 +33,14 @@ public class PESOScpu extends CPU
         super( "", Collections.singletonList( 0L ) );
     }
     
-    public PESOScpu( final String machine, final int cores, final int contexts,
-                     final String frequencies_file ) throws IOException
+    public PESOScpu( String machine, int cores, int contexts,
+                     String frequencies_file ) throws IOException
     {
         this( machine, cores, contexts, readFrequencies( frequencies_file ) );
     }
     
-    public PESOScpu( final String machine, final int cores, final int contexts,
-                     final List<Long> frequencies ) throws IOException
+    public PESOScpu( String machine, int cores, int contexts,
+                     List<Long> frequencies ) throws IOException
     {
         super( machine, frequencies );
         
@@ -60,7 +60,7 @@ public class PESOScpu extends CPU
     }
     
     @Override
-    public void setModel( final Model<Long,QueryInfo> model )
+    public void setModel( Model<Long,QueryInfo> model )
     {
         CPUModel cpuModel = (CPUModel) model;
         for (long i = 0; i < _cores; i++) {
@@ -74,7 +74,7 @@ public class PESOScpu extends CPU
     }
     
     @Override
-    public void addQuery( final long coreId, final QueryInfo q )
+    public void addQuery( long coreId, QueryInfo q )
     {
         Core core = getCore( coreId );
         if (core.getQueue().isEmpty()) {
@@ -84,7 +84,7 @@ public class PESOScpu extends CPU
         lastQuery = q;
     }
     
-    private void removeQuery( final QueryInfo q )
+    private void removeQuery( QueryInfo q )
     {
         for (int i = 0; i < queries.size(); i++) {
             QueryReference ref = queries.get( i );
@@ -96,7 +96,7 @@ public class PESOScpu extends CPU
     }
     
     @Override
-    public long selectCore( final Time time, final QueryInfo q )
+    public long selectCore( Time time, QueryInfo q )
     {
         System.out.println( "AGGIUNTA QUERY: " + q.getId() );
         QueryReference toAssign = new QueryReference( -1, q );
@@ -106,7 +106,7 @@ public class PESOScpu extends CPU
         return lastSelectedCore = toAssign.getCoreId();
     }
     
-    private void analyzeFrequency( final Time time, final long currentCore )
+    private void analyzeFrequency( Time time, long currentCore )
     {
         int[] currentQueries = new int[(int) _cores];
         long[] frequencies = new long[(int) _cores];
@@ -191,7 +191,7 @@ public class PESOScpu extends CPU
      * @param time      time of evaluation.
      * @param coreId    requesting core identifier.
     */
-    protected QueryInfo getNextQuery( final Time time, final long coreId )
+    protected QueryInfo getNextQuery( Time time, long coreId )
     {
         for (int i = 0; i < queries.size(); i++) {
             QueryReference ref = queries.get( i );
@@ -204,12 +204,12 @@ public class PESOScpu extends CPU
     }
     
     @Override
-    public void evalCONSparameters( final Time time ) {
+    public void evalCONSparameters( Time time ) {
         // Empty body.
     }
     
     @Override
-    protected long evalFrequency( final Time time, final Core core )
+    protected long evalFrequency( Time time, Core core )
     {
         Model<Long,QueryInfo> model = getModel();
         List<QueryInfo> queue = core.getQueue();
@@ -219,7 +219,7 @@ public class PESOScpu extends CPU
     }
     
     @Override
-    public Time timeToCompute( final Task task )
+    public Time timeToCompute( Task task )
     {
         Core core = coresMap.get( getLastSelectedCore() );
         QueryInfo query = lastQuery;
@@ -227,7 +227,7 @@ public class PESOScpu extends CPU
     }
     
     @Override
-    protected void computeEnergyConsumption( final Core core, final QueryInfo query, final Time computeTime )
+    protected void computeEnergyConsumption( Core core, QueryInfo query, Time computeTime )
     {
         long frequency = core.getFrequency();
         double energy = query.getEnergy( frequency );
@@ -246,7 +246,7 @@ public class PESOScpu extends CPU
         private long coreId;
         private QueryInfo query;
         
-        public QueryReference( final long coreId, final QueryInfo query )
+        public QueryReference( long coreId, QueryInfo query )
         {
             this.coreId = coreId;
             this.query = query;
@@ -266,12 +266,12 @@ public class PESOScpu extends CPU
         private long baseTimeBudget;
         private long timeBudget;
         
-        public PESOScore( final PESOScpu cpu, final long coreId, final long initFrequency ) {
+        public PESOScore( PESOScpu cpu, long coreId, long initFrequency ) {
             super( cpu, coreId, initFrequency );
         }
         
         @Override
-        public void addQuery( final QueryInfo q, final boolean execute )
+        public void addQuery( QueryInfo q, boolean execute )
         {
             if (q != null) {
                 q.setCoreId( coreId );
@@ -283,7 +283,7 @@ public class PESOScpu extends CPU
         }
         
         @Override
-        public boolean checkQueryCompletion( final Time time )
+        public boolean checkQueryCompletion( Time time )
         {
             //System.out.println( "TIME: " + time + ", CORE: " + getId() + ", ATTUALE: " + currentQuery );
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
@@ -308,13 +308,13 @@ public class PESOScpu extends CPU
             }
         }
         
-        public void setBaseTimeBudget( final Time time, final long timeBudget )
+        public void setBaseTimeBudget( Time time, long timeBudget )
         {
             baseTimeBudget = timeBudget;
             setTimeBudget( time, timeBudget, null );
         }
         
-        public void setTimeBudget( final Time time, final long timeBudget, final Long queryID )
+        public void setTimeBudget( Time time, long timeBudget, Long queryID )
         {
             this.timeBudget = timeBudget;
             System.out.println( "CORE: " + getId() + ", NUOVO TIME BUDGET: " + timeBudget );

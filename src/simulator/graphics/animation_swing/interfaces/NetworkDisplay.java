@@ -50,7 +50,7 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener
     
     
 
-    public NetworkDisplay( final float width, final float height )
+    public NetworkDisplay( float width, float height )
     {
         addMouseMotionListener( this );
         setDoubleBuffered( true );
@@ -61,11 +61,11 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener
         info = new Info();
     }
     
-    public void setAnimationManager( final AnimationManager am ) {
+    public void setAnimationManager( AnimationManager am ) {
         this.am = am;
     }
     
-    public void setElements( final List<Node> nodes, final List<Link> links, final List<Packet> packets )
+    public void setElements( List<Node> nodes, List<Link> links, List<Packet> packets )
     {
         this.nodes = nodes;
         this.links = links;
@@ -134,7 +134,7 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener
         return timer;
     }
     
-    public void setTime( final long time )
+    public void setTime( long time )
     {
         timer = time;
         for (Packet packet : packets) {
@@ -143,7 +143,7 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener
         repaint();
     }
     
-    private void update( final Graphics2D g, final int delta )
+    private void update( Graphics2D g, int delta )
     {
         if (timer > timeSimulation) {
             stopAnimation();
@@ -176,15 +176,15 @@ public class NetworkDisplay extends JPanel implements MouseMotionListener
     }
     
     @Override
-    public void mouseDragged( final MouseEvent event ) {}
+    public void mouseDragged( MouseEvent event ) {}
 
     @Override
-    public void mouseMoved( final MouseEvent event ) {
+    public void mouseMoved( MouseEvent event ) {
         mouse = event.getPoint();
     }
 
     @Override
-    protected void paintComponent( final Graphics g )
+    protected void paintComponent( Graphics g )
     {
         super.paintComponent( g );
         setBackground( Color.LIGHT_GRAY );

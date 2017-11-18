@@ -15,17 +15,17 @@ public class Message
     private NetworkLayer layer;
     
     
-    public Message( final long size, final SizeUnit unit, final NetworkLayer layer ) {
+    public Message( long size, SizeUnit unit, NetworkLayer layer ) {
         setMessage( createMessage( (long) unit.getBytes( size ) ) );
         this.layer = layer;
     }
     
-    public <T extends Serializable> Message( final T message, final NetworkLayer layer ) {
+    public <T extends Serializable> Message( T message, NetworkLayer layer ) {
         addMessage( message );
         this.layer = layer;
     }
     
-    public <T extends Serializable> void addMessage( final T message )
+    public <T extends Serializable> void addMessage( T message )
     {
         if (message instanceof byte[]){
             setMessage( (byte[]) message );
@@ -34,7 +34,7 @@ public class Message
         }
     }
     
-    private void setMessage( final byte[] message ) {
+    private void setMessage( byte[] message ) {
         this.message = message;
     }
     
@@ -43,7 +43,7 @@ public class Message
      * 
      * @param length    length of the message
     */
-    private static byte[] createMessage( final long length )
+    private static byte[] createMessage( long length )
     {
         StringBuilder message = new StringBuilder();
         for (long i = 0; i < length; i++) {

@@ -43,13 +43,13 @@ public class NetworkNode
     
     
     
-    public NetworkNode( final NetworkTopology net, final long id,
-                        final String name, final long delay ) {
+    public NetworkNode( NetworkTopology net, long id,
+                        String name, long delay ) {
         this( net, id, name, delay, 0, 0 );
     }
     
-    public NetworkNode( final NetworkTopology net, final long id, final String name,
-                        final long delay, final int xPos, final int yPos )
+    public NetworkNode( NetworkTopology net, long id, String name,
+                        long delay, int xPos, int yPos )
     {
         _id = id;
         _name = name;
@@ -81,7 +81,7 @@ public class NetworkNode
         return _yPos;
     }
     
-    public void setAgent( final Agent agent ) {
+    public void setAgent( Agent agent ) {
         _agent = agent;
     }
     
@@ -89,7 +89,7 @@ public class NetworkNode
         return _agent;
     }
     
-    public void setIndex( final int index ) {
+    public void setIndex( int index ) {
     	_index = index;
     }
     
@@ -101,7 +101,7 @@ public class NetworkNode
         return _settings;
     }
     
-    public Event analyzePacket( final Packet packet )
+    public Event analyzePacket( Packet packet )
     {
         final String protocol_ID = packet.getContent( "Protocol_ID" );
         for (NetworkProtocol protocol : _settings.getRoutingProtocols()) {
@@ -112,7 +112,7 @@ public class NetworkNode
         return null;
     }
 
-    public void setActive( final boolean flag ) {
+    public void setActive( boolean flag ) {
         _active = flag;
     }
     

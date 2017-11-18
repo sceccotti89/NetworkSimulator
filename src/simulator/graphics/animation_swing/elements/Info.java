@@ -19,7 +19,7 @@ public class Info
 	    
 	}
 	
-	public void setAttributes( final Graphics2D g, final String info, final float x, final float y )
+	public void setAttributes( Graphics2D g, String info, float x, float y )
 	{
 	    Rectangle2D bounds = g.getFontMetrics().getStringBounds( info, g );
         double width  = bounds.getWidth();
@@ -30,11 +30,11 @@ public class Info
         setVisible( true );
 	}
 	
-	public void setVisible( final boolean flag ) {
+	public void setVisible( boolean flag ) {
 	    visible = flag;
 	}
 	
-	public void render( final Graphics2D g )
+	public void render( Graphics2D g )
 	{
 	    if (visible) {
     		g.setColor( Color.lightGray );

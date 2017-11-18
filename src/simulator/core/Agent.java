@@ -42,12 +42,12 @@ public abstract class Agent extends Thread
     
     
     
-    public Agent( final NetworkNode node ) {
+    public Agent( NetworkNode node ) {
         this( node.getId() );
         setNode( node );
     }
     
-    public Agent( final long id )
+    public Agent( long id )
     {
         _id = id;
         _devices = new HashMap<>();
@@ -72,23 +72,23 @@ public abstract class Agent extends Thread
         return _node;
     }
     
-    public void addEventGenerator( final EventGenerator evGenerator )
+    public void addEventGenerator( EventGenerator evGenerator )
     {
         _evtGenerators.add( evGenerator );
         evGenerator.setAgent( this );
     }
     
-    public void addDevice( final Device<?,?> device ) {
+    public void addDevice( Device<?,?> device ) {
         device.setEventScheduler( _evtScheduler );
         _devices.put( device.getID(), device );
     }
     
-    public <T extends Device<?,?>> T getDevice( final T device ) {
+    public <T extends Device<?,?>> T getDevice( T device ) {
         return getDevice( device.getID() );
     }
     
     @SuppressWarnings("unchecked")
-    public <T extends Device<?,?>> T getDevice( final String id ) {
+    public <T extends Device<?,?>> T getDevice( String id ) {
         return (T) _devices.get( id );
     }
     
@@ -103,7 +103,7 @@ public abstract class Agent extends Thread
      * 
      * @param now    set the current time
     */
-    public void setTime( final Time now )
+    public void setTime( Time now )
     {
         if (now.compareTo( _time ) > 0) {
             _time.setTime( now );
@@ -117,13 +117,13 @@ public abstract class Agent extends Thread
         return _time.clone();
     }
     
-    public void setNode( final NetworkNode node )
+    public void setNode( NetworkNode node )
     {
         _node = node;
         node.setAgent( this );
     }
     
-    public void setEventScheduler( final EventScheduler evtScheduler ) {
+    public void setEventScheduler( EventScheduler evtScheduler ) {
         _evtScheduler = evtScheduler;
         for (Device<?,?> device : _devices.values()) {
             device.setEventScheduler( evtScheduler );
@@ -139,7 +139,7 @@ public abstract class Agent extends Thread
      * 
      * @param index    index of the requested event generator.
     */
-    public EventGenerator getEventGenerator( final int index ) {
+    public EventGenerator getEventGenerator( int index ) {
         return _evtGenerators.get( index );
     }
 
@@ -148,7 +148,7 @@ public abstract class Agent extends Thread
      * 
      * @param e    the input event
     */
-    public void addEventOnQueue( final Event e ) {
+    public void addEventOnQueue( Event e ) {
         _eventQueue.add( e );
     }
     
@@ -159,7 +159,7 @@ public abstract class Agent extends Thread
      * 
      * @return e    the removed event
     */
-    public Event removeEventFromQueue( final Event event ) {
+    public Event removeEventFromQueue( Event event ) {
         _eventQueue.remove( event );
         return event;
     }
@@ -171,7 +171,7 @@ public abstract class Agent extends Thread
      * 
      * @return e    the removed event
     */
-    public Event removeEventFromQueue( final int index ) {
+    public Event removeEventFromQueue( int index ) {
         if (!_eventQueue.isEmpty()) {
             return _eventQueue.remove( index );
         }
@@ -188,7 +188,7 @@ public abstract class Agent extends Thread
      * @return {@code true} if the event can be executed immediately,
      *         {@code false} otherwise
     */
-    public boolean canExecute( final Time eventTime )
+    public boolean canExecute( Time eventTime )
     {
         boolean execute = eventTime.compareTo( _time ) >= 0;
         if (!execute) {
@@ -198,7 +198,7 @@ public abstract class Agent extends Thread
         return execute;
     }
     
-    public void addEventHandler( final EventHandler evtHandler ) {
+    public void addEventHandler( EventHandler evtHandler ) {
         _evtHandler = evtHandler;
     }
     
@@ -215,7 +215,7 @@ public abstract class Agent extends Thread
      * 
      * @param flag    
     */
-    public Agent setParallelTransmission( final boolean flag ) {
+    public Agent setParallelTransmission( boolean flag ) {
         _parallelTransmission = flag;
         return this;
     }
@@ -231,7 +231,7 @@ public abstract class Agent extends Thread
      * 
      * @param time    time when the queue is checked.
     */
-    public double getNodeUtilization( final Time time ) {
+    public double getNodeUtilization( Time time ) {
         return _eventQueue.size();
     }
     
@@ -240,7 +240,7 @@ public abstract class Agent extends Thread
      * 
      * @param port    the available port.
     */
-    public void setAvailablePort( final int port )
+    public void setAvailablePort( int port )
     {
         int index;
         for (index = 0; index < _availablePorts.size(); index++) {
@@ -283,7 +283,7 @@ public abstract class Agent extends Thread
      * @param t    current simulation time
      * @param e    current event
     */
-    public final List<Event> fireEvent( final Time t, final Event e )
+    public final List<Event> fireEvent( Time t, Event e )
     {
         // Gets the events generated by the network protocols (if any).
         List<Event> events = new ArrayList<>();

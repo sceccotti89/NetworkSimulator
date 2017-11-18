@@ -22,12 +22,12 @@ public class ExternalEvent extends Event
     
     
     /** Constructor used for nodes. */
-    public ExternalEvent( final Time time, final long id, final EventMode mode ) {
+    public ExternalEvent( Time time, long id, EventMode mode ) {
         this( time, id, -1, mode );
     }
     
     /** Constructor used for links. */
-    public ExternalEvent( final Time time, final long fromID, final long destID, final EventMode mode ) {
+    public ExternalEvent( Time time, long fromID, long destID, EventMode mode ) {
         super( time );
         this.fromID = fromID;
         this.destID = destID;
@@ -35,7 +35,7 @@ public class ExternalEvent extends Event
     }
     
     @Override
-    public void execute( final EventScheduler ev_scheduler, final NetworkTopology net )
+    public void execute( EventScheduler ev_scheduler, NetworkTopology net )
     {
         if (destID != -1) { // Link.
             NetworkLink link = net.getLink( fromID, destID );

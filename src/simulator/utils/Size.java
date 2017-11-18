@@ -6,7 +6,7 @@ public class Size<T extends Number>
     private final T _size;
     private final SizeUnit _sUnit;
     
-    public Size( final T size, final SizeUnit sUnit )
+    public Size( T size, SizeUnit sUnit )
     {
         _size = size;
         _sUnit = sUnit;

@@ -20,7 +20,7 @@ public class InequalityResolver
                                                  ((1d - INCREMENT) * ROUNDNESS) *
                                                  ((1d - INCREMENT) * ROUNDNESS));
     
-    public static void main( final String[] argv ) throws IOException
+    public static void main( String[] argv ) throws IOException
     {
         double alpha = roundValue( INCREMENT );
         double beta  = roundValue( INCREMENT );
@@ -52,7 +52,7 @@ public class InequalityResolver
         writer.close();
     }
     
-    private static double roundValue( final double value ) {
+    private static double roundValue( double value ) {
         return Math.round( value * 100.0 ) / 100.0;
     }
 }

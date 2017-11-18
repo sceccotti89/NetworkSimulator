@@ -8,7 +8,7 @@ public class Event
 	
 	private Input input;
 	
-	public void setConsumed( final boolean val ) {
+	public void setConsumed( boolean val ) {
 		consumed = val;
 	}
 	
@@ -16,7 +16,7 @@ public class Event
 		return consumed;
 	}
 	
-	public void setInput( final Input input ) {
+	public void setInput( Input input ) {
 		this.input = input;
 	}
 	

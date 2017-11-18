@@ -61,10 +61,10 @@ public abstract class EventGenerator
      * @param reqPacket             the request packet.
      * @param resPacket             the response packet.
     */
-    public EventGenerator( final Time duration,
-                           final Time departureTime,
-                           final Packet reqPacket,
-                           final Packet resPacket )
+    public EventGenerator( Time duration,
+                           Time departureTime,
+                           Packet reqPacket,
+                           Packet resPacket )
     {
         _time = new Time( 0, TimeUnit.MICROSECONDS );
         
@@ -84,7 +84,7 @@ public abstract class EventGenerator
         return _id;
     }
     
-    public void setAgent( final Agent agent )
+    public void setAgent( Agent agent )
     {
         _id = getNextID();
         _agent = agent;
@@ -92,7 +92,7 @@ public abstract class EventGenerator
         dummyResEvent.setGeneratorID( _id );
     }
     
-    public EventGenerator connect( final Agent to )
+    public EventGenerator connect( Agent to )
     {
         _destinations.add( to );
         if (!_setByTheUser) {
@@ -101,7 +101,7 @@ public abstract class EventGenerator
         return this;
     }
     
-    public EventGenerator connectAll( final List<Agent> to )
+    public EventGenerator connectAll( List<Agent> to )
     {
         for (Agent dest : _destinations) {
             connect( dest );
@@ -112,7 +112,7 @@ public abstract class EventGenerator
     /**
      * Sets the generator as a broadcast.
     */
-    public void setBroadcast( final boolean flag ) {
+    public void setBroadcast( boolean flag ) {
         _isBroadcasted = flag;
     }
     
@@ -122,7 +122,7 @@ public abstract class EventGenerator
      * 
      * @param time    time of start
     */
-    public void startAt( final Time time )
+    public void startAt( Time time )
     {
         _activeGenerator = true;
         _time.setTime( time );
@@ -137,7 +137,7 @@ public abstract class EventGenerator
      * The minimum number of packets is internally sets as the maximum between 1 and the given value.</br>
      * In addition forces the generator to wait for the response before sending new packets.
     */
-    public void setMaximumFlyingPackets( final long packets )
+    public void setMaximumFlyingPackets( long packets )
     {
         _maxPacketsInFlight = Math.max( packets, 1 );
         _setByTheUser = true;
@@ -149,7 +149,7 @@ public abstract class EventGenerator
      * 
      * @param flag    {@code true} to wait for a response, {@code false} otherwise.
     */
-    public void setWaitForResponse( final boolean flag ) {
+    public void setWaitForResponse( boolean flag ) {
         _waitResponse = flag;
     }
     
@@ -160,7 +160,7 @@ public abstract class EventGenerator
      * @param flag    {@code true} to answer after a reponse of an out-going packet,
      *                {@code false} to send it immediately.
     */
-    public void setDelayedResponse( final boolean flag ) {
+    public void setDelayedResponse( boolean flag ) {
         _delayResponse = flag;
     }
     
@@ -168,13 +168,13 @@ public abstract class EventGenerator
         return _destinations;
     }
     
-    public EventGenerator setWaitReponse( final boolean flag )
+    public EventGenerator setWaitReponse( boolean flag )
     {
         _waitResponse = flag;
         return this;
     }
     
-    public EventGenerator makeAnswer( final boolean flag ) {
+    public EventGenerator makeAnswer( boolean flag ) {
         _makeAnswer = flag;
         return this;
     }
@@ -189,7 +189,7 @@ public abstract class EventGenerator
      *
      * @see EventGenerator#setDelayedResponse(boolean)
     */
-    public EventGenerator forwardMessagesFrom( final Agent from ) {
+    public EventGenerator forwardMessagesFrom( Agent from ) {
         return forwardMessagesFrom( from.getId() );
     }
     
@@ -203,7 +203,7 @@ public abstract class EventGenerator
      *
      * @see EventGenerator#setDelayedResponse(boolean)
     */
-    public EventGenerator forwardMessagesFrom( final long id ) {
+    public EventGenerator forwardMessagesFrom( long id ) {
         _forwardFrom = id;
         return this;
     }
@@ -212,7 +212,7 @@ public abstract class EventGenerator
         return _time.clone();
     }
     
-    private void setTime( final Time t ) {
+    private void setTime( Time t ) {
         _time = t;
     }
     
@@ -244,7 +244,7 @@ public abstract class EventGenerator
      * @return the generated packet.</br>
      * NOTE: the returned packet can be {@code null}.
     */
-    protected Packet makePacket( final Event e, final long destination )
+    protected Packet makePacket( Event e, long destination )
     {
         if (e instanceof RequestEvent) {
             return getResponsePacket();
@@ -257,7 +257,7 @@ public abstract class EventGenerator
         return _departureTime.clone();
     }
     
-    public void setDepartureTime( final Time time ) {
+    public void setDepartureTime( Time time ) {
         _departureTime = time;
     }
 
@@ -270,7 +270,7 @@ public abstract class EventGenerator
      * @return the departure time.</br>
      * NOTE: returned time can be {@code null}.
     */
-    protected Time computeDepartureTime( final Event e ) {
+    protected Time computeDepartureTime( Event e ) {
         return _departureTime;
     }
     
@@ -279,7 +279,7 @@ public abstract class EventGenerator
      * 
      * @param e    the given event.
     */
-    private Session getSession( final Event e )
+    private Session getSession( Event e )
     {
         Session session;
         if (e == null || _activeGenerator && !_waitResponse) {
@@ -303,7 +303,7 @@ public abstract class EventGenerator
      * 
      * @param e    the given event.
     */
-    private boolean generateEvent( final Event e )
+    private boolean generateEvent( Event e )
     {
         if (_time.compareTo( _duration ) > 0) {
             return false;
@@ -328,7 +328,7 @@ public abstract class EventGenerator
      * 
      * @return the new event list, or {@code null} if the time is expired.
     */
-    public final Event generate( final Time t, final Event e )
+    public final Event generate( Time t, Event e )
     {
         if (!generateEvent( e )) {
             return null;
@@ -351,7 +351,7 @@ public abstract class EventGenerator
         return createMessage( _session, e );
     }
     
-    protected Event createMessage( final Session session, final Event e )
+    protected Event createMessage( Session session, Event e )
     {
         if (_activeGenerator && _session.canSend()) {
             dummyResEvent.setTime( _time );
@@ -416,7 +416,7 @@ public abstract class EventGenerator
     /**
      * Cehcks whether the current session is over.
     */
-    private void checkCompletedSession( final Event e )
+    private void checkCompletedSession( Event e )
     {
         if (_session.completed()) {
             _sessions.remove( _session.getId() );
@@ -432,7 +432,7 @@ public abstract class EventGenerator
      * 
      * @return the request messages.
     */
-    private Event sendRequest( final Event e )
+    private Event sendRequest( Event e )
     {
         Event event = null;
         int nextDest = selectDestination( _time );
@@ -465,7 +465,7 @@ public abstract class EventGenerator
      * @return Index of the next destination.</br>
      *         It must be in the range <b>[0 - #destinations)</b>
     */
-    protected int selectDestination( final Time time ) {
+    protected int selectDestination( Time time ) {
         return _session.getNextDestination( _destinations.size() );
     }
     
@@ -478,7 +478,7 @@ public abstract class EventGenerator
      * 
      * @return the list of response messages.
     */
-    private Event sendResponse( final Event e, final Agent from, final Agent dest )
+    private Event sendResponse( Event e, Agent from, Agent dest )
     {
         if (!_makeAnswer) {
             return null;

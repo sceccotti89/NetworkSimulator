@@ -37,12 +37,12 @@ public abstract class Event implements Comparable<Event>
     
     
     
-    public Event( final Time time ) {
+    public Event( Time time ) {
         _time.setTime( time );
         setId();
     }
     
-    public Event( final Time time, final Agent source )
+    public Event( Time time, Agent source )
     {
         _time.setTime( time );
         _source = source;
@@ -50,7 +50,7 @@ public abstract class Event implements Comparable<Event>
         setId();
     }
     
-    public Event( final Time time, final Agent from, final Agent to, final Packet packet )
+    public Event( Time time, Agent from, Agent to, Packet packet )
     {
         _time.setTime( time );
         _source = from;
@@ -70,7 +70,7 @@ public abstract class Event implements Comparable<Event>
         return eventID;
     }
     
-    public void setFlowId( final long id ) {
+    public void setFlowId( long id ) {
         flowID = id;
     }
     
@@ -78,7 +78,7 @@ public abstract class Event implements Comparable<Event>
         return flowID;
     }
     
-    public void setGeneratorID( final long id ) {
+    public void setGeneratorID( long id ) {
         generatorID = id;
     }
     
@@ -86,7 +86,7 @@ public abstract class Event implements Comparable<Event>
         return generatorID;
     }
     
-    public void setTime( final Time time ) {
+    public void setTime( Time time ) {
         _time.setTime( time );
     }
     
@@ -94,7 +94,7 @@ public abstract class Event implements Comparable<Event>
         return _time.clone();
     }
     
-    public void setArrivalTime( final Time time ) {
+    public void setArrivalTime( Time time ) {
         _arrivalTime = time;
     }
     
@@ -102,7 +102,7 @@ public abstract class Event implements Comparable<Event>
         return _arrivalTime;
     }
     
-    public void setSource( final Agent node ) {
+    public void setSource( Agent node ) {
         _source = node;
     }
     
@@ -114,7 +114,7 @@ public abstract class Event implements Comparable<Event>
         return _dest;
     }
     
-    public void setDestination( final Agent node ) {
+    public void setDestination( Agent node ) {
         _dest = node;
     }
     
@@ -122,7 +122,7 @@ public abstract class Event implements Comparable<Event>
         return _currentNodeId;
     }
     
-    public void setPacket( final Packet packet ) {
+    public void setPacket( Packet packet ) {
         _packet = packet;
     }
     
@@ -139,7 +139,7 @@ public abstract class Event implements Comparable<Event>
      * @return {@code true} if the event has been processed,
      *         {@code false} otherwise.
     */
-    public void execute( final EventScheduler evtScheduler, final NetworkTopology net )
+    public void execute( EventScheduler evtScheduler, NetworkTopology net )
     {
         long nodeId = _currentNodeId;
         NetworkNode node = net.getNode( nodeId );
@@ -163,7 +163,7 @@ public abstract class Event implements Comparable<Event>
         //evtScheduler.schedule( _source.fireEvent( _time, null ) );
     }
     
-    private void executeDestination( final EventScheduler evtScheduler, final NetworkTopology net, final NetworkNode node )
+    private void executeDestination( EventScheduler evtScheduler, NetworkTopology net, NetworkNode node )
     {
         //System.out.println( "[" + _time + "] Reached destination node: " + node );
         setArrivalTime( _time.clone() );
@@ -183,7 +183,7 @@ public abstract class Event implements Comparable<Event>
         }
     }
     
-    private void executeIntermediate( final EventScheduler evtScheduler, final NetworkTopology net, final NetworkNode node )
+    private void executeIntermediate( EventScheduler evtScheduler, NetworkTopology net, NetworkNode node )
     {
         long nodeId = node.getId();
         Time time = _time.clone();
@@ -244,7 +244,7 @@ public abstract class Event implements Comparable<Event>
         evtScheduler.schedule( _source.fireEvent( time, this ) );
     }
     
-    private Time getTcalc( final NetworkNode node, final Agent agent )
+    private Time getTcalc( NetworkNode node, Agent agent )
     {
         long delay;
         if (agent.getEventHandler() != null) {
@@ -258,7 +258,7 @@ public abstract class Event implements Comparable<Event>
     }
     
     @Override
-    public int compareTo( final Event o )
+    public int compareTo( Event o )
     {
         int compare = _time.compareTo( o.getTime() );
         if (compare != 0) {

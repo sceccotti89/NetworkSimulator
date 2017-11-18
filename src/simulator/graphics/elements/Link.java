@@ -31,10 +31,10 @@ public class Link
 
     private boolean available = false;
     
-    public Link( final Node source, final Node dest,
-                 final double bandwidth, final long delay,
-                 float angle, final int width, final int height,
-                 final String type) {
+    public Link( Node source, Node dest,
+                 double bandwidth, long delay,
+                 float angle, int width, int height,
+                 String type) {
         
         this.source = source;
         this.dest = dest;
@@ -52,7 +52,7 @@ public class Link
         rotateLink();
     }
     
-    private Point worldToView( final float x, final float y, float angle ) {
+    private Point worldToView( float x, float y, float angle ) {
         angle = (float) (angle * Math.PI/180.f);
         return new Point( (float) (x * Math.cos( angle ) - y * Math.sin( angle )), (float) (x * Math.sin( angle ) + y * Math.cos( angle )) );
     }
@@ -69,7 +69,7 @@ public class Link
                                                 p4.getX() + centerX, p4.getY() + centerY } );
     }
     
-    public void update( final GameContainer gc, final int mouseX, final int mouseY ) {
+    public void update( GameContainer gc, int mouseX, int mouseY ) {
     	if (source.getArea().contains( mouseX, mouseY ) || dest.getArea().contains( mouseX, mouseY )) {
     		return;
     	}
@@ -83,7 +83,7 @@ public class Link
         available  = !available;
     }
     
-    public void setPosition( final Node node, final float angle ) {
+    public void setPosition( Node node, float angle ) {
     	this.source = node;
 
     	lenght = calculateLenght( source.getCenterX(), source.getCenterY(), dest.getCenterX(), dest.getCenterY() );
@@ -113,7 +113,7 @@ public class Link
     	return type;
     }
     
-    public void render( final Graphics g ) {
+    public void render( Graphics g ) {
         if (available) {
             g.setColor( Color.red );
         } else {

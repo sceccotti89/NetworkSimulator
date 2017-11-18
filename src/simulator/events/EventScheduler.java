@@ -25,17 +25,17 @@ public class EventScheduler
     private static long eventID = 0;
     
     
-    public EventScheduler( final NetworkTopology network )
+    public EventScheduler( NetworkTopology network )
     {
         _network = network;
         _events = new PriorityQueue<Event>( 1 << 18 );
     }
     
-    public void setNetwork( final NetworkTopology network ) {
+    public void setNetwork( NetworkTopology network ) {
         _network = network;
     }
 
-    public void setDuration( final Time duration ) {
+    public void setDuration( Time duration ) {
         _duration = duration;
     }
     
@@ -69,14 +69,14 @@ public class EventScheduler
         }
     }
     
-    public void schedule( final Event event )
+    public void schedule( Event event )
     {
         if (event != null) {
             _events.add( event );
         }
     }
     
-    public void schedule( final List<Event> events )
+    public void schedule( List<Event> events )
     {
         if (events != null) {
             _events.addAll( events );
@@ -91,7 +91,7 @@ public class EventScheduler
      * @return {@code true} if the event has been successfully removed,
      *         {@code false} otherwise.
     */
-    public boolean remove( final Event e ) {
+    public boolean remove( Event e ) {
         if (e != null) {
             return _events.remove( e );
         }

@@ -41,7 +41,7 @@ public class AnimationNetwork extends AppGameContainer
 	
 	public static int tick = 0;
     
-    public AnimationNetwork( final int width, final int height, final String title ) throws SlickException
+    public AnimationNetwork( int width, int height, String title ) throws SlickException
     {
         super( anim = new Animator( width, height, title ), width, height, false );
         
@@ -58,7 +58,7 @@ public class AnimationNetwork extends AppGameContainer
      * 
      * @param file    file to read
     */
-    public void loadPackets( final String file ) throws IOException
+    public void loadPackets( String file ) throws IOException
     {
         System.out.println( "Loading from " + file + "..." );
         
@@ -98,7 +98,7 @@ public class AnimationNetwork extends AppGameContainer
         System.out.println( "Loading completed." );
     }
     
-    public void loadNetwork( final String filename ) throws IOException, SlickException
+    public void loadNetwork( String filename ) throws IOException, SlickException
     {
         /** File structure:
          * 
@@ -159,22 +159,22 @@ public class AnimationNetwork extends AppGameContainer
         br.close();
     }
     
-    public void addNode( final int x, final int y, final long nodeID, final String name, final long delay, final Color color, final int index ) throws SlickException {
+    public void addNode( int x, int y, long nodeID, String name, long delay, Color color, int index ) throws SlickException {
         Node node = new Node( x, y, nodeID, name, delay, color, index );
         nodes.add( node );
     }
     
-    public void addPacket( final long from_ID, final long dest_ID, final Color color, final long startTime, final long endTime, final int type ) {
+    public void addPacket( long from_ID, long dest_ID, Color color, long startTime, long endTime, int type ) {
         Packet packet = new Packet( getNode( from_ID ), getNode( dest_ID ), color, startTime, endTime, width, height, type );
         packets.add( packet );
     }
     
-    public void addLink( final long source, final long dest, final double bandwidth, final long delay, final String type ) {
+    public void addLink( long source, long dest, double bandwidth, long delay, String type ) {
         Node node1 = getNode( source );
         node1.addLink( getNode( dest ), bandwidth, delay, width, height, type );
     }
     
-    private Node getNode( final long nodeID )
+    private Node getNode( long nodeID )
     {
         for (Node node: nodes) {
             if (node.getNodeID() == nodeID) {
@@ -185,7 +185,7 @@ public class AnimationNetwork extends AppGameContainer
         return null;
     }
     
-    public void loadSimulation( final String networkFile, final String packetFile ) throws IOException, SlickException
+    public void loadSimulation( String networkFile, String packetFile ) throws IOException, SlickException
     {
         loadNetwork( networkFile );
         loadPackets( packetFile );
@@ -212,7 +212,7 @@ public class AnimationNetwork extends AppGameContainer
     	
     	private Input lastInput = null;
         
-        public Animator( final int width, final int height, final String title )
+        public Animator( int width, int height, String title )
         {
             super( title );
             
@@ -224,13 +224,13 @@ public class AnimationNetwork extends AppGameContainer
             interfaces = new ArrayList<AnimationInterface>();
         }
         
-        private void setAnimationElements( final List<Node> nodes, final List<Packet> packets ) {
+        private void setAnimationElements( List<Node> nodes, List<Packet> packets ) {
             this.nodes = nodes;
             this.packets = packets;
         }
         
         @Override
-        public void init( final GameContainer gc ) throws SlickException
+        public void init( GameContainer gc ) throws SlickException
         {
         	ob = new OptionBar( gc, width, height );
             am = new AnimationManager( gc, ob.getMaxY(), width, height );
@@ -246,13 +246,13 @@ public class AnimationNetwork extends AppGameContainer
             interfaces.add( ta );
         }
         
-        private boolean evaluateEventMouse( final Input input ) {
+        private boolean evaluateEventMouse( Input input ) {
         	return (input.isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )
         		 || input.isMouseButtonDown( Input.MOUSE_RIGHT_BUTTON ));
         }
         
         @Override
-        public void update( final GameContainer gc, final int delta ) throws SlickException
+        public void update( GameContainer gc, int delta ) throws SlickException
         {
         	if (mouseEvent) {
         		event.setInput( gc.getInput() );
@@ -300,7 +300,7 @@ public class AnimationNetwork extends AppGameContainer
         }
         
         @Override
-        public void render( final GameContainer gc, final Graphics g ) throws SlickException
+        public void render( GameContainer gc, Graphics g ) throws SlickException
         {
             am.render( gc );
             ta.render( gc );

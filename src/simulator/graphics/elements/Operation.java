@@ -20,7 +20,7 @@ public class Operation
 			       		 MOVE = "MoveNode", REMOVE = "RemoveNode",
 			       		 CLIENT = "Client", SERVER = "Server", SWITCH = "Switch", PACKET = "Packet";
 	
-	public Operation( final String name,  final float x, final float y, final float width, final float height )
+	public Operation( String name,  float x, float y, float width, float height )
 	{
 		this.name = name;
 		
@@ -28,11 +28,11 @@ public class Operation
 		zone = new Rectangle( x, y, width + width/4, height );
 	}
 	
-	public boolean checkCollision( final int mouseX, final int mouseY ) {
+	public boolean checkCollision( int mouseX, int mouseY ) {
 		return area.contains( mouseX, mouseY );
 	}
 	
-	public boolean intersects( final float mouseX, final float mouseY ) {
+	public boolean intersects( float mouseX, float mouseY ) {
 	    return area.intersects( new Rectangle( mouseX, mouseY, 1, 1 ) );
 	}
 	
@@ -64,15 +64,15 @@ public class Operation
 	    return area;
 	}
 	
-	public boolean checkContains( final float mouseX, final float mouseY ) {
+	public boolean checkContains( float mouseX, float mouseY ) {
 		return selected = area.contains( mouseX, mouseY );
 	}
 	
-	public void setSelected( final boolean val ) {
+	public void setSelected( boolean val ) {
 		selected = val;
 	}
 	
-	public void execute( final int mouseX, final int mouseY, final NetworkDisplay nd ) throws SlickException {
+	public void execute( int mouseX, int mouseY, NetworkDisplay nd ) throws SlickException {
 		if (!nd.isInExecution()) {
 			switch ( name ) {
 			

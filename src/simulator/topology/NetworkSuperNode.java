@@ -21,23 +21,23 @@ public class NetworkSuperNode extends NetworkNode
     
     
     
-    public NetworkSuperNode( final NetworkTopology net, final long id, final String name, final long delay ) {
+    public NetworkSuperNode( NetworkTopology net, long id, String name, long delay ) {
         this( net, id, name, delay, 0, 0 );
     }
     
-    public NetworkSuperNode( final NetworkTopology net, final long id, final String name,
-                             final long delay, final int xPos, final int yPos )
+    public NetworkSuperNode( NetworkTopology net, long id, String name,
+                             long delay, int xPos, int yPos )
     {
         super( net, id, name, delay );
         
         nodes = new ArrayList<>();
     }
     
-    public void addNode( final NetworkNode node ) {
+    public void addNode( NetworkNode node ) {
         nodes.add( node );
     }
     
-    public NetworkNode getNodes( final int index ) {
+    public NetworkNode getNodes( int index ) {
         return nodes.get( index );
     }
     

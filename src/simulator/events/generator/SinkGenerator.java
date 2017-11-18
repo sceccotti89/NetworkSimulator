@@ -9,9 +9,9 @@ import simulator.utils.Time;
 
 public class SinkGenerator extends EventGenerator
 {
-    public SinkGenerator( final Time duration,
-                          final Packet reqPacket,
-                          final Packet resPacket )
+    public SinkGenerator( Time duration,
+                          Packet reqPacket,
+                          Packet resPacket )
     {
         super( duration, Time.ZERO, reqPacket, resPacket );
         makeAnswer( false );

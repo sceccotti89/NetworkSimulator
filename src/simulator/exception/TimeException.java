@@ -13,19 +13,19 @@ public class TimeException extends RuntimeException
         super();
     }
     
-    public TimeException( final String message, final Throwable cause, final boolean enableSuppression, final boolean writableStackTrace ) {
+    public TimeException( String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace ) {
         super( message, cause, enableSuppression, writableStackTrace );
     }
     
-    public TimeException( final String message, final Throwable cause ) {
+    public TimeException( String message, Throwable cause ) {
         super( message, cause );
     }
     
-    public TimeException( final String message ) {
+    public TimeException( String message ) {
         super( message );
     }
     
-    public TimeException( final Throwable cause ) {
+    public TimeException( Throwable cause ) {
         super( cause );
     }
 }

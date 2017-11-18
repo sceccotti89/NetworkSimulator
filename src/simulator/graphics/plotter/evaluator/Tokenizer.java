@@ -15,7 +15,7 @@ public class Tokenizer
     /* Table maps used to reserve words for token type. */
     private Map<String, Integer> table;
     
-    public Tokenizer( final String expression )
+    public Tokenizer( String expression )
     {
         this.expression = expression;
         index = 0;
@@ -57,7 +57,7 @@ public class Tokenizer
         return index == expression.length();
     }
     
-    private void rewind( final int length ) {
+    private void rewind( int length ) {
         index -= length;
     }
     
@@ -222,7 +222,7 @@ public class Tokenizer
         /* Holds value if string. */
         public String stringValue = null;
         
-        public Token( final int type ) {
+        public Token( int type ) {
             this.type = type;
         }
         

@@ -6,7 +6,7 @@ public class Pair<F,S>
     private F left;
     private S right;
     
-    public Pair( final F left, final S right )
+    public Pair( F left, S right )
     {
         this.left = left;
         this.right = right;
@@ -35,7 +35,7 @@ public class Pair<F,S>
     
     @SuppressWarnings("unchecked")
     @Override
-    public boolean equals( final Object o )
+    public boolean equals( Object o )
     {
         if (!(o instanceof Pair)) {
             return false;

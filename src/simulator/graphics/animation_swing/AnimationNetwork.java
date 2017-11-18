@@ -62,7 +62,7 @@ public class AnimationNetwork extends WindowAdapter implements ComponentListener
 	
 	
     
-    public AnimationNetwork( final int width, final int height, final String title )
+    public AnimationNetwork( int width, int height, String title )
     {
         this.height = height;
         this.width = width;
@@ -75,7 +75,7 @@ public class AnimationNetwork extends WindowAdapter implements ComponentListener
         setTimer( 30 );
     }
     
-    private void createAndShowGUI( final String title, final int width, final int height )
+    private void createAndShowGUI( String title, int width, int height )
     {
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         int x = (dim.width  - width)/2;
@@ -100,7 +100,7 @@ public class AnimationNetwork extends WindowAdapter implements ComponentListener
         frame.addComponentListener( this );
     }
     
-    private void addComponentsToPane( final Container pane, final float width, final float height )
+    private void addComponentsToPane( Container pane, float width, float height )
     {
         pane.setLayout( new BoxLayout( pane, BoxLayout.Y_AXIS ) );
         //pane.setLayout( new BorderLayout() );
@@ -113,7 +113,7 @@ public class AnimationNetwork extends WindowAdapter implements ComponentListener
      * 
      * @param file    file to read
     */
-    public void loadPackets( final String file ) throws IOException
+    public void loadPackets( String file ) throws IOException
     {
         System.out.println( "Loading from " + file + "..." );
         
@@ -155,7 +155,7 @@ public class AnimationNetwork extends WindowAdapter implements ComponentListener
         System.out.println( "Loading completed." );
     }
     
-    public void loadNetwork( final String filename ) throws IOException
+    public void loadNetwork( String filename ) throws IOException
     {
         /** File structure:
          * 
@@ -211,12 +211,12 @@ public class AnimationNetwork extends WindowAdapter implements ComponentListener
         br.close();
     }
     
-    public void addNode( final int x, final int y, final long nodeID, final String name, final long delay, final Color color ) {
+    public void addNode( int x, int y, long nodeID, String name, long delay, Color color ) {
         Node node = new Node( x, y, nodeID, name, delay, color );
         nodes.add( node );
     }
     
-    public void addPacket( final long from_ID, final long dest_ID, final Color color, final long startTime, final long endTime, final int type ) {
+    public void addPacket( long from_ID, long dest_ID, Color color, long startTime, long endTime, int type ) {
         Link link = getLink( from_ID, dest_ID );
         Packet packet = new Packet( getNode( from_ID ), getNode( dest_ID ), link,
                                     color, startTime, endTime, width, height, type );
@@ -224,7 +224,7 @@ public class AnimationNetwork extends WindowAdapter implements ComponentListener
         packets.add( packet );
     }
     
-    public void addLink( final long source, final long dest, final double bandwidth, final long delay, final String type )
+    public void addLink( long source, long dest, double bandwidth, long delay, String type )
     {
         Node source_node = getNode( source );
         Node dest_node   = getNode( dest );
@@ -232,7 +232,7 @@ public class AnimationNetwork extends WindowAdapter implements ComponentListener
         links.add( new Link( source_node, dest_node, bandwidth, delay, angle, width, height, type ) );
     }
     
-    private Node getNode( final long nodeID )
+    private Node getNode( long nodeID )
     {
         for (Node node: nodes) {
             if (node.getID() == nodeID) {
@@ -243,7 +243,7 @@ public class AnimationNetwork extends WindowAdapter implements ComponentListener
         return null;
     }
     
-    private Link getLink( final long sourceID, final long destID )
+    private Link getLink( long sourceID, long destID )
     {
         for (Link link: links) {
             if (link.getSourceNode().getID() == sourceID &&
@@ -257,7 +257,7 @@ public class AnimationNetwork extends WindowAdapter implements ComponentListener
         return null;
     }
     
-    public void loadSimulation( final String networkFile, final String packetFile ) throws IOException
+    public void loadSimulation( String networkFile, String packetFile ) throws IOException
     {
         loadNetwork( networkFile );
         loadPackets( packetFile );
@@ -278,11 +278,11 @@ public class AnimationNetwork extends WindowAdapter implements ComponentListener
      * 
      * @param FPS    frame per second
     */
-    public void setTimer( final int FPS )
+    public void setTimer( int FPS )
     {
         ActionListener listener = new ActionListener() {
             @Override
-            public void actionPerformed( final ActionEvent e ) {
+            public void actionPerformed( ActionEvent e ) {
                 am.update();
                 nd.repaint();
             }
@@ -297,13 +297,13 @@ public class AnimationNetwork extends WindowAdapter implements ComponentListener
      * @param FPS         frame per second
      * @param listener    the associated event listener
     */
-    public void setTimer( final int FPS, final ActionListener listener ) {
+    public void setTimer( int FPS, ActionListener listener ) {
         fps = FPS;
         timer = new Timer( 1000 / FPS, listener );
     }
     
     @Override
-    public void windowClosing( final WindowEvent e )
+    public void windowClosing( WindowEvent e )
     {
         if (e.getID() == WindowEvent.WINDOW_CLOSING) {
             dispose();
@@ -316,13 +316,13 @@ public class AnimationNetwork extends WindowAdapter implements ComponentListener
     }
 
     @Override
-    public void componentHidden( final ComponentEvent e ) {}
+    public void componentHidden( ComponentEvent e ) {}
 
     @Override
-    public void componentMoved( final ComponentEvent e ) {}
+    public void componentMoved( ComponentEvent e ) {}
 
     @Override
-    public void componentResized( final ComponentEvent e )
+    public void componentResized( ComponentEvent e )
     {
         //System.out.println( "SIZE: " + frame.getSize() );
         scroll.setPreferredSize( new Dimension( frame.getWidth(), (int) (frame.getHeight() * 0.8) ) );
@@ -331,5 +331,5 @@ public class AnimationNetwork extends WindowAdapter implements ComponentListener
     }
 
     @Override
-    public void componentShown( final ComponentEvent e ) {}
+    public void componentShown( ComponentEvent e ) {}
 }

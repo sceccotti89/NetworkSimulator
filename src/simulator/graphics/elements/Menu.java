@@ -15,7 +15,7 @@ public class Menu
 	private Rectangle areaType = null;
 	private int index = -1;
 	
-	public Menu ( final Operation start, final ArrayList<Operation> ops ) {
+	public Menu ( Operation start, ArrayList<Operation> ops ) {
 		this.ops = new ArrayList<Operation>(ops);
         
         areaType = new Rectangle( ops.get( 0 ).getX(), ops.get( 0 ).getY(),
@@ -30,7 +30,7 @@ public class Menu
         menu = new ArrayList<Menu>();
 	}
     
-    public void addItems( final Operation op, final ArrayList<Operation> ops ) {
+    public void addItems( Operation op, ArrayList<Operation> ops ) {
         for (int i = 0; i < this.ops.size(); i++) {
             menu.add( new Menu() );
         }
@@ -51,7 +51,7 @@ public class Menu
         }
     }
     
-    private void executeOperation( final int mouseX, final int mouseY, final NetworkDisplay nd ) throws SlickException {
+    private void executeOperation( int mouseX, int mouseY, NetworkDisplay nd ) throws SlickException {
     	for (Operation op: ops) {
     		if (op.checkCollision( mouseX, mouseY )) {
     			op.execute( mouseX, mouseY, nd );
@@ -60,7 +60,7 @@ public class Menu
     	}	
     }
 	
-	public boolean checkContains( final int mouseX, final int mouseY, final boolean leftMouse, final NetworkDisplay nd, final Event event ) throws SlickException {
+	public boolean checkContains( int mouseX, int mouseY, boolean leftMouse, NetworkDisplay nd, Event event ) throws SlickException {
 	    if (leftMouse) {
 	        if (index != -1) {
 	            if (areaType.contains( mouseX, mouseY )) {
@@ -103,7 +103,7 @@ public class Menu
 		return false;
 	}
 	
-	public boolean checkClick( final int mouseX, final int mouseY, final Event event, final NetworkDisplay nd ) throws SlickException {
+	public boolean checkClick( int mouseX, int mouseY, Event event, NetworkDisplay nd ) throws SlickException {
 		for (Operation op: ops) {
 			if (op.checkContains( mouseX, mouseY )) {
 				executeOperation( mouseX, mouseY, nd );
@@ -128,7 +128,7 @@ public class Menu
 		return click;
 	}
 	
-	public void update( final int mouseX, final int mouseY, final boolean leftMouse, final NetworkDisplay nd, final Event event ) throws SlickException {
+	public void update( int mouseX, int mouseY, boolean leftMouse, NetworkDisplay nd, Event event ) throws SlickException {
 	    boolean find = false;
         for (int i = 0; i < ops.size(); i++) {
             Operation op = ops.get( i );
@@ -151,7 +151,7 @@ public class Menu
         }
 	}
 	
-	public void render( final Graphics g ) {
+	public void render( Graphics g ) {
 	    if (index != -1) {
 	        if (menu.size() >= index + 1) {
 	            menu.get( index ).render( g );

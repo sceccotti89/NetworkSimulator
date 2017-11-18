@@ -27,10 +27,10 @@ public class Link
     
     private String type;
     
-    public Link( final Node source, final Node dest,
-                 final double bandwidth, final long delay,
-                 float angle, final int width, final int height,
-                 final String type )
+    public Link( Node source, Node dest,
+                 double bandwidth, long delay,
+                 float angle, int width, int height,
+                 String type )
     {
         this.source = source;
         this.dest = dest;
@@ -48,7 +48,7 @@ public class Link
         rotateLink();
     }
     
-    private Point worldToView( final double x, final double y, final double angle ) {
+    private Point worldToView( double x, double y, double angle ) {
         double teta = (double) (angle * Math.PI/180.f);
         return new Point( (int) (x * Math.cos( teta ) - y * Math.sin( teta )),
                           (int) (x * Math.sin( teta ) + y * Math.cos( teta )) );
@@ -68,7 +68,7 @@ public class Link
                                    4 );
     }
     
-    public void update( final Graphics2D g, final Point mouse )
+    public void update( Graphics2D g, Point mouse )
     {
         final int mouseX = mouse.x;
         final int mouseY = mouse.y;
@@ -83,7 +83,7 @@ public class Link
         }
     }
     
-    public void setPosition( final Node node, final float angle ) {
+    public void setPosition( Node node, float angle ) {
     	this.source = node;
 
     	lenght = calculateLenght( source.getCenterX(), source.getCenterY(), dest.getCenterX(), dest.getCenterY() );
@@ -117,7 +117,7 @@ public class Link
     	return type;
     }
     
-    public void draw( final Graphics2D g )
+    public void draw( Graphics2D g )
     {
         g.setColor( Color.BLACK );
         g.draw( areaRotated );

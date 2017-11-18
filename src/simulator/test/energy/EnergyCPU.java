@@ -40,14 +40,14 @@ public class EnergyCPU extends CPU
         super( "", Collections.singletonList( 0L ) );
     }
     
-    public EnergyCPU( final String machine, final int cores, final int contexts,
-                      final String frequencies_file ) throws IOException
+    public EnergyCPU( String machine, int cores, int contexts,
+                      String frequencies_file ) throws IOException
     {
         this( machine, cores, contexts, readFrequencies( frequencies_file ) );
     }
     
-    public EnergyCPU( final String machine, final int cores, final int contexts,
-                      final List<Long> frequencies ) throws IOException
+    public EnergyCPU( String machine, int cores, int contexts,
+                      List<Long> frequencies ) throws IOException
     {
         super( machine, frequencies );
         
@@ -64,7 +64,7 @@ public class EnergyCPU extends CPU
     }
     
     @Override
-    public void setModel( final Model<Long,QueryInfo> model )
+    public void setModel( Model<Long,QueryInfo> model )
     {
         // TODO RIMUOVERE IL WRITER DOPO I TEST
         if (coeffWriter != null)
@@ -116,7 +116,7 @@ public class EnergyCPU extends CPU
     }
     
     @Override
-    public void addQuery( final long coreId, final QueryInfo q )
+    public void addQuery( long coreId, QueryInfo q )
     {
         Core core = coresMap.get( coreId );
         //System.out.println( "SELEZIONATO CORE: " + coreId + ", TIME: " + core.getTime() );
@@ -124,14 +124,14 @@ public class EnergyCPU extends CPU
     }
     
     @Override
-    public long selectCore( final Time time, final QueryInfo query )
+    public long selectCore( Time time, QueryInfo query )
     {
         addSampledValue( Global.QUERY_PER_TIME_SLOT, time, time, 1 );
         return ((CPUModel) _model).selectCore( time, this, query );
     }
     
     @Override
-    public void evalCONSparameters( final Time time )
+    public void evalCONSparameters( Time time )
     {
         //System.out.println( "Evaluating at: " + time );
         computeIdleEnergy( time );
@@ -144,7 +144,7 @@ public class EnergyCPU extends CPU
      * 
      * @param time    time of evaluation.
     */
-    private void evalCONSfrequency( final Time time )
+    private void evalCONSfrequency( Time time )
     {
         CPUModel model = (CPUModel) getModel();
         
@@ -156,7 +156,7 @@ public class EnergyCPU extends CPU
         }
     }
     
-    public void setFrequency( final Time now, final long frequency )
+    public void setFrequency( Time now, long frequency )
     {
         for (Core core : getCores()) {
             core.setFrequency( now, frequency );
@@ -164,7 +164,7 @@ public class EnergyCPU extends CPU
         setFrequency( frequency );
     }
     
-    public void increaseFrequency( final Time now, final int steps )
+    public void increaseFrequency( Time now, int steps )
     {
         increaseFrequency( steps );
         for (Core core : getCores()) {
@@ -172,7 +172,7 @@ public class EnergyCPU extends CPU
         }
     }
     
-    public void decreaseFrequency( final Time now, final int steps )
+    public void decreaseFrequency( Time now, int steps )
     {
         decreaseFrequency( steps );
         for (Core core : getCores()) {
@@ -187,7 +187,7 @@ public class EnergyCPU extends CPU
      * @param time    time of evaluation.
      * @param core    core to which assign the evaluated frequency.
     */
-    protected long evalFrequency( final Time time, final Core core )
+    protected long evalFrequency( Time time, Core core )
     {
         Model<Long,QueryInfo> model = getModel();
         List<QueryInfo> queue = core.getQueue();
@@ -197,7 +197,7 @@ public class EnergyCPU extends CPU
     }
     
     @Override
-    public Time timeToCompute( final Task task )
+    public Time timeToCompute( Task task )
     {
         Core core = coresMap.get( getLastSelectedCore() );
         QueryInfo query = core.getLastQueryInQueue();
@@ -205,7 +205,7 @@ public class EnergyCPU extends CPU
     }
     
     @Override
-    protected void computeEnergyConsumption( final Core core, final QueryInfo query, final Time computeTime )
+    protected void computeEnergyConsumption( Core core, QueryInfo query, Time computeTime )
     {
         long frequency = core.getFrequency();
         double energy = query.getEnergy( frequency );
@@ -223,12 +223,12 @@ public class EnergyCPU extends CPU
     }
     
     // TODO rimuovere dopo i test
-    public static void writeResult( final long frequency, final double energy ) {
+    public static void writeResult( long frequency, double energy ) {
         coeffWriter.println( frequency + " " + energy + " " );
     }
     
     @Override
-    public Double getResultSampled( final String sampler ) {
+    public Double getResultSampled( String sampler ) {
         // TODO RIMUOVERE QUESTO METODO DOPO I TEST
         coeffWriter.close();
         return super.getResultSampled( sampler );
@@ -248,12 +248,12 @@ public class EnergyCPU extends CPU
         
         private long queryExecutionTime = 0;
         
-        public PESOScore( final EnergyCPU cpu, final long coreId, final long initFrequency ) {
+        public PESOScore( EnergyCPU cpu, long coreId, long initFrequency ) {
             super( cpu, coreId, initFrequency );
         }
         
         @Override
-        public void addQuery( final QueryInfo q, final boolean updateFrequency )
+        public void addQuery( QueryInfo q, boolean updateFrequency )
         {
             q.setCoreId( coreId );
             queryQueue.add( q );
@@ -270,7 +270,7 @@ public class EnergyCPU extends CPU
         }
         
         @Override
-        public boolean checkQueryCompletion( final Time time )
+        public boolean checkQueryCompletion( Time time )
         {
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
                 //long queryId = currentQuery.getId();
@@ -297,13 +297,13 @@ public class EnergyCPU extends CPU
             }
         }
         
-        public void setBaseTimeBudget( final Time time, final long timeBudget )
+        public void setBaseTimeBudget( Time time, long timeBudget )
         {
             baseTimeBudget = timeBudget;
             setTimeBudget( time, timeBudget, null );
         }
         
-        public void setTimeBudget( final Time time, final long timeBudget, final Long queryID )
+        public void setTimeBudget( Time time, long timeBudget, Long queryID )
         {
             this.timeBudget = timeBudget;
             System.out.println( "CORE: " + getId() + ", NUOVO TIME BUDGET: " + timeBudget );
@@ -316,7 +316,7 @@ public class EnergyCPU extends CPU
             }
         }
         
-        public long getQueryExecutionTime( final Time time )
+        public long getQueryExecutionTime( Time time )
         {
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
                 PESOSmodel model = (PESOSmodel) cpu.getModel();
@@ -361,19 +361,19 @@ public class EnergyCPU extends CPU
     
     private static class PERFcore extends Core
     {
-        public PERFcore( final EnergyCPU cpu, final long coreId, final long initFrequency ) {
+        public PERFcore( EnergyCPU cpu, long coreId, long initFrequency ) {
             super( cpu, coreId, initFrequency );
         }
         
         @Override
-        public void addQuery( final QueryInfo q, final boolean updateFrequency )
+        public void addQuery( QueryInfo q, boolean updateFrequency )
         {
             q.setCoreId( coreId );
             queryQueue.add( q );
         }
         
         @Override
-        public boolean checkQueryCompletion( final Time time )
+        public boolean checkQueryCompletion( Time time )
         {
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
                 //long queryId = currentQuery.getId();
@@ -407,13 +407,13 @@ public class EnergyCPU extends CPU
         private double processedQueries;
         private double cumulativeTime;
         
-        public CONScore( final EnergyCPU cpu, final long coreId, final long initFrequency )
+        public CONScore( EnergyCPU cpu, long coreId, long initFrequency )
         {
             super( cpu, coreId, initFrequency );
         }
         
         @Override
-        public void addQuery( final QueryInfo q, final boolean updateFrequency )
+        public void addQuery( QueryInfo q, boolean updateFrequency )
         {
             q.setCoreId( coreId );
             queryQueue.add( q );
@@ -421,7 +421,7 @@ public class EnergyCPU extends CPU
         }
         
         @Override
-        public boolean checkQueryCompletion( final Time time )
+        public boolean checkQueryCompletion( Time time )
         {
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
                 //long queryId = currentQuery.getId();
@@ -483,12 +483,12 @@ public class EnergyCPU extends CPU
     {
         private long queryExecutionTime = 0;
         
-        public LOAD_SENSITIVEcore( final CPU cpu, final long coreId, final long initFrequency ) {
+        public LOAD_SENSITIVEcore( CPU cpu, long coreId, long initFrequency ) {
             super( cpu, coreId, initFrequency );
         }
         
         @Override
-        public void addQuery( final QueryInfo q, final boolean updateFrequency )
+        public void addQuery( QueryInfo q, boolean updateFrequency )
         {
             q.setCoreId( coreId );
             queryQueue.add( q );
@@ -505,7 +505,7 @@ public class EnergyCPU extends CPU
         }
 
         @Override
-        public boolean checkQueryCompletion( final Time time )
+        public boolean checkQueryCompletion( Time time )
         {
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
                 LOAD_SENSITIVEmodel model = (LOAD_SENSITIVEmodel) cpu.getModel();
@@ -524,7 +524,7 @@ public class EnergyCPU extends CPU
             }
         }
         
-        public long getQueryExecutionTime( final Time time )
+        public long getQueryExecutionTime( Time time )
         {
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
                 LOAD_SENSITIVEmodel model = (LOAD_SENSITIVEmodel) cpu.getModel();
@@ -554,12 +554,12 @@ public class EnergyCPU extends CPU
     {
         private long queryExecutionTime = 0;
         
-        public MY_MODELcore( final EnergyCPU cpu, final long coreId, final long initFrequency ) {
+        public MY_MODELcore( EnergyCPU cpu, long coreId, long initFrequency ) {
             super( cpu, coreId, initFrequency );
         }
         
         @Override
-        public void addQuery( final QueryInfo q, final boolean updateFrequency )
+        public void addQuery( QueryInfo q, boolean updateFrequency )
         {
             q.setCoreId( coreId );
             queryQueue.add( q );
@@ -576,7 +576,7 @@ public class EnergyCPU extends CPU
         }
         
         @Override
-        public boolean checkQueryCompletion( final Time time )
+        public boolean checkQueryCompletion( Time time )
         {
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
                 //long queryId = currentQuery.getId();
@@ -597,7 +597,7 @@ public class EnergyCPU extends CPU
             }
         }
         
-        public long getQueryExecutionTime( final Time time )
+        public long getQueryExecutionTime( Time time )
         {
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
                 MY_model model = (MY_model) cpu.getModel();
@@ -626,12 +626,12 @@ public class EnergyCPU extends CPU
     private static class PEGASUScore extends Core
     {
 
-        public PEGASUScore( final CPU cpu, final long coreId, final long initFrequency ) {
+        public PEGASUScore( CPU cpu, long coreId, long initFrequency ) {
             super( cpu, coreId, initFrequency );
         }
         
         @Override
-        public boolean checkQueryCompletion( final Time time )
+        public boolean checkQueryCompletion( Time time )
         {
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
                 addQueryOnSampling();
@@ -645,7 +645,7 @@ public class EnergyCPU extends CPU
         }
         
         @Override
-        public void addQuery( final QueryInfo q, boolean updateFrequency )
+        public void addQuery( QueryInfo q, boolean updateFrequency )
         {
             q.setCoreId( coreId );
             queryQueue.add( q );

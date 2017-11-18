@@ -57,7 +57,7 @@ public class EnergyTestDIST
         
         
         
-        public ClientGenerator( final Packet reqPacket, final Packet resPacket ) throws IOException
+        public ClientGenerator( Packet reqPacket, Packet resPacket ) throws IOException
         {
             super( Time.INFINITE, Time.ZERO, reqPacket, resPacket );
             startAt( Time.ZERO );
@@ -70,7 +70,7 @@ public class EnergyTestDIST
         }
         
         @Override
-        public Packet makePacket( final Event e, final long destination )
+        public Packet makePacket( Event e, long destination )
         {
             Packet packet = getRequestPacket();
             while (true) {
@@ -86,7 +86,7 @@ public class EnergyTestDIST
         }
         
         @Override
-        public Time computeDepartureTime( final Event e )
+        public Time computeDepartureTime( Event e )
         {
             if (!closed) {
                 try {
@@ -112,7 +112,7 @@ public class EnergyTestDIST
     
     private static class ClientAgent extends Agent
     {
-        public ClientAgent( final long id, final EventGenerator evGenerator )
+        public ClientAgent( long id, EventGenerator evGenerator )
         {
             super( id );
             addEventGenerator( evGenerator );
@@ -124,9 +124,9 @@ public class EnergyTestDIST
     
     private static class AnycastGenerator extends EventGenerator
     {
-        public AnycastGenerator( final Time duration,
-                                 final Packet reqPacket,
-                                 final Packet resPacket )
+        public AnycastGenerator( Time duration,
+                                 Packet reqPacket,
+                                 Packet resPacket )
         {
             super( duration, Time.ZERO, reqPacket, resPacket );
             setDelayedResponse( true );
@@ -134,7 +134,7 @@ public class EnergyTestDIST
         }
         
         @Override
-        public Packet makePacket( final Event e, final long destination )
+        public Packet makePacket( Event e, long destination )
         {
             if (e instanceof RequestEvent) {
                 return super.makePacket( e, destination );
@@ -145,7 +145,7 @@ public class EnergyTestDIST
         }
         
         @Override
-        protected int selectDestination( final Time time )
+        protected int selectDestination( Time time )
         {
             double minUtilization = Double.MAX_VALUE;
             int nextDestination = -1;
@@ -164,14 +164,14 @@ public class EnergyTestDIST
     
     private static class SwitchGenerator extends EventGenerator
     {
-        public SwitchGenerator( final Time duration )
+        public SwitchGenerator( Time duration )
         {
             super( duration, Time.ZERO, PACKET, PACKET );
             setDelayedResponse( true );
         }
         
         @Override
-        public Packet makePacket( final Event e, final long destination )
+        public Packet makePacket( Event e, long destination )
         {
             Packet packet;
             if (e instanceof RequestEvent) {
@@ -193,7 +193,7 @@ public class EnergyTestDIST
     
     private static class SwitchAgent extends Agent //implements EventHandler
     {
-        public SwitchAgent( final long id, final EventGenerator evGenerator )
+        public SwitchAgent( long id, EventGenerator evGenerator )
         {
             super( id );
             addEventGenerator( evGenerator );
@@ -201,7 +201,7 @@ public class EnergyTestDIST
         }
         
         /*@Override
-        public Time handle( final Event e, final EventType type )
+        public Time handle( Event e, EventType type )
         {
             /*System.out.println( "SWITCH HANDLE: " + e + ", TYPE: " + type );
             if (type == EventType.RECEIVED) {
@@ -221,7 +221,7 @@ public class EnergyTestDIST
             /*return _node.getTcalc();
         }*/
         
-        /*public void computeIdleEnergy( final long sourceId, final Time time )
+        /*public void computeIdleEnergy( long sourceId, Time time )
         {
             for (Agent dest : _evtGenerators.get( 0 ).getDestinations()) {
                 if (dest.getNode().getId() != sourceId) {
@@ -238,7 +238,7 @@ public class EnergyTestDIST
         }*/
         
         @Override
-        public double getNodeUtilization( final Time time )
+        public double getNodeUtilization( Time time )
         {
             double utilization = 0;
             for (Agent agent : _evtGenerators.get( 0 ).getDestinations()) {
@@ -255,12 +255,12 @@ public class EnergyTestDIST
     
     private static class MulticoreGenerator extends EventGenerator
     {
-        public MulticoreGenerator( final Time duration ) {
+        public MulticoreGenerator( Time duration ) {
             super( duration, Time.ZERO, PACKET, PACKET );
         }
         
         @Override
-        protected Packet makePacket( final Event e, final long destination )
+        protected Packet makePacket( Event e, long destination )
         {
             //System.out.println( "SERVER PACKET: " + e.getPacket().hasContent( Global.PESOS_CPU_FREQUENCY ) );
             if (e.getPacket().hasContent( Global.PESOS_TIME_BUDGET )) {
@@ -273,7 +273,7 @@ public class EnergyTestDIST
     
     private static class MulticoreAgent extends Agent implements EventHandler
     {
-        public MulticoreAgent( final long id, final EventGenerator evtGenerator )
+        public MulticoreAgent( long id, EventGenerator evtGenerator )
         {
             super( id );
             addEventGenerator( evtGenerator );
@@ -281,7 +281,7 @@ public class EnergyTestDIST
         }
         
         @Override
-        public void addEventOnQueue( final Event e )
+        public void addEventOnQueue( Event e )
         {
             Packet p = e.getPacket();
             EnergyCPU cpu = getDevice( new EnergyCPU() );
@@ -304,7 +304,7 @@ public class EnergyTestDIST
         }
         
         @Override
-        public Time handle( final Event e, final EventType type )
+        public Time handle( Event e, EventType type )
         {
             if (e instanceof ResponseEvent) {
                 EnergyCPU cpu = getDevice( new EnergyCPU() );
@@ -331,7 +331,7 @@ public class EnergyTestDIST
         }
         
         @Override
-        public double getNodeUtilization( final Time time ) {
+        public double getNodeUtilization( Time time ) {
             return getDevice( new EnergyCPU() ).getUtilization( time );
         }
         
@@ -350,7 +350,7 @@ public class EnergyTestDIST
     
     
     
-    public static void main( final String[] args ) throws Exception
+    public static void main( String[] args ) throws Exception
     {
         Utils.VERBOSE = false;
         
@@ -360,14 +360,14 @@ public class EnergyTestDIST
         //execute( Mode.ENERGY_CONSERVATIVE, 1000 );
     }
     
-    private static void execute( final Mode mode, final long timeBudget ) throws Exception
+    private static void execute( Mode mode, long timeBudget ) throws Exception
     {
         testMultiCore( timeBudget, mode );
         //testSingleCore( timeBudget, mode );
         //testAnimationNetwork( timeBudget, mode );
     }
     
-    public static void testAnimationNetwork( final long timeBudget, final Mode mode ) throws Exception
+    public static void testAnimationNetwork( long timeBudget, Mode mode ) throws Exception
     {
         NetworkTopology net = new NetworkTopology( "Topology/Animation/Topology_distributed_multiCore.json" );
         net.setTrackingEvent( "Results/distr_multi_core.txt" );
@@ -423,7 +423,7 @@ public class EnergyTestDIST
         an.start();
     }
     
-    public static void testSingleCore( final long timeBudget, final Mode mode ) throws IOException
+    public static void testSingleCore( long timeBudget, Mode mode ) throws IOException
     {
         /*
                                    / node_0   / node_2
@@ -547,7 +547,7 @@ public class EnergyTestDIST
         // IDLE:         
     }
     
-    public static void testMultiCore( final long timeBudget, final Mode mode ) throws Exception
+    public static void testMultiCore( long timeBudget, Mode mode ) throws Exception
     {
         /*
         FIXME I link dallo switch ai nodi hanno tutti una banda di 1Gb/s e 0 ms di latenza.

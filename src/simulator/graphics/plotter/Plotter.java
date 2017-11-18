@@ -128,14 +128,14 @@ public class Plotter extends WindowAdapter implements ActionListener
         this( "Plotter", 800, 600 );
     }
     
-    public Plotter( final String title, final int width, final int height )
+    public Plotter( String title, int width, int height )
     {
         plotter = new GraphicPlotter();
         createAndShowGUI( title, width, height );
         colorsInUse = new HashSet<>();
     }
     
-    public static List<Pair<Double,Double>> readPlot( final String filePlotter ) throws IOException
+    public static List<Pair<Double,Double>> readPlot( String filePlotter ) throws IOException
     {
         InputStream stream = ResourceLoader.getResourceAsStream( filePlotter );
         BufferedReader reader = new BufferedReader( new InputStreamReader( stream ) );
@@ -154,7 +154,7 @@ public class Plotter extends WindowAdapter implements ActionListener
         return points;
     }
     
-    private void createAndShowGUI( final String title, final int width, final int height )
+    private void createAndShowGUI( String title, int width, int height )
     {
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         int x = (dim.width  - width)/2;
@@ -205,7 +205,7 @@ public class Plotter extends WindowAdapter implements ActionListener
      * 
      * @param FPS    frame per second
     */
-    public void setTimer( final int FPS )
+    public void setTimer( int FPS )
     {
         ActionListener listener = this;
         setTimer( FPS, listener );
@@ -218,51 +218,51 @@ public class Plotter extends WindowAdapter implements ActionListener
      * @param FPS         frame per second
      * @param listener    the associated event listener
     */
-    public void setTimer( final int FPS, final ActionListener listener ) {
+    public void setTimer( int FPS, ActionListener listener ) {
         timer = new Timer( 1000 / FPS, listener );
     }
     
-    public void addPlot( final String filePlotter, final String title ) throws IOException {
+    public void addPlot( String filePlotter, String title ) throws IOException {
         addPlot( readPlot( filePlotter ), null, Line.UNIFORM, title );
     }
 
-    public void addPlot( final String filePlotter, final Color color, final String title ) throws IOException {
+    public void addPlot( String filePlotter, Color color, String title ) throws IOException {
         addPlot( readPlot( filePlotter ), color, Line.UNIFORM, title );
     }
     
-    public void addPlot( final String filePlotter, final Line line, final String title ) throws IOException {
+    public void addPlot( String filePlotter, Line line, String title ) throws IOException {
         addPlot( readPlot( filePlotter ), null, line, title );
     }
     
-    public void addPlot( final String filePlotter, final Color color, final Line line, final String title ) throws IOException {
+    public void addPlot( String filePlotter, Color color, Line line, String title ) throws IOException {
         addPlot( readPlot( filePlotter ), color, line, title );
     }
     
-    public void addPlot( final List<Pair<Double,Double>> points, final String title ) {
+    public void addPlot( List<Pair<Double,Double>> points, String title ) {
         addPlot( points, null, Line.UNIFORM, title );
     }
     
-    public void addPlot( final List<Pair<Double,Double>> points, final Line line, final String title ) {
+    public void addPlot( List<Pair<Double,Double>> points, Line line, String title ) {
         addPlot( points, null, line, title );
     }
     
-    public void addPlot( final List<Pair<Double,Double>> points, final Color color, final String title ) {
+    public void addPlot( List<Pair<Double,Double>> points, Color color, String title ) {
         addPlot( points, color, Line.UNIFORM, title );
     }
     
-    public void addPlot( final List<Pair<Double,Double>> points, final Color color, final Line line, final String title ) {
+    public void addPlot( List<Pair<Double,Double>> points, Color color, Line line, String title ) {
         plotter.addPlot( points, color, line, title );
     }
     
-    public void addPlot( final Plot plot ) {
+    public void addPlot( Plot plot ) {
         plotter.addPlot( plot.points, plot.color,plot.line , plot.title );
     }
     
-    public void savePlot( final String dir, final String file ) throws IOException {
+    public void savePlot( String dir, String file ) throws IOException {
         plotter.savePlot( dir, file );
     }
 
-    public void setVisible( final boolean visible )
+    public void setVisible( boolean visible )
     {
         menuBar.updateSelectedValue();
         plotter.setVisible( visible );
@@ -275,11 +275,11 @@ public class Plotter extends WindowAdapter implements ActionListener
         }
     }
     
-    public Plotter setTicks( final Axis axis, final int ticks ) {
+    public Plotter setTicks( Axis axis, int ticks ) {
         return setTicks( axis, ticks, 1 );
     }
     
-    public Plotter setTicks( final Axis axis, final int ticks, final int interval )
+    public Plotter setTicks( Axis axis, int ticks, int interval )
     {
         if (axis == Axis.X) {
             settings._xNumTicks = ticks;
@@ -301,7 +301,7 @@ public class Plotter extends WindowAdapter implements ActionListener
      * @param from    
      * @param to      
     */
-    public void setRange( final Axis axis, final double from, final double to )
+    public void setRange( Axis axis, double from, double to )
     {
         if (to < from) {
             throw new IllegalArgumentException( "from (" + from + ") cannot be greater than to (" + to + ")." );
@@ -318,7 +318,7 @@ public class Plotter extends WindowAdapter implements ActionListener
         }
     }
     
-    public Plotter setTheme( final Theme theme ) {
+    public Plotter setTheme( Theme theme ) {
         this.theme = theme;
         return this;
     }
@@ -327,7 +327,7 @@ public class Plotter extends WindowAdapter implements ActionListener
         return theme;
     }
     
-    public Plotter showGrid( final boolean show ) {
+    public Plotter showGrid( boolean show ) {
         showGrid = show;
         return this;
     }
@@ -336,7 +336,7 @@ public class Plotter extends WindowAdapter implements ActionListener
         return showGrid;
     }
     
-    public Plotter showFPS( final boolean show ) {
+    public Plotter showFPS( boolean show ) {
         showFPS = show;
         return this;
     }
@@ -345,19 +345,19 @@ public class Plotter extends WindowAdapter implements ActionListener
         return showFPS;
     }
     
-    public Plotter setAxisName( final String xName, final String yName )
+    public Plotter setAxisName( String xName, String yName )
     {
         xAxisName = xName;
         yAxisName = yName;
         return this;
     }
     
-    public Plotter setScaleX( final double scale ) {
+    public Plotter setScaleX( double scale ) {
         settings.xScale = scale;
         return this;
     }
     
-    public Plotter setScaleY( final double scale ) {
+    public Plotter setScaleY( double scale ) {
         settings.yScale = scale;
         return this;
     }
@@ -368,7 +368,7 @@ public class Plotter extends WindowAdapter implements ActionListener
      * @param fileName     name of the file
      * @param directory    name of the directory
     */
-    public void createImage( final String fileName, final String directory ) throws IOException
+    public void createImage( String fileName, String directory ) throws IOException
     {
         int index = fileName.lastIndexOf( '.' );
         if (index >= 0) {
@@ -386,7 +386,7 @@ public class Plotter extends WindowAdapter implements ActionListener
      * @param fileExtension    extension of the file
      * @param directory        name of the directory
     */
-    public void createImage( final String fileName, final String fileExtension, final String directory ) throws IOException
+    public void createImage( String fileName, String fileExtension, String directory ) throws IOException
     {
         Utils.checkDirectory( directory );
         
@@ -407,12 +407,12 @@ public class Plotter extends WindowAdapter implements ActionListener
     }
     
     @Override
-    public void actionPerformed( final ActionEvent e ) {
+    public void actionPerformed( ActionEvent e ) {
         plotter.repaint();
     }
     
     @Override
-    public void windowClosing( final WindowEvent e )
+    public void windowClosing( WindowEvent e )
     {
         if (e.getID() == WindowEvent.WINDOW_CLOSING) {
             dispose();
@@ -450,9 +450,9 @@ public class Plotter extends WindowAdapter implements ActionListener
             // Empty constructor.
         }
         
-        public Range( final int maxXPoints, final int maxYPoints,
-                      final double minX, final double maxX,
-                      final double minY, final double maxY )
+        public Range( int maxXPoints, int maxYPoints,
+                      double minX, double maxX,
+                      double minY, double maxY )
         {
             this.maxXPoints = maxXPoints;
             this.maxYPoints = maxYPoints;
@@ -462,10 +462,10 @@ public class Plotter extends WindowAdapter implements ActionListener
             this.maxY = maxY;
         }
         
-        public void setMinX( final double minX ) { this.minX = minX; }
-        public void setMaxX( final double maxX ) { this.maxX = maxX; }
-        public void setMinY( final double minY ) { this.minY = minY; }
-        public void setMaxY( final double maxY ) { this.maxY = maxY; }
+        public void setMinX( double minX ) { this.minX = minX; }
+        public void setMaxX( double maxX ) { this.maxX = maxX; }
+        public void setMinY( double minY ) { this.minY = minY; }
+        public void setMaxY( double maxY ) { this.maxY = maxY; }
         
         public double getMinX() { return minX; }
         public double getMaxX() { return maxX; }
@@ -480,7 +480,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             return maxY - minY;
         }
         
-        public boolean checkRange( final double x, final double y ) {
+        public boolean checkRange( double x, double y ) {
             return x >= minX && x <= maxX && y >= minY && y <= maxY;
         }
     }
@@ -495,10 +495,10 @@ public class Plotter extends WindowAdapter implements ActionListener
         protected Stroke stroke;
         protected JCheckBox box;
         
-        public Plot( final String title,
-                     final List<Pair<Double,Double>> points,
-                     final Color color, final Line line,
-                     final float lineWidth, final JCheckBox box )
+        public Plot( String title,
+                     List<Pair<Double,Double>> points,
+                     Color color, Line line,
+                     float lineWidth, JCheckBox box )
         {
             this.title = title;
             this.points = points;
@@ -510,7 +510,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             updateValues();
         }
         
-        public void setCheckBox( final JCheckBox box ) {
+        public void setCheckBox( JCheckBox box ) {
             this.box = box;
         }
         
@@ -575,17 +575,17 @@ public class Plotter extends WindowAdapter implements ActionListener
             
             addMouseListener( new MouseListener() {
                 @Override
-                public void mouseClicked( final MouseEvent e ) {
+                public void mouseClicked( MouseEvent e ) {
                     _legend.checkClicked( e );
                 }
                 @Override
-                public void mouseEntered( final MouseEvent e ) {}
+                public void mouseEntered( MouseEvent e ) {}
                 @Override
-                public void mouseExited( final MouseEvent e ) {}
+                public void mouseExited( MouseEvent e ) {}
                 @Override
-                public void mouseReleased( final MouseEvent e ) {}
+                public void mouseReleased( MouseEvent e ) {}
                 @Override
-                public void mousePressed( final MouseEvent e ) {
+                public void mousePressed( MouseEvent e ) {
                     PLOTTER.requestFocusInWindow();
                 }
             } );
@@ -593,7 +593,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             _legend = new PlotsPanel( this, (int) (width - 370), 350 );
         }
         
-        private String makeBoxTitle( final String title )
+        private String makeBoxTitle( String title )
         {
             final Graphics g = getGraphics();
             final int pointsLength = getWidth( "...", g );
@@ -609,9 +609,9 @@ public class Plotter extends WindowAdapter implements ActionListener
             return text;
         }
         
-        public void addPlot( final List<Pair<Double,Double>> points,
-                             final Color color, final Line line,
-                             final String title )
+        public void addPlot( List<Pair<Double,Double>> points,
+                             Color color, Line line,
+                             String title )
         {
             String text = makeBoxTitle( title );
             JCheckBox box = _legend.addPlot( this, text );
@@ -619,7 +619,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             add( box );
         }
         
-        public void savePlot( final String dir, final String file ) throws IOException
+        public void savePlot( String dir, String file ) throws IOException
         {
             FileWriter fw = new FileWriter( dir + "/" + file );
             for (Plot plot : _plots) {
@@ -630,7 +630,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             fw.close();
         }
 
-        protected void removePlot( final int index )
+        protected void removePlot( int index )
         {
             Plot plot = _plots.remove( index );
             colorsInUse.remove( plot.color );
@@ -641,7 +641,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             return _plots;
         }
 
-        private Color chooseColor( final Color selected )
+        private Color chooseColor( Color selected )
         {
             if (selected != null) {
                 colorsInUse.add( selected );
@@ -668,7 +668,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             }
         }
         
-        private void setPlotLocation( final float x, final float y )
+        private void setPlotLocation( float x, float y )
         {
             plotLocation = new Point( (int) x, (int) y );
             xLength = width - offsetW - plotLocation.x;
@@ -676,7 +676,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             area = new Rectangle( plotLocation.x, (int) (plotLocation.y - yLength), (int) xLength, (int) yLength );
         }
         
-        private void drawGrid( final Axis axe, final Point p, final Graphics2D g )
+        private void drawGrid( Axis axe, Point p, Graphics2D g )
         {
             final float lines = 25;
             final float spaces = lines * 2 - 1;
@@ -693,7 +693,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             }
         }
         
-        private String stringValue( final double val, final boolean round )
+        private String stringValue( double val, boolean round )
         {
             String value = String.format( "%.12f", val );
             if (value.contains( "," )) {
@@ -718,19 +718,19 @@ public class Plotter extends WindowAdapter implements ActionListener
             return value;
         }
         
-        protected int getWidth( final String arg, final Graphics g )
+        protected int getWidth( String arg, Graphics g )
         {
             FontMetrics font = g.getFontMetrics();
             return (int) font.getStringBounds( arg, g ).getWidth();
         }
         
-        protected int getHeight( final String arg, final Graphics g )
+        protected int getHeight( String arg, Graphics g )
         {
             FontMetrics font = g.getFontMetrics();
             return (int) font.getStringBounds( arg, g ).getHeight();
         }
         
-        private double round( final double value ) {
+        private double round( double value ) {
             if (Math.ceil( value ) - value < ROUNDNESS) {
                 return Math.ceil( value );
             } else {
@@ -746,7 +746,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             return round( value / settings.yScale );
         }
         
-        private void showFPS( final Graphics2D g )
+        private void showFPS( Graphics2D g )
         {
             // Update the FPS every second.
             long now = System.currentTimeMillis();
@@ -766,7 +766,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             lastUpdate = now;
         }
         
-        private void addPointInfo( final Pair<Double,Double> point, final double centerX, final double centerY, final Graphics2D g )
+        private void addPointInfo( Pair<Double,Double> point, double centerX, double centerY, Graphics2D g )
         {
             description.setBackground( Color.YELLOW );
             description.setVisible( true );
@@ -783,7 +783,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             description.setBounds( (int) startX, (int) centerY - pointRadius/2 - dHeight, dWidth, dHeight );
         }
 
-        private boolean drawPlot( final Graphics2D g, final Range range, final Plot plot, final boolean selected )
+        private boolean drawPlot( Graphics2D g, Range range, Plot plot, boolean selected )
         {
             g.setColor( (theme == Theme.BLACK) ? Color.WHITE : Color.BLACK );
             
@@ -865,11 +865,11 @@ public class Plotter extends WindowAdapter implements ActionListener
             return !drawCircle;
         }
         
-        private boolean isInsideRange( final double value, final double left, final double right ) {
+        private boolean isInsideRange( double value, double left, double right ) {
             return value >= left && value <= right;
         }
         
-        private void drawTicks( final Graphics2D g, final Range range )
+        private void drawTicks( Graphics2D g, Range range )
         {
             g.setStroke( new BasicStroke( 1f ) );
             g.setColor( (theme == Theme.BLACK) ? Color.WHITE : Color.BLACK );
@@ -957,7 +957,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             }
         }
 
-        private void drawAxis( final Graphics2D g, final Range range )
+        private void drawAxis( Graphics2D g, Range range )
         {
             g.setStroke( new BasicStroke( 1f ) );
             g.setColor( (theme == Theme.BLACK) ? Color.WHITE : Color.BLACK );
@@ -981,7 +981,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             drawTicks( g, range );
         }
         
-        private void drawLegend( final Graphics2D g )
+        private void drawLegend( Graphics2D g )
         {
             for (Plot plot : _plots) {
                 JCheckBox box = plot.box;
@@ -1121,7 +1121,7 @@ public class Plotter extends WindowAdapter implements ActionListener
         }
         
         @Override
-        protected void paintComponent( final Graphics g )
+        protected void paintComponent( Graphics g )
         {
             super.paintComponent( g );
             
@@ -1172,23 +1172,23 @@ public class Plotter extends WindowAdapter implements ActionListener
         }
 
         @Override
-        public void mouseDragged( final MouseEvent event ) {
+        public void mouseDragged( MouseEvent event ) {
             // Empty body.
         }
 
         @Override
-        public void mouseMoved( final MouseEvent event ) {
+        public void mouseMoved( MouseEvent event ) {
             mouse = event.getPoint();
         }
 
         @Override
-        public void componentHidden( final ComponentEvent e ) {}
+        public void componentHidden( ComponentEvent e ) {}
         @Override
-        public void componentMoved( final ComponentEvent e ) {}
+        public void componentMoved( ComponentEvent e ) {}
         @Override
-        public void componentShown( final ComponentEvent e ) {}
+        public void componentShown( ComponentEvent e ) {}
         @Override
-        public void componentResized( final ComponentEvent e ) {
+        public void componentResized( ComponentEvent e ) {
             _legend.setXPosition( (int) (getWidth() - 370) );
         }
     }

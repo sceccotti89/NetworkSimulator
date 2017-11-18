@@ -12,16 +12,16 @@ public class Expr
     protected Expr e1;
     protected Expr e2;
     
-    public Expr( final Token op ) {
+    public Expr( Token op ) {
         this.op = op;
     }
     
-    public Expr( final Token op, final Expr e1 ) {
+    public Expr( Token op, Expr e1 ) {
         this( op );
         this.e1 = e1;
     }
     
-    public Expr( final Token op, final Expr e1, final Expr e2 ) {
+    public Expr( Token op, Expr e1, Expr e2 ) {
         this( op );
         this.e1 = e1;
         this.e2 = e2;
@@ -55,7 +55,7 @@ public class Expr
     
     public static class Term extends Expr
     {
-        public Term( final Token token )
+        public Term( Token token )
         {
             super( token );
             e1 = this;

@@ -15,7 +15,7 @@ public class CheckBox
 	
 	private final int index;
 	
-	public CheckBox( final float x, final float y, final float width, final float height, final String time, final int index )
+	public CheckBox( float x, float y, float width, float height, String time, int index )
 	{
 		this.time = time;
 		this.width = width;
@@ -28,7 +28,7 @@ public class CheckBox
 		return index;
 	}
 	
-	public boolean checkClick( final float mouseX, final float mouseY ) {
+	public boolean checkClick( float mouseX, float mouseY ) {
 		return area.contains( mouseX, mouseY );
 	}
 	

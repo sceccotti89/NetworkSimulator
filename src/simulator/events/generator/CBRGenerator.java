@@ -9,11 +9,11 @@ import simulator.utils.Time;
 
 public class CBRGenerator extends EventGenerator
 {
-    public CBRGenerator( final Time startTime,
-                         final Time duration,
-                         final Time departureTime,
-                         final Packet reqPacket,
-                         final Packet resPacket )
+    public CBRGenerator( Time startTime,
+                         Time duration,
+                         Time departureTime,
+                         Packet reqPacket,
+                         Packet resPacket )
     {
         super( duration, departureTime, reqPacket, resPacket );
         startAt( startTime );

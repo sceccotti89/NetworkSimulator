@@ -37,7 +37,7 @@ public class Node
 	
 	private int index;
     
-    public Node( final float x, final float y, final long nodeID, final String name, final long delay, final Color color, final int index )
+    public Node( float x, float y, long nodeID, String name, long delay, Color color, int index )
     {
         this.nodeID = nodeID;
         this.color = color;
@@ -87,7 +87,7 @@ public class Node
         return node;
     }
     
-    public Float getAngle( final long destID ) {
+    public Float getAngle( long destID ) {
         for (Link link: links) {
             if (link.getDestNode().getNodeID() == destID)
                 return link.getAngle();
@@ -100,7 +100,7 @@ public class Node
         return links.size();
     }
     
-    private float angleValutation( final float x1, final float y1, final float x2, final float y2 )
+    private float angleValutation( float x1, float y1, float x2, float y2 )
     {
         float m = (y2 - y1)/(x2 - x1);
         
@@ -126,16 +126,16 @@ public class Node
         return 0;
     }
 
-    private float calculateAngle( final float x1, final float y1, final float x2, final float y2 ) {
+    private float calculateAngle( float x1, float y1, float x2, float y2 ) {
         return angleValutation( x1, y1, x2, y2 );
     }
     
-    public void addLink( final Node dest, final double bandwidth, final long delay, final int width, final int height, final String type ) {
+    public void addLink( Node dest, double bandwidth, long delay, int width, int height, String type ) {
         float angle = calculateAngle( getCenterX(), getCenterY(), dest.getCenterX(), dest.getCenterY() );
         links.add( new Link( this, dest, bandwidth, delay, angle, width, height, type ) );
     }
     
-    public Float getLinkLenght( final long destID ) {
+    public Float getLinkLenght( long destID ) {
         for (Link link: links) {
             if (link.getDestNode().getNodeID() == destID) {
                 return link.getLenght();
@@ -174,15 +174,15 @@ public class Node
     	return moving;
     }
     
-    public void setMoving( final boolean val ) {
+    public void setMoving( boolean val ) {
     	moving = val;
     }
     
-    public boolean checkCollision( final int mouseX, final int mouseY ) {
+    public boolean checkCollision( int mouseX, int mouseY ) {
     	return node.contains( mouseX, mouseY );
     }
     
-    public boolean checkLinks( final Node source ) {
+    public boolean checkLinks( Node source ) {
         for (Link link: links) {
             if (link.getDestNode().equals( source )) {
                 return true;
@@ -215,7 +215,7 @@ public class Node
     	removable = !removable;
     }
     
-    public Node clone( final Node dest, final int width, final int height ) {
+    public Node clone( Node dest, int width, int height ) {
     	try {
 			Node tmp = new Node( node.getCenterX(), node.getCenterY(), nodeID, name, delay, color, index );
 			tmp.addLink( dest, 0, 0, width, height, NetworkLink.BIDIRECTIONAL );
@@ -228,7 +228,7 @@ public class Node
     	return null;
     }
     
-    public void update( final GameContainer gc, final int widthSpace, final float startSpaceY, final int heightSpace, final boolean choose ) {
+    public void update( GameContainer gc, int widthSpace, float startSpaceY, int heightSpace, boolean choose ) {
     	this.choose = choose;
     	
     	moveX = mouseX; moveY = mouseY;
@@ -266,13 +266,13 @@ public class Node
         moveY = mouseY;
     }
     
-    public void drawLinks( final Graphics g ) {
+    public void drawLinks( Graphics g ) {
         for (Link link: links) {
             link.render( g );
         }
     }
     
-    public void drawNode( final Graphics g ) {
+    public void drawNode( Graphics g ) {
         g.setColor( color );
         g.fill( node );
         

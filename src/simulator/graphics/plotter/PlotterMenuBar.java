@@ -32,7 +32,7 @@ public class PlotterMenuBar extends JMenuBar implements ActionListener
     
     private final Plotter plotter;
 
-    public PlotterMenuBar( final Plotter plotter )
+    public PlotterMenuBar( Plotter plotter )
     {
         this.plotter = plotter;
         

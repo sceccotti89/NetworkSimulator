@@ -9,7 +9,7 @@ import simulator.graphics.AnimationNetwork;
  
 public class GraphicTest
 {
-    public static void main( final String[] args ) throws SlickException, IOException
+    public static void main( String[] args ) throws SlickException, IOException
     {
         AnimationNetwork an = new AnimationNetwork( 800, 600, "prova" );
         

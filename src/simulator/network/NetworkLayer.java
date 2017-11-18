@@ -17,7 +17,7 @@ public enum NetworkLayer
     
     private int index;
     
-    NetworkLayer( final int index ) {
+    NetworkLayer( int index ) {
         this.index = index;
     }
     

@@ -35,7 +35,7 @@ public class ArrowButton
     }
 
     /** modifica lo stato (premuto/non premuto) della freccia*/
-    public void setPressed( final boolean val )
+    public void setPressed( boolean val )
     {
         pressed = val;
     }
@@ -71,7 +71,7 @@ public class ArrowButton
     }
 
     /** modifica la posizione sull'ascissa della freccia*/
-	public void setX( final float startX, final float lenght ) {
+	public void setX( float startX, float lenght ) {
 		if (direction == RIGHT) {
 			row.setX( startX + lenght/2 );
 		} else {

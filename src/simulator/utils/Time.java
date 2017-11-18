@@ -8,37 +8,37 @@ import java.util.concurrent.TimeUnit;
 
 class ImmutableTime extends Time
 {
-    public ImmutableTime( final long time, final TimeUnit unit ) {
+    public ImmutableTime( long time, TimeUnit unit ) {
         super( time, unit );
     }
     
     @Override
-    public Time setTime( final long time, final TimeUnit unit ) {		
+    public Time setTime( long time, TimeUnit unit ) {		
         throw new UnsupportedOperationException( "You can't change this!" );
     }
     
     @Override
-    public Time setTime( final Time time ) {
+    public Time setTime( Time time ) {
         throw new UnsupportedOperationException( "You can't change this!" );
     }
     
     @Override
-    public Time addTime( final long i, final TimeUnit unit ) {
+    public Time addTime( long i, TimeUnit unit ) {
         throw new UnsupportedOperationException( "You can't change this!" );
     }
     
     @Override
-    public Time addTime( final Time i ) {
+    public Time addTime( Time i ) {
         throw new UnsupportedOperationException( "You can't change this!" );
     }
     
     @Override
-    public Time subTime( final long i, final TimeUnit unit ) {
+    public Time subTime( long i, TimeUnit unit ) {
         throw new UnsupportedOperationException( "You can't change this!" );
     }
     
     @Override
-    public Time subTime( final Time i ) {
+    public Time subTime( Time i ) {
         throw new UnsupportedOperationException( "You can't change this!" );
     }
 }
@@ -67,7 +67,7 @@ public class Time implements Comparable<Time>
     
     
     
-    public Time( final long time, final TimeUnit unit ) {
+    public Time( long time, TimeUnit unit ) {
         this.time = unit.toMicros( time );
         this.unit = unit;
     }
@@ -100,28 +100,28 @@ public class Time implements Comparable<Time>
         return unit;
     }
     
-    public Time setTime( final long time, final TimeUnit unit ) {
+    public Time setTime( long time, TimeUnit unit ) {
         this.time = unit.toMicros( time );
         return this;
     }
     
-    public Time setTime( final Time time ) {
+    public Time setTime( Time time ) {
         this.time = time.getTimeMicros();
         return this;
     }
     
-    public Time addTime( final long i, final TimeUnit unit ) {
+    public Time addTime( long i, TimeUnit unit ) {
         time += unit.toMicros( i );
         return this;
     }
     
-    public Time addTime( final Time i ) {
+    public Time addTime( Time i ) {
         addTime( i.getTimeMicros(), TimeUnit.MICROSECONDS );
         return this;
     }
     
     @Override
-    public int compareTo( final Time o ) {
+    public int compareTo( Time o ) {
         return getTimeMicros().compareTo( o.getTimeMicros() ); 
     }
     
@@ -132,7 +132,7 @@ public class Time implements Comparable<Time>
      * @param unit
      * @return
     */
-    public Time subTime( final long i, final TimeUnit unit )
+    public Time subTime( long i, TimeUnit unit )
     {
         long l = unit.toMicros( i );
         if (l > time) {
@@ -148,7 +148,7 @@ public class Time implements Comparable<Time>
      * @param i
      * @return
     */
-    public Time subTime( final Time i ) {
+    public Time subTime( Time i ) {
         return subTime( i.getTimeMicros(), TimeUnit.MICROSECONDS );
     }
     
@@ -157,7 +157,7 @@ public class Time implements Comparable<Time>
      * @param t
      * @return
     */
-    public Time max( final Time t ) {
+    public Time max( Time t ) {
         if (t.compareTo( this ) > 0) setTime( t );
         return this;
     }
@@ -167,7 +167,7 @@ public class Time implements Comparable<Time>
      * @param t
      * @return
     */
-    public Time min( final Time t ) {
+    public Time min( Time t ) {
         if (t.compareTo( this ) < 0) setTime( t );
         return this;
     }
@@ -181,7 +181,7 @@ public class Time implements Comparable<Time>
         return time < 0;
     }
     
-    public double convert( final TimeUnit tUnit )
+    public double convert( TimeUnit tUnit )
     {
         switch ( tUnit ) {
             case DAYS:         return time / 24d / 60d / 60d / 1000d / 1000d;

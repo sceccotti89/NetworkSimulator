@@ -20,7 +20,7 @@ public class RIP extends ApplicationLayerProtocol implements RoutingProtocol
 {
     private static final Time UPDATE_TIME = new Time( 30, TimeUnit.SECONDS );
     
-    public RIP( final NetworkTopology net, final Agent source )
+    public RIP( NetworkTopology net, Agent source )
     {
         super( net, source );
         setLayer( NetworkLayer.APPLICATION.getIndex() );
@@ -28,7 +28,7 @@ public class RIP extends ApplicationLayerProtocol implements RoutingProtocol
     }
     
     @Override
-    public NetworkNode getNextNode( final long destID ) {
+    public NetworkNode getNextNode( long destID ) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -50,7 +50,7 @@ public class RIP extends ApplicationLayerProtocol implements RoutingProtocol
     }
     
     @Override
-    public Event processPacket( final Packet packet ) {
+    public Event processPacket( Packet packet ) {
         // TODO Auto-generated method stub
         return null;
     }

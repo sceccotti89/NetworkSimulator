@@ -41,7 +41,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
     private final PlotEditDialog DIALOG = this;
     
 
-    public PlotEditDialog( final Frame frame, final Plot plot )
+    public PlotEditDialog( Frame frame, Plot plot )
     {
         super( frame, true );
         
@@ -79,7 +79,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
         setLocationRelativeTo( frame );
     }
     
-    private JPanel createTitlePanel( final String value )
+    private JPanel createTitlePanel( String value )
     {
         JPanel panel = new JPanel();
         JTextField fieldText = new JTextField( "Title", 6 );
@@ -96,7 +96,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
         return panel;
     }
     
-    private void drawLineOnButton( final JButton button )
+    private void drawLineOnButton( JButton button )
     {
         final int BI_WIDTH  = 155;
         final int BI_HEIGHT =  15;
@@ -132,7 +132,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
         
         buttonLine.addActionListener( new ActionListener() {
             @Override
-            public void actionPerformed( final ActionEvent e ) {
+            public void actionPerformed( ActionEvent e ) {
                 BasicStroke stroke = (BasicStroke) plotClone.stroke;
                 if (stroke.getDashArray() != null) {
                     plotClone.line = Line.UNIFORM;
@@ -149,7 +149,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
         return panel;
     }
     
-    private JPanel createLineWidthPanel( final String value )
+    private JPanel createLineWidthPanel( String value )
     {
         JPanel panel = new JPanel();
         JTextField fieldText = new JTextField( "Line width", 6 );
@@ -163,7 +163,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
         lineWidth.setText( value );
         lineWidth.addKeyListener( new KeyAdapter() {
             @Override
-            public void keyReleased( final KeyEvent e ) {
+            public void keyReleased( KeyEvent e ) {
                 try {
                     float value = Float.parseFloat( lineWidth.getText() );
                     plotClone.lineWidth = value;
@@ -189,7 +189,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
         return panel;
     }
     
-    private void drawColorOnButton( final JButton button )
+    private void drawColorOnButton( JButton button )
     {
         final int BI_WIDTH  = 155;
         final int BI_HEIGHT =  15;
@@ -204,7 +204,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
         g.dispose();
     }
     
-    private JPanel createColorPanel( final Frame frame )
+    private JPanel createColorPanel( Frame frame )
     {
         JPanel panel = new JPanel();
         JTextField fieldName = new JTextField( "Color", 6 );
@@ -223,7 +223,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
         
         buttonColor.addActionListener( new ActionListener() {
             @Override
-            public void actionPerformed( final ActionEvent e ) {
+            public void actionPerformed( ActionEvent e ) {
                 ColorEditDialog dialog = new ColorEditDialog( DIALOG, frame, plotClone );
                 dialog.setVisible( true );
                 drawColorOnButton( buttonColor );
@@ -247,7 +247,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
     }
     
     @Override
-    public void actionPerformed( final ActionEvent e )
+    public void actionPerformed( ActionEvent e )
     {
         if (e.getActionCommand().equals( "Save" )) {
             saveAndExit();

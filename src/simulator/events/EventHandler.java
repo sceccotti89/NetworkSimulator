@@ -31,5 +31,5 @@ public interface EventHandler
      * 
      * @return time needed to handle the event.
     */
-    public Time handle( final Event e, final EventType type );
+    public Time handle( Event e, EventType type );
 }

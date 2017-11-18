@@ -92,20 +92,20 @@ public class TimeAnimation implements AnimationInterface
         checkBoxes.add( timeS );
     }
     
-    private long roundValue( final double value ) {
+    private long roundValue( double value ) {
         return (long) (Math.round( value * 100.0 ) / 100.0);
     }
     
-    private void setTime( final NetworkDisplay nd ) {
+    private void setTime( NetworkDisplay nd ) {
         cursor.setX( Math.max( Math.min( mouseX - widthCursor/2, timing.getMaxX() - widthCursor/2 ), startTimingX - widthCursor/2 ) );
         nd.setTimeSimulation( roundValue( (((double) cursor.getCenterX() - startTimingX) / timing.getWidth() * AnimationNetwork.timeSimulation) ) );
     }
     
-    public long getTime( final float mouseX ) {
+    public long getTime( float mouseX ) {
         return roundValue( (((double) Math.max( Math.min( mouseX, timing.getMaxX() ), startTimingX ) - startTimingX) / timing.getWidth() * AnimationNetwork.timeSimulation) );
     }
     
-    private void setCursor( final int index, final NetworkDisplay nd ) {
+    private void setCursor( int index, NetworkDisplay nd ) {
     	if (index == 0) {
     		timer = Math.min( timer + moving, AnimationNetwork.timeSimulation );
     	} else {
@@ -115,7 +115,7 @@ public class TimeAnimation implements AnimationInterface
     	nd.setTimeSimulation( timer );
     }
     
-    private void setPositionArrows( final float widthS ) {
+    private void setPositionArrows( float widthS ) {
     	for (ArrowButton arrow: arrows) {
     		arrow.setX( width/2, widthS );
     	}
@@ -208,7 +208,7 @@ public class TimeAnimation implements AnimationInterface
     	index = -1;
     }
     
-    public boolean checkClick( final Event event, final NetworkDisplay nd ) {
+    public boolean checkClick( Event event, NetworkDisplay nd ) {
     	if (index == -1 && !timingHit) {
     		if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
     			for (CheckBox box: checkBoxes) {
@@ -239,7 +239,7 @@ public class TimeAnimation implements AnimationInterface
     }
     
     @Override
-    public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd, final boolean mouseEvent )
+    public void update( int delta, GameContainer gc, AnimationManager am, Event event, NetworkDisplay nd, boolean mouseEvent )
     {
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();
@@ -307,7 +307,7 @@ public class TimeAnimation implements AnimationInterface
     }
     
     @Override
-    public void render( final GameContainer gc )
+    public void render( GameContainer gc )
     {
         Graphics g = gc.getGraphics();
         

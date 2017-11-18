@@ -13,19 +13,19 @@ public class SimulatorException extends RuntimeException
         super();
     }
     
-    public SimulatorException( final String message, final Throwable cause, final boolean enableSuppression, final boolean writableStackTrace ) {
+    public SimulatorException( String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace ) {
         super( message, cause, enableSuppression, writableStackTrace );
     }
     
-    public SimulatorException( final String message, final Throwable cause ) {
+    public SimulatorException( String message, Throwable cause ) {
         super( message, cause );
     }
     
-    public SimulatorException( final String message ) {
+    public SimulatorException( String message ) {
         super( message );
     }
     
-    public SimulatorException( final Throwable cause ) {
+    public SimulatorException( Throwable cause ) {
         super( cause );
     }
 }

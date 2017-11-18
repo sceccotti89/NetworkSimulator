@@ -29,7 +29,7 @@ public class ResourceLoader
      * 
      * @param location    The location that will be searched for resoruces
     */
-    public static void addResourceLocation( final ResourceLocation location ) {
+    public static void addResourceLocation( ResourceLocation location ) {
         locations.add( location );
     }
     
@@ -38,7 +38,7 @@ public class ResourceLoader
      * 
      * @param location    The location that will be removed from the search list
     */
-    public static void removeResourceLocation( final ResourceLocation location ) {
+    public static void removeResourceLocation( ResourceLocation location ) {
         locations.remove( location );
     }
     
@@ -57,7 +57,7 @@ public class ResourceLoader
      * 
      * @return A stream from which the resource can be read
     */
-    public static InputStream getResourceAsStream( final String ref )
+    public static InputStream getResourceAsStream( String ref )
     {
         InputStream in = null;
         
@@ -81,7 +81,7 @@ public class ResourceLoader
      * 
      * @return True if the resource can be located
     */
-    public static boolean resourceExists( final String ref )
+    public static boolean resourceExists( String ref )
     {
         URL url = null;
         for (int i = locations.size() - 1; i >= 0; i--) {
@@ -101,7 +101,7 @@ public class ResourceLoader
      * 
      * @return A URL from which the resource can be read
     */
-    public static URL getResource( final String ref )
+    public static URL getResource( String ref )
     {
         URL url = null;
         for (int i = locations.size() - 1; i >= 0; i--) {

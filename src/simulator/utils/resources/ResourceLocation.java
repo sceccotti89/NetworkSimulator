@@ -20,7 +20,7 @@ public interface ResourceLocation
      * @return A stream from which the resource can be read or
      *         {@code null} if the resource can't be found in this location
     */
-    public InputStream getResourceAsStream( final String ref );
+    public InputStream getResourceAsStream( String ref );
 
     /**
      * Gets a resource as a URL.
@@ -29,5 +29,5 @@ public interface ResourceLocation
      * 
      * @return A URL from which the resource can be read
     */
-    public URL getResource( final String ref );
+    public URL getResource( String ref );
 }

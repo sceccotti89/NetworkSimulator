@@ -8,6 +8,7 @@ public class Global
     public static final String CONS_CONTROL      = "CONS_CONTROL_EVT";
     public static final String NOTIFIER_MESSAGE  = "NOTIFIER_MESSAGE";
     public static final String PESOS_TIME_BUDGET = "PESOS_TIME_BUDGET";
+    public static final String SWITCH_TIME_SLOT  = "SWITCH_TIME_SLOT";
     
     /** Samplings ID. */
     public static final String ENERGY_SAMPLING       = "EnergyConsumption";

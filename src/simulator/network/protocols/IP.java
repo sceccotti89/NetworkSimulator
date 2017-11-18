@@ -14,11 +14,11 @@ public abstract class IP extends NetworkLayerProtocol
 {
     protected String protocolID;
     
-    public IP( final int protocolID ) {
+    public IP( int protocolID ) {
         setProtocolID( protocolID );
     }
     
-    public void setProtocolID( final int protocolID ) {
+    public void setProtocolID( int protocolID ) {
         this.protocolID = protocolID + "";
     }
 
@@ -39,7 +39,7 @@ public abstract class IP extends NetworkLayerProtocol
         private static final String OPTIONS = "OPTS";
         private static final String PADDING = "PAD";
         
-        public IPv4( final int protocolID ) {
+        public IPv4( int protocolID ) {
             super( protocolID );
         }
         
@@ -72,7 +72,7 @@ public abstract class IP extends NetworkLayerProtocol
         }
     
         @Override
-        public Event processPacket( final Packet packet )
+        public Event processPacket( Packet packet )
         {
             // TODO Auto-generated method stub
             return null;
@@ -95,7 +95,7 @@ public abstract class IP extends NetworkLayerProtocol
         private static final String SOURCE_ADDRESS = "SOURCE";
         private static final String DESTINATION_ADDRESS = "DESTINATION";
         
-        public IPv6( final int next_header ) {
+        public IPv6( int next_header ) {
             super( next_header );
         }
         
@@ -122,7 +122,7 @@ public abstract class IP extends NetworkLayerProtocol
         }
     
         @Override
-        public Event processPacket( final Packet packet ) {
+        public Event processPacket( Packet packet ) {
             // TODO Auto-generated method stub
             return null;
         }

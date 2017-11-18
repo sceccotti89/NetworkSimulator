@@ -20,7 +20,7 @@ public class MenuItem extends Button
 	
 	private List<Menu> menu;
 	
-	public MenuItem( final SimpleButton button, final ArrayList<Operation> operations ) throws SlickException
+	public MenuItem( SimpleButton button, ArrayList<Operation> operations ) throws SlickException
 	{
 		this.button = button;
 		this.operations = new ArrayList<Operation>( operations );
@@ -32,7 +32,7 @@ public class MenuItem extends Button
         }
 	}
 	
-	public void addItem( final Operation op, final ArrayList<Operation> ops ) {
+	public void addItem( Operation op, ArrayList<Operation> ops ) {
 	    // l'operazione era tra quelli della tendina
 	    for (int i = 0; i < operations.size(); i++) {
 	        if (operations.get( i ).equals( op )) {
@@ -63,7 +63,7 @@ public class MenuItem extends Button
 		return button.getMaxY();
 	}
 	
-	public boolean checkClick( final int mouseX, final int mouseY, final boolean mouseDown, final boolean leftMouse, final Event event, final NetworkDisplay nd ) throws SlickException {
+	public boolean checkClick( int mouseX, int mouseY, boolean mouseDown, boolean leftMouse, Event event, NetworkDisplay nd ) throws SlickException {
 		if (event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON )) {
 			if (button.checkClick( mouseX, mouseY )) {
 				if (button.isPressed()) {
@@ -133,7 +133,7 @@ public class MenuItem extends Button
 		return false;
 	}
 	
-	public void update( final int mouseX, final int mouseY, final boolean leftMouse, final Event event, final boolean mouseDown, final NetworkDisplay nd ) throws SlickException {
+	public void update( int mouseX, int mouseY, boolean leftMouse, Event event, boolean mouseDown, NetworkDisplay nd ) throws SlickException {
 		if (!button.isPressed()) {
 		    return;
 		}

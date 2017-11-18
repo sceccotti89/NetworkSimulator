@@ -38,7 +38,7 @@ public class NetworkSettings
     
     
     
-    public NetworkSettings( final NetworkTopology net )
+    public NetworkSettings( NetworkTopology net )
     {
         _routingProtocols = new ArrayList<>();
         
@@ -48,7 +48,7 @@ public class NetworkSettings
         IPv6LinkLocal = IPv6StatelessConfiguration();
     }
     
-    public NetworkSettings setSubnetMask( final String subnetMask ) {
+    public NetworkSettings setSubnetMask( String subnetMask ) {
         this.subnetMask = subnetMask;
         return this;
     }
@@ -60,7 +60,7 @@ public class NetworkSettings
      * @param version     the IP version (4 or 6, see {@linkplain IPversion})
      * @param publicIP    {@code true} if the IP is public, {@code false} otherwise
     */
-    public NetworkSettings setIPaddress( final String address, final IPversion version, final boolean publicIP )
+    public NetworkSettings setIPaddress( String address, IPversion version, boolean publicIP )
     {
         if (version == IPversion.IPv4) {
             if (publicIP) {
@@ -86,7 +86,7 @@ public class NetworkSettings
         return IPv6;
     }
     
-    public NetworkSettings setMACaddress( final String address ) {
+    public NetworkSettings setMACaddress( String address ) {
         MACaddress = address;
         return this;
     }
@@ -100,7 +100,7 @@ public class NetworkSettings
      * @param DHCPaddress    the DHCP IP address
      * @param version        the DHCP version (4 or 6, see {@linkplain IPversion})
     */
-    public NetworkSettings setDHCP( final boolean useDHCP, final String DHCPaddress, final IPversion version ) {
+    public NetworkSettings setDHCP( boolean useDHCP, String DHCPaddress, IPversion version ) {
         this.useDHCP = useDHCP;
         if (this.useDHCP) {
             if (DHCPaddress != null) {
@@ -145,7 +145,7 @@ public class NetworkSettings
      * @param protocol    the routing protocol
     */
     public <T extends NetworkProtocol & RoutingProtocol>
-            NetworkSettings addRoutingProtocol( final T protocol ) {
+            NetworkSettings addRoutingProtocol( T protocol ) {
         _routingProtocols.add( protocol );
         return this;
     }

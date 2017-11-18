@@ -44,7 +44,7 @@ public class OptionBar implements AnimationInterface
     
 	private ArrayList<Operation> operations;
     
-    public OptionBar( final GameContainer gc, final int width, final int height ) throws SlickException
+    public OptionBar( GameContainer gc, int width, int height ) throws SlickException
     {
         widthB = width/10;
         heightB = height/30;
@@ -106,7 +106,7 @@ public class OptionBar implements AnimationInterface
     
     public void resetIndex() {}
     
-    public boolean checkClick( final Event event, final NetworkDisplay nd ) throws SlickException {
+    public boolean checkClick( Event event, NetworkDisplay nd ) throws SlickException {
     	for (MenuItem item: items) {
     		if (item.checkClick( mouseX, mouseY, mouseDown, leftMouse, event, nd )) {
     			event.setConsumed( true );
@@ -118,7 +118,7 @@ public class OptionBar implements AnimationInterface
     }
     
     @Override
-    public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd, final boolean mouseEvent ) throws SlickException
+    public void update( int delta, GameContainer gc, AnimationManager am, Event event, NetworkDisplay nd, boolean mouseEvent ) throws SlickException
     {
         mouseX = gc.getInput().getMouseX();
         mouseY = gc.getInput().getMouseY();
@@ -141,7 +141,7 @@ public class OptionBar implements AnimationInterface
     }
     
     @Override
-    public void render( final GameContainer gc ) {
+    public void render( GameContainer gc ) {
         Graphics g = gc.getGraphics();
         
         for (MenuItem item: items) {

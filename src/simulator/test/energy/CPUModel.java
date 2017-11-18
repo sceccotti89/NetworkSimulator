@@ -74,11 +74,11 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
         private Mode mode;
         private String name;
         
-        private Type( final String name ) {
+        private Type( String name ) {
             this.name = name;
         }
         
-        public void setMode( final Mode mode ) {
+        public void setMode( Mode mode ) {
             this.mode = mode;
         }
         
@@ -105,7 +105,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
         ENERGY_CONSERVATIVE( "EC" );
         
         private final String name;
-        private Mode( final String name ) {
+        private Mode( String name ) {
             this.name = name;
         }
         
@@ -127,7 +127,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
      * 
      * @throws IOException if a file doesn't exists or is malformed.
     */
-    public CPUModel( final Type type, final String dir, final String... files )
+    public CPUModel( Type type, String dir, String... files )
     {
         this.type = type;
         
@@ -149,7 +149,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
         loadEffectiveTimeEnergy();
     }
     
-    public abstract String getModelType( final boolean delimeters );
+    public abstract String getModelType( boolean delimeters );
     
     public Type getType() {
         return type;
@@ -163,7 +163,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
         return timeBudget;
     }
     
-    public void setTimeBudget( final long time ) {
+    public void setTimeBudget( long time ) {
         timeBudget = new Time( time, TimeUnit.MICROSECONDS );
     }
 
@@ -229,7 +229,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
         fReader.close();
     }
 
-    public QueryInfo getQuery( final long queryID ) {
+    public QueryInfo getQuery( long queryID ) {
         return queries.get( queryID ).clone();
     }
     
@@ -241,7 +241,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
      * @param cpu     the associated cpu.
      * @param q       the query to add.
     */
-    public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
+    public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
     {
         long id = -1;
         double utilization = Integer.MAX_VALUE;
@@ -296,7 +296,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
          * 
          * @throws IOException if a file doesn't exists or is malformed.
         */
-        public MY_model( final long time_budget, final Mode mode, final String directory )
+        public MY_model( long time_budget, Mode mode, String directory )
         {
             this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory,
                   POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY,
@@ -314,16 +314,16 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
          * 
          * @throws IOException if a file doesn't exists or is malformed.
         */
-        public MY_model( final long time_budget, final Mode mode, final String directory, final String... files ) {
+        public MY_model( long time_budget, Mode mode, String directory, String... files ) {
             this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory, files );
         }
         
-        public MY_model( final Time time_budget, final Mode mode, final String directory, final String... files ) {
+        public MY_model( Time time_budget, Mode mode, String directory, String... files ) {
             super( getType( mode ), directory, files );
             timeBudget = time_budget;
         }
         
-        private static Type getType( final Mode mode )
+        private static Type getType( Mode mode )
         {
             Type type = Type.MY_MODEL;
             type.setMode( mode );
@@ -331,7 +331,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
         }
         
         /*@Override
-        public Long eval( final Time now, final QueryInfo... queries )
+        public Long eval( Time now, QueryInfo... queries )
         {
             QueryInfo query = queries[0];
             Time currentDeadline = query.getArrivalTime().addTime( timeBudget );
@@ -395,7 +395,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             return target;
         }
         
-        private Time predictServiceTime( final int terms, final long postings, final long frequency )
+        private Time predictServiceTime( int terms, long postings, long frequency )
         {
             String base  = frequency + "." + terms;
             double alpha = regressors.get( base + ".alpha" );
@@ -405,7 +405,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             return new Time( time, TimeUnit.MICROSECONDS );
         }
         
-        private long getTargetFrequency( final int terms, final long postings, final double targetTime )
+        private long getTargetFrequency( int terms, long postings, double targetTime )
         {
             for (Long frequency : _device.getFrequencies()) {
                 final String base = frequency + "." + terms;
@@ -423,7 +423,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
         }*/
         
         @Override
-        public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
+        public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
         {
             long id = -1;
             long minExecutionTime = Long.MAX_VALUE;
@@ -454,7 +454,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
         }
         
         @Override
-        public Long eval( final Time now, final QueryInfo... queries )
+        public Long eval( Time now, QueryInfo... queries )
         {
             QueryInfo query = queries[0];
             Time currentDeadline = query.getArrivalTime().addTime( timeBudget );
@@ -473,7 +473,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             return identifyTargetFrequency( query.getTerms(), pcost, targetTime );
         }
         
-        private long evalLOAD_SENSITIVEtimeBudget( final Time now, final QueryInfo... queries )
+        private long evalLOAD_SENSITIVEtimeBudget( Time now, QueryInfo... queries )
         {
             QueryInfo currentQuery = queries[0];
             QueryInfo last = queries[queries.length-1];
@@ -505,7 +505,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             }
         }
         
-        private long evalPESOStimeBudget( final Time now, final QueryInfo... queries )
+        private long evalPESOStimeBudget( Time now, QueryInfo... queries )
         {
             QueryInfo currentQuery = queries[0];
             Time currentDeadline = currentQuery.getArrivalTime().addTime( timeBudget );
@@ -541,7 +541,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             return (long) (pcost/maxDensity);
         }
         
-        private long getLateness( final Time now, final QueryInfo[] queries )
+        private long getLateness( Time now, QueryInfo[] queries )
         {
             double lateness = 0;
             int cnt = 0;
@@ -565,7 +565,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             return Utils.getTimeInMicroseconds( result, TimeUnit.MICROSECONDS );
         }
         
-        public long predictServiceTimeAtMaxFrequency( final int terms, final long postings )
+        public long predictServiceTimeAtMaxFrequency( int terms, long postings )
         {
             String base  = _device.getMaxFrequency() + "." + terms;
             double alpha = regressors.get( base + ".alpha" );
@@ -574,7 +574,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             return Utils.getTimeInMicroseconds( alpha * postings + beta + rmse, TimeUnit.MILLISECONDS );
         }
         
-        private long identifyTargetFrequency( final int terms, final long postings, final double targetTime )
+        private long identifyTargetFrequency( int terms, long postings, double targetTime )
         {
             for (Long frequency : _device.getFrequencies()) {
                 final String base = frequency + "." + terms;
@@ -591,12 +591,12 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             return _device.getMaxFrequency(); 
         }
         
-        public int getRMSE( final int terms ) {
+        public int getRMSE( int terms ) {
             return regressors.get( "class." + terms + ".rmse" ).intValue();
         }
         
         @Override
-        public String getModelType( final boolean delimeters )
+        public String getModelType( boolean delimeters )
         {
             if (delimeters) {
                 return "MY_Model_" + getMode() + "_" + getTimeBudget().getTimeMillis() + "ms";
@@ -632,24 +632,24 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
          * 
          * @throws IOException if a file doesn't exists or is malformed.
         */
-        public LOAD_SENSITIVEmodel( final long time_budget, final Mode mode, final String directory ) {
+        public LOAD_SENSITIVEmodel( long time_budget, Mode mode, String directory ) {
             this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory,
                             POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY,
                             (mode == Mode.ENERGY_CONSERVATIVE) ? REGRESSORS_ENERGY_CONSERVATIVE :
                                                                  REGRESSORS_TIME_CONSERVATIVE );
         }
         
-        public LOAD_SENSITIVEmodel( final long time_budget, final Mode mode, final String dir, final String... files ){
+        public LOAD_SENSITIVEmodel( long time_budget, Mode mode, String dir, String... files ){
             this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, dir, files );
         }
         
-        public LOAD_SENSITIVEmodel( final Time time_budget, final Mode mode, final String dir, final String... files )
+        public LOAD_SENSITIVEmodel( Time time_budget, Mode mode, String dir, String... files )
         {
             super( getType( mode ), dir, files );
             timeBudget = time_budget;
         }
         
-        private static Type getType( final Mode mode )
+        private static Type getType( Mode mode )
         {
             Type type = Type.LOAD_SENSITIVE;
             type.setMode( mode );
@@ -657,7 +657,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
         }
         
         /*@Override
-        public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
+        public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
         {
             // NOTE: This is a new core selection technique,
             //       based on the frequency evaluation.
@@ -695,7 +695,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
         
         // TODO Miglior soluzione per LOAD SENSITIVE
         @Override
-        public long selectCore( final Time time, final EnergyCPU cpu, final QueryInfo q )
+        public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
         {
             long id = -1;
             long minExecutionTime = Long.MAX_VALUE;
@@ -726,7 +726,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
         }
         
         @Override
-        public Long eval( final Time now, final QueryInfo... queries )
+        public Long eval( Time now, QueryInfo... queries )
         {
             QueryInfo currentQuery = queries[0];
             Time currentDeadline = currentQuery.getArrivalTime().addTime( timeBudget );
@@ -765,7 +765,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             }
         }
         
-        public long predictServiceTimeAtMaxFrequency( final int terms, final long postings )
+        public long predictServiceTimeAtMaxFrequency( int terms, long postings )
         {
             String base  = _device.getMaxFrequency() + "." + terms;
             double alpha = regressors.get( base + ".alpha" );
@@ -774,7 +774,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             return Utils.getTimeInMicroseconds( alpha * postings + beta + rmse, TimeUnit.MILLISECONDS );
         }
         
-        private long identifyTargetFrequency( final int terms, final long postings, final double targetTime )
+        private long identifyTargetFrequency( int terms, long postings, double targetTime )
         {
             for (Long frequency : _device.getFrequencies()) {
                 final String base = frequency + "." + terms;
@@ -791,12 +791,12 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             return _device.getMaxFrequency(); 
         }
         
-        public int getRMSE( final int terms ) {
+        public int getRMSE( int terms ) {
             return regressors.get( "class." + terms + ".rmse" ).intValue();
         }
         
         @Override
-        public String getModelType( final boolean delimeters )
+        public String getModelType( boolean delimeters )
         {
             if (delimeters) {
                 return "LOAD_SENSITIVE_" + getMode() + "_" + getTimeBudget().getTimeMillis() + "ms";
@@ -833,7 +833,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
          * 
          * @throws IOException if a file doesn't exists or is malformed.
         */
-        public PESOSmodel( final long time_budget, final Mode mode, final String directory )
+        public PESOSmodel( long time_budget, Mode mode, String directory )
         {
             this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory,
                   POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY,
@@ -850,16 +850,16 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
          * 
          * @throws IOException if a file doesn't exists or is malformed.
         */
-        public PESOSmodel( final long time_budget, final Mode mode, final String directory, final String... files ) {
+        public PESOSmodel( long time_budget, Mode mode, String directory, String... files ) {
             this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory, files );
         }
         
-        public PESOSmodel( final Time time_budget, final Mode mode, final String directory, final String... files ) {
+        public PESOSmodel( Time time_budget, Mode mode, String directory, String... files ) {
             super( getType( mode ), directory, files );
             timeBudget = time_budget;
         }
         
-        private static Type getType( final Mode mode )
+        private static Type getType( Mode mode )
         {
             Type type = Type.PESOS;
             type.setMode( mode );
@@ -867,7 +867,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
         }
         
         @Override
-        public Long eval( final Time now, final QueryInfo... queries )
+        public Long eval( Time now, QueryInfo... queries )
         {
             QueryInfo currentQuery = queries[0];
             Time currentDeadline = currentQuery.getArrivalTime().addTime( timeBudget );
@@ -909,7 +909,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             return identifyTargetFrequency( currentQuery.getTerms(), pcost, targetTime );
         }
         
-        private long getLateness( final Time now, final QueryInfo[] queries )
+        private long getLateness( Time now, QueryInfo[] queries )
         {
             double lateness = 0;
             int cnt = 0;
@@ -933,7 +933,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             return Utils.getTimeInMicroseconds( result, TimeUnit.MICROSECONDS );
         }
         
-        public long predictServiceTimeAtMaxFrequency( final int terms, final long postings )
+        public long predictServiceTimeAtMaxFrequency( int terms, long postings )
         {
             String base  = _device.getMaxFrequency() + "." + terms;
             double alpha = regressors.get( base + ".alpha" );
@@ -942,7 +942,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             return Utils.getTimeInMicroseconds( alpha * postings + beta + rmse, TimeUnit.MILLISECONDS );
         }
         
-        private long identifyTargetFrequency( final int terms, final long postings, final double targetTime )
+        private long identifyTargetFrequency( int terms, long postings, double targetTime )
         {
             for (Long frequency : _device.getFrequencies()) {
                 final String base = frequency + "." + terms;
@@ -1251,7 +1251,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
         }
         
         @Override
-        public String getModelType( final boolean delimeters )
+        public String getModelType( boolean delimeters )
         {
             if (delimeters) {
                 return "PEGASUS_" + getTimeBudget().getTimeMillis() + "ms";
@@ -1270,7 +1270,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
         }
         
         @Override
-        public Long eval( final Time now, final QueryInfo... params ) {
+        public Long eval( Time now, QueryInfo... params ) {
             return _device.getFrequency();
         }
         
@@ -1301,11 +1301,11 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
         private Map<Long,Pair<Time,Double>> timeAndEnergyPerFrequency;
         
         
-        public QueryInfo( final long id ) {
+        public QueryInfo( long id ) {
             _id = id;
         }
         
-        public QueryInfo( final long id, final int terms, final int postings )
+        public QueryInfo( long id, int terms, int postings )
         {
             _id = id;
             _terms = terms;
@@ -1329,11 +1329,11 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             return _frequency;
         }
         
-        public void setFrequency( final long frequency ) {
+        public void setFrequency( long frequency ) {
             _frequency = frequency;
         }
         
-        public void setEvent( final Event event ) {
+        public void setEvent( Event event ) {
             this.event = event;
         }
         
@@ -1341,7 +1341,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             return event;
         }
         
-        public void setArrivalTime( final Time t ) {
+        public void setArrivalTime( Time t ) {
             arrivalTime.setTime( t );
         }
         
@@ -1349,7 +1349,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             return arrivalTime.clone();
         }
         
-        public void setCoreId( final long coreId ) {
+        public void setCoreId( long coreId ) {
             this.coreId = coreId;
         }
         
@@ -1373,19 +1373,19 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             return lastEnergy;
         }
         
-        public void setTimeToComplete( final Time startTime, final Time endTime )
+        public void setTimeToComplete( Time startTime, Time endTime )
         {
             this.startTime   = startTime;
             this.currentTime = startTime;
             this.endTime     = endTime;
         }
         
-        public void setEnergyConsumption( final double energy ) {
+        public void setEnergyConsumption( double energy ) {
             previousEnergy = lastEnergy = energy;
             energyConsumption = energy;
         }
         
-        public void updateTimeEnergy( final Time time, final long newFrequency, final double energy )
+        public void updateTimeEnergy( Time time, long newFrequency, double energy )
         {
             if (time.clone().subTime( currentTime ).getTimeMicros() == 0) {
                 return;
@@ -1439,15 +1439,15 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             return endTime.clone().subTime( startTime ).getTimeMicros();
         }
     
-        public void setTimeAndEnergy( final long frequency,
-                                      final long time,
-                                      final double energy ) {
+        public void setTimeAndEnergy( long frequency,
+                                      long time,
+                                      double energy ) {
             setTimeAndEnergy( frequency, new Time( time, TimeUnit.MICROSECONDS ), energy );
         }
         
-        public void setTimeAndEnergy( final long frequency,
-                                      final Time time,
-                                      final double energy )
+        public void setTimeAndEnergy( long frequency,
+                                      Time time,
+                                      double energy )
         {
             timeAndEnergyPerFrequency.put( frequency, new Pair<>( time, energy ) );
             isAvailable = true;

@@ -8,11 +8,11 @@ import simulator.graphics.elements.Event;
 
 public interface AnimationInterface
 {    
-    public void render( final GameContainer gc );
+    public void render( GameContainer gc );
 
 	public void resetIndex();
     
     public boolean checkClick( Event event, final NetworkDisplay nd )  throws SlickException;
 
-    public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd, final boolean mouseEvent ) throws SlickException;
+    public void update( int delta, GameContainer gc, AnimationManager am, Event event, NetworkDisplay nd, boolean mouseEvent ) throws SlickException;
 }

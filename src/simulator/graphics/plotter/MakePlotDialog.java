@@ -50,7 +50,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
     private final MakePlotDialog DIALOG = this;
     
 
-    public MakePlotDialog( final Frame frame, final Plotter plotter )
+    public MakePlotDialog( Frame frame, Plotter plotter )
     {
         super( frame, true );
         
@@ -122,7 +122,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
         functionField.setText( "x" );
         functionField.addKeyListener( new KeyAdapter() {
             @Override
-            public void keyReleased( final KeyEvent e ) {
+            public void keyReleased( KeyEvent e ) {
                 if (functionField.getText().isEmpty()) {
                     functionField.setText( "x" );
                 }
@@ -130,12 +130,12 @@ public class MakePlotDialog extends JDialog implements ActionListener
         } );
         functionField.addFocusListener( new FocusListener() {
             @Override
-            public void focusLost( final FocusEvent e ) {
+            public void focusLost( FocusEvent e ) {
                 functionField.select( 0, 0 );
             }
             
             @Override
-            public void focusGained( final FocusEvent e ) {
+            public void focusGained( FocusEvent e ) {
                 functionField.selectAll();
             }
         } );
@@ -159,7 +159,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
         fromField.setText( "0" );
         fromField.addKeyListener( new KeyAdapter() {
             @Override
-            public void keyReleased( final KeyEvent e ) {
+            public void keyReleased( KeyEvent e ) {
                 if (fromField.getText().isEmpty()) {
                     fromField.setText( "0" );
                 }
@@ -167,12 +167,12 @@ public class MakePlotDialog extends JDialog implements ActionListener
         } );
         fromField.addFocusListener( new FocusListener() {
             @Override
-            public void focusLost( final FocusEvent e ) {
+            public void focusLost( FocusEvent e ) {
                 fromField.select( 0, 0 );
             }
             
             @Override
-            public void focusGained( final FocusEvent e ) {
+            public void focusGained( FocusEvent e ) {
                 fromField.selectAll();
             }
         } );
@@ -184,7 +184,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
         toField.setText( "0" );
         toField.addKeyListener( new KeyAdapter() {
             @Override
-            public void keyReleased( final KeyEvent e ) {
+            public void keyReleased( KeyEvent e ) {
                 if (toField.getText().isEmpty()) {
                     toField.setText( "0" );
                 }
@@ -192,12 +192,12 @@ public class MakePlotDialog extends JDialog implements ActionListener
         } );
         toField.addFocusListener( new FocusListener() {
             @Override
-            public void focusLost( final FocusEvent e ) {
+            public void focusLost( FocusEvent e ) {
                 toField.select( 0, 0 );
             }
             
             @Override
-            public void focusGained( final FocusEvent e ) {
+            public void focusGained( FocusEvent e ) {
                 toField.selectAll();
             }
         } );
@@ -209,7 +209,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
         jumpField.setText( "0" );
         jumpField.addKeyListener( new KeyAdapter() {
             @Override
-            public void keyReleased( final KeyEvent e ) {
+            public void keyReleased( KeyEvent e ) {
                 if (jumpField.getText().isEmpty()) {
                     jumpField.setText( "0" );
                 }
@@ -217,12 +217,12 @@ public class MakePlotDialog extends JDialog implements ActionListener
         } );
         jumpField.addFocusListener( new FocusListener() {
             @Override
-            public void focusLost( final FocusEvent e ) {
+            public void focusLost( FocusEvent e ) {
                 jumpField.select( 0, 0 );
             }
             
             @Override
-            public void focusGained( final FocusEvent e ) {
+            public void focusGained( FocusEvent e ) {
                 jumpField.selectAll();
             }
         } );
@@ -231,7 +231,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
         return panel;
     }
     
-    private void drawLineOnButton( final JButton button )
+    private void drawLineOnButton( JButton button )
     {
         final int BI_WIDTH  = 155;
         final int BI_HEIGHT =  15;
@@ -269,7 +269,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
         
         buttonLine.addActionListener( new ActionListener() {
             @Override
-            public void actionPerformed( final ActionEvent e ) {
+            public void actionPerformed( ActionEvent e ) {
                 BasicStroke stroke = (BasicStroke) plot.stroke;
                 if (stroke.getDashArray() != null) {
                     plot.line = Line.UNIFORM;
@@ -286,7 +286,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
         return panel;
     }
     
-    private JPanel createLineWidthPanel( final String value )
+    private JPanel createLineWidthPanel( String value )
     {
         JPanel panel = new JPanel();
         JTextField fieldText = new JTextField( "Line width", 6 );
@@ -300,7 +300,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
         lineWidth.setText( value );
         lineWidth.addKeyListener( new KeyAdapter() {
             @Override
-            public void keyReleased( final KeyEvent e ) {
+            public void keyReleased( KeyEvent e ) {
                 try {
                     float value = Float.parseFloat( lineWidth.getText() );
                     plot.lineWidth = value;
@@ -330,7 +330,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
         return panel;
     }
     
-    private void drawColorOnButton( final JButton button )
+    private void drawColorOnButton( JButton button )
     {
         final int BI_WIDTH  = 155;
         final int BI_HEIGHT =  15;
@@ -345,7 +345,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
         g.dispose();
     }
     
-    private JPanel createColorPanel( final Frame frame )
+    private JPanel createColorPanel( Frame frame )
     {
         JPanel panel = new JPanel();
         JTextField fieldName = new JTextField( "Color", 6 );
@@ -364,7 +364,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
         
         buttonColor.addActionListener( new ActionListener() {
             @Override
-            public void actionPerformed( final ActionEvent e ) {
+            public void actionPerformed( ActionEvent e ) {
                 ColorEditDialog dialog = new ColorEditDialog( DIALOG, frame, plot );
                 dialog.setVisible( true );
                 drawColorOnButton( buttonColor );
@@ -375,7 +375,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
         return panel;
     }
     
-    private void showErrorDialog( final String error ) {
+    private void showErrorDialog( String error ) {
         JOptionPane.showMessageDialog( this, error, "error", JOptionPane.ERROR_MESSAGE );
     }
     
@@ -417,7 +417,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
     }
     
     @Override
-    public void actionPerformed( final ActionEvent e )
+    public void actionPerformed( ActionEvent e )
     {
         if (e.getActionCommand().equals( "Save" )) {
             try {

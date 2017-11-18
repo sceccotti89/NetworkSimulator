@@ -34,7 +34,7 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
     private JButton saveButton;
     
 
-    public SettingsDialog( final Frame frame, final PlotterSettings settings )
+    public SettingsDialog( Frame frame, PlotterSettings settings )
     {
         super( frame, true );
         
@@ -80,7 +80,7 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
     }
     
     @Override
-    public void setVisible( final boolean visible )
+    public void setVisible( boolean visible )
     {
         if (visible) {
             saveButton.requestFocus( false );
@@ -90,7 +90,7 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
         super.setVisible( visible );
     }
     
-    private String getValue( final double value )
+    private String getValue( double value )
     {
         if (value == Double.MAX_VALUE || value == Double.MIN_VALUE) {
             return "";
@@ -99,8 +99,8 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
         }
     }
     
-    private JPanel createPanel( final String name, final String tooltip1, final String value1,
-                                                   final String tooltip2, final String value2 )
+    private JPanel createPanel( String name, String tooltip1, String value1,
+                                                   String tooltip2, String value2 )
     {
         final int columns = 8;
         JPanel panel = new JPanel();
@@ -128,7 +128,7 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
         return panel;
     }
     
-    private JPanel createScalePanel( final String name, final String value )
+    private JPanel createScalePanel( String name, String value )
     {
         final int columns = 17;
         JPanel panel = new JPanel();
@@ -148,7 +148,7 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
         return panel;
     }
     
-    private void showErrorDialog( final String error ) {
+    private void showErrorDialog( String error ) {
         JOptionPane.showMessageDialog( this, error, "error", JOptionPane.ERROR_MESSAGE );
     }
     
@@ -219,7 +219,7 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
     }
     
     @Override
-    public void actionPerformed( final ActionEvent e )
+    public void actionPerformed( ActionEvent e )
     {
         if (e.getActionCommand().equals( "Save" )) {
             saveValues();
@@ -231,10 +231,10 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
     }
 
     @Override
-    public void keyTyped( final KeyEvent e ) {}
+    public void keyTyped( KeyEvent e ) {}
     
     @Override
-    public void keyPressed( final KeyEvent e )
+    public void keyPressed( KeyEvent e )
     {
         if (e.getKeyCode() == KeyEvent.VK_ENTER) {
             saveValues();
@@ -255,5 +255,5 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
     }
     
     @Override
-    public void keyReleased( final KeyEvent e ) {}
+    public void keyReleased( KeyEvent e ) {}
 }

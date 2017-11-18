@@ -29,7 +29,7 @@ public abstract class Model<E,P>
      * 
      * @param device    the associated device.
     */
-    public void setDevice( final Device<?,?> device ) {
+    public void setDevice( Device<?,?> device ) {
         _device = device;
     }
     
@@ -42,7 +42,7 @@ public abstract class Model<E,P>
      * @return object representing the evaluation of the input parameter.
     */
     @SuppressWarnings("unchecked")
-    public abstract E eval( final Time now, final P... params );
+    public abstract E eval( Time now, P... params );
     
     /***/
     public abstract void close();

@@ -18,7 +18,7 @@ public class ClientModel extends Model<Object,Object>
     private String[] files;
     
     
-    public ClientModel( final String... files ) {
+    public ClientModel( String... files ) {
         this.files = files;
     }
     
@@ -31,7 +31,7 @@ public class ClientModel extends Model<Object,Object>
         }
     }
     
-    private void loadQueries( final String file ) throws IOException
+    private void loadQueries( String file ) throws IOException
     {
         InputStream fReader = ResourceLoader.getResourceAsStream( file );
         BufferedReader queryReader = new BufferedReader( new InputStreamReader( fReader ) );
@@ -47,12 +47,12 @@ public class ClientModel extends Model<Object,Object>
         fReader.close();
     }
     
-    public boolean isQueryAvailable( final Long queryId ) {
+    public boolean isQueryAvailable( Long queryId ) {
         return _queries.contains( queryId );
     }
     
     @Override
-    public Object eval( final Time now, final Object... params ) {
+    public Object eval( Time now, Object... params ) {
         return null;
     }
     

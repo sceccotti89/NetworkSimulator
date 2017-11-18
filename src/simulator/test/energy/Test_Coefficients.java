@@ -32,7 +32,7 @@ public class Test_Coefficients
                                                  ((1d - INCREMENT) * ROUNDNESS) *
                                                  ((1d - INCREMENT) * ROUNDNESS));
     
-    public static void main( final String[] argv ) throws IOException
+    public static void main( String[] argv ) throws IOException
     {
         PERFcoefficients();
         PESOScoefficients( 500,  "TC", "mono", 601670d );
@@ -73,7 +73,7 @@ public class Test_Coefficients
         writer.close();
     }
     
-    private static void PESOScoefficients( final int latency, final String mode, final String type, final double target_value ) throws IOException
+    private static void PESOScoefficients( int latency, String mode, String type, double target_value ) throws IOException
     {
         final String file = "PESOS_" + latency + "_" + mode + "_" + type;
         System.out.println( "Analyzing: " + file );
@@ -120,14 +120,14 @@ public class Test_Coefficients
         writer.close();
     }
     
-    private static double normalizeEnergy( final double energy, final double frequency, final double alpha, final double beta, final double gamma )
+    private static double normalizeEnergy( double energy, double frequency, double alpha, double beta, double gamma )
     {
         double _frequency = frequency / Utils.MILLION; 
         final double r = alpha + beta * (_frequency - 0.8d) + gamma * (OMEGA - 2);
         return energy * (1 - r);
     }
     
-    private static double roundValue( final double value ) {
+    private static double roundValue( double value ) {
         return Math.round( value * ROUNDNESS ) / ROUNDNESS;
     }
 }

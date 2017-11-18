@@ -16,7 +16,7 @@ import simulator.topology.NetworkTopology;
 
 public class OSPF extends TransportLayerProtocol implements RoutingProtocol
 {
-    public OSPF( final NetworkTopology net, final Agent source )
+    public OSPF( NetworkTopology net, Agent source )
     {
         super( net, source );
         setLayer( NetworkLayer.TRANSPORT.getIndex() );
@@ -25,7 +25,7 @@ public class OSPF extends TransportLayerProtocol implements RoutingProtocol
     }
     
     @Override
-    public NetworkNode getNextNode( final long destID ) {
+    public NetworkNode getNextNode( long destID ) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -43,7 +43,7 @@ public class OSPF extends TransportLayerProtocol implements RoutingProtocol
     }
     
     @Override
-    public Event processPacket( final Packet packet ) {
+    public Event processPacket( Packet packet ) {
         // TODO Auto-generated method stub
         return null;
     }

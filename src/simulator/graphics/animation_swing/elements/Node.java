@@ -19,7 +19,7 @@ public class Node
     
     
     
-    public Node( final double x, final double y, final long nodeID, final String name, final long delay, final Color color )
+    public Node( double x, double y, long nodeID, String name, long delay, Color color )
     {
         this.nodeID = nodeID;
         this.color = color;
@@ -50,12 +50,12 @@ public class Node
         return node;
     }
     
-    public float calculateAngle( final Node dest ) {
+    public float calculateAngle( Node dest ) {
         return calculateAngle( getCenterX(), getCenterY(),
                                dest.getCenterX(), dest.getCenterY() );
     }
     
-    public float calculateAngle( final double x1, final double y1, final float x2, final float y2 )
+    public float calculateAngle( double x1, double y1, float x2, float y2 )
     {
         double m = (y2 - y1)/(x2 - x1);
         
@@ -93,11 +93,11 @@ public class Node
         return name;
     }
     
-    public boolean checkCollision( final int mouseX, final int mouseY ) {
+    public boolean checkCollision( int mouseX, int mouseY ) {
     	return node.contains( mouseX, mouseY );
     }
     
-    public Node clone( final Node dest, final int width, final int height ) {
+    public Node clone( Node dest, int width, int height ) {
     	Node tmp = new Node( node.getCenterX(), node.getCenterY(), nodeID, name, delay, color );
 		return tmp;
     }
@@ -108,7 +108,7 @@ public class Node
         
     }
     
-    public void draw( final Graphics2D g )
+    public void draw( Graphics2D g )
     {
         g.setColor( color );
         g.fillOval( node.x, node.y, node.width, node.height );

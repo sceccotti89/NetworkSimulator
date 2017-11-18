@@ -38,7 +38,7 @@ public class TimeSlider
     public static final int HORIZONTAL = 0;
     public static final int VERTICAL   = 1;
     
-    public TimeSlider( final JPanel panel, final int orientation, final long min, final long max, final long value )
+    public TimeSlider( JPanel panel, int orientation, long min, long max, long value )
     {
         this.panel = panel;
         this.orientation = orientation;
@@ -53,13 +53,13 @@ public class TimeSlider
         mouse = new Point( -1, -1 );
     }
     
-    public void setBounds( final float x, final float y, final float width, final float height )
+    public void setBounds( float x, float y, float width, float height )
     {
         area.setBounds( (int) x, (int) y, (int) width, (int) height );
         cursor = new Ellipse2D.Double( x - RADIUS, area.getCenterY() - RADIUS, RADIUS * 2, RADIUS * 2 );
     }
     
-    public void setValue( final double value )
+    public void setValue( double value )
     {
         int x = (int) (area.getX() + ((value/(max-min)) * area.getWidth()));
         Rectangle bounds = cursor.getBounds();
@@ -72,7 +72,7 @@ public class TimeSlider
         return value;
     }
     
-    public void setMaximum( final long max ) {
+    public void setMaximum( long max ) {
         this.max = max;
     }
     
@@ -84,7 +84,7 @@ public class TimeSlider
         return max - min;
     }
     
-    private long computeValue( final double x )
+    private long computeValue( double x )
     {
         double value = ((x - area.getX()) / area.getWidth()) * (max - min);
         value = Math.max( min, value );
@@ -100,7 +100,7 @@ public class TimeSlider
         return pressed;
     }
     
-    public boolean mouseMoved( final MouseEvent e )
+    public boolean mouseMoved( MouseEvent e )
     {
         mouse = e.getPoint();
         if (pressed) {
@@ -116,7 +116,7 @@ public class TimeSlider
         }
     }
     
-    public boolean mousePressed( final MouseEvent e )
+    public boolean mousePressed( MouseEvent e )
     {
         mouseMoved( e );
         
@@ -138,7 +138,7 @@ public class TimeSlider
         pressed = false;
     }
     
-    public void draw( final Graphics2D g )
+    public void draw( Graphics2D g )
     {
         g.setColor( Color.GRAY );
         g.fill( area );

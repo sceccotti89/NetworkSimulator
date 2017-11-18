@@ -56,7 +56,7 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     
     
     
-    public AnimationManager( final NetworkDisplay nd, final float width, final float height )
+    public AnimationManager( NetworkDisplay nd, float width, float height )
     {
         setPreferredSize( new Dimension( (int) width, (int) height ) );
         addMouseListener( this );
@@ -147,7 +147,7 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
         stop = new ImageIcon( image );
     }
     
-    public void setAnimationTime( final long time ) {
+    public void setAnimationTime( long time ) {
         slider.setMaximum( time );
     }
     
@@ -161,18 +161,18 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     }
     
     @Override
-    public void componentResized( final ComponentEvent e )
+    public void componentResized( ComponentEvent e )
     {
         slider.setBounds( SLIDER_OFF_X, 20, getWidth() - SLIDER_OFF_X * 2, 10 );
         repaint();
     }
     
     @Override
-    public void componentMoved( final ComponentEvent e ) {}
+    public void componentMoved( ComponentEvent e ) {}
     @Override
-    public void componentShown( final ComponentEvent e ) {}
+    public void componentShown( ComponentEvent e ) {}
     @Override
-    public void componentHidden( final ComponentEvent e ) {}
+    public void componentHidden( ComponentEvent e ) {}
     
     public void reset()
     {
@@ -198,7 +198,7 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     }
     
     @Override
-    public void actionPerformed( final ActionEvent e )
+    public void actionPerformed( ActionEvent e )
     {
         AbstractButton button = (AbstractButton) e.getSource();
         switch (button.getName()) {
@@ -218,7 +218,7 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     }
     
     @Override
-    public void mousePressed( final MouseEvent e )
+    public void mousePressed( MouseEvent e )
     {
         if (slider.mousePressed( e )) {
             pauseAnimation();
@@ -228,7 +228,7 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     }
     
     @Override
-    public void mouseReleased( final MouseEvent e )
+    public void mouseReleased( MouseEvent e )
     {
         if (slider.isPressed() && animationStarted) {
             startAnimation();
@@ -237,21 +237,21 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     }
     
     @Override
-    public void mouseClicked( final MouseEvent e ) {}
+    public void mouseClicked( MouseEvent e ) {}
     @Override
-    public void mouseEntered( final MouseEvent e ) {}
+    public void mouseEntered( MouseEvent e ) {}
     @Override
-    public void mouseExited( final MouseEvent e ) {}
+    public void mouseExited( MouseEvent e ) {}
     
     @Override
-    public void mouseMoved( final MouseEvent e )
+    public void mouseMoved( MouseEvent e )
     {
         slider.mouseMoved( e );
         repaint();
     }
     
     @Override
-    public void mouseDragged( final MouseEvent e )
+    public void mouseDragged( MouseEvent e )
     {
         if (slider.mouseMoved( e )) {
             nd.setTime( (long) slider.getValue() );
@@ -260,7 +260,7 @@ public class AnimationManager extends JPanel implements ComponentListener, Actio
     }
     
     @Override
-    protected void paintComponent( final Graphics g )
+    protected void paintComponent( Graphics g )
     {
         super.paintComponent( g );
         

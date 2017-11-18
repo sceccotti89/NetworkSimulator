@@ -40,7 +40,7 @@ public class ColorEditDialog extends JDialog implements ActionListener
     private JButton colorButton;
     
 
-    public ColorEditDialog( final JDialog parent, final Frame frameLocation, final Plot plot )
+    public ColorEditDialog( JDialog parent, Frame frameLocation, Plot plot )
     {
         super( parent, true );
         
@@ -84,7 +84,7 @@ public class ColorEditDialog extends JDialog implements ActionListener
         setLocationRelativeTo( frameLocation );
     }
     
-    private JPanel createColorTable( final int from, final int to )
+    private JPanel createColorTable( int from, int to )
     {
         JPanel panel = new JPanel();
         for (int i = from; i < to; i++) {
@@ -97,7 +97,7 @@ public class ColorEditDialog extends JDialog implements ActionListener
         return panel;
     }
     
-    private void setColorValue( final int red, final int green, final int blue, final int alpha )
+    private void setColorValue( int red, int green, int blue, int alpha )
     {
         plotClone.color = new Color( red, green, blue, alpha );
         drawColorOnButton( colorButton, plotClone.color, 220, 15 );
@@ -107,7 +107,7 @@ public class ColorEditDialog extends JDialog implements ActionListener
         fields.get( 3 ).setText( alpha + "" );
     }
     
-    private JPanel createColorValuePanel( final String name, final Color nameColor, final int value )
+    private JPanel createColorValuePanel( String name, Color nameColor, int value )
     {
         JPanel panel = new JPanel();
         JTextField colorField = new JTextField( name, 6 );
@@ -124,14 +124,14 @@ public class ColorEditDialog extends JDialog implements ActionListener
         panel.add( field );
         field.addKeyListener( new KeyListener() {
             @Override
-            public void keyTyped( final KeyEvent e ) {
+            public void keyTyped( KeyEvent e ) {
                 if (!Character.isDigit( e.getKeyChar() )) {
                     e.consume();
                 }
             }
             
             @Override
-            public void keyReleased( final KeyEvent e ) {
+            public void keyReleased( KeyEvent e ) {
                 if (!field.getText().isEmpty()) {
                     Integer value = Integer.parseInt( field.getText() );
                     if (value > 255) {
@@ -147,7 +147,7 @@ public class ColorEditDialog extends JDialog implements ActionListener
                 setColorValue( red, green, blue, alpha );
             }
             @Override
-            public void keyPressed( final KeyEvent e ) {
+            public void keyPressed( KeyEvent e ) {
                 /*if (e.getID() != KeyEvent.VK_DELETE &&
                     e.getID() != KeyEvent.VK_CANCEL && 
                     field.getText().length() >= 3) {
@@ -161,7 +161,7 @@ public class ColorEditDialog extends JDialog implements ActionListener
         return panel;
     }
     
-    private void drawColorOnButton( final JButton button, final Color color, final int width, final int height )
+    private void drawColorOnButton( JButton button, Color color, int width, int height )
     {
         BufferedImage lineImage = new BufferedImage( width, height, BufferedImage.TYPE_INT_RGB );
         Graphics2D g = (Graphics2D) lineImage.createGraphics();
@@ -185,7 +185,7 @@ public class ColorEditDialog extends JDialog implements ActionListener
     }
     
     @Override
-    public void actionPerformed( final ActionEvent e )
+    public void actionPerformed( ActionEvent e )
     {
         if (e.getActionCommand().equals( "Save" )) {
             // Save the inserted values.
@@ -197,7 +197,7 @@ public class ColorEditDialog extends JDialog implements ActionListener
     }
     
     @Override
-    public void setVisible( final boolean visible ) {
+    public void setVisible( boolean visible ) {
         colorButton.requestFocusInWindow();
         super.setVisible( visible );
     }
@@ -209,7 +209,7 @@ public class ColorEditDialog extends JDialog implements ActionListener
         private final ColorEditDialog dialog;
         private final Color color;
         
-        public ColorButton( final ColorEditDialog dialog, final Color color )
+        public ColorButton( ColorEditDialog dialog, Color color )
         {
             this.dialog = dialog;
             this.color = color;
@@ -217,11 +217,11 @@ public class ColorEditDialog extends JDialog implements ActionListener
         }
         
         @Override
-        public void focusGained( final FocusEvent e ) {
+        public void focusGained( FocusEvent e ) {
             dialog.setColorValue( color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() );
         }
 
         @Override
-        public void focusLost( final FocusEvent e ) {}
+        public void focusLost( FocusEvent e ) {}
     }
 }

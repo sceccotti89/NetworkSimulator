@@ -12,7 +12,7 @@ public abstract class Task
         this( null );
     }
     
-    public Task( final Packet p )
+    public Task( Packet p )
     {
         if (p == null ) {
             _contents = new HashMap<>();
@@ -21,12 +21,12 @@ public abstract class Task
         }
     }
     
-    public void addContent( final String field, final Object value ) {
+    public void addContent( String field, Object value ) {
         _contents.put( field, value );
     }
     
     @SuppressWarnings("unchecked")
-    public <T> T getContent( final String field ) {
+    public <T> T getContent( String field ) {
         return (T) _contents.get( field );
     }*/
 }

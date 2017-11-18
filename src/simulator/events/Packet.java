@@ -31,7 +31,7 @@ public class Packet
     
     
     
-    public Packet( final long pktSize, final SizeUnit sizeType )
+    public Packet( long pktSize, SizeUnit sizeType )
     {
         _size = new Size<Long>( pktSize, sizeType );
         _contents = new HashMap<>();
@@ -45,16 +45,16 @@ public class Packet
         return _size.getSizeUnit();
     }
     
-    public void addContent( final String field, final Object value ) {
+    public void addContent( String field, Object value ) {
         _contents.put( field, value );
     }
     
-    public boolean hasContent( final String field ) {
+    public boolean hasContent( String field ) {
         return _contents.containsKey( field );
     }
     
     @SuppressWarnings("unchecked")
-    public <T> T getContent( final String field ) {
+    public <T> T getContent( String field ) {
         return (T) _contents.get( field );
     }
     
@@ -84,7 +84,7 @@ public class Packet
                 try {
                     Method cloneMethod = value.getClass().getMethod( "clone" );
                     value = cloneMethod.invoke( value );
-                } catch ( final Exception e ) {
+                } catch ( Exception e ) {
                     // Method "clone" not present for this object.
                     //e.printStackTrace();
                 }

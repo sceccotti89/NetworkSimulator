@@ -15,18 +15,18 @@ public class Info
 	
 	public Info() {}
 	
-	public void setAttributes( final Graphics g, final String info, final float x, final float y ) {
+	public void setAttributes( Graphics g, String info, float x, float y ) {
 		Font f = g.getFont();
 		infos = info;
 		area = new Rectangle( x - OFFSET, y - OFFSET, f.getWidth( info ) + 2 * OFFSET, f.getHeight( info ) + 2 * OFFSET );
         visible = true;
 	}
 	
-	public void setVisible( final boolean flag ) {
+	public void setVisible( boolean flag ) {
 	    visible = flag;
 	}
 	
-	public void render( final Graphics g )
+	public void render( Graphics g )
 	{
 	    if (visible) {
     		g.setColor( Color.lightGray );

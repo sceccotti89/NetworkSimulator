@@ -7,7 +7,7 @@ import simulator.graphics.animation_swing.AnimationNetwork;
  
 public class GraphicTest2
 {
-    public static void main( final String[] args ) throws IOException
+    public static void main( String[] args ) throws IOException
     {
         //Plotter plotter = new Plotter( "prova", 800, 600 );
         //plotter.addPlot( "C:\\Users\\Stefano\\Desktop\\test.txt", null, "test.txt" );

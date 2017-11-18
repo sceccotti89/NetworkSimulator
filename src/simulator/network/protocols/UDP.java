@@ -11,7 +11,7 @@ import simulator.network.protocols.NetworkProtocol.TransportLayerProtocol;
 
 public class UDP extends TransportLayerProtocol
 {
-    public UDP( final int sourcePort, final int destPort ) {
+    public UDP( int sourcePort, int destPort ) {
         super( sourcePort, destPort );
     }
     
@@ -28,7 +28,7 @@ public class UDP extends TransportLayerProtocol
     }
     
     @Override
-    public Event processPacket( final Packet packet ) {
+    public Event processPacket( Packet packet ) {
         // TODO Auto-generated method stub
         return null;
     }

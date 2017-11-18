@@ -43,7 +43,7 @@ public class NetworkDisplay implements AnimationInterface
     
     private String CLIENT = "Client", SERVER = "Server", SWITCH = "Switch";
     
-    public NetworkDisplay( final int width, final int height, final float startY, final List<Node> nodes, final List<Packet> packets )
+    public NetworkDisplay( int width, int height, float startY, List<Node> nodes, List<Packet> packets )
     {
     	this.width = width;
     	this.height = height;
@@ -86,7 +86,7 @@ public class NetworkDisplay implements AnimationInterface
 
     /**Adds a new node in the simulation
      * @throws SlickException */
-    public void addNode( final float mouseX, final float mouseY, final String type ) throws SlickException {
+    public void addNode( float mouseX, float mouseY, String type ) throws SlickException {
         if (!phaseOneNewElement && !phaseTwoNewElement) {
             phaseOneNewElement = true;
             addingNode = true;
@@ -105,7 +105,7 @@ public class NetworkDisplay implements AnimationInterface
         }
     }
     
-    public void addPacket( final float mouseX, final float mouseY ) {
+    public void addPacket( float mouseX, float mouseY ) {
         if (!phaseOneNewElement && !phaseTwoNewElement) {
             phaseOneNewElement = true;
             addingPacket = true;
@@ -126,7 +126,7 @@ public class NetworkDisplay implements AnimationInterface
         return timer;
     }
     
-    public void setTimeSimulation( final long val ) {
+    public void setTimeSimulation( long val ) {
         timer = val;
         checkActivityPackets();
     }
@@ -186,7 +186,7 @@ public class NetworkDisplay implements AnimationInterface
         return addingNode || addingPacket;
     }
     
-    private void manageRemoveNode( final GameContainer gc ) {
+    private void manageRemoveNode( GameContainer gc ) {
     	for (Node node: nodes) {
     		node.removeLink( nodes.get( indexElement ) );
     		
@@ -213,7 +213,7 @@ public class NetworkDisplay implements AnimationInterface
 		indexElement = -1;
     }
     
-    private void manageAddElement( final Event event, final boolean mouseEvent ) {
+    private void manageAddElement( Event event, boolean mouseEvent ) {
         if (phaseOneNewElement) {
         	if (addingNode) {
         		if (mouseEvent && event.getInput().isMouseButtonDown( Input.MOUSE_LEFT_BUTTON ) && zone.contains( mouseX , mouseY )) {
@@ -268,7 +268,7 @@ public class NetworkDisplay implements AnimationInterface
         }
     }
     
-    public void manageMovingNode( final GameContainer gc, final Event event ) {
+    public void manageMovingNode( GameContainer gc, Event event ) {
     	if (tmpNode == null) {
     		if (indexElement != -1) {
     			nodes.get( indexElement ).setMoving( true );
@@ -285,7 +285,7 @@ public class NetworkDisplay implements AnimationInterface
     	indexElement = -1;
     }
     
-    public boolean checkClick( final Event event, final NetworkDisplay nd )  throws SlickException {
+    public boolean checkClick( Event event, NetworkDisplay nd )  throws SlickException {
         if (indexElement == -1) {
         	for (Node node: nodes) {
         		if (node.checkCollision( mouseX, mouseY )) {
@@ -307,7 +307,7 @@ public class NetworkDisplay implements AnimationInterface
     	return false;
     }
     
-    public void update( final int delta, final GameContainer gc, final AnimationManager am, final Event event, final NetworkDisplay nd, final boolean mouseEvent )
+    public void update( int delta, GameContainer gc, AnimationManager am, Event event, NetworkDisplay nd, boolean mouseEvent )
     {
     	mouseX = gc.getInput().getMouseX();
     	mouseY = gc.getInput().getMouseY();
@@ -345,7 +345,7 @@ public class NetworkDisplay implements AnimationInterface
         }
     }
     
-    public void render( final GameContainer gc )
+    public void render( GameContainer gc )
     {
         Graphics g = gc.getGraphics();
         

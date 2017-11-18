@@ -24,18 +24,18 @@ public abstract class CPU extends Device<Long,QueryInfo>
     protected long lastSelectedCore = -1;
     protected QueryInfo lastQuery;
     
-    public CPU( final String name, final List<Long> frequencies ) {
+    public CPU( String name, List<Long> frequencies ) {
         super( name, frequencies );
     }
 
-    public void setEnergyModel( final EnergyModel model ) {
+    public void setEnergyModel( EnergyModel model ) {
         energyModel = model;
     }
     
-    public abstract void addQuery( final long coreId, final QueryInfo q );
+    public abstract void addQuery( long coreId, QueryInfo q );
     
     @Override
-    public void setTime( final Time time )
+    public void setTime( Time time )
     {
         // Set the time of the cores.
         for (Core cpuCore : coresMap.values()) {
@@ -59,7 +59,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
     /**
      * Returns the "best" available core to assign the next task.
     */
-    public abstract long selectCore( final Time time, final QueryInfo query );
+    public abstract long selectCore( Time time, QueryInfo query );
     
     public Collection<Core> getCores() {
         return coresMap.values();
@@ -77,11 +77,11 @@ public abstract class CPU extends Device<Long,QueryInfo>
         return lastSelectedCore;
     }
     
-    public Core getCore( final long index ) {
+    public Core getCore( long index ) {
         return coresMap.get( index );
     }
     
-    protected Time computeTime( final QueryInfo query, final Core core )
+    protected Time computeTime( QueryInfo query, Core core )
     {
         lastQuery = query;
         
@@ -110,14 +110,14 @@ public abstract class CPU extends Device<Long,QueryInfo>
         return computeTime;
     }
     
-    protected abstract void computeEnergyConsumption( final Core core, final QueryInfo query, final Time computeTime );
+    protected abstract void computeEnergyConsumption( Core core, QueryInfo query, Time computeTime );
     
     /**
      * Evaluates the CONS parameters.
      * 
      * @param time    time of evaluation.
     */
-    public abstract void evalCONSparameters( final Time time );
+    public abstract void evalCONSparameters( Time time );
     
     /**
      * Evaluates which is the "best" frequency
@@ -126,7 +126,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
      * @param time    time of evaluation.
      * @param core    core to which assign the evaluated frequency.
     */
-    protected abstract long evalFrequency( final Time time, final Core core );
+    protected abstract long evalFrequency( Time time, Core core );
     
     public QueryInfo getLastQuery() {
         return lastQuery;
@@ -137,14 +137,14 @@ public abstract class CPU extends Device<Long,QueryInfo>
      * 
      * @param time    time to check the completness of the query
     */
-    public void checkQueryCompletion( final Time time )
+    public void checkQueryCompletion( Time time )
     {
         for (Core core : coresMap.values()) {
             core.checkQueryCompletion( time );
         }
     }
     
-    public void computeIdleEnergy( final Time time )
+    public void computeIdleEnergy( Time time )
     {
         //System.out.println( "INPUT_TIME: " + time );
         for (Core core : coresMap.values()) {
@@ -163,7 +163,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
     }
     
     @Override
-    public double getUtilization( final Time time )
+    public double getUtilization( Time time )
     {
         double utilization = 0;
         for (Core core : coresMap.values()) {
@@ -198,7 +198,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
         // TODO implementare i context di ogni core della CPU (se proprio c'e' bisogno).
         
         
-        public Core( final CPU cpu, final long coreId, final long initFrequency )
+        public Core( CPU cpu, long coreId, long initFrequency )
         {
             this.cpu = cpu;
             this.coreId = coreId;
@@ -240,7 +240,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
             currentQuery = null;
         }
         
-        public void addIdleEnergy( final Time time, final boolean allCores )
+        public void addIdleEnergy( Time time, boolean allCores )
         {
             double idleEnergy = 0;
             Time startTime = time.clone().subTime( getIdleTime(), TimeUnit.MICROSECONDS );
@@ -256,11 +256,11 @@ public abstract class CPU extends Device<Long,QueryInfo>
             cpu.addSampledValue( Global.IDLE_ENERGY_SAMPLING, startTime, time, idleEnergy );
         }
         
-        protected void setFrequency( final long frequency ) {
+        protected void setFrequency( long frequency ) {
             this.frequency = frequency;
         }
         
-        protected void setFrequency( final Time time, final long newFrequency )
+        protected void setFrequency( Time time, long newFrequency )
         {
             if (frequency != newFrequency) {
                 //System.out.println( "TIME_BUDGET: " + ((PESOSmodel) cpu.getModel()).getTimeBudget() );
@@ -305,7 +305,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
             return frequency;
         }
         
-        public void setTime( final Time time )
+        public void setTime( Time time )
         {
             if (this.time.compareTo( time ) <= 0) {
                 // This is idle time.
@@ -319,9 +319,9 @@ public abstract class CPU extends Device<Long,QueryInfo>
             return time.clone();
         }
 
-        public abstract boolean checkQueryCompletion( final Time time );
+        public abstract boolean checkQueryCompletion( Time time );
         
-        public void updateEventTime( final QueryInfo query, final Time time )
+        public void updateEventTime( QueryInfo query, Time time )
         {
             Event event = query.getEvent();
             if (event.getTime().compareTo( time ) != 0) {
@@ -340,7 +340,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
             return queryQueue;
         }
         
-        public void setCompletedQuery( final QueryInfo query )
+        public void setCompletedQuery( QueryInfo query )
         {
             time = query.getEndTime();
             currentQuery = query;
@@ -354,9 +354,9 @@ public abstract class CPU extends Device<Long,QueryInfo>
          * @param query              the query to add.
          * @param updateFrequency    check if the frequency have to be updated.
         */
-        public abstract void addQuery( final QueryInfo query, final boolean updateFrequency );
+        public abstract void addQuery( QueryInfo query, boolean updateFrequency );
         
-        public boolean isNextQuery( final QueryInfo query ) {
+        public boolean isNextQuery( QueryInfo query ) {
             return !queryQueue.isEmpty() && queryQueue.get( 0 ).equals( query );
         }
         
@@ -368,11 +368,11 @@ public abstract class CPU extends Device<Long,QueryInfo>
             return queryQueue.get( queryQueue.size() - 1 );
         }
         
-        public QueryInfo removeQuery( final int index ) {
+        public QueryInfo removeQuery( int index ) {
             return queryQueue.remove( index );
         }
         
-        public void removeQuery( final QueryInfo q ) {
+        public void removeQuery( QueryInfo q ) {
             queryQueue.remove( q );
         }
         
@@ -382,7 +382,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
         
         public abstract double getIdleEnergy();
         
-        public double getUtilization( final Time time )
+        public double getUtilization( Time time )
         {
             double size = queryQueue.size();
             if (size == 0) return 0;

@@ -11,7 +11,7 @@ import simulator.utils.Time;
 
 public class RequestEvent extends Event
 {
-    public RequestEvent( final Time time, final Agent from, final Agent to, final Packet pkt ) {
+    public RequestEvent( Time time, Agent from, Agent to, Packet pkt ) {
         super( time, from, to, pkt );
     }
     

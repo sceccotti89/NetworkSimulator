@@ -8,12 +8,12 @@ public class Evaluator
 {
     private FunctionInterpreter interpreter;
     
-    public Evaluator( final String expression ) {
+    public Evaluator( String expression ) {
         Expr e = FunctionParser.parse( expression );
         interpreter = new FunctionInterpreter( e );
     }
     
-    public void putVariable( final String variable, final double value ) {
+    public void putVariable( String variable, double value ) {
         interpreter.putVariable( variable, value );
     }
     
