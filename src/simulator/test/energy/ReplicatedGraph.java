@@ -60,5 +60,9 @@ public class ReplicatedGraph
         public void addLink( Link link ) {
             links.add( link );
         }
+        
+        public int getQueries() {
+            return queries;
+        }
     }
 }

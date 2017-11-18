@@ -933,7 +933,7 @@ public class EnergyTestREPLICA_DIST
                 graph = new ReplicatedGraph( meanCompletionTime.size() );
                 graph.addNode( 0, 0 );
                 allReplicas = new ArrayList<>( 128 );
-                createGraph( 0, 0 );
+                createGraph( 0, 0, 0 );
             } else {
                 arrivals = 0;
                 currentArrivals = new ArrayList<>( 2 );
@@ -1006,7 +1006,7 @@ public class EnergyTestREPLICA_DIST
         }
         
         /**
-         * This is the Graph minimum path selection.
+         * Returns the number of replicas, based only on the current values.
          * 
          * @param slotIndex    the time slot to evaluate.
          * 
@@ -1021,14 +1021,14 @@ public class EnergyTestREPLICA_DIST
                 arrivalExtimation += (currentArrivals.get( 1 ) - currentArrivals.get( 0 ));
             }
             
-            double min = Double.MAX_VALUE;
+            double minWeight = Double.MAX_VALUE;
             int replicas = 0;
             for (int nodes = 1; nodes <= REPLICA_PER_NODE; nodes++) {
                 double power   = getPowerCost( nodes );
                 double latency = getLatencyCost( queries.size(), arrivalExtimation, completionExtimation, nodes );
-                double value = LAMBDA * power + (1 - LAMBDA) * latency;
-                if (value < min) {
-                    min = value;
+                double weight  = LAMBDA * power + (1 - LAMBDA) * latency;
+                if (weight < minWeight) {
+                    minWeight = weight;
                     replicas = nodes;
                 }
             }
@@ -1036,31 +1036,34 @@ public class EnergyTestREPLICA_DIST
             return replicas;
         }
         
-        private void createGraph( int queries, int slotIndex )
+        private void createGraph( int nodeIndex, int queries, int slotIndex )
         {
-            if (slotIndex == meanCompletionTime.size() - 1) {
-                // Last node.
-                
+            if (slotIndex == meanCompletionTime.size() - 2) {
+                // Create the last node.
+                final int index = REPLICA_PER_NODE * meanCompletionTime.size() + 2;
+                graph.addNode( index, 0 );
+                graph.addLink( nodeIndex, index, queries );
                 return;
             }
             
             double completionExtimation = meanCompletionTime.get( slotIndex );
             double arrivalExtimation    = meanArrivalTime.get( slotIndex );
             
+            // FIXME BUG: se creo cosi' i nodi rischio di creare duplicati: 
+            //            il numero di query presenti nel time slot non posso salvarlo nel nodo
             final long Ts = SwitchTimeSlotGenerator.TIME_SLOT.getTimeMicros();
             for (int nodes = 1; nodes <= REPLICA_PER_NODE; nodes++) {
                 // Predict the queries for the suqsequent node.
                 int nextQueries = (int) (queries - ((nodes * Ts) / completionExtimation) + arrivalExtimation);
-                int index = slotIndex * REPLICA_PER_NODE + nodes;
+                final int index = slotIndex * REPLICA_PER_NODE + nodes;
                 graph.addNode( index, nextQueries );
                 double power   = getPowerCost( nodes );
                 double latency = getLatencyCost( queries, arrivalExtimation, completionExtimation, nodes );
                 double weight  = LAMBDA * power + (1 - LAMBDA) * latency;
-                // TODO sistemare utilizzando il giusto indice di provenienza
-                graph.addLink( 0, index, weight );
+                graph.addLink( nodeIndex, index, weight );
+                
+                createGraph( index, nextQueries, slotIndex + 1 );
             }
-            
-            createGraph( queries, slotIndex + 1 );
         }
         
         private double getPowerCost( final int nodes ) {
