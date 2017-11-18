@@ -75,9 +75,6 @@ public abstract class EventGenerator
         
         _sessions = new HashMap<>();
         _destinations = new ArrayList<>();
-        
-        // TODO assegnare i protocolli di comunicazione ad ogni livello (crearne anche il metodo).
-        
     }
     
     public long getId() {
@@ -315,10 +312,6 @@ public abstract class EventGenerator
         return true;
     }
     
-    
-    
-    // TODO implementare un metodo per la generazione finale del messaggio
-    
     /**
      * Generates a new event.</br>
      * NOTE: input time and event can be {@code null}.
@@ -342,20 +335,24 @@ public abstract class EventGenerator
         if (departureTime == null)
             return null; // No events from this generator.
         
-        _time.addTime( departureTime );
+        if (!_activeGenerator) {
+            _time.addTime( departureTime );
+        }
         if (_time.compareTo( _duration ) > 0)
             return null; // No more events from this generator.
         
         // Load the current session.
         _session = getSession( e );
-        return createMessage( _session, e );
+        return createMessage( _session, e, departureTime );
     }
     
-    protected Event createMessage( Session session, Event e )
+    protected Event createMessage( Session session, Event e, Time departureTime )
     {
         if (_activeGenerator && _session.canSend()) {
             dummyResEvent.setTime( _time );
-            return sendRequest( dummyResEvent );
+            Event request = sendRequest( dummyResEvent );
+            _time.addTime( departureTime );
+            return request;
         }
         
         Event event = null;

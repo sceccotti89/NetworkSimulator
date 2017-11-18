@@ -7,6 +7,9 @@ package simulator.events.generator;
 import simulator.events.Packet;
 import simulator.utils.Time;
 
+/**
+ * The Constant Bit Rate generator.
+*/
 public class CBRGenerator extends EventGenerator
 {
     public CBRGenerator( Time startTime,

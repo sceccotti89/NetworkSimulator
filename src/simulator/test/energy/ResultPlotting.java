@@ -166,8 +166,8 @@ public class ResultPlotting
     
     public static void plotMeanCompletionTime() throws IOException
     {
-        Plotter plotter = new Plotter( "Mean Response Time", 800, 600 );
-        plotter.setAxisName( "Time (h)", "Mean response time (ms)" );
+        Plotter plotter = new Plotter( "Mean Completion Time", 800, 600 );
+        plotter.setAxisName( "Time (h)", "Mean completion time (ms)" );
         plotter.setRange( Axis.Y, 0, 200000 );
         //plotter.setTicks( Axis.Y, (int) (200000 / 100000) );
         plotter.setScaleY( 1000d );
@@ -176,7 +176,7 @@ public class ResultPlotting
         plotter.setTicks( Axis.X, 24, 2 );
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         
-        plotter.addPlot( "Results/Mean_Completion_Time.log", "Mean Response Time" );
+        plotter.addPlot( "Results/MeanCompletionTime.log", "Mean Completion Time" );
         
         plotter.setVisible( true );
     }

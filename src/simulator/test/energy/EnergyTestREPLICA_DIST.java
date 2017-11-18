@@ -885,15 +885,70 @@ public class EnergyTestREPLICA_DIST
         }
     }
     
-    private static class SwitchAgent extends Agent
+    private static class SwitchAgent extends Agent implements EventHandler
     {
-        public SwitchAgent( long id, EventGenerator evGenerator )
+        // TODO Caricare le stime degli arrivi di un giorno precedente
+        private List<Long> meanArrivalTime;
+        // TODO Caricare le stime dei tempi medi di completamento
+        private List<Long> meanCompletionTime;
+        // TODO in base all'estimatore dovrei analizzare gli arrivi dei 2 slot precedenti (quello col drift)
+        
+        private int slotIndex;
+        
+        public static final int SEASON_ESTIMATOR            = 0;
+        public static final int SEASON_ESTIMATOR_WITH_DRIFT = 1;
+        private int estimatorType;
+        
+        private long previous1TimeSlot;
+        private long previous2TimeSlot;
+        
+        
+        
+        public SwitchAgent( long id, int estimatorType, EventGenerator evGenerator ) throws IOException
         {
             super( id );
             addEventGenerator( evGenerator );
+            addEventHandler( this );
+            
+            this.estimatorType = estimatorType;
+            slotIndex = -1;
+            loadMeanArrivalTime();
+            loadQueryPerSlot();
+        }
+        
+        private void loadMeanArrivalTime() throws IOException
+        {
+            meanCompletionTime = new ArrayList<>( 128 );
+            BufferedReader reader = new BufferedReader( new FileReader( "Results/MeanCompletionTime.log" ) );
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                long time = (long) Double.parseDouble( line.split( " " )[1] );
+                meanCompletionTime.add( time );
+            }
+            reader.close();
+        }
+        
+        private void loadQueryPerSlot() throws IOException
+        {
+            meanArrivalTime = new ArrayList<>( 128 );
+            BufferedReader reader = new BufferedReader( new FileReader( "Results/QueryPerTimeSlot.log" ) );
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                long time = (long) Double.parseDouble( line.split( " " )[1] );
+                meanArrivalTime.add( time );
+            }
+            reader.close();
         }
         
         @Override
+        public void addEventOnQueue( Event e )
+        {
+            // TODO controllare gli arrivi nel time slot attuale!!
+            
+            super.addEventOnQueue( e );
+        }
+        
+        /*@Override
         public double getNodeUtilization( Time time )
         {
             double utilization = 0;
@@ -901,6 +956,28 @@ public class EnergyTestREPLICA_DIST
                 utilization += agent.getNodeUtilization( time );
             }
             return utilization;
+        }*/
+
+        @Override
+        public Time handle( Event e, EventType type )
+        {
+            Packet p = e.getPacket();
+            if (p.hasContent( Global.SWITCH_TIME_SLOT )) {
+                slotIndex++;
+                analyzeSystem();
+            }
+            return _node.getTcalc();
+        }
+        
+        private void analyzeSystem()
+        {
+            // TODO completare
+            long previousDayCompletion = meanCompletionTime.get( slotIndex );
+            long previousDayArrival    = meanArrivalTime.get( slotIndex );
+            if (estimatorType == SEASON_ESTIMATOR_WITH_DRIFT) {
+                // TODO prendere gli ultimi 2 time slot della giornata attuale
+                
+            }
         }
     }
     
@@ -983,9 +1060,16 @@ public class EnergyTestREPLICA_DIST
         for (int i = 0; i < NODES; i++) {
             // Create the switch associated to the REPLICA nodes.
             EventGenerator switchGen = new SwitchGenerator( duration, PACKET, PACKET );
-            Agent switchNode = new SwitchAgent( 2 + i * REPLICA_PER_NODE + i, switchGen );
+            Agent switchNode = new SwitchAgent( 2 + i * REPLICA_PER_NODE + i,
+                                                SwitchAgent.SEASON_ESTIMATOR_WITH_DRIFT,
+                                                switchGen );
             net.addAgent( switchNode );
             brokerGen.connect( switchNode );
+            
+            // Add the time slot generator.
+            EventGenerator timeSlotGenerator = new SwitchTimeSlotGenerator( duration );
+            switchNode.addEventGenerator( timeSlotGenerator );
+            timeSlotGenerator.connect( switchNode );
             
             for (int j = 0; j < REPLICA_PER_NODE; j++) {
                 final long nodeId = (i * REPLICA_PER_NODE + j + 1);
