@@ -169,7 +169,7 @@ public abstract class Agent extends Thread
      * 
      * @param index    position of the event to remove
      * 
-     * @return e    the removed event
+     * @return the removed event
     */
     public Event removeEventFromQueue( int index ) {
         if (!_eventQueue.isEmpty()) {

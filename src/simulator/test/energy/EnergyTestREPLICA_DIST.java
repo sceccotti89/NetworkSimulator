@@ -877,19 +877,18 @@ public class EnergyTestREPLICA_DIST
         }
     }
     
-    // TODO questo metodo prevede che le query vengano mantenute qui e a turno ogni replica le richiede.
     private static class SwitchAgent extends Agent implements EventHandler
     {
-        private List<QueryInfo> queries;
-        private CPUModel _model;
+        private int queries;
         
         private int currentReplicas;
         
         private List<Double> meanArrivalTime;
         private List<Double> meanCompletionTime;
         
-        private List<Integer> allReplicas;
-        private ReplicatedGraph graph;
+        private double minimumPathCost = Double.MAX_VALUE;
+        private int[] allReplicas;
+        //private ReplicatedGraph graph;
         
         private int slotIndex;
         
@@ -913,14 +912,11 @@ public class EnergyTestREPLICA_DIST
         
         
         public SwitchAgent( long id, int estimatorType, int latencyNormalization,
-                            CPUModel model, EventGenerator evGenerator ) throws IOException
+                            EventGenerator evGenerator ) throws IOException
         {
             super( id );
             addEventGenerator( evGenerator );
             addEventHandler( this );
-            
-            queries = new ArrayList<>();
-            _model = model;
             
             this.estimatorType = estimatorType;
             this.latency_normalization = latencyNormalization;
@@ -930,11 +926,11 @@ public class EnergyTestREPLICA_DIST
             
             if (estimatorType == SEASONAL_ESTIMATOR) {
                 // Compute the minimum path among all the possibles.
-                graph = new ReplicatedGraph( meanCompletionTime.size() );
-                graph.addNode( 0, 0 );
-                //allReplicas = new ArrayList<>( 128 );
-                createGraph( 0, 0, 0 );
-                /*TODO allReplicas = */graph.computeMinimumPath();
+                allReplicas = new int[meanCompletionTime.size()];
+                //allReplicas = new int[10];
+                System.out.println( "Calcolo il cammino minimo.." );
+                computeMinimumPath( 0, 0, 0 );
+                System.out.println( "Cammino minimo calcolato!!" );
             } else {
                 arrivals = 0;
                 currentArrivals = new ArrayList<>( 2 );
@@ -969,13 +965,12 @@ public class EnergyTestREPLICA_DIST
         public void addEventOnQueue( Event e )
         {
             if (estimatorType == SEASONAL_ESTIMATOR_WITH_DRIFT) {
-                arrivals++;
-            }
-            
-            Packet p = e.getPacket();
-            if (p.hasContent( Global.QUERY_ID )) {
-                QueryInfo query = _model.getQuery( p.getContent( Global.QUERY_ID ));
-                queries.add( query );
+                if (e.getSource().getId() == 1) { // From client.
+                    arrivals++;
+                    queries++;
+                } else { // From replica.
+                    queries--;
+                }
             }
             
             super.addEventOnQueue( e );
@@ -990,7 +985,10 @@ public class EnergyTestREPLICA_DIST
         {
             Packet p = e.getPacket();
             if (p.hasContent( Global.SWITCH_TIME_SLOT )) {
-                if (estimatorType == SEASONAL_ESTIMATOR_WITH_DRIFT) {
+                if (estimatorType == SEASONAL_ESTIMATOR) {
+                    System.out.println( "REPLICAS: " + allReplicas[slotIndex+1] );
+                    currentReplicas = allReplicas[++slotIndex];
+                } else {
                     if (slotIndex >= 0) {
                         currentArrivals.add( arrivals );
                         if (currentArrivals.size() > 2) {
@@ -1026,7 +1024,7 @@ public class EnergyTestREPLICA_DIST
             int replicas = 0;
             for (int nodes = 1; nodes <= REPLICA_PER_NODE; nodes++) {
                 double power   = getPowerCost( nodes );
-                double latency = getLatencyCost( queries.size(), arrivalExtimation, completionExtimation, nodes );
+                double latency = getLatencyCost( queries, arrivalExtimation, completionExtimation, nodes );
                 double weight  = LAMBDA * power + (1 - LAMBDA) * latency;
                 if (weight < minWeight) {
                     minWeight = weight;
@@ -1037,7 +1035,7 @@ public class EnergyTestREPLICA_DIST
             return replicas;
         }
         
-        private void createGraph( int nodeIndex, int queries, int slotIndex )
+        /*private void createGraph( int nodeIndex, int queries, int slotIndex )
         {
             if (slotIndex == meanCompletionTime.size() - 2) {
                 // Create the last node.
@@ -1065,6 +1063,54 @@ public class EnergyTestREPLICA_DIST
                     createGraph( index, nextQueries, slotIndex + 1 );
                 }
             }
+        }*/
+        
+        /**
+         * Computes the minimum path of the graph by a DFS visit.
+         * 
+         * @param queries        estimated number of unqueued queries.
+         * @param currentCost    current cost of the path.
+         * @param slotIndex      current slot index.
+        */
+        private boolean computeMinimumPath( int queries, double currentCost, int slotIndex )
+        {
+            // TODO Ci mette troppo a trovare la soluzione minima
+            // TODO Parlarne con Nicola in modo da trovare una soluzione
+            
+            //System.out.println( "SLOT_INDEX: " + slotIndex );
+            
+            if (slotIndex == allReplicas.length) {
+                // Last nodes: evaluate the current path.
+                currentCost += queries;
+                //System.out.println( "LAST: (MIN = " + minimumPathCost + ", CURRENT = " + currentCost + ")" );
+                minimumPathCost = Math.min( minimumPathCost, currentCost );
+                return currentCost == minimumPathCost;
+            }
+            
+            /*if (slotIndex == allReplicas.length - 1) {
+                // Last node: evaluate the final node using the remaining queries.
+                return computeMinimumPath( 0, currentCost + queries, slotIndex + 1 );
+            }*/
+            
+            double completionExtimation = meanCompletionTime.get( slotIndex );
+            double arrivalExtimation    = meanArrivalTime.get( slotIndex );
+            
+            boolean isMinimum = false;
+            final long Ts = SwitchTimeSlotGenerator.TIME_SLOT.getTimeMicros();
+            for (int nodes = 1; nodes <= REPLICA_PER_NODE; nodes++) {
+                int nextQueries = Math.max( 0, (int) (queries - ((nodes * Ts) / completionExtimation) + arrivalExtimation) );
+                double power    = getPowerCost( nodes );
+                double latency  = getLatencyCost( queries, arrivalExtimation, completionExtimation, nodes );
+                double weight   = LAMBDA * power + (1 - LAMBDA) * latency;
+                
+                boolean result = computeMinimumPath( nextQueries, currentCost + weight, slotIndex + 1 );
+                if (result) {
+                    allReplicas[slotIndex] = nodes;
+                }
+                isMinimum |= result;
+            }
+            
+            return isMinimum;
         }
         
         private double getPowerCost( final int nodes ) {
@@ -1161,13 +1207,11 @@ public class EnergyTestREPLICA_DIST
         
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         for (int i = 0; i < NODES; i++) {
-            CPUModel p_model = loadModel( type, mode, timeBudget, i+1 );
-            
             // Create the switch associated to the REPLICA nodes.
             EventGenerator switchGen = new SwitchGenerator( duration, PACKET, PACKET );
             Agent switchNode = new SwitchAgent( 2 + i * REPLICA_PER_NODE + i,
-                                                SwitchAgent.SEASONAL_ESTIMATOR_WITH_DRIFT, 1,
-                                                p_model, switchGen );
+                                                SwitchAgent.SEASONAL_ESTIMATOR, 1,
+                                                switchGen );
             net.addAgent( switchNode );
             brokerGen.connect( switchNode );
             
@@ -1175,6 +1219,8 @@ public class EnergyTestREPLICA_DIST
             EventGenerator timeSlotGenerator = new SwitchTimeSlotGenerator( duration );
             switchNode.addEventGenerator( timeSlotGenerator );
             timeSlotGenerator.connect( switchNode );
+            
+            CPUModel p_model = loadModel( type, mode, timeBudget, i+1 );
             
             for (int j = 0; j < REPLICA_PER_NODE; j++) {
                 final long nodeId = (i * REPLICA_PER_NODE + j + 1);
