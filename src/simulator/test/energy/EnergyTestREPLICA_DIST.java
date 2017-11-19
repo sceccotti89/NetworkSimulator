@@ -1079,6 +1079,10 @@ public class EnergyTestREPLICA_DIST
             
             //System.out.println( "SLOT_INDEX: " + slotIndex );
             
+            if (currentCost > minimumPathCost) {
+                return false;
+            }
+            
             if (slotIndex == allReplicas.length) {
                 // Last nodes: evaluate the current path.
                 currentCost += queries;

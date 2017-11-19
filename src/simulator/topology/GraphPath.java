@@ -109,17 +109,6 @@ public class GraphPath
         return predecessors;
     }
     
-    /*private static NetworkLink getLink( Map<Long,List<NetworkLink>> links,
-                                        long sourceId,
-                                        long destId )
-    {
-        for (NetworkLink link : links.get( sourceId )) {
-            if (link.getDestId() == destId)
-                return link;
-        }
-        return null;
-    }*/
-    
     private static class QueueNode implements Comparable<QueueNode>
     {
         private Double _distance;
@@ -151,7 +140,8 @@ public class GraphPath
         }
         
         @Override
-        public int compareTo( QueueNode node )
-        { return _distance.compareTo( node._distance ); }
+        public int compareTo( QueueNode node ) {
+            return _distance.compareTo( node._distance );
+        }
     }
 }
