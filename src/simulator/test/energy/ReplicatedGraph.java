@@ -18,9 +18,9 @@ public class ReplicatedGraph
         nodes = new HashMap<>( size * 2 );
     }
     
-    public void addNode( int index, int queries )
+    public void addNode( int index )
     {
-        Node node = new Node( index, queries );
+        Node node = new Node( index );
         nodes.put( index, node );
     }
     
@@ -73,7 +73,7 @@ public class ReplicatedGraph
         Node nextNode = null;
         while (prev[currNode.getIndex()] != null) {
             nextNode = prev[currNode.getIndex()];
-            // FIXME inserire il numero query del nodo
+            // FIXME inserire il numero repliche associate al nodo.
             replicas[nextNode.getIndex()] = 0;
             if (nextNode.getIndex() == 0) {
                 break;
@@ -88,15 +88,13 @@ public class ReplicatedGraph
     public static class Node implements Comparable<Node>
     {
         private int index;
-        private final int queries;
+        private int queries;
         private Double _weight;
         
         private List<Node> neighbours;
         
-        public Node( int index, int queries )
-        {
+        public Node( int index ){
             this.index = index;
-            this.queries = queries;
         }
         
         public int getIndex() {
@@ -109,6 +107,10 @@ public class ReplicatedGraph
         
         public List<Node> getNeightbours() {
             return neighbours;
+        }
+        
+        public void setQueries( int queries ) {
+            this.queries = queries;
         }
         
         public void setWeight( double weight ) {

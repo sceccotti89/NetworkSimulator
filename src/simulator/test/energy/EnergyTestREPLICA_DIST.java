@@ -888,7 +888,7 @@ public class EnergyTestREPLICA_DIST
         
         private double minimumPathCost = Double.MAX_VALUE;
         private int[] allReplicas;
-        //private ReplicatedGraph graph;
+        private ReplicatedGraph graph;
         
         private int slotIndex;
         
@@ -925,8 +925,11 @@ public class EnergyTestREPLICA_DIST
             loadQueryPerSlot();
             
             if (estimatorType == SEASONAL_ESTIMATOR) {
-                // Compute the minimum path among all the possibles.
-                allReplicas = new int[meanCompletionTime.size()];
+                final int size = meanCompletionTime.size();
+                createGraph( size );
+                
+                // Compute the minimum path among all the possible ones.
+                allReplicas = new int[size];
                 //allReplicas = new int[10];
                 System.out.println( "Calcolo il cammino minimo.." );
                 computeMinimumPath( 0, 0, 0 );
@@ -1035,35 +1038,19 @@ public class EnergyTestREPLICA_DIST
             return replicas;
         }
         
-        /*private void createGraph( int nodeIndex, int queries, int slotIndex )
+        private void createGraph( int size )
         {
-            if (slotIndex == meanCompletionTime.size() - 2) {
-                // Create the last node.
-                final int index = REPLICA_PER_NODE * meanCompletionTime.size() + 2;
-                graph.addNode( index, 0 );
-                graph.addLink( nodeIndex, index, queries );
-                return;
-            }
+            graph = new ReplicatedGraph( size + 1 );
             
-            double completionExtimation = meanCompletionTime.get( slotIndex );
-            double arrivalExtimation    = meanArrivalTime.get( slotIndex );
-            
-            final long Ts = SwitchTimeSlotGenerator.TIME_SLOT.getTimeMicros();
-            for (int nodes = 1; nodes <= REPLICA_PER_NODE; nodes++) {
-                // Predict the queries for the suqsequent node.
-                final int index = slotIndex * REPLICA_PER_NODE + nodes;
-                if (!graph.hasNode( index )) {
-                    int nextQueries = Math.max( 0, (int) (queries - ((nodes * Ts) / completionExtimation) + arrivalExtimation) );
-                    graph.addNode( index, nextQueries );
-                    double power   = getPowerCost( nodes );
-                    double latency = getLatencyCost( queries, arrivalExtimation, completionExtimation, nodes );
-                    double weight  = LAMBDA * power + (1 - LAMBDA) * latency;
-                    graph.addLink( nodeIndex, index, weight );
-                    
-                    createGraph( index, nextQueries, slotIndex + 1 );
+            graph.addNode( 0 );
+            for (int i = 0; i < size - 1; i++) {
+                for (int nodes = 1; nodes <= REPLICA_PER_NODE; nodes++) {
+                    final int index = i * REPLICA_PER_NODE + nodes;
+                    graph.addNode( index );
                 }
             }
-        }*/
+            graph.addNode( size * REPLICA_PER_NODE - 1 );
+        }
         
         /**
          * Computes the minimum path of the graph by a DFS visit.
