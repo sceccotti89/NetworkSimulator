@@ -35,9 +35,9 @@ public class ReplicatedGraph
         return nodes.containsKey( index );
     }
 
-    public int[] computeMinimumPath( SwitchAgent agent, int replicas_per_node )
+    public void computeMinimumPath( SwitchAgent agent, int[] replicas )
     {
-        int[] replicas = new int[(nodes.size()-2)/replicas_per_node + 1];
+        //int[] replicas = new int[(nodes.size()-2)/replicas_per_node + 1];
         Queue<Node> queue = new PriorityQueue<>( nodes.size() );
         prev = new Node[nodes.size()];
         for (int i = 0; i < prev.length; i++) {
@@ -60,13 +60,6 @@ public class ReplicatedGraph
             }
             
             final int index = node.getIndex();
-            // TODO mi sa che questo non funziona..
-            /*if (index > 0) {
-                // Set the needed number of replicas to the previous node.
-                int slotIndex = getSlotIndex( prev[index].getIndex() );
-                replicas[slotIndex] = getReplicas( index, replicas_per_node );
-            }*/
-            
             if (index == nodes.size() - 1) {
                 // Reached the destination node: exit.
                 break;
@@ -77,14 +70,14 @@ public class ReplicatedGraph
             System.out.println( "ESTRATTO: " + index + ", QUERY: " + node.getQueries() + ", WEIGHT: " + node.getWeight() );
             for (Node n : node.getNeightbours()) {
                 double weight = node.getWeight() + agent.getWeight( node.getQueries(),
-                                                                    getReplicas( n.getIndex(), replicas_per_node ),
+                                                                    agent.getReplicas( n.getIndex() ),
                                                                     slotIndex );
                 System.out.println( "VICINO: " + n.getIndex() + ", DISTANZA: " + n.getWeight() + ", PESO_ATTUALE: " + weight );
                 if (weight < n.getWeight()) {
                     n.setWeight( weight );
                     prev[n.getIndex()] = node;
                     n.setQueries( agent.getNextQueries( node.getQueries(),
-                                                        getReplicas( n.getIndex(), replicas_per_node ),
+                                                        agent.getReplicas( n.getIndex() ),
                                                         slotIndex ) );
                     
                     // Reorder the queue.
@@ -94,20 +87,19 @@ public class ReplicatedGraph
             }
         }
         
-        // TODO Se l'assegnamento di prima funziona questo coso non dovrei nemmeno farlo..
-        // TODO quindi una volta finiti i test rimuovere tutto.
-        //int[] replicas = new int[(nodes.size()-2)/replicas_per_node + 1];
+        // TODO rimuovere il path dopo i TEST
         Node currNode = nodes.get( nodes.size() - 1 );
         Node nextNode = null;
+        int replicaIndex = replicas.length - 1;
         String path = currNode.getIndex() + "]";
         while ((nextNode = prev[currNode.getIndex()]) != null) {
-            // Assign the number of replicas.
-            replicas[getSlotIndex( nextNode.getIndex() )] = getReplicas( nextNode.getIndex(), replicas_per_node );
             path = nextNode.getIndex() + "," + path;
             if (nextNode.getIndex() == 0) {
                 break;
             } else {
                 currNode = nextNode;
+                // Assign the number of replicas.
+                replicas[replicaIndex--] = agent.getReplicas( nextNode.getIndex() );
             }
         }
         path = "[" + path;
@@ -115,15 +107,6 @@ public class ReplicatedGraph
         for (int i = 0; i < replicas.length; i++) {
             System.out.println( replicas[i] );
         }
-        
-        return replicas;
-    }
-    
-    private int getReplicas( int index, int replicas_per_node ) {
-        //System.out.println( "INDEX: " + index + ", REPLICAS: " + replicas_per_node );
-        //int replicas = index % replicas_per_node;
-        //return (replicas == 0) ? replicas_per_node : replicas;
-        return ((index - 1) % replicas_per_node) + 1;
     }
     
     private int getSlotIndex( double index ) {
