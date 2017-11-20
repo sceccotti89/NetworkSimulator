@@ -1,11 +1,14 @@
 
 package simulator.test.energy;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
+
+import simulator.test.energy.EnergyTestREPLICA_DIST.SwitchAgent;
 
 public class ReplicatedGraph
 {
@@ -18,9 +21,9 @@ public class ReplicatedGraph
         nodes = new HashMap<>( size * 2 );
     }
     
-    public void addNode( int index )
+    public void addNode( int index, int neighbours )
     {
-        Node node = new Node( index );
+        Node node = new Node( index, neighbours );
         nodes.put( index, node );
     }
     
@@ -32,8 +35,9 @@ public class ReplicatedGraph
         return nodes.containsKey( index );
     }
 
-    public int[] computeMinimumPath( List<Double> meanArrivalTime, List<Double> meanCompletionTime )
+    public int[] computeMinimumPath( SwitchAgent agent, int replicas_per_node )
     {
+        int[] replicas = new int[(nodes.size()-2)/replicas_per_node + 1];
         Queue<Node> queue = new PriorityQueue<>( nodes.size() );
         prev = new Node[nodes.size()];
         for (int i = 0; i < prev.length; i++) {
@@ -45,21 +49,43 @@ public class ReplicatedGraph
             queue.add( n );
         }
         
+        // Source node is at distance 0.
+        nodes.get( 0 ).setWeight( 0 );
+        
         while (!queue.isEmpty()) {
             Node node = queue.poll();
             if (node.getWeight() == INFINITE) {
+                // Unreachable node: exit.
                 break;
             }
             
-            if (node.getIndex() == nodes.size()) {
+            final int index = node.getIndex();
+            // TODO mi sa che questo non funziona..
+            /*if (index > 0) {
+                // Set the needed number of replicas to the previous node.
+                int slotIndex = getSlotIndex( prev[index].getIndex() );
+                replicas[slotIndex] = getReplicas( index, replicas_per_node );
+            }*/
+            
+            if (index == nodes.size() - 1) {
+                // Reached the destination node: exit.
                 break;
             }
             
+            final int slotIndex = getSlotIndex( index );
+            node.setQueries( node.getQueries() + agent.incomingQueries( slotIndex ) );
+            System.out.println( "ESTRATTO: " + index + ", QUERY: " + node.getQueries() + ", WEIGHT: " + node.getWeight() );
             for (Node n : node.getNeightbours()) {
-                double weight = 0;// TODO completare usando i parametri di potenza e latenza
+                double weight = node.getWeight() + agent.getWeight( node.getQueries(),
+                                                                    getReplicas( n.getIndex(), replicas_per_node ),
+                                                                    slotIndex );
+                System.out.println( "VICINO: " + n.getIndex() + ", DISTANZA: " + n.getWeight() + ", PESO_ATTUALE: " + weight );
                 if (weight < n.getWeight()) {
                     n.setWeight( weight );
                     prev[n.getIndex()] = node;
+                    n.setQueries( agent.getNextQueries( node.getQueries(),
+                                                        getReplicas( n.getIndex(), replicas_per_node ),
+                                                        slotIndex ) );
                     
                     // Reorder the queue.
                     queue.remove( n );
@@ -68,32 +94,68 @@ public class ReplicatedGraph
             }
         }
         
-        int[] replicas = new int[nodes.size()];
-        Node currNode = nodes.get( nodes.size() );
+        // TODO Se l'assegnamento di prima funziona questo coso non dovrei nemmeno farlo..
+        // TODO quindi una volta finiti i test rimuovere tutto.
+        //int[] replicas = new int[(nodes.size()-2)/replicas_per_node + 1];
+        Node currNode = nodes.get( nodes.size() - 1 );
         Node nextNode = null;
-        while (prev[currNode.getIndex()] != null) {
-            nextNode = prev[currNode.getIndex()];
-            // FIXME inserire il numero repliche associate al nodo.
-            replicas[nextNode.getIndex()] = 0;
+        String path = currNode.getIndex() + "]";
+        while ((nextNode = prev[currNode.getIndex()]) != null) {
+            // Assign the number of replicas.
+            replicas[getSlotIndex( nextNode.getIndex() )] = getReplicas( nextNode.getIndex(), replicas_per_node );
+            path = nextNode.getIndex() + "," + path;
             if (nextNode.getIndex() == 0) {
                 break;
             } else {
                 currNode = nextNode;
             }
         }
+        path = "[" + path;
+        System.out.println( path );
+        for (int i = 0; i < replicas.length; i++) {
+            System.out.println( replicas[i] );
+        }
         
         return replicas;
+    }
+    
+    private int getReplicas( int index, int replicas_per_node ) {
+        //System.out.println( "INDEX: " + index + ", REPLICAS: " + replicas_per_node );
+        //int replicas = index % replicas_per_node;
+        //return (replicas == 0) ? replicas_per_node : replicas;
+        return ((index - 1) % replicas_per_node) + 1;
+    }
+    
+    private int getSlotIndex( double index ) {
+        return (int) Math.ceil( index / 2 );
+    }
+    
+    @Override
+    public String toString()
+    {
+        String content = "[";
+        for (int i = 0; i < nodes.size(); i++) {
+            Node node = nodes.get( i );
+            content += node;
+            if (i < nodes.size() - 1) {
+                content += ",\n";
+            }
+        }
+        content += "]";
+        return content;
     }
     
     public static class Node implements Comparable<Node>
     {
         private int index;
-        private int queries;
+        private double queries;
         private Double _weight;
         
-        private List<Node> neighbours;
+        private List<Node> _neighbours;
         
-        public Node( int index ){
+        public Node( int index, int neighbours )
+        {
+            _neighbours = new ArrayList<>( neighbours );
             this.index = index;
         }
         
@@ -102,14 +164,14 @@ public class ReplicatedGraph
         }
         
         public void connectTo( Node dest ) {
-            neighbours.add( dest );
+            _neighbours.add( dest );
         }
         
         public List<Node> getNeightbours() {
-            return neighbours;
+            return _neighbours;
         }
         
-        public void setQueries( int queries ) {
+        public void setQueries( double queries ) {
             this.queries = queries;
         }
         
@@ -121,13 +183,28 @@ public class ReplicatedGraph
             return _weight;
         }
         
-        public int getQueries() {
+        public double getQueries() {
             return queries;
         }
         
         @Override
         public int compareTo( Node node ) {
             return _weight.compareTo( node._weight );
+        }
+        
+        @Override
+        public String toString()
+        {
+            String content = "{" + index + ", Neighbours: [";
+            for (int i = 0; i < _neighbours.size(); i++) {
+                Node n = _neighbours.get( i );
+                content += n.getIndex();
+                if (i < _neighbours.size() - 1) {
+                    content += ",";
+                }
+            }
+            content += "]}";
+            return content;
         }
     }
 }
