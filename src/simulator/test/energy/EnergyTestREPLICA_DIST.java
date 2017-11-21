@@ -1076,78 +1076,28 @@ public class EnergyTestREPLICA_DIST
             graph.computeMinimumPath( this, allReplicas );
         }
         
-        /**
-         * Computes the minimum path of the graph by a DFS visit.
-         * 
-         * @param queries        estimated number of unqueued queries.
-         * @param currentCost    current cost of the path.
-         * @param slotIndex      current slot index.
-        */
-        /*private boolean computeMinimumPath( int queries, double currentCost, int slotIndex )
-        {
-            // TODO Ci mette troppo a trovare la soluzione minima
-            // TODO Parlarne con Nicola in modo da trovare una soluzione
-            
-            //System.out.println( "SLOT_INDEX: " + slotIndex );
-            
-            if (currentCost > minimumPathCost) {
-                return false;
-            }
-            
-            if (slotIndex == allReplicas.length) {
-                // Last nodes: evaluate the current path.
-                currentCost += queries;
-                //System.out.println( "LAST: (MIN = " + minimumPathCost + ", CURRENT = " + currentCost + ")" );
-                minimumPathCost = Math.min( minimumPathCost, currentCost );
-                return currentCost == minimumPathCost;
-            }
-            
-            /*if (slotIndex == allReplicas.length - 1) {
-                // Last node: evaluate the final node using the remaining queries.
-                return computeMinimumPath( 0, currentCost + queries, slotIndex + 1 );
-            }*/
-            
-            /*double completionExtimation = meanCompletionTime.get( slotIndex );
-            double arrivalExtimation    = meanArrivalQueries.get( slotIndex );
-            
-            boolean isMinimum = false;
-            final long Ts = SwitchTimeSlotGenerator.TIME_SLOT.getTimeMicros();
-            for (int nodes = 1; nodes <= REPLICAS_PER_NODE; nodes++) {
-                int nextQueries = Math.max( 0, (int) (queries - ((nodes * Ts) / completionExtimation) + arrivalExtimation) );
-                double power    = getPowerCost( nodes );
-                double latency  = getLatencyCost( queries, arrivalExtimation, completionExtimation, nodes );
-                double weight   = LAMBDA * power + (1 - LAMBDA) * latency;
-                
-                boolean result = computeMinimumPath( nextQueries, currentCost + weight, slotIndex + 1 );
-                if (result) {
-                    allReplicas[slotIndex] = nodes;
-                }
-                isMinimum |= result;
-            }
-            
-            return isMinimum;
-        }*/
-        
         public double getWeight( double queries, double nodes, int slotIndex )
         {
             if (slotIndex == meanCompletionTime.size()) {
                 return 0;
             }
             
-            double completionExtimation = meanCompletionTime.get( slotIndex );
+            final double completionExtimation = meanCompletionTime.get( slotIndex );
+            final double arrivalExtimation    = meanArrivalQueries.get( slotIndex );
+            
             double power   = getPowerCost( nodes );
-            double latency = getLatencyCost( queries, 0, completionExtimation, nodes );
+            double latency = getLatencyCost( queries, arrivalExtimation, completionExtimation, nodes );
             System.out.println( "POWER: " + power + ", LATENCY: " + latency );
             double weight  = LAMBDA * power + (1 - LAMBDA) * latency;
             
             return weight;
         }
         
-        public double incomingQueries( int slotIndex )
+        /*public double incomingQueries( int slotIndex )
         {
             if (slotIndex == meanArrivalQueries.size()) return 0;
             else return meanArrivalQueries.get( slotIndex );
-        }
+        }*/
         
         public int getNextQueries( double queries, double nodes, int slotIndex )
         {
@@ -1156,8 +1106,10 @@ public class EnergyTestREPLICA_DIST
             }
             
             final double completionExtimation = meanCompletionTime.get( slotIndex );
+            final double arrivalExtimation    = meanArrivalQueries.get( slotIndex );
+            
             final long Ts = SwitchTimeSlotGenerator.TIME_SLOT.getTimeMicros();
-            int nextQueries = Math.max( 0, (int) (queries - ((nodes * Ts) / completionExtimation)) );
+            int nextQueries = Math.max( 0, (int) (queries - ((nodes * Ts) / completionExtimation) + arrivalExtimation) );
             return nextQueries;
         }
         
@@ -1260,7 +1212,7 @@ public class EnergyTestREPLICA_DIST
             // Create the switch associated to the REPLICA nodes.
             EventGenerator switchGen = new SwitchGenerator( duration, PACKET, PACKET );
             Agent switchNode = new SwitchAgent( 2 + i * REPLICAS_PER_NODE + i,
-                                                SwitchAgent.SEASONAL_ESTIMATOR, 1,
+                                                SwitchAgent.SEASONAL_ESTIMATOR, 2,
                                                 switchGen );
             net.addAgent( switchNode );
             brokerGen.connect( switchNode );

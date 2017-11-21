@@ -65,20 +65,18 @@ public class ReplicatedGraph
                 break;
             }
             
-            final int slotIndex = getSlotIndex( index );
-            node.setQueries( node.getQueries() + agent.incomingQueries( slotIndex ) );
+            final int slotIndex  = getSlotIndex( index );
+            final double queries = node.getQueries();
+            //node.setQueries( node.getQueries() + agent.incomingQueries( slotIndex ) );
             System.out.println( "ESTRATTO: " + index + ", QUERY: " + node.getQueries() + ", WEIGHT: " + node.getWeight() );
             for (Node n : node.getNeightbours()) {
-                double weight = node.getWeight() + agent.getWeight( node.getQueries(),
-                                                                    agent.getReplicas( n.getIndex() ),
-                                                                    slotIndex );
+                final int nodes = agent.getReplicas( n.getIndex() );
+                double weight = node.getWeight() + agent.getWeight( queries, nodes, slotIndex );
                 System.out.println( "VICINO: " + n.getIndex() + ", DISTANZA: " + n.getWeight() + ", PESO_ATTUALE: " + weight );
                 if (weight < n.getWeight()) {
                     n.setWeight( weight );
                     prev[n.getIndex()] = node;
-                    n.setQueries( agent.getNextQueries( node.getQueries(),
-                                                        agent.getReplicas( n.getIndex() ),
-                                                        slotIndex ) );
+                    n.setQueries( agent.getNextQueries( queries, nodes, slotIndex ) );
                     
                     // Reorder the queue.
                     queue.remove( n );
