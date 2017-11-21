@@ -213,7 +213,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
             return queriesExecuted;
         }
         
-        protected void addQueryOnSampling()
+        protected void addQueryOnSampling( Time time, boolean updateFrequency )
         {
             Time startTime   = currentQuery.getStartTime();
             Time endTime     = currentQuery.getEndTime();
@@ -232,7 +232,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
             // Compute the current idle energy.
             addIdleEnergy( endTime, true );
             
-            removeQuery( 0 );
+            removeQuery( time, 0, updateFrequency );
             
             queriesExecuted++;
             currentQuery = null;
@@ -369,12 +369,24 @@ public abstract class CPU extends Device<Long,QueryInfo>
             return queryQueue.get( queryQueue.size() - 1 );
         }
         
-        public QueryInfo removeQuery( int index ) {
-            return queryQueue.remove( index );
+        public QueryInfo removeQuery( Time time, int index, boolean updateFrequency )
+        {
+            QueryInfo query = queryQueue.remove( index );
+            if (updateFrequency && hasMoreQueries()) {
+                long frequency = cpu.evalFrequency( time, this );
+                setFrequency( time, frequency );
+            }
+            
+            return query;
         }
         
-        public void removeQuery( QueryInfo q ) {
+        public void removeQuery( Time time, QueryInfo q, boolean updateFrequency )
+        {
             queryQueue.remove( q );
+            if (updateFrequency && hasMoreQueries()) {
+                long frequency = cpu.evalFrequency( time, this );
+                setFrequency( time, frequency );
+            }
         }
         
         public long getIdleTime() {

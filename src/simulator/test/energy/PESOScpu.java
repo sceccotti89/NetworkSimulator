@@ -162,7 +162,7 @@ public class PESOScpu extends CPU
             int queries = currentQueries[(int) core.getId()];
             // Remove the added queries.
             for (int i = coreQueue.get( core.getId() ).size() - queries; i > 0; i--) {
-                core.removeQuery( queries );
+                core.removeQuery( time, queries, false );
             }
             
             // Set the new frequency.
@@ -288,12 +288,14 @@ public class PESOScpu extends CPU
             //System.out.println( "TIME: " + time + ", CORE: " + getId() + ", ATTUALE: " + currentQuery );
             if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
                 System.out.println( "TIME: " + time + ", CORE: " + getId() + ", COMPLETATA QUERY: " + currentQuery );
-                addQueryOnSampling();
+                
                 if (timeBudget != baseTimeBudget) {
                     timeBudget = baseTimeBudget;
                     PESOSmodel model = (PESOSmodel) cpu.getModel();
                     model.setTimeBudget( timeBudget );
                 }
+                
+                addQueryOnSampling( time, false );
                 
                 ((PESOScpu) cpu).analyzeFrequency( time, getId() );
                 currentQuery = ((PESOScpu) cpu).getNextQuery( time, getId() );

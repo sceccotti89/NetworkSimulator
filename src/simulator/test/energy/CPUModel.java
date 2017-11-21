@@ -990,7 +990,7 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
                     }
                     tieSituation = true;
                 }
-                core.removeQuery( core.getQueue().size() - 1 );
+                core.removeQuery( time, core.getQueue().size() - 1, false );
                 core.setFrequency( frequency );
             }
             

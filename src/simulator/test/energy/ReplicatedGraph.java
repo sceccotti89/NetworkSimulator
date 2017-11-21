@@ -115,10 +115,10 @@ public class ReplicatedGraph
     }
     
     private int getSlotIndex( double index ) {
-        return (int) Math.ceil( index / 2 );
+        return (int) Math.ceil( index / replicas_per_nodes );
     }
     
-    public int getReplicas( int index ) {
+    private int getReplicas( int index ) {
         return ((index - 1) % replicas_per_nodes) + 1;
     }
     

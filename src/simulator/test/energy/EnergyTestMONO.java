@@ -334,7 +334,7 @@ public class EnergyTestMONO
         
         CPUModel model = null;
         
-        //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
@@ -348,7 +348,7 @@ public class EnergyTestMONO
         //model = loadModel( Type.MY_MODEL, Mode.TIME_CONSERVATIVE, 1000 );
         
         //model = loadModel( Type.PERF );
-        model = loadModel( Type.CONS );
+        //model = loadModel( Type.CONS );
         
         model.loadModel();
         
@@ -582,11 +582,11 @@ public class EnergyTestMONO
         
         // Con la tecnica nuova (quella di scegliere il core con la minor frequenza predittata)
         //600729.1560297232J
-        //587592.5552513064J
-        // 13137 (2%) Joule in meno!!
+        //587644.5832437798J
+        // 13085 (2%) Joule in meno!!
         // Sia arriva a un netto 10% (circa 40k Joule) in meno per TC 1000ms
         
-        // Nuova strategia: prendo il massimo tra il budget predittato da PESOS e da LOAD_SENSITIVE
+        // Nuova strategia (MY_MODEL): prendo il massimo tra il budget predittato da PESOS e da LOAD_SENSITIVE
         // La Tail Latency e' rispettata.
         //
         // 582892.3328821139 (circa il 2% meglio di PESOS TC 500ms)
