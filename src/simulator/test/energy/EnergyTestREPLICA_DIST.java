@@ -886,7 +886,6 @@ public class EnergyTestREPLICA_DIST
         private List<Double> meanArrivalQueries;
         private List<Double> meanCompletionTime;
         
-        //private double minimumPathCost = Double.MAX_VALUE;
         private int[] allReplicas;
         private ReplicatedGraph graph;
         
@@ -906,6 +905,7 @@ public class EnergyTestREPLICA_DIST
         // The Lambda value used to balance the equation.
         private static final double LAMBDA = 0.25;
         
+        // Parameter used to normalize the latency.
         private static final double ALPHA = -0.01;
         private int latency_normalization;
         
@@ -928,15 +928,10 @@ public class EnergyTestREPLICA_DIST
                 final int size = meanCompletionTime.size();
                 allReplicas = new int[size];
                 createGraph( size );
+                //System.out.println( "Graph: \n" + graph.toString() );
+                graph.computeMinimumPath( this, allReplicas );
                 // TODO per adesso metto un EXIT.
                 System.exit( 0 );
-                graph.computeMinimumPath( this, allReplicas );
-                // TODO la parte qua soto va rimossa perche' troppo lenta!!
-                // Compute the minimum path among all the possible ones.
-                //allReplicas = new int[10];
-                /*System.out.println( "Calcolo il cammino minimo.." );
-                computeMinimumPath( 0, 0, 0 );
-                System.out.println( "Cammino minimo calcolato!!" );*/
             } else {
                 arrivals = 0;
                 currentArrivals = new ArrayList<>( 2 );
@@ -971,10 +966,12 @@ public class EnergyTestREPLICA_DIST
         public void addEventOnQueue( Event e )
         {
             if (estimatorType == SEASONAL_ESTIMATOR_WITH_DRIFT) {
-                if (e.getSource().getId() == 1) { // From client.
+                if (e.getSource().getId() == 1) {
+                    // From client.
                     arrivals++;
                     queries++;
-                } else { // From replica.
+                } else {
+                    // From replica.
                     queries--;
                 }
             }
@@ -995,6 +992,7 @@ public class EnergyTestREPLICA_DIST
                     System.out.println( "REPLICAS: " + allReplicas[slotIndex+1] );
                     currentReplicas = allReplicas[++slotIndex];
                 } else {
+                    // Get the number of replicas using the current informations.
                     if (slotIndex >= 0) {
                         currentArrivals.add( arrivals );
                         if (currentArrivals.size() > 2) {
@@ -1003,8 +1001,7 @@ public class EnergyTestREPLICA_DIST
                         arrivals = 0;
                     }
                     
-                    // Get the number of nodes used to compute all the current queries.
-                    currentReplicas = getReplicaNodes( ++slotIndex );
+                    currentReplicas = getReplicas( ++slotIndex );
                 }
             }
             return _node.getTcalc();
@@ -1017,7 +1014,7 @@ public class EnergyTestREPLICA_DIST
          * 
          * @return the number of needed replicas.
         */
-        private int getReplicaNodes( int slotIndex )
+        private int getReplicas( int slotIndex )
         {
             // Select the results from a previous day.
             double completionExtimation = meanCompletionTime.get( slotIndex );
@@ -1041,13 +1038,9 @@ public class EnergyTestREPLICA_DIST
             return replicas;
         }
         
-        public int getReplicas( int index ) {
-            return ((index - 1) % REPLICAS_PER_NODE) + 1;
-        }
-        
         private void createGraph( int size )
         {
-            graph = new ReplicatedGraph( size + 1 );
+            graph = new ReplicatedGraph( size + 1, REPLICAS_PER_NODE );
             
             graph.addNode( 0, REPLICAS_PER_NODE );
             for (int i = 0; i < size; i++) {
@@ -1070,18 +1063,10 @@ public class EnergyTestREPLICA_DIST
             for (int i = 1; i <= REPLICAS_PER_NODE; i++) {
                 graph.connectNodes( index - i, index );
             }
-            
-            // TODO rimuovere una volta finiti i TEST
-            //System.out.println( "Graph: \n" + graph.toString() );
-            graph.computeMinimumPath( this, allReplicas );
         }
         
         public double getWeight( double queries, double nodes, int slotIndex )
         {
-            if (slotIndex == meanCompletionTime.size()) {
-                return 0;
-            }
-            
             final double completionExtimation = meanCompletionTime.get( slotIndex );
             final double arrivalExtimation    = meanArrivalQueries.get( slotIndex );
             
@@ -1093,18 +1078,8 @@ public class EnergyTestREPLICA_DIST
             return weight;
         }
         
-        /*public double incomingQueries( int slotIndex )
-        {
-            if (slotIndex == meanArrivalQueries.size()) return 0;
-            else return meanArrivalQueries.get( slotIndex );
-        }*/
-        
         public int getNextQueries( double queries, double nodes, int slotIndex )
         {
-            if (slotIndex == meanCompletionTime.size()) {
-                return 0;
-            }
-            
             final double completionExtimation = meanCompletionTime.get( slotIndex );
             final double arrivalExtimation    = meanArrivalQueries.get( slotIndex );
             

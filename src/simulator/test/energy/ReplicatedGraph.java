@@ -14,11 +14,14 @@ public class ReplicatedGraph
 {
     private Map<Integer,Node> nodes;
     private Node[] prev;
+    private int replicas_per_nodes;
     
     private static final double INFINITE = Double.MAX_VALUE;
     
-    public ReplicatedGraph( int size ) {
+    public ReplicatedGraph( int size, int replicas_per_nodes )
+    {
         nodes = new HashMap<>( size * 2 );
+        this.replicas_per_nodes = replicas_per_nodes;
     }
     
     public void addNode( int index, int neighbours )
@@ -70,13 +73,17 @@ public class ReplicatedGraph
             //node.setQueries( node.getQueries() + agent.incomingQueries( slotIndex ) );
             System.out.println( "ESTRATTO: " + index + ", QUERY: " + node.getQueries() + ", WEIGHT: " + node.getWeight() );
             for (Node n : node.getNeightbours()) {
-                final int nodes = agent.getReplicas( n.getIndex() );
-                double weight = node.getWeight() + agent.getWeight( queries, nodes, slotIndex );
+                final int nodes = getReplicas( n.getIndex() );
+                // Last "link" has the number of remaining queries.
+                double weight = (slotIndex == replicas.length) ?
+                                queries : node.getWeight() + agent.getWeight( queries, nodes, slotIndex );
                 System.out.println( "VICINO: " + n.getIndex() + ", DISTANZA: " + n.getWeight() + ", PESO_ATTUALE: " + weight );
                 if (weight < n.getWeight()) {
                     n.setWeight( weight );
                     prev[n.getIndex()] = node;
-                    n.setQueries( agent.getNextQueries( queries, nodes, slotIndex ) );
+                    if (slotIndex < replicas.length) {
+                        n.setQueries( agent.getNextQueries( queries, nodes, slotIndex ) );
+                    }
                     
                     // Reorder the queue.
                     queue.remove( n );
@@ -97,7 +104,7 @@ public class ReplicatedGraph
             } else {
                 currNode = nextNode;
                 // Assign the number of replicas.
-                replicas[replicaIndex--] = agent.getReplicas( nextNode.getIndex() );
+                replicas[replicaIndex--] = getReplicas( nextNode.getIndex() );
             }
         }
         path = "[" + path;
@@ -109,6 +116,10 @@ public class ReplicatedGraph
     
     private int getSlotIndex( double index ) {
         return (int) Math.ceil( index / 2 );
+    }
+    
+    public int getReplicas( int index ) {
+        return ((index - 1) % replicas_per_nodes) + 1;
     }
     
     @Override
