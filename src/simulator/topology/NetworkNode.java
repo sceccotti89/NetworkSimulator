@@ -69,6 +69,9 @@ public class NetworkNode
         return _name;
     }
     
+    /**
+     * Calculation time of the node.
+    */
     public Time getTcalc() {
         return _delay.clone();
     }

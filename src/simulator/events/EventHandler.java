@@ -23,8 +23,7 @@ public interface EventHandler
     /**
      * Invoked when a specific event for which this handler is registered happens.</br>
      * The simplest implementation is returning the calculation time associated
-     * with the {@link NetworkNode} (see {@link NetworkNode#getTcalc() getTcalc()} method),
-     * ensuring that it's NOT {@link Time#DYNAMIC dynamic}.
+     * with the {@link NetworkNode} (see {@link NetworkNode#getTcalc() getTcalc()} method).
      * 
      * @param e       the event which occurred
      * @param type    type of handled event
