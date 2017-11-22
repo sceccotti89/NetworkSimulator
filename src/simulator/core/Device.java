@@ -270,7 +270,8 @@ public abstract class Device<I,O>
     
     /**
      * Adds a new value to the specified sampler with the corresponding time intervals.</br>
-     * If the starting time is earlier than the ending time, the given value is "distributed" in multiple buckets along the entire interval;
+     * If the starting time is earlier than the ending time,
+     * the given value is "distributed" in multiple buckets along the entire interval;
      * if the sampler interval is less or equal than 0 it goes in a single separate bucket,
      * whose insertion is driven by the ending time.</br>
      * 
@@ -503,7 +504,7 @@ public abstract class Device<I,O>
                     elements.set( elements.size()-1, 1L );
                     currentInterval.setSecond( value );
                 } else {
-                    // Different interval.
+                    // Different intervals.
                     currentInterval.setSecond( valueUnit * (nextInterval - startTime) ); // Start time contribution.
                     currentInterval = scanInterval( nextInterval, endTime, valueUnit );
                     nextInterval = currentInterval.getFirst();
