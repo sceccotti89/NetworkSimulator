@@ -173,7 +173,7 @@ public class EnergyTestDIST2
             addEventGenerator( evGenerator );
             addEventHandler( this );
             
-            writer = new PrintWriter( "Results/Distributed_Latencies.txt", "UTF-8" );
+            writer = new PrintWriter( "Log/Distributed_Latencies.txt", "UTF-8" );
             queries = new ArrayList<>( 1 << 10 );
             
             if (PEGASUS_CONTROLLER) {

@@ -608,7 +608,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         @Override
         protected CPUModel cloneModel()
         {
-            MY_model model = new MY_model( timeBudget.clone(), getMode(), _directory, _postings, _effective_time_energy, _regressors );
+            MY_model model = new MY_model( timeBudget.clone(), getMode(), "", _postings, _effective_time_energy, _regressors );
             try { model.loadModel(); }
             catch ( IOException e ) { e.printStackTrace(); }
             return model;
@@ -808,7 +808,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         @Override
         protected CPUModel cloneModel()
         {
-            CPUModel model = new LOAD_SENSITIVEmodel( timeBudget, getMode(), _directory, _postings, _effective_time_energy, _regressors );
+            CPUModel model = new LOAD_SENSITIVEmodel( timeBudget, getMode(), "", _postings, _effective_time_energy, _regressors );
             try { model.loadModel(); }
             catch ( IOException e ) { e.printStackTrace(); }
             return model;
@@ -1045,7 +1045,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         @Override
         protected CPUModel cloneModel()
         {
-            PESOSmodel model = new PESOSmodel( timeBudget.clone(), getMode(), _directory, _postings, _effective_time_energy, _regressors );
+            PESOSmodel model = new PESOSmodel( timeBudget.clone(), getMode(), "", _postings, _effective_time_energy, _regressors );
             try { model.loadModel(); }
             catch ( IOException e ) { e.printStackTrace(); }
             return model;
@@ -1093,7 +1093,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         @Override
         protected CPUModel cloneModel()
         {
-            PERFmodel model = new PERFmodel( _directory, _postings, _effective_time_energy );
+            PERFmodel model = new PERFmodel( "", _postings, _effective_time_energy );
             try { model.loadModel(); }
             catch ( IOException e ) { e.printStackTrace(); }
             return model;
@@ -1216,7 +1216,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         @Override
         protected CPUModel cloneModel()
         {
-            CONSmodel model = new CONSmodel( _directory, _postings, _effective_time_energy );
+            CONSmodel model = new CONSmodel( "", _postings, _effective_time_energy );
             try { model.loadModel(); }
             catch ( IOException e ) { e.printStackTrace(); }
             return model;
@@ -1263,7 +1263,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         @Override
         protected CPUModel cloneModel()
         {
-            CPUModel model = new PEGASUSmodel( timeBudget, _directory, _postings, _effective_time_energy );
+            CPUModel model = new PEGASUSmodel( timeBudget, "", _postings, _effective_time_energy );
             try { model.loadModel(); }
             catch ( IOException e ) { e.printStackTrace(); }
             return model;

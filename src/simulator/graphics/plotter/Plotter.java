@@ -194,6 +194,10 @@ public class Plotter extends WindowAdapter implements ActionListener
         return frame;
     }
     
+    public void setTitle( String title ) {
+        frame.setTitle( title );
+    }
+
     public String getTitle() {
         return frame.getTitle();
     }
