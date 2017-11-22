@@ -369,6 +369,10 @@ public abstract class CPU extends Device<Long,QueryInfo>
             return queryQueue.get( queryQueue.size() - 1 );
         }
         
+        public QueryInfo removeLastQueryInQueue( Time time, boolean updateFrequency ) {
+            return removeQuery( time, queryQueue.size() - 1, updateFrequency );
+        }
+        
         public QueryInfo removeQuery( Time time, int index, boolean updateFrequency )
         {
             QueryInfo query = queryQueue.remove( index );

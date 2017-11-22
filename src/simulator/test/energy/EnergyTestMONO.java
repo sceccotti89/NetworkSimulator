@@ -334,8 +334,8 @@ public class EnergyTestMONO
         
         CPUModel model = null;
         
-        model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
-        //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
+        //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
@@ -585,6 +585,12 @@ public class EnergyTestMONO
         //587644.5832437798J
         // 13085 (2%) Joule in meno!!
         // Sia arriva a un netto 10% (circa 40k Joule) in meno per TC 1000ms
+        
+        // Con il JOB STEALING
+        //600729.1560297232J
+        //582700.8963847428J
+        // 18029 (3%) Joule in meno!!
+        // Sia arriva a un netto 11% (circa 50k Joule) in meno per TC 1000ms
         
         // Nuova strategia (MY_MODEL): prendo il massimo tra il budget predittato da PESOS e da LOAD_SENSITIVE
         // La Tail Latency e' rispettata.

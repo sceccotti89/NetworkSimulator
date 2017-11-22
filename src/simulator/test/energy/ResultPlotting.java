@@ -202,10 +202,10 @@ public class ResultPlotting
         final Mode mode        = Mode.TIME_CONSERVATIVE;
         
         //plotEnergy( time_budget, mode.toString() );
-        //plotTailLatency( time_budget, mode.toString() );
+        plotTailLatency( time_budget, mode.toString() );
         //plotDistributedTailLatency( time_budget, mode.toString() );
         
         //plotMeanCompletionTime();
-        plotMeanArrivalTime();
+        //plotMeanArrivalTime();
     }
 }

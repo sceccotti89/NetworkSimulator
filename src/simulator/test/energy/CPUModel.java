@@ -1365,6 +1365,10 @@ public abstract class CPUModel extends Model<Long,QueryInfo> implements Cloneabl
             return endTime.clone();
         }
         
+        public boolean isComplete( Time time ) {
+            return endTime.compareTo( time ) <= 0;
+        }
+        
         public double getElapsedEnergy() {
             return previousEnergy;
         }

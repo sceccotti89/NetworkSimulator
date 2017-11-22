@@ -272,7 +272,7 @@ public class EnergyCPU extends CPU
         @Override
         public boolean checkQueryCompletion( Time time )
         {
-            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+            if (currentQuery != null && currentQuery.isComplete( time )) {
                 //long queryId = currentQuery.getId();
                 //System.out.println( "TIME: " + time + ", CORE: " + getId() + ", COMPLETATA QUERY: " + currentQuery );
                 PESOSmodel model = (PESOSmodel) cpu.getModel();
@@ -292,9 +292,8 @@ public class EnergyCPU extends CPU
                     setFrequency( time, frequency );
                     cpu.computeTime( getFirstQueryInQueue(), this );
                 } else {
-                    // TODO trovare un modo per far funzionare il JOB STEALING.
                     // Job stealing: get the query from the core with the highest frequency.
-                    /*long coreSelected = -1;
+                    long coreSelected = -1;
                     long maxFrequency = Long.MIN_VALUE;
                     for (Core core : cpu.getCores()) {
                         List<QueryInfo> queue = core.getQueue();
@@ -310,10 +309,11 @@ public class EnergyCPU extends CPU
                     if (coreSelected >= 0) {
                         // Remove the last query of the selected core.
                         Core core = cpu.getCore( coreSelected );
-                        QueryInfo last = core.removeQuery( time, core.getQueue().size() - 1, true );
+                        QueryInfo last = core.removeLastQueryInQueue( time, true );
                         last.setCoreId( getId() );
                         addQuery( last, true );
-                    }*/
+                        cpu.computeTime( last, this );
+                    }
                 }
                 
                 return true;
@@ -400,7 +400,7 @@ public class EnergyCPU extends CPU
         @Override
         public boolean checkQueryCompletion( Time time )
         {
-            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+            if (currentQuery != null && currentQuery.isComplete( time )) {
                 //long queryId = currentQuery.getId();
                 addQueryOnSampling( time, false );
                 if (hasMoreQueries()) {
@@ -447,7 +447,7 @@ public class EnergyCPU extends CPU
         @Override
         public boolean checkQueryCompletion( Time time )
         {
-            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+            if (currentQuery != null && currentQuery.isComplete( time )) {
                 //long queryId = currentQuery.getId();
                 processedQueries++;
                 cumulativeTime += currentQuery.getCompletionTime()/1000;
@@ -531,7 +531,7 @@ public class EnergyCPU extends CPU
         @Override
         public boolean checkQueryCompletion( Time time )
         {
-            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+            if (currentQuery != null && currentQuery.isComplete( time )) {
                 LOAD_SENSITIVEmodel model = (LOAD_SENSITIVEmodel) cpu.getModel();
                 final int postings = currentQuery.getPostings() + model.getRMSE( currentQuery.getTerms() );
                 queryExecutionTime -= model.predictServiceTimeAtMaxFrequency( currentQuery.getTerms(), postings );
@@ -602,7 +602,7 @@ public class EnergyCPU extends CPU
         @Override
         public boolean checkQueryCompletion( Time time )
         {
-            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+            if (currentQuery != null && currentQuery.isComplete( time )) {
                 //long queryId = currentQuery.getId();
                 //System.out.println( "TIME: " + time + ", CORE: " + getId() + ", COMPLETATA QUERY: " + currentQuery );
                 MY_model model = (MY_model) cpu.getModel();
@@ -655,9 +655,16 @@ public class EnergyCPU extends CPU
         }
         
         @Override
+        public void addQuery( QueryInfo q, boolean updateFrequency )
+        {
+            q.setCoreId( coreId );
+            queryQueue.add( q );
+        }
+        
+        @Override
         public boolean checkQueryCompletion( Time time )
         {
-            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+            if (currentQuery != null && currentQuery.isComplete( time )) {
                 addQueryOnSampling( time, false );
                 if (hasMoreQueries()) {
                     cpu.computeTime( getFirstQueryInQueue(), this );
@@ -666,13 +673,6 @@ public class EnergyCPU extends CPU
             } else {
                 return false;
             }
-        }
-        
-        @Override
-        public void addQuery( QueryInfo q, boolean updateFrequency )
-        {
-            q.setCoreId( coreId );
-            queryQueue.add( q );
         }
         
         @Override
