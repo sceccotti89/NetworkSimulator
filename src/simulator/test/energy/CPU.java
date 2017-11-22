@@ -319,6 +319,35 @@ public abstract class CPU extends Device<Long,QueryInfo>
 
         public abstract boolean checkQueryCompletion( Time time );
         
+        /**
+         * Starts the job stealing phase.
+        */
+        protected void startJobStealing( Time time )
+        {
+            // Get the query from the core with the highest frequency.
+            long coreSelected = -1;
+            long maxFrequency = Long.MIN_VALUE;
+            for (Core core : cpu.getCores()) {
+                List<QueryInfo> queue = core.getQueue();
+                if (queue.size() > 1) {
+                    long coreFrequency = core.getFrequency();
+                    if (coreFrequency > maxFrequency) {
+                        maxFrequency = coreFrequency;
+                        coreSelected = core.getId();
+                    }
+                }
+            }
+            
+            if (coreSelected >= 0) {
+                // Remove the last query of the selected core.
+                Core core = cpu.getCore( coreSelected );
+                QueryInfo last = core.removeLastQueryInQueue( time, true );
+                last.setCoreId( getId() );
+                addQuery( last, true );
+                cpu.computeTime( last, this );
+            }
+        }
+        
         public void updateEventTime( QueryInfo query, Time time )
         {
             Event event = query.getEvent();

@@ -24,6 +24,10 @@ public class ReplicatedGraph
         this.replicas_per_nodes = replicas_per_nodes;
     }
     
+    public void addNode( int index ) {
+        addNode( index, replicas_per_nodes );
+    }
+    
     public void addNode( int index, int neighbours )
     {
         Node node = new Node( index, neighbours );

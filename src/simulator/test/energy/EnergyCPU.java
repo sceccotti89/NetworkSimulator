@@ -285,35 +285,12 @@ public class EnergyCPU extends CPU
                     model.setTimeBudget( timeBudget );
                 }
                 
-                addQueryOnSampling( time, false );
+                addQueryOnSampling( time, true );
                 
                 if (hasMoreQueries()) {
-                    long frequency = cpu.evalFrequency( time, this );
-                    setFrequency( time, frequency );
                     cpu.computeTime( getFirstQueryInQueue(), this );
                 } else {
-                    // Job stealing: get the query from the core with the highest frequency.
-                    long coreSelected = -1;
-                    long maxFrequency = Long.MIN_VALUE;
-                    for (Core core : cpu.getCores()) {
-                        List<QueryInfo> queue = core.getQueue();
-                        if (queue.size() > 1) {
-                            long coreFrequency = core.getFrequency();
-                            if (coreFrequency > maxFrequency) {
-                                maxFrequency = coreFrequency;
-                                coreSelected = core.getId();
-                            }
-                        }
-                    }
-                    
-                    if (coreSelected >= 0) {
-                        // Remove the last query of the selected core.
-                        Core core = cpu.getCore( coreSelected );
-                        QueryInfo last = core.removeLastQueryInQueue( time, true );
-                        last.setCoreId( getId() );
-                        addQuery( last, true );
-                        cpu.computeTime( last, this );
-                    }
+                    startJobStealing( time );
                 }
                 
                 return true;
@@ -538,10 +515,10 @@ public class EnergyCPU extends CPU
                 
                 addQueryOnSampling( time, true );
                 if (hasMoreQueries()) {
-                    //long frequency = cpu.evalFrequency( time, this );
-                    //setFrequency( time, frequency );
                     cpu.computeTime( getFirstQueryInQueue(), this );
-                }
+                }/* else {
+                    startJobStealing( time );
+                }*/
                 return true;
             } else {
                 return false;
@@ -611,10 +588,10 @@ public class EnergyCPU extends CPU
                 
                 addQueryOnSampling( time, true );                
                 if (hasMoreQueries()) {
-                    //long frequency = cpu.evalFrequency( time, this );
-                    //setFrequency( time, frequency );
                     cpu.computeTime( getFirstQueryInQueue(), this );
-                }
+                }/* else {
+                    startJobStealing( time );
+                }*/
                 return true;
             } else {
                 return false;

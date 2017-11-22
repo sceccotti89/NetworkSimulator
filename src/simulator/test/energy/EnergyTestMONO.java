@@ -334,8 +334,8 @@ public class EnergyTestMONO
         
         CPUModel model = null;
         
-        //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
-        model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
+        model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
@@ -595,7 +595,7 @@ public class EnergyTestMONO
         // Nuova strategia (MY_MODEL): prendo il massimo tra il budget predittato da PESOS e da LOAD_SENSITIVE
         // La Tail Latency e' rispettata.
         //
-        // 582892.3328821139 (circa il 2% meglio di PESOS TC 500ms)
+        // 582892.3328821139 (circa il 3% meglio di PESOS TC 500ms)
         // 439574.9182948345 (circa il 6% meglio di PESOS TC 1000ms)
         
         //SINGOLA CODA

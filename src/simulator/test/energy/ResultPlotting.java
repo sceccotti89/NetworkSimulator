@@ -132,7 +132,7 @@ public class ResultPlotting
         plotter.setVisible( true );
     }
     
-    public static void plotDistributedTailLatency( long time_budget, String mode ) throws IOException
+    public static void plotDistributedTailLatency( long time_budget, String mode, int nodes ) throws IOException
     {
         Plotter plotter = new Plotter( "Tail Latency " + PERCENTILE + "-th Percentile", 800, 600 );
         plotter.setAxisName( "Time (h)", PERCENTILE + "th-tile response time (ms)" );
@@ -155,7 +155,7 @@ public class ResultPlotting
                                                                 "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
         plotter.addPlot( percentiles, "MONOLITHIC - PESOS (" + mode + ", t=" + time_budget + "ms)" );
         
-        for (int i = 1; i <= EnergyTestDIST2.NODES; i++) {
+        for (int i = 1; i <= nodes; i++) {
             percentiles = getPercentiles( "Results/PESOS_" + mode + "_" + time_budget + "ms_Node" + i + "_Tail_Latency.log",
                                           "Results/PESOS_" + mode + "_" + time_budget + "ms_Node" + i + "_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
             plotter.addPlot( percentiles, "Node " + i + " - PESOS (" + mode + ", t=" + time_budget + "ms)" );
@@ -203,7 +203,7 @@ public class ResultPlotting
         
         //plotEnergy( time_budget, mode.toString() );
         plotTailLatency( time_budget, mode.toString() );
-        //plotDistributedTailLatency( time_budget, mode.toString() );
+        //plotDistributedTailLatency( time_budget, mode.toString(), 5 );
         
         //plotMeanCompletionTime();
         //plotMeanArrivalTime();
