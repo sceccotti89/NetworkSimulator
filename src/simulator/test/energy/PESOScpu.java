@@ -60,7 +60,7 @@ public class PESOScpu extends CPU
     }
     
     @Override
-    public void setModel( Model<Long,QueryInfo> model )
+    public void setModel( Model<QueryInfo,Long> model )
     {
         CPUModel cpuModel = (CPUModel) model;
         for (long i = 0; i < _cores; i++) {
@@ -211,7 +211,7 @@ public class PESOScpu extends CPU
     @Override
     protected long evalFrequency( Time time, Core core )
     {
-        Model<Long,QueryInfo> model = getModel();
+        Model<QueryInfo,Long> model = getModel();
         List<QueryInfo> queue = core.getQueue();
         
         // Evaluate the "best" frequency to use.

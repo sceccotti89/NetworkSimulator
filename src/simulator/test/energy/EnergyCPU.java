@@ -64,7 +64,7 @@ public class EnergyCPU extends CPU
     }
     
     @Override
-    public void setModel( Model<Long,QueryInfo> model )
+    public void setModel( Model<QueryInfo,Long> model )
     {
         // TODO RIMUOVERE IL WRITER DOPO I TEST
         if (coeffWriter != null)
@@ -189,7 +189,7 @@ public class EnergyCPU extends CPU
     */
     protected long evalFrequency( Time time, Core core )
     {
-        Model<Long,QueryInfo> model = getModel();
+        Model<QueryInfo,Long> model = getModel();
         List<QueryInfo> queue = core.getQueue();
         
         // Evaluate the "best" frequency to use.

@@ -14,7 +14,7 @@ import simulator.test.energy.EnergyModel;
 import simulator.test.energy.Global;
 import simulator.utils.Time;
 
-public abstract class CPU extends Device<Long,QueryInfo>
+public abstract class CPU extends Device<QueryInfo,Long>
 {
     protected double _cores;
     protected Map<Long,Core> coresMap;
@@ -24,10 +24,12 @@ public abstract class CPU extends Device<Long,QueryInfo>
     protected long lastSelectedCore = -1;
     protected QueryInfo lastQuery;
     
+    
+    
     public CPU( String name, List<Long> frequencies ) {
         super( name, frequencies );
     }
-
+    
     public void setEnergyModel( EnergyModel model ) {
         energyModel = model;
     }
@@ -215,7 +217,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
             return queriesExecuted;
         }
         
-        protected void addQueryOnSampling()
+        protected void addQueryOnSampling( Time time, boolean updateFrequency )
         {
             Time startTime   = currentQuery.getStartTime();
             Time endTime     = currentQuery.getEndTime();
@@ -234,7 +236,7 @@ public abstract class CPU extends Device<Long,QueryInfo>
             // Compute the current idle energy.
             addIdleEnergy( endTime, true );
             
-            removeQuery( 0 );
+            removeQuery( time, 0, updateFrequency );
             
             queriesExecuted++;
             currentQuery = null;
@@ -321,6 +323,35 @@ public abstract class CPU extends Device<Long,QueryInfo>
 
         public abstract boolean checkQueryCompletion( Time time );
         
+        /**
+         * Starts the job stealing phase.
+        */
+        protected void startJobStealing( Time time )
+        {
+            // Get the query from the core with the highest frequency.
+            long coreSelected = -1;
+            long maxFrequency = Long.MIN_VALUE;
+            for (Core core : cpu.getCores()) {
+                List<QueryInfo> queue = core.getQueue();
+                if (queue.size() > 1) {
+                    long coreFrequency = core.getFrequency();
+                    if (coreFrequency > maxFrequency) {
+                        maxFrequency = coreFrequency;
+                        coreSelected = core.getId();
+                    }
+                }
+            }
+            
+            if (coreSelected >= 0) {
+                // Remove the last query of the selected core.
+                Core core = cpu.getCore( coreSelected );
+                QueryInfo last = core.removeLastQueryInQueue( time, true );
+                last.setCoreId( getId() );
+                addQuery( last, true );
+                cpu.computeTime( last, this );
+            }
+        }
+        
         public void updateEventTime( QueryInfo query, Time time )
         {
             Event event = query.getEvent();
@@ -350,12 +381,15 @@ public abstract class CPU extends Device<Long,QueryInfo>
         
         /**
          * Adds a query into the core.
-         * 
+         *
          * @param query              the query to add.
          * @param updateFrequency    check if the frequency have to be updated.
         */
         public abstract void addQuery( QueryInfo query, boolean updateFrequency );
         
+        /**
+         * Checks if the input query is the next one for this core.
+        */
         public boolean isNextQuery( QueryInfo query ) {
             return !queryQueue.isEmpty() && queryQueue.get( 0 ).equals( query );
         }
@@ -368,12 +402,28 @@ public abstract class CPU extends Device<Long,QueryInfo>
             return queryQueue.get( queryQueue.size() - 1 );
         }
         
-        public QueryInfo removeQuery( int index ) {
-            return queryQueue.remove( index );
+        public QueryInfo removeLastQueryInQueue( Time time, boolean updateFrequency ) {
+            return removeQuery( time, queryQueue.size() - 1, updateFrequency );
         }
         
-        public void removeQuery( QueryInfo q ) {
+        public QueryInfo removeQuery( Time time, int index, boolean updateFrequency )
+        {
+            QueryInfo query = queryQueue.remove( index );
+            if (updateFrequency && hasMoreQueries()) {
+                long frequency = cpu.evalFrequency( time, this );
+                setFrequency( time, frequency );
+            }
+            
+            return query;
+        }
+        
+        public void removeQuery( Time time, QueryInfo q, boolean updateFrequency )
+        {
             queryQueue.remove( q );
+            if (updateFrequency && hasMoreQueries()) {
+                long frequency = cpu.evalFrequency( time, this );
+                setFrequency( time, frequency );
+            }
         }
         
         public long getIdleTime() {

@@ -12,7 +12,7 @@ import simulator.events.Event;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.utils.Time;
 
-public abstract class CPU extends Device<Long,QueryInfo>
+public abstract class CPU extends Device<QueryInfo,Long>
 {
     protected double _cores;
     protected Map<Long,Core> coresMap;
@@ -22,10 +22,12 @@ public abstract class CPU extends Device<Long,QueryInfo>
     protected long lastSelectedCore = -1;
     protected QueryInfo lastQuery;
     
+    
+    
     public CPU( String name, List<Long> frequencies ) {
         super( name, frequencies );
     }
-
+    
     public void setEnergyModel( EnergyModel model ) {
         energyModel = model;
     }
