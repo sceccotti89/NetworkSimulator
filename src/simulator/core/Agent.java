@@ -57,6 +57,8 @@ public abstract class Agent
         _id = id;
         _devices = new HashMap<>();
         
+        samplings = new HashMap<>();
+        
         _evtGenerators = new ArrayList<>();
         _eventQueue = new ArrayList<>();
         

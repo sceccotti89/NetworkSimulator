@@ -31,6 +31,7 @@ import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.CPUModel.Type;
 import simulator.topology.NetworkTopology;
+import simulator.utils.Sampler;
 import simulator.utils.Sampler.Sampling;
 import simulator.utils.SizeUnit;
 import simulator.utils.Time;
@@ -632,8 +633,8 @@ public class EnergyTestDIST2
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         for (int i = 0; i < NODES; i++) {
             EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
-            cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/Distributed_" + modelType + "_Energy.log" );
-            cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
+            //cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/Distributed_" + modelType + "_Energy.log" );
+            //cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
             //cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/Distributed_" + modelType + "_Node" + (i+1) + "_Tail_Latency.log" );
             cpus.add( cpu );
             
@@ -647,13 +648,16 @@ public class EnergyTestDIST2
             agentCore.addDevice( cpu );
             net.addAgent( agentCore );
             
+            agentCore.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/Distributed_" + modelType + "_Energy.log", Sampling.CUMULATIVE ) );
+            agentCore.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
+            
             if (type == Type.CONS) {
                 EventGenerator evtGen = new ServerConsGenerator( duration );
                 evtGen.connect( agentCore );
                 agentCore.addEventGenerator( evtGen );
             }
             
-            plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) + " " + p_model.getModelType( false ) );
+            plotter.addPlot( agentCore.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) + " " + p_model.getModelType( false ) );
             
             switchGen.connect( agentCore );
             
@@ -676,7 +680,7 @@ public class EnergyTestDIST2
         double totalEnergy = 0;
         for (int i = 0; i < NODES; i++) {
             EnergyCPU cpu = cpus.get( i );
-            double energy = cpu.getResultSampled( Global.ENERGY_SAMPLING );
+            double energy = cpu.getAgent().getResultSampled( Global.ENERGY_SAMPLING );
             totalEnergy += energy;
             System.out.println( "CPU: " + i + ", Energy: " + energy );
         }

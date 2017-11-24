@@ -8,11 +8,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,9 +17,7 @@ import java.util.regex.Pattern;
 import org.newdawn.slick.util.ResourceLoader;
 
 import simulator.events.EventScheduler;
-import simulator.utils.Pair;
 import simulator.utils.Sampler;
-import simulator.utils.Sampler.Sampling;
 import simulator.utils.Time;
 
 /**
@@ -51,9 +46,6 @@ public abstract class Device<I,O>
     protected Model<I,O> _model;
     
     protected long _frequency;
-    
-    // Sampling list.
-    private Map<String,Sampler> samplings;
     
     
     
@@ -84,8 +76,6 @@ public abstract class Device<I,O>
         _frequencies = frequencies;
         // By default the frequency is setted as the maximum one.
         _frequency = getMaxFrequency();
-        
-        samplings = new HashMap<>( 4 );
     }
     
     /**
@@ -160,62 +150,6 @@ public abstract class Device<I,O>
     }
     
     /**
-     * Adds a new sampler to collect some informations with a default
-     * initial capacity (2^12 elements).</br>
-     * By default the sampling interval is 60 seconds.</br>
-     * If the given interval is {@code null} or its time is <= 0 the sampling mode is ignored.
-     * 
-     * @param samplerId    name of the sampler. Must be UNIQUE.
-     * @param interval     the selected time interval.
-     * @param mode         type of sampling (see {@linkplain Sampler.Sampling Sampling} enum).
-     * @param logFile      name of the file where to save the results (it can be {@code null}).
-     * 
-     * @throws RuntimeException if the sampler name already exists.
-     * @throws IOException if the path specified by the logFile parameter is not valid.
-    */
-    public void addSampler( String samplerId, Time interval,
-                            Sampling mode, String logFile ) throws IOException {
-        addSampler( samplerId, interval, mode, logFile, 1 << 12 );
-    }
-    
-    /**
-     * Adds a new sampler to collect some informations with a specified
-     * initial capacity.</br>
-     * By default the sampling interval is 60 seconds.</br>
-     * If the given interval is {@code null} or its time is <= 0 the sampling mode is ignored.
-     * 
-     * @param samplerId          name of the sampler. Must be UNIQUE.
-     * @param interval           the selected time interval.
-     * @param mode               type of sampling (see {@linkplain Sampler.Sampling Sampling} enum).
-     * @param logFile            name of the file where to save the results (it can be {@code null}).
-     * @param initialCapacity    the initial capacity of the sampler.    
-     * 
-     * @throws RuntimeException if the sampler name already exists.
-     * @throws IOException if the path specified by the logFile parameter is not valid.
-    */
-    public void addSampler( String samplerId, Time interval,
-                            Sampling mode, String logFile,
-                            int initialCapacity ) throws IOException {
-        addSampler( samplerId, new Sampler( interval, logFile, mode, initialCapacity ) );
-    }
-    
-    /**
-     * Adds a new sampler to collect some informations about this device.
-     * 
-     * @param samplerId    name of the sampler. Must be UNIQUE.
-     * @param sampler      the sampler object
-     * 
-     * @throws RuntimeException if the samplerId already exists.
-    */
-    public void addSampler( String samplerId, Sampler sampler )
-    {
-        if (samplings.containsKey( samplerId )) {
-            throw new RuntimeException( "Selected name \"" + samplerId + "\" already exists." );
-        }
-        samplings.put( samplerId, sampler );
-    }
-    
-    /**
      * Returns the list of available frequencies for this device in increasing order.
     */
     public List<Long> getFrequencies() {
@@ -280,76 +214,6 @@ public abstract class Device<I,O>
     public abstract Time timeToCompute( Task task );
     
     /**
-     * Adds a new value to the specified sampler with the corresponding time intervals.</br>
-     * If the starting time is earlier than the ending time,
-     * the given value is "distributed" in multiple buckets along the entire interval;
-     * if the sampler interval is less or equal than 0 it goes in a single separate bucket,
-     * whose insertion is driven by the ending time.</br>
-     * 
-     * @param sampler        the specified sampler in which insert the value.
-     * @param startTime      starting time of the event.
-     * @param endTime        ending time of the event.
-     * @param value          value to add.
-    */
-    protected void addSampledValue( String sampler, Time startTime, Time endTime, double value ) {
-        addSampledValue( sampler, startTime.getTimeMicros(), endTime.getTimeMicros(), value );
-    }
-    
-    /**
-     * Adds a new value to the specified sampler with the corresponding time intervals.</br>
-     * If the starting time is earlier than the ending time,
-     * the given value is "distributed" in multiple buckets along the entire interval;
-     * if the sampler interval is less or equal than 0 it goes in a single separate bucket,
-     * whose insertion is driven by the ending time.</br>
-     * NOTE: all times MUST be expressed in microseconds.
-     * 
-     * @param sampler        the specified sampler in which insert the value.
-     * @param startTime      starting time of the event.
-     * @param endTime        ending time of the event.
-     * @param value          value to add.
-    */
-    protected void addSampledValue( String sampler, double startTime, double endTime, double value )
-    {
-        Sampler samplerObj = samplings.get( sampler );
-        if (samplerObj != null) {
-            samplerObj.addSampledValue( startTime, endTime, value );
-        }
-    }
-    
-    /**
-     * Returns the list of values sampled by the requested sampler.
-     * 
-     * @param sampler    the requested sampler
-     * 
-     * @return {@code null} if the requested sampler is not present,
-     *         its list of values otherwise.
-    */
-    public List<Pair<Double,Double>> getSampledValues( String sampler )
-    {
-        if (!samplings.containsKey( sampler )) {
-            return null;
-        } else {
-            return samplings.get( sampler ).getValues();
-        }
-    }
-    
-    /**
-     * Returns the sum of all the results sampled by the given sampler.
-     * 
-     * @param sampler    the requested sampler
-     * 
-     * @return {@code null} if the requested sampler is not present,
-     *         its result value otherwise.
-    */
-    public Double getResultSampled( String sampler ) {
-        if (!samplings.containsKey( sampler )) {
-            return null;
-        } else {
-            return samplings.get( sampler ).getTotalResult();
-        }
-    }
-    
-    /**
      * Returns the percentage of utilization of this device respect to the input time.
      * 
      * @param time    time to check the device utilization
@@ -367,17 +231,6 @@ public abstract class Device<I,O>
     */
     public void shutdown() throws IOException
     {
-        for (Sampler sampler : samplings.values()) {
-            String logFile = sampler.getLogFile();
-            if (logFile != null) {
-                PrintWriter writer = new PrintWriter( logFile, "UTF-8" );
-                for (Pair<Double,Double> point : sampler.getValues()) {
-                    writer.println( point.getFirst() + " " + point.getSecond() );
-                }
-                writer.close();
-            }
-        }
-        
         if (_model != null) {
             _model.close();
         }

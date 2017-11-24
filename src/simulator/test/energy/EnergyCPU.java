@@ -126,7 +126,7 @@ public class EnergyCPU extends CPU
     @Override
     public long selectCore( Time time, QueryInfo query )
     {
-        addSampledValue( Global.QUERY_PER_TIME_SLOT, time, time, 1 );
+        getAgent().addSampledValue( Global.QUERY_PER_TIME_SLOT, time, time, 1 );
         return ((CPUModel) _model).selectCore( time, this, query );
     }
     

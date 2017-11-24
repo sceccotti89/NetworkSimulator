@@ -33,6 +33,7 @@ import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.CPUModel.Type;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Pair;
+import simulator.utils.Sampler;
 import simulator.utils.Sampler.Sampling;
 import simulator.utils.SizeUnit;
 import simulator.utils.Time;
@@ -415,22 +416,27 @@ public class EnergyTestMONO
         
         List<EnergyCPU> cpus = new ArrayList<>( CPU_CORES );
         Plotter plotter = new Plotter( model.getModelType( false ), 800, 600 );
+        final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         for (int i = 0; i < CPU_CORES; i++) {
             EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/cpu_frequencies.txt" );
-            cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
-            cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
-            cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
+            //cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
+            //cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
+            //cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
             cpu.setModel( model );
             cpus.add( cpu );
             
             EventGenerator sink = new MulticoreGenerator( Time.INFINITE );
-            Agent agentCore = new MulticoreAgent( 2 + i, sink );
-            agentCore.addDevice( cpu );
-            net.addAgent( agentCore );
+            Agent node = new MulticoreAgent( 2 + i, sink );
+            node.addDevice( cpu );
+            net.addAgent( node );
             
-            switchAgent.getEventGenerator( 0 ).connect( agentCore );
+            node.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/" + modelType + "_Energy.log", Sampling.CUMULATIVE ) );
+            node.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
+            node.addSampler( Global.TAIL_LATENCY_SAMPLING, new Sampler( null, "Log/" + modelType + "_Tail_Latency.log", null ) );
             
-            plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + i + " " + model.getModelType( true ) );
+            switchAgent.getEventGenerator( 0 ).connect( node );
+            
+            plotter.addPlot( node.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + i + " " + model.getModelType( true ) );
         }
         
         plotter.setAxisName( "Time (h)", "Energy (J)" );
@@ -448,9 +454,10 @@ public class EnergyTestMONO
         int totalQueries = 0;
         for (int i = 0; i < CPU_CORES; i++) {
             EnergyCPU cpu = cpus.get( i );
-            totalEnergy += cpu.getResultSampled( Global.ENERGY_SAMPLING );
-            totalIdleEnergy += cpu.getResultSampled( Global.IDLE_ENERGY_SAMPLING );
-            Utils.LOGGER.info( "CPU " + i + ", Energy consumed: " + cpu.getResultSampled( Global.ENERGY_SAMPLING ) + "J" );
+            double energy = cpu.getAgent().getResultSampled( Global.ENERGY_SAMPLING );
+            totalEnergy += energy;
+            totalIdleEnergy += cpu.getAgent().getResultSampled( Global.IDLE_ENERGY_SAMPLING );
+            Utils.LOGGER.info( "CPU " + i + ", Energy consumed: " + energy + "J" );
             totalQueries += cpu.getExecutedQueries();
         }
         Utils.LOGGER.info( model.getModelType( false ) + " - Total energy:      " + totalEnergy + "J" );
@@ -486,12 +493,12 @@ public class EnergyTestMONO
         String modelType = model.getModelType( true );
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         final Time meanSamplingTime = new Time( 15, TimeUnit.MINUTES );
-        cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
-        cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
-        cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
+        //cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
+        //cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
+        //cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
         if (model.getType() == Type.PERF) {
-            cpu.addSampler( Global.MEAN_COMPLETION_TIME, meanSamplingTime, Sampling.AVERAGE, "Log/MeanCompletionTime.log" );
-            cpu.addSampler( Global.QUERY_PER_TIME_SLOT, meanSamplingTime, Sampling.CUMULATIVE, "Log/QueryPerTimeSlot.log" );
+            //cpu.addSampler( Global.MEAN_COMPLETION_TIME, meanSamplingTime, Sampling.AVERAGE, "Log/MeanCompletionTime.log" );
+            //cpu.addSampler( Global.QUERY_PER_TIME_SLOT, meanSamplingTime, Sampling.CUMULATIVE, "Log/QueryPerTimeSlot.log" );
         }
         
         NetworkTopology net = new NetworkTopology( "Topology/Topology_mono_multiCore.json" );
@@ -513,10 +520,20 @@ public class EnergyTestMONO
         server.setParallelTransmission( false ).addDevice( cpu );
         net.addAgent( server );
         
+        server.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/" + modelType + "_Energy.log", Sampling.CUMULATIVE ) );
+        server.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
+        server.addSampler( Global.TAIL_LATENCY_SAMPLING, new Sampler( null, "Log/" + modelType + "_Tail_Latency.log", null ) );
+        if (model.getType() == Type.PERF) {
+            //cpu.addSampler( Global.MEAN_COMPLETION_TIME, meanSamplingTime, Sampling.AVERAGE, "Log/MeanCompletionTime.log" );
+            //cpu.addSampler( Global.QUERY_PER_TIME_SLOT, meanSamplingTime, Sampling.CUMULATIVE, "Log/QueryPerTimeSlot.log" );
+            server.addSampler( Global.MEAN_COMPLETION_TIME, new Sampler( meanSamplingTime, "Log/MeanCompletionTime.log", Sampling.AVERAGE ) );
+            server.addSampler( Global.QUERY_PER_TIME_SLOT, new Sampler( meanSamplingTime, "Log/QueryPerTimeSlot.log", Sampling.CUMULATIVE ) );
+        }
+        
         client.getEventGenerator( 0 ).connect( server );
         
         Plotter plotter = new Plotter( "MONOLITHIC MULTI_CORE - " + model.getModelType( false ), 800, 600 );
-        plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), model.getModelType( false ) );
+        plotter.addPlot( server.getSampledValues( Global.ENERGY_SAMPLING ), model.getModelType( false ) );
         plotter.setAxisName( "Time (h)", "Energy (J)" );
         plotter.setTicks( Axis.Y, 10 );
         plotter.setTicks( Axis.X, 24, 2 );
@@ -527,8 +544,8 @@ public class EnergyTestMONO
         sim.start( duration, false );
         sim.close();
         
-        Utils.LOGGER.debug( model.getModelType( false ) + " - Total energy:      " + cpu.getResultSampled( Global.ENERGY_SAMPLING ) + "J" );
-        Utils.LOGGER.debug( model.getModelType( false ) + " - Total Idle energy: " + cpu.getResultSampled( Global.IDLE_ENERGY_SAMPLING ) + "J" );
+        Utils.LOGGER.debug( model.getModelType( false ) + " - Total energy:      " + server.getResultSampled( Global.ENERGY_SAMPLING ) + "J" );
+        Utils.LOGGER.debug( model.getModelType( false ) + " - Total Idle energy: " + server.getResultSampled( Global.IDLE_ENERGY_SAMPLING ) + "J" );
         
         System.out.println( "QUERIES: " + cpu.getExecutedQueries() );
         
@@ -646,26 +663,30 @@ public class EnergyTestMONO
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         for (int i = 0; i < CPU_CORES; i++) {
             EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/cpu_frequencies.txt" );
-            cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
-            cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
-            cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
+            //cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
+            //cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
+            //cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
             cpu.setModel( model.clone() );
             cpus.add( cpu );
             
             EventGenerator sink = new MulticoreGenerator( Time.INFINITE );
-            Agent agentCore = new MulticoreAgent( 2 + i, sink );
-            agentCore.addDevice( cpu );
-            net.addAgent( agentCore );
+            Agent node = new MulticoreAgent( 2 + i, sink );
+            node.addDevice( cpu );
+            net.addAgent( node );
             
-            switchAgent.getEventGenerator( 0 ).connect( agentCore );
+            node.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/" + modelType + "_Energy.log", Sampling.CUMULATIVE ) );
+            node.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
+            node.addSampler( Global.TAIL_LATENCY_SAMPLING, new Sampler( null, "Log/" + modelType + "_Tail_Latency.log", null ) );
+            
+            switchAgent.getEventGenerator( 0 ).connect( node );
             
             if (model.getType() == Type.CONS) {
                 EventGenerator evtGen = new ServerConsGenerator( duration );
-                evtGen.connect( agentCore );
-                agentCore.addEventGenerator( evtGen );
+                evtGen.connect( node );
+                node.addEventGenerator( evtGen );
             }
             
-            plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + i + " " + model.getModelType( true ) );
+            plotter.addPlot( node.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + i + " " + model.getModelType( true ) );
         }
         
         plotter.setAxisName( "Time (h)", "Energy (J)" );
@@ -683,9 +704,10 @@ public class EnergyTestMONO
         int totalQueries = 0;
         for (int i = 0; i < CPU_CORES; i++) {
             EnergyCPU cpu = cpus.get( i );
-            totalEnergy += cpu.getResultSampled( Global.ENERGY_SAMPLING );
-            totalIdleEnergy += cpu.getResultSampled( Global.IDLE_ENERGY_SAMPLING );
-            Utils.LOGGER.info( "CPU " + i + ", Energy consumed: " + cpu.getResultSampled( Global.ENERGY_SAMPLING ) + "J" );
+            double energy = cpu.getAgent().getResultSampled( Global.ENERGY_SAMPLING );
+            totalEnergy += energy;
+            totalIdleEnergy += cpu.getAgent().getResultSampled( Global.IDLE_ENERGY_SAMPLING );
+            Utils.LOGGER.info( "CPU " + i + ", Energy consumed: " + energy + "J" );
             totalQueries += cpu.getExecutedQueries();
         }
         Utils.LOGGER.info( model.getModelType( false ) + " - Total energy:      " + totalEnergy + "J" );

@@ -5,11 +5,15 @@ import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+
+import org.newdawn.slick.util.ResourceLoader;
 
 import simulator.core.Agent;
 import simulator.core.Simulator;
@@ -32,6 +36,7 @@ import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.CPUModel.Type;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Pair;
+import simulator.utils.Sampler;
 import simulator.utils.Sampler.Sampling;
 import simulator.utils.SizeUnit;
 import simulator.utils.Time;
@@ -484,7 +489,8 @@ public class EnergyTestREPLICA_DIST
         private void loadMeanArrivalTime() throws IOException
         {
             meanCompletionTime = new ArrayList<>( 128 );
-            BufferedReader reader = new BufferedReader( new FileReader( "Results/MeanCompletionTime.log" ) );
+            InputStream loader = ResourceLoader.getResourceAsStream( "Results/MeanCompletionTime.log" );
+            BufferedReader reader = new BufferedReader( new InputStreamReader( loader ) );
             String line = null;
             while ((line = reader.readLine()) != null) {
                 double time = Double.parseDouble( line.split( " " )[1] );
@@ -496,7 +502,8 @@ public class EnergyTestREPLICA_DIST
         private void loadQueryPerSlot() throws IOException
         {
             meanArrivalQueries = new ArrayList<>( 128 );
-            BufferedReader reader = new BufferedReader( new FileReader( "Results/QueryPerTimeSlot.log" ) );
+            InputStream loader = ResourceLoader.getResourceAsStream( "Results/QueryPerTimeSlot.log" );
+            BufferedReader reader = new BufferedReader( new InputStreamReader( loader ) );
             String line = null;
             while ((line = reader.readLine()) != null) {
                 double time = Double.parseDouble( line.split( " " )[1] );
@@ -769,8 +776,8 @@ public class EnergyTestREPLICA_DIST
             for (int j = 0; j < REPLICAS_PER_NODE; j++) {
                 final long nodeId = (i * REPLICAS_PER_NODE + j + 1);
                 EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
-                cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/Distributed_Replica_" + testMode + "_" + modelType + "_Node" + nodeId + "_Energy.log" );
-                cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
+                //cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/Distributed_Replica_" + testMode + "_" + modelType + "_Node" + nodeId + "_Energy.log" );
+                //cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
                 //cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/Distributed_Replica_" + testMode + "_" + modelType + "_Node" + nodeId + "_Tail_Latency.log" );
                 cpus.add( cpu );
                 
@@ -784,6 +791,9 @@ public class EnergyTestREPLICA_DIST
                 agentCore.addDevice( cpu );
                 net.addAgent( agentCore );
                 
+                agentCore.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/Distributed_Replica_" + testMode + "_" + modelType + "_Node" + nodeId + "_Energy.log", Sampling.CUMULATIVE ) );
+                agentCore.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
+                
                 if (type == Type.CONS) {
                     EventGenerator evtGen = new ServerConsGenerator( duration );
                     evtGen.connect( agentCore );
@@ -791,7 +801,7 @@ public class EnergyTestREPLICA_DIST
                 }
                 
                 if (showGUI) {
-                    plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + nodeId + " " + p_model.getModelType( false ) );
+                    plotter.addPlot( agentCore.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + nodeId + " " + p_model.getModelType( false ) );
                 }
                 
                 switchGen.connect( agentCore );
@@ -822,7 +832,7 @@ public class EnergyTestREPLICA_DIST
         double totalEnergy = 0;
         for (int i = 0; i < NODES * REPLICAS_PER_NODE; i++) {
             EnergyCPU cpu = cpus.get( i );
-            double energy = cpu.getResultSampled( Global.ENERGY_SAMPLING );
+            double energy = cpu.getAgent().getResultSampled( Global.ENERGY_SAMPLING );
             totalEnergy += energy;
             System.out.println( testMode + " " + model.getModelType( false ) +
                                 " - CPU (" + (i/REPLICAS_PER_NODE + 1) + "-" + (i%REPLICAS_PER_NODE) + ") => Energy: " + energy +

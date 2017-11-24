@@ -128,7 +128,7 @@ public class EnergyCPU extends CPU
     @Override
     public long selectCore( Time time, QueryInfo query )
     {
-        addSampledValue( Global.QUERY_PER_TIME_SLOT, time, time, 1 );
+        getAgent().addSampledValue( Global.QUERY_PER_TIME_SLOT, time, time, 1 );
         //return ((CPUModel) _model).selectCore( time, this, query );
         return 0;
     }
@@ -231,10 +231,10 @@ public class EnergyCPU extends CPU
     }
     
     @Override
-    public Double getResultSampled( String sampler ) {
-        // TODO RIMUOVERE QUESTO METODO DOPO I TEST
+    public void shutdown() throws IOException {
+     // TODO RIMUOVERE QUESTO METODO DOPO I TEST
         coeffWriter.close();
-        return super.getResultSampled( sampler );
+        super.shutdown();
     }
 
     @Override

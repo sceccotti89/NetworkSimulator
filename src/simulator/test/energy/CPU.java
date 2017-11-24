@@ -224,14 +224,14 @@ public abstract class CPU extends Device<QueryInfo,Long>
             Time startTime   = currentQuery.getStartTime();
             Time endTime     = currentQuery.getEndTime();
             Time tailLatency = endTime.clone().subTime( currentQuery.getArrivalTime() );
-            cpu.addSampledValue( Global.TAIL_LATENCY_SAMPLING, endTime,
-                                 endTime, tailLatency.getTimeMicros() );
+            cpu.getAgent().addSampledValue( Global.TAIL_LATENCY_SAMPLING, endTime,
+                                            endTime, tailLatency.getTimeMicros() );
             
-            cpu.addSampledValue( Global.ENERGY_SAMPLING, startTime,
-                                 endTime, currentQuery.getEnergyConsumption() );
+            cpu.getAgent().addSampledValue( Global.ENERGY_SAMPLING, startTime,
+                                            endTime, currentQuery.getEnergyConsumption() );
             
-            cpu.addSampledValue( Global.MEAN_COMPLETION_TIME, endTime,
-                                 endTime, tailLatency.getTimeMicros() );
+            cpu.getAgent().addSampledValue( Global.MEAN_COMPLETION_TIME, endTime,
+                                            endTime, tailLatency.getTimeMicros() );
             
             // TODO writeResult( currentQuery.getFrequency(), currentQuery.getLastEnergy() );
             
@@ -256,8 +256,8 @@ public abstract class CPU extends Device<QueryInfo,Long>
                 }
             }
             
-            cpu.addSampledValue( Global.ENERGY_SAMPLING, startTime, time, idleEnergy );
-            cpu.addSampledValue( Global.IDLE_ENERGY_SAMPLING, startTime, time, idleEnergy );
+            cpu.getAgent().addSampledValue( Global.ENERGY_SAMPLING, startTime, time, idleEnergy );
+            cpu.getAgent().addSampledValue( Global.IDLE_ENERGY_SAMPLING, startTime, time, idleEnergy );
         }
         
         protected void setFrequency( long frequency ) {
