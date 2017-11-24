@@ -1,6 +1,7 @@
 
 package simulator.test.energy;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -22,6 +23,7 @@ import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
+import simulator.graphics.plotter.Plotter.Line;
 import simulator.test.energy.CPUModel.CONSmodel;
 import simulator.test.energy.CPUModel.Mode;
 import simulator.test.energy.CPUModel.PEGASUSmodel;
@@ -30,14 +32,15 @@ import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.CPUModel.Type;
 import simulator.topology.NetworkTopology;
+import simulator.utils.Pair;
 import simulator.utils.SizeUnit;
 import simulator.utils.Time;
 import simulator.utils.Utils;
 
 public class EnergyTestREPLICA_DIST
 {
-    private static final int NODES = 5;
-    private static final int REPLICAS_PER_NODE = 2;
+    private static final int NODES = 1;
+    private static final int REPLICAS_PER_NODE = 20;
     private static final int CPU_CORES = 4;
     
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
@@ -50,14 +53,16 @@ public class EnergyTestREPLICA_DIST
     private static List<EnergyCPU> cpus = new ArrayList<>( NODES );
     private static PESOScontroller controller;
     
+    private static boolean showGUI = true;
+    
     
     
     
     
     private static class ClientGenerator extends EventGenerator
     {
-        private static final String QUERY_TRACE = "Models/msn.day2.arrivals.txt";
-        //private static final String QUERY_TRACE = "Models/test_arrivals.txt";
+        //private static final String QUERY_TRACE = "Models/msn.day2.arrivals.txt";
+        private static final String QUERY_TRACE = "Models/test_arrivals.txt";
         private static final int NUM_QUERIES = 10000;
         // Random generator seed.
         private static final int SEED = 50000;
@@ -441,10 +446,10 @@ public class EnergyTestREPLICA_DIST
         
         // Watt dissipated by the associated CPU.
         private static final double Pstandby =  2;
-        private static final double Pon      = 84;
+        private static final double Pon      = 64;
         
         // The Lambda value used to balance the equation (lower for latency, higher for power).
-        private static final double LAMBDA = 0.25;
+        private static final double LAMBDA = 0.75;
         
         // Parameter used to normalize the latency.
         private static final double ALPHA = -0.01;
@@ -467,10 +472,7 @@ public class EnergyTestREPLICA_DIST
             
             if (estimatorType == SEASONAL_ESTIMATOR) {
                 final int size = meanCompletionTime.size();
-                allReplicas = new int[size];
                 createGraph( size );
-                //System.out.println( "Graph: \n" + graph.toString() );
-                graph.computeMinimumPath( this, allReplicas );
                 // TODO per i test mettere questo EXIT.
                 System.exit( 0 );
             } else {
@@ -599,11 +601,15 @@ public class EnergyTestREPLICA_DIST
                 }
             }
             // Last node.
-            final int index = (size + 1) * REPLICAS_PER_NODE - 1;
+            final int index = size * REPLICAS_PER_NODE + 1;
             graph.addNode( index, 0 );
             for (int i = 1; i <= REPLICAS_PER_NODE; i++) {
                 graph.connectNodes( index - i, index );
             }
+            
+            //System.out.println( "Graph: \n" + graph.toString() );
+            allReplicas = new int[size];
+            graph.computeMinimumPath( this, allReplicas );
         }
         
         public double getWeight( double queries, double nodes, int slotIndex )
@@ -663,20 +669,29 @@ public class EnergyTestREPLICA_DIST
     
     public static void main( String[] args ) throws Exception
     {
-        Utils.VERBOSE      = false;
+        Utils.VERBOSE = false;
         PESOS_CONTROLLER   = false;
         PEGASUS_CONTROLLER = false;
         
-        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        if (System.getProperty( "showGUI" ) != null) {
+            showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
+        }
+        
+        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
-        //testNetwork( Type.PERF, null, 0 );
+        testNetwork( Type.PERF, null, 0 );
         //testNetwork( Type.CONS, null, 0 );
         
         //testNetwork( Type.PEGASUS, null,  500 );
         //testNetwork( Type.PEGASUS, null, 1000 );
+        
+        // TODO dovrei osservare quanti server sono stati utilizzati al variare di LAMBDA
+        /*new SwitchAgent( 0,
+                         SwitchAgent.SEASONAL_ESTIMATOR, 2,
+                         new SwitchGenerator(new Time(0,TimeUnit.DAYS),PACKET,PACKET));*/
     }
     
     private static CPUModel getModel( Type type, Mode mode, long timeBudget, int node )
@@ -725,15 +740,20 @@ public class EnergyTestREPLICA_DIST
         
         CPUModel model = getModel( type, mode, timeBudget, 1 );
         final String modelType = model.getModelType( true );
-        Plotter plotter = new Plotter( "", 800, 600 );
+        Plotter plotter = null;
+        if (showGUI) {
+            plotter = new Plotter( "", 800, 600 );
+        }
         
         String testMode = null;
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
+        final int latencyNormalization = 1;
         for (int i = 0; i < NODES; i++) {
             // Create the switch associated to the REPLICA nodes.
             EventGenerator switchGen = new SwitchGenerator( duration, PACKET, PACKET );
             SwitchAgent switchNode = new SwitchAgent( 2 + i * REPLICAS_PER_NODE + i,
-                                                      SwitchAgent.SEASONAL_ESTIMATOR, 1,
+                                                      SwitchAgent.SEASONAL_ESTIMATOR,
+                                                      latencyNormalization,
                                                       switchGen );
             net.addAgent( switchNode );
             brokerGen.connect( switchNode );
@@ -754,9 +774,9 @@ public class EnergyTestREPLICA_DIST
             for (int j = 0; j < REPLICAS_PER_NODE; j++) {
                 final long nodeId = (i * REPLICAS_PER_NODE + j + 1);
                 EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
-                cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
+                cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/Distributed_Replica_" + testMode + "_" + modelType + "_Node" + nodeId + "_Energy.log" );
                 cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
-                cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Node" + nodeId + "_Tail_Latency.log" );
+                //cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/Distributed_Replica_" + testMode + "_" + modelType + "_Node" + nodeId + "_Tail_Latency.log" );
                 cpus.add( cpu );
                 
                 // Add the model to the corresponding CPU.
@@ -775,7 +795,9 @@ public class EnergyTestREPLICA_DIST
                     agentCore.addEventGenerator( evtGen );
                 }
                 
-                plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + nodeId + " " + p_model.getModelType( false ) );
+                if (showGUI) {
+                    plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + nodeId + " " + p_model.getModelType( false ) );
+                }
                 
                 switchGen.connect( agentCore );
                 if (PESOS_CONTROLLER) {
@@ -788,13 +810,15 @@ public class EnergyTestREPLICA_DIST
         net.addAgent( brokerAgent );
         client.getEventGenerator( 0 ).connect( brokerAgent );
         
-        plotter.setTitle( "DISTRIBUTED REPLICA (" + testMode + ") - " + modelType );
-        plotter.setAxisName( "Time (h)", "Energy (J)" );
-        plotter.setTicks( Axis.Y, 10 );
-        plotter.setTicks( Axis.X, 24, 2 );
-        plotter.setRange( Axis.Y, 0, 4300 );
-        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
-        plotter.setVisible( true );
+        if (showGUI) {
+            plotter.setTitle( "DISTRIBUTED REPLICA (" + testMode + ") - " + modelType );
+            plotter.setAxisName( "Time (h)", "Energy (J)" );
+            plotter.setTicks( Axis.Y, 10 );
+            plotter.setTicks( Axis.X, 24, 2 );
+            plotter.setRange( Axis.Y, 0, 4300 );
+            plotter.setScaleX( 60d * 60d * 1000d * 1000d );
+            plotter.setVisible( true );
+        }
         
         sim.start( duration, false );
         //sim.start( new Time( 53100, TimeUnit.MICROSECONDS ), false );
@@ -805,56 +829,125 @@ public class EnergyTestREPLICA_DIST
             EnergyCPU cpu = cpus.get( i );
             double energy = cpu.getResultSampled( Global.ENERGY_SAMPLING );
             totalEnergy += energy;
-            System.out.println( testMode + " " + model.getModelType( false ) + " - CPU (" + (i/REPLICAS_PER_NODE + 1) + "-" + (i%REPLICAS_PER_NODE) + ") => Energy: " + energy );
+            System.out.println( testMode + " " + model.getModelType( false ) +
+                                " - CPU (" + (i/REPLICAS_PER_NODE + 1) + "-" + (i%REPLICAS_PER_NODE) + ") => Energy: " + energy +
+                                ", Queries: " + cpu.getExecutedQueries() );
         }
         System.out.println( testMode + " " + model.getModelType( false ) + " - Total energy: " + totalEnergy );
         
         // Show the animation.
-        /*AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );
-        an.loadSimulation( "Topology/Animation/Topology_distributed_multiCore.json", "./Results/distr_multi_core.txt" );
-        an.setTargetFrameRate( 90 );
-        an.setForceExit( false );
-        an.start();*/
+        if (showGUI) {
+            /*AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );
+            an.loadSimulation( "Topology/Animation/Topology_distributed_multiCore.json",
+                               "./Results/distr_multi_core.txt" );
+            an.setTargetFrameRate( 90 );
+            an.setForceExit( false );
+            an.start();*/
+        }
         
-        // TODO Rifare tutti i test usando PERF
         // LongTerm, L2
         
         // Lambda = 0.25
-        // Total energy: 3108281.952201258
-        //CPU (1-0) => Energy: 404223.252460304
-        //CPU (1-1) => Energy: 202056.00000654228
-        //CPU (2-0) => Energy: 467442.6404017555
-        //CPU (2-1) => Energy: 221175.15035500453
-        //CPU (3-0) => Energy: 395866.26797429
-        //CPU (3-1) => Energy: 199549.26616977184
-        //CPU (4-0) => Energy: 431138.269763377
-        //CPU (4-1) => Energy: 210130.4081193948
-        //CPU (5-0) => Energy: 381514.30000658904
-        //CPU (5-1) => Energy: 195186.39694422903
+        // Total energy: 5386703.2933835270 (PERF)
+        // Total energy: 3108281.9522012580 (PESOS  500ms TC)
+        // Total energy:  (PESOS 1000ms TC)
+        
+//        0.25_LongTerm_L2 PERF - CPU (1-0) => Energy: 752982.59694510190, Queries: 416429
+//        0.25_LongTerm_L2 PERF - CPU (1-1) => Energy: 310491.15959490290, Queries: 128289
+//        0.25_LongTerm_L2 PERF - CPU (2-0) => Energy: 804368.84045665300, Queries: 416429
+//        0.25_LongTerm_L2 PERF - CPU (2-1) => Energy: 326347.04536502710, Queries: 128289
+//        0.25_LongTerm_L2 PERF - CPU (3-0) => Energy: 751965.94864508860, Queries: 416429
+//        0.25_LongTerm_L2 PERF - CPU (3-1) => Energy: 310152.69606989936, Queries: 128289
+//        0.25_LongTerm_L2 PERF - CPU (4-0) => Energy: 767873.59698172750, Queries: 416429
+//        0.25_LongTerm_L2 PERF - CPU (4-1) => Energy: 315000.56966503740, Queries: 128289
+//        0.25_LongTerm_L2 PERF - CPU (5-0) => Energy: 740867.50053629360, Queries: 416429
+//        0.25_LongTerm_L2 PERF - CPU (5-1) => Energy: 306653.33912379440, Queries: 128289
         
         // Lambda = 0.5
-        // Total energy: 
+        // Total energy:  5386703.293383527 (PERF)
         
+//        0.50_LongTerm_L2 PERF - CPU (1-0) => Energy: 752982.59694510190, Queries: 416429
+//        0.50_LongTerm_L2 PERF - CPU (1-1) => Energy: 310491.15959490290, Queries: 128289
+//        0.50_LongTerm_L2 PERF - CPU (2-0) => Energy: 804368.84045665300, Queries: 416429
+//        0.50_LongTerm_L2 PERF - CPU (2-1) => Energy: 326347.04536502710, Queries: 128289
+//        0.50_LongTerm_L2 PERF - CPU (3-0) => Energy: 751965.94864508860, Queries: 416429
+//        0.50_LongTerm_L2 PERF - CPU (3-1) => Energy: 310152.69606989936, Queries: 128289
+//        0.50_LongTerm_L2 PERF - CPU (4-0) => Energy: 767873.59698172750, Queries: 416429
+//        0.50_LongTerm_L2 PERF - CPU (4-1) => Energy: 315000.56966503740, Queries: 128289
+//        0.50_LongTerm_L2 PERF - CPU (5-0) => Energy: 740867.50053629360, Queries: 416429
+//        0.50_LongTerm_L2 PERF - CPU (5-1) => Energy: 306653.33912379440, Queries: 128289
         
         // Lambda = 0.75
-        // Total energy: 3160533.9400715795
-        //CPU (1-0) => Energy: 501240.7577923096
-        //CPU (1-1) => Energy: 114123.57533984544
-        //CPU (2-0) => Energy: 590845.8867877274
-        //CPU (2-1) => Energy: 114488.5175557226
-        //CPU (3-0) => Energy: 489087.00387402985
-        //CPU (3-1) => Energy: 114070.35706198016
-        //CPU (4-0) => Energy: 539678.5692930515
-        //CPU (4-1) => Energy: 114270.78049890815
-        //CPU (5-0) => Energy: 468735.95257104357
-        //CPU (5-1) => Energy: 113992.5392969615
+        // Total energy: 5386703.2933820090 (PERF)
+        // Total energy: 3160533.9400715795 (PESOS 500ms TC)
         
-        // ShortTerm L2
+//        0.75_LongTerm_L2 PERF - CPU (1-0) => Energy:  947094.55171991850, Queries: 542010
+//        0.75_LongTerm_L2 PERF - CPU (1-1) => Energy:  116379.20481976704, Queries:   2708
+//        0.75_LongTerm_L2 PERF - CPU (2-0) => Energy: 1014022.13255152920, Queries: 542010
+//        0.75_LongTerm_L2 PERF - CPU (2-1) => Energy:  116693.75326976694, Queries:   2708
+//        0.75_LongTerm_L2 PERF - CPU (3-0) => Energy:  945743.06346998980, Queries: 542010
+//        0.75_LongTerm_L2 PERF - CPU (3-1) => Energy:  116375.58124476702, Queries:   2708
+//        0.75_LongTerm_L2 PERF - CPU (4-0) => Energy:  966402.30622668660, Queries: 542010
+//        0.75_LongTerm_L2 PERF - CPU (4-1) => Energy:  116471.86041976605, Queries:   2708
+//        0.75_LongTerm_L2 PERF - CPU (5-0) => Energy:  931215.56476505110, Queries: 542010
+//        0.75_LongTerm_L2 PERF - CPU (5-1) => Energy:  116305.27489476671, Queries:   2708
+        
+        // ShortTerm, L2
         
         // Lambda = 0.25
         
         // Lambda = 0.5
         
         // Lambda = 0.75
+    }
+    
+    public static void plotEnergyConsumption( long time_budget, String mode,
+                                              double lambda, String type,
+                                              int latencyType ) throws IOException
+    {
+        Plotter plotter = new Plotter( "PESOS (" + mode + ", t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ") - Energy", 800, 600 );
+        plotter.setAxisName( "Time (h)", "Energy (J)" );
+        double yRange = time_budget * 1000d + 200000d;
+        plotter.setRange( Axis.Y, 0, yRange );
+        plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
+        plotter.setScaleY( 1000d );
+        
+        plotter.setRange( Axis.X, 0, TimeUnit.HOURS.toMicros( 24 ) );
+        plotter.setTicks( Axis.X, 24, 2 );
+        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
+        
+        plotter.addPlot( "Results/", "PESOS (" + mode + ", t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ")" );
+        
+        plotter.setVisible( true );
+    }
+    
+    public static void plotTailLatency( int PERCENTILE, long time_budget, String mode,
+                                        double lambda, String type,
+                                        int latencyType ) throws IOException
+    {
+        final double interval = TimeUnit.MINUTES.toMicros( 5 );
+        
+        Plotter plotter = new Plotter( "PESOS (" + mode + ", t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ") - Tail Latency " + PERCENTILE + "-th Percentile", 800, 600 );
+        plotter.setAxisName( "Time (h)", PERCENTILE + "th-tile response time (ms)" );
+        double yRange = time_budget * 1000d + 200000d;
+        plotter.setRange( Axis.Y, 0, yRange );
+        plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
+        plotter.setScaleY( 1000d );
+        
+        plotter.setRange( Axis.X, 0, TimeUnit.HOURS.toMicros( 24 ) );
+        plotter.setTicks( Axis.X, 24, 2 );
+        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
+        
+        List<Pair<Double, Double>> points = new ArrayList<>();
+        for(int i = 0; i <= 1; i++) {
+            points.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), time_budget * 1000d ) );
+        }
+        plotter.addPlot( points, Color.YELLOW, Line.DASHED, "Tail latency (" + time_budget + "ms)" );
+        
+        List<Pair<Double,Double>> percentiles = Utils.getPercentiles( PERCENTILE, interval, "Results/Distributed_Replica_" + lambda + "_" + type + "_L" + latencyType + "_PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.txt",
+                                                                      "Results/Distributed_Replica_" + lambda + "_" + type + "_L" + latencyType + "_PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
+        plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ")" );
+        
+        plotter.setVisible( true );
     }
 }

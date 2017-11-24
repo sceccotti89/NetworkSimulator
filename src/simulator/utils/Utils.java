@@ -4,14 +4,21 @@
 
 package simulator.utils;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -142,5 +149,137 @@ public class Utils
         if (!file.exists()) {
             file.mkdirs();
         }
+    }
+    
+    /**
+     * Computes the percentile list over the specified input file and time interval.
+     * 
+     * @param percentile      the selected percentile.
+     * @param interval        time to collect values and perform the percentile.
+     *                        Time must be expressed in microseconds.
+     * @param fileName        the input file name.
+     * @param saveFileName    where to save the generated output.
+     *                        If {@code null} the generated output will be not saved.
+     *                        
+     * @return the generated list of precentiles.
+    */
+    public static List<Pair<Double,Double>> getPercentiles( int percentile,
+                                                            double interval,
+                                                            String fileName,
+                                                            String saveFileName ) throws IOException
+    {
+        final double _percentile = percentile * 0.01d;
+        
+        FileReader fReader = new FileReader( fileName );
+        BufferedReader reader = new BufferedReader( fReader );
+        String line, results = "";
+        double nextInterval = interval;
+        Queue<Double> set = new PriorityQueue<>();
+        List<Pair<Double,Double>> percentiles = new ArrayList<>();
+        while ((line = reader.readLine()) != null) {
+            String[] values = line.split( "\\s" );
+            double time  = Double.parseDouble( values[0] );
+            double value = Double.parseDouble( values[1] );
+            if (time < nextInterval) {
+                set.add( value );
+            } else {
+                // Change of interval.
+                double index = _percentile * set.size();
+                double realIndex = Math.ceil( index );
+                for (int i = 0; i < realIndex-1; i++) {
+                    set.poll();
+                }
+                
+                if (realIndex > index) {
+                    // Not rounded.
+                    results += nextInterval + " " + set.peek() + "\n";
+                    percentiles.add( new Pair<>( nextInterval, set.poll() ) );
+                } else {
+                    // Rounded: mean of the two next values.
+                    double first  = set.poll();
+                    double second = set.poll();
+                    results += nextInterval + " " + ((first+second)/2d) + "\n";
+                    percentiles.add( new Pair<>( nextInterval, (first+second)/2d ) );
+                }
+                
+                set.clear();
+                set.add( value );
+                nextInterval += interval;
+            }
+        }
+        
+        reader.close();
+        
+        if (saveFileName != null) {
+            PrintWriter writer = new PrintWriter( saveFileName, "UTF-8" );
+            writer.print( results );
+            writer.close();
+        }
+        
+        return percentiles;
+    }
+    
+    /**
+     * Computes the percentile list over the specified input file and time interval.
+     * 
+     * @param percentile      the selected percentile.
+     * @param interval        time to collect values and perform the percentile.
+     *                        Time must be expressed in microseconds.
+     * @param values          list of values on which the percentiles are calculated.
+     *                        It must be a list of pairs <Time,Value>,
+     *                        where Time must be expressed in microseconds.
+     * @param saveFileName    where to save the generated output, if different from {@code null}.
+     *                        
+     * @return the generated list of precentiles.
+    */
+    public static List<Pair<Double,Double>> getPercentiles( int percentile,
+                                                            double interval,
+                                                            List<Pair<Double,Double>> values,
+                                                            String saveFileName ) throws IOException
+    {
+        final double _percentile = percentile * 0.01d;
+        
+        String results = "";
+        double nextInterval = interval;
+        Queue<Double> set = new PriorityQueue<>();
+        List<Pair<Double,Double>> percentiles = new ArrayList<>();
+        for (Pair<Double,Double> val : values) {
+            double time  = val.getFirst();
+            double value = val.getSecond();
+            if (time < nextInterval) {
+                set.add( value );
+            } else {
+                // Change of interval.
+                double index = _percentile * set.size();
+                double realIndex = Math.ceil( index );
+                for (int i = 0; i < realIndex-1; i++) {
+                    set.poll();
+                }
+                
+                if (realIndex > index) {
+                    // Not rounded.
+                    results += nextInterval + " " + set.peek() + "\n";
+                    percentiles.add( new Pair<>( nextInterval, set.poll() ) );
+                } else {
+                    // Rounded: mean of the two next values.
+                    double first  = set.poll();
+                    double second = set.poll();
+                    results += nextInterval + " " + ((first+second)/2d) + "\n";
+                    percentiles.add( new Pair<>( nextInterval, (first+second)/2d ) );
+                }
+                
+                set.clear();
+                set.add( value );
+                nextInterval += interval;
+            }
+        }
+        
+        if (saveFileName != null) {
+            PrintWriter writer = new PrintWriter( saveFileName, "UTF-8" );
+            writer.print( results );
+            writer.close();
+        }
+        
+        return percentiles;
     }
 }

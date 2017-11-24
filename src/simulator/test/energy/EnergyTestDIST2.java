@@ -632,9 +632,9 @@ public class EnergyTestDIST2
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         for (int i = 0; i < NODES; i++) {
             EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
-            cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
+            cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/Distributed_" + modelType + "_Energy.log" );
             cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
-            cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Node" + (i+1) + "_Tail_Latency.log" );
+            //cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/Distributed_" + modelType + "_Node" + (i+1) + "_Tail_Latency.log" );
             cpus.add( cpu );
             
             // Add the model to the corresponding cpu.
@@ -656,7 +656,10 @@ public class EnergyTestDIST2
             plotter.addPlot( cpu.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) + " " + p_model.getModelType( false ) );
             
             switchGen.connect( agentCore );
-            controller.connect( agentCore );
+            
+            if (type == Type.PESOS) {
+                controller.connect( agentCore );
+            }
         }
         
         plotter.setAxisName( "Time (h)", "Energy (J)" );
@@ -670,11 +673,14 @@ public class EnergyTestDIST2
         //sim.start( new Time( 53100, TimeUnit.MICROSECONDS ), false );
         sim.close();
         
+        double totalEnergy = 0;
         for (int i = 0; i < NODES; i++) {
             EnergyCPU cpu = cpus.get( i );
             double energy = cpu.getResultSampled( Global.ENERGY_SAMPLING );
+            totalEnergy += energy;
             System.out.println( "CPU: " + i + ", Energy: " + energy );
         }
+        System.out.println( "Total energy: " + totalEnergy );
         
         // Show the animation.
         /*AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );
@@ -682,5 +688,11 @@ public class EnergyTestDIST2
         an.setTargetFrameRate( 90 );
         an.setForceExit( false );
         an.start();*/
+        
+        // PERF
+        // Total energy: 4825103.293381959
+        
+        // PESOS TC 500ms
+        // Total energy: 2599029.532406005
     }
 }

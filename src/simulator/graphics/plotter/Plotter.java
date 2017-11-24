@@ -947,18 +947,6 @@ public class Plotter extends WindowAdapter implements ActionListener
                 
                 yTickPosition += yTicksOffset;
             }
-            
-            if (!settings._settedXRangeByUser) {
-                // Set the X range of the plotter.
-                settings._range.minX = Math.min( settings._range.minX, range.minX );
-                settings._range.maxX = Math.max( settings._range.maxX, range.maxX );
-            }
-            
-            if (!settings._settedYRangeByUser) {
-                // Set the Y range of the plotter.
-                settings._range.minY = Math.min( settings._range.minY, range.minY );
-                settings._range.maxY = Math.max( settings._range.maxY, range.maxY );
-            }
         }
 
         private void drawAxis( Graphics2D g, Range range )
@@ -1055,7 +1043,7 @@ public class Plotter extends WindowAdapter implements ActionListener
                 for (Plot plot : _plots) {
                     try {
                         List<Pair<Double,Double>> points = plot.points;
-                        if (points.size() > 0) {
+                        if (!points.isEmpty()) {
                             if (points.size() == 1) {
                                 if (!settings._settedXRangeByUser) {
                                     minX = points.get( 0 ).getFirst() - 0.1d;
@@ -1119,6 +1107,18 @@ public class Plotter extends WindowAdapter implements ActionListener
                     minY = Math.max( 0, minY - 0.1d );
                 }
                 maxY += 0.1d;
+            }
+            
+            if (!settings._settedXRangeByUser) {
+                // Set the X range of the plotter.
+                settings._range.minX = minX;
+                settings._range.maxX = maxX;
+            }
+            
+            if (!settings._settedYRangeByUser) {
+                // Set the Y range of the plotter.
+                settings._range.minY = minY;
+                settings._range.maxY = maxY;
             }
             
             return new Range( maxXPoints, maxYPoints, minX, maxX, minY, maxY );

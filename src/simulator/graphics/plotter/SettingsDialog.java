@@ -167,34 +167,48 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
                 switch (index) {
                     case( 0 ):
                         if (value <= 0) { showErrorDialog( "Number of X ticks must be greater then 0." ); return; }
-                        settings._xNumTicks = (int) value; break;
+                        settings._xNumTicks = (int) value;
+                        break;
                     case( 1 ):
                         if (value <= 0) { showErrorDialog( "X intervals must be greater then 0." ); return; }
-                        settings.xTickInterval = (int) value; break;
+                        settings.xTickInterval = (int) value;
+                        break;
                     case( 2 ):
                         if (value <= 0) { showErrorDialog( "Number of Y ticks must be greater then 0." ); return; }
-                        settings._yNumTicks = (int) value; break;
+                        settings._yNumTicks = (int) value;
+                        break;
                     case( 3 ):
                         if (value <= 0) { showErrorDialog( "Y intervals must be greater then 0." ); return; }
-                        settings.yTickInterval = (int) value; break;
+                        settings.yTickInterval = (int) value;
+                        break;
                     case( 4 ):
-                        settings._range.setMinX( min = value ); break;
+                        settings._range.setMinX( min = value );
+                        settings._settedXRangeByUser = true;
+                        break;
                     case( 5 ):
                         if (value < 0) { showErrorDialog( "X maximum range cannot be less then 0." ); return; }
                         if (value < min) { settings._range.setMinX( oldMinX ); showErrorDialog( "X maximum range cannot be less then the minimum." ); return; }
-                        settings._range.setMaxX( value ); break;
+                        settings._range.setMaxX( value );
+                        settings._settedXRangeByUser = true;
+                        break;
                     case( 6 ):
-                        settings._range.setMinY( min = value ); break;
+                        settings._range.setMinY( min = value );
+                        settings._settedYRangeByUser = true;
+                        break;
                     case( 7 ):
                         if (value < 0) { showErrorDialog( "Y maximum range cannot be less then 0." ); return; }
                         if (value < min) { settings._range.setMinY( oldMinY ); showErrorDialog( "Y maximum range cannot be less then the minimum." ); return; }
-                        settings._range.setMaxY( value ); break;
+                        settings._range.setMaxY( value );
+                        settings._settedYRangeByUser = true;
+                        break;
                     case( 8 ):
                         if (value <= 0) { showErrorDialog( "X scale cannot be less or equal then 0." ); return; }
-                        settings.xScale = value; break;
+                        settings.xScale = value;
+                        break;
                     case( 9 ):
                         if (value <= 0) { showErrorDialog( "Y scale cannot be less or equal then 0." ); return; }
-                        settings.yScale = value; break;
+                        settings.yScale = value;
+                        break;
                 }
             } else {
                 switch (index) {

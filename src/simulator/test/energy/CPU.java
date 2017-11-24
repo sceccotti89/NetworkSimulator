@@ -153,6 +153,10 @@ public abstract class CPU extends Device<QueryInfo,Long>
         }
     }
     
+    /**
+     * Returns the number of queries executed by the CPU,
+     * as the sum of queries executed by each core.
+    */
     public int getExecutedQueries()
     {
         int qe = 0;
