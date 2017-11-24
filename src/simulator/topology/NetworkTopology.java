@@ -337,7 +337,7 @@ public class NetworkTopology
     	return currNode;
     }
     
-    public void shutdown()
+    public void shutdown() throws IOException
     {
         for (Agent agent : agents.values()) {
             agent.shutdown();

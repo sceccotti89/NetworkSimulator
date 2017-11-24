@@ -152,7 +152,7 @@ public class Utils
     }
     
     /**
-     * Computes the percentile list over the specified input file and time interval.
+     * Computes the percentile over the specified input file and time interval.
      * 
      * @param percentile      the selected percentile.
      * @param interval        time to collect values and perform the percentile.
@@ -220,13 +220,13 @@ public class Utils
     }
     
     /**
-     * Computes the percentile list over the specified input file and time interval.
+     * Computes the percentile over the input list and time interval.
      * 
      * @param percentile      the selected percentile.
      * @param interval        time to collect values and perform the percentile.
      *                        Time must be expressed in microseconds.
      * @param values          list of values on which the percentiles are calculated.
-     *                        It must be a list of pairs <Time,Value>,
+     *                        It must be a list of pairs (Time,Value),
      *                        where Time must be expressed in microseconds.
      * @param saveFileName    where to save the generated output, if different from {@code null}.
      *                        

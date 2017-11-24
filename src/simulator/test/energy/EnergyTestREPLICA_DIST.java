@@ -12,7 +12,6 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import simulator.core.Agent;
-import simulator.core.Device.Sampler.Sampling;
 import simulator.core.Simulator;
 import simulator.events.Event;
 import simulator.events.EventHandler;
@@ -33,6 +32,7 @@ import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.CPUModel.Type;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Pair;
+import simulator.utils.Sampler.Sampling;
 import simulator.utils.SizeUnit;
 import simulator.utils.Time;
 import simulator.utils.Utils;
@@ -217,7 +217,7 @@ public class EnergyTestREPLICA_DIST
         }
         
         @Override
-        public void shutdown()
+        public void shutdown() throws IOException
         {
             writer.close();
             queries.clear();
@@ -364,7 +364,7 @@ public class EnergyTestREPLICA_DIST
         }
         
         @Override
-        public void shutdown()
+        public void shutdown() throws IOException
         {
             EnergyCPU cpu = getDevice( CPU );
             cpu.computeIdleEnergy( getEventScheduler().getTimeDuration() );
@@ -446,12 +446,12 @@ public class EnergyTestREPLICA_DIST
         
         // Watt dissipated by the associated CPU.
         private static final double Pstandby =  2;
-        private static final double Pon      = 64;
+        private static final double Pon      = 84;
         
         // The Lambda value used to balance the equation (lower for latency, higher for power).
         private static final double LAMBDA = 0.75;
         
-        // Parameter used to normalize the latency.
+        // Parameters used to normalize the latency.
         private static final double ALPHA = -0.01;
         private int latency_normalization;
         
@@ -687,11 +687,6 @@ public class EnergyTestREPLICA_DIST
         
         //testNetwork( Type.PEGASUS, null,  500 );
         //testNetwork( Type.PEGASUS, null, 1000 );
-        
-        // TODO dovrei osservare quanti server sono stati utilizzati al variare di LAMBDA
-        /*new SwitchAgent( 0,
-                         SwitchAgent.SEASONAL_ESTIMATOR, 2,
-                         new SwitchGenerator(new Time(0,TimeUnit.DAYS),PACKET,PACKET));*/
     }
     
     private static CPUModel getModel( Type type, Mode mode, long timeBudget, int node )
@@ -747,7 +742,7 @@ public class EnergyTestREPLICA_DIST
         
         String testMode = null;
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
-        final int latencyNormalization = 1;
+        final int latencyNormalization = 2;
         for (int i = 0; i < NODES; i++) {
             // Create the switch associated to the REPLICA nodes.
             EventGenerator switchGen = new SwitchGenerator( duration, PACKET, PACKET );
@@ -905,7 +900,7 @@ public class EnergyTestREPLICA_DIST
                                               double lambda, String type,
                                               int latencyType ) throws IOException
     {
-        Plotter plotter = new Plotter( "PESOS (" + mode + ", t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ") - Energy", 800, 600 );
+        Plotter plotter = new Plotter( "Energy (Lambda=" + lambda + ", Type=" + type + ")", 800, 600 );
         plotter.setAxisName( "Time (h)", "Energy (J)" );
         double yRange = time_budget * 1000d + 200000d;
         plotter.setRange( Axis.Y, 0, yRange );
@@ -916,7 +911,8 @@ public class EnergyTestREPLICA_DIST
         plotter.setTicks( Axis.X, 24, 2 );
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         
-        plotter.addPlot( "Results/", "PESOS (" + mode + ", t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ")" );
+        // TODO Completare
+        plotter.addPlot( "Log/", "PESOS (" + mode + ", t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ")" );
         
         plotter.setVisible( true );
     }

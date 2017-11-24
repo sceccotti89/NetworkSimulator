@@ -5,6 +5,7 @@
 package simulator.core;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -19,9 +20,11 @@ import simulator.events.EventScheduler;
 import simulator.events.generator.EventGenerator;
 import simulator.network.protocols.NetworkProtocol;
 import simulator.topology.NetworkNode;
+import simulator.utils.Pair;
+import simulator.utils.Sampler;
 import simulator.utils.Time;
 
-public abstract class Agent extends Thread
+public abstract class Agent
 {
     protected long _id;
     protected NetworkNode _node;
@@ -35,6 +38,8 @@ public abstract class Agent extends Thread
     
     private Time _time;
     
+    // Samplings list.
+    private Map<String,Sampler> samplings;
     private Map<String,Device<?,?>> _devices;
     
     private List<Integer> _availablePorts;
@@ -63,7 +68,6 @@ public abstract class Agent extends Thread
         }
     }
     
-    @Override
     public long getId() {
         return _id;
     }
@@ -78,7 +82,9 @@ public abstract class Agent extends Thread
         evGenerator.setAgent( this );
     }
     
-    public void addDevice( Device<?,?> device ) {
+    public void addDevice( Device<?,?> device )
+    {
+        device.setAgent( this );
         device.setEventScheduler( _evtScheduler );
         _devices.put( device.getID(), device );
     }
@@ -95,7 +101,23 @@ public abstract class Agent extends Thread
     public Collection<Device<?,?>> getDevices() {
         return _devices.values();
     }
-    
+
+    /**
+     * Adds a new sampler to collect some informations about this device.
+     * 
+     * @param samplerId    identifier of the sampler. Must be UNIQUE.
+     * @param sampler      the sampler object.
+     * 
+     * @throws RuntimeException if the samplerId already exists.
+    */
+    public void addSampler( final String samplerId, Sampler sampler )
+    {
+        if (samplings.containsKey( samplerId )) {
+            throw new RuntimeException( "Selected name \"" + samplerId + "\" already exists." );
+        }
+        samplings.put( samplerId, sampler );
+    }
+
     /**
      * Sets the time of the agent.</br>
      * The internal time of the agent will be updated only if the input time is greater
@@ -123,7 +145,8 @@ public abstract class Agent extends Thread
         node.setAgent( this );
     }
     
-    public void setEventScheduler( EventScheduler evtScheduler ) {
+    public void setEventScheduler( EventScheduler evtScheduler )
+    {
         _evtScheduler = evtScheduler;
         for (Device<?,?> device : _devices.values()) {
             device.setEventScheduler( evtScheduler );
@@ -225,6 +248,77 @@ public abstract class Agent extends Thread
     }
     
     /**
+     * Adds a new value to the specified sampler with the corresponding time intervals.</br>
+     * If the starting time is earlier than the ending time,
+     * the given value is "distributed" in multiple buckets along the entire interval;
+     * if the sampler interval is less or equal than 0 it goes in a single separate bucket,
+     * whose insertion is driven by the ending time.</br>
+     * 
+     * @param sampler        the specified sampler in which insert the value.
+     * @param startTime      starting time of the event.
+     * @param endTime        ending time of the event.
+     * @param value          value to add.
+    */
+    public void addSampledValue( String sampler, Time startTime, Time endTime, double value ) {
+        addSampledValue( sampler, startTime.getTimeMicros(), endTime.getTimeMicros(), value );
+    }
+
+    /**
+     * Adds a new value to the specified sampler with the corresponding time intervals.</br>
+     * If the starting time is earlier than the ending time,
+     * the given value is "distributed" in multiple buckets along the entire interval;
+     * if the sampler interval is less or equal than 0 it goes in a single separate bucket,
+     * whose insertion is driven by the ending time.</br>
+     * NOTE: all times MUST be expressed in microseconds.
+     * 
+     * @param sampler        the specified sampler in which insert the value.
+     * @param startTime      starting time of the event.
+     * @param endTime        ending time of the event.
+     * @param value          value to add.
+    */
+    public void addSampledValue( String sampler, double startTime, double endTime, double value )
+    {
+        Sampler samplerObj = samplings.get( sampler );
+        if (samplerObj != null) {
+            samplerObj.addSampledValue( startTime, endTime, value );
+        }
+    }
+    
+    /**
+     * Returns the list of values sampled by the requested sampler.
+     * 
+     * @param sampler    the requested sampler
+     * 
+     * @return {@code null} if the requested sampler is not present,
+     *         its list of values otherwise.
+    */
+    public List<Pair<Double,Double>> getSampledValues( String sampler )
+    {
+        if (!samplings.containsKey( sampler )) {
+            return null;
+        } else {
+            return samplings.get( sampler ).getValues();
+        }
+    }
+    
+    /**
+     * Returns the sum of all the results sampled by the given sampler.
+     * 
+     * @param sampler    the requested sampler
+     * 
+     * @return {@code null} if the requested sampler is not present,
+     *         its result value otherwise.
+    */
+    public Double getResultSampled( String sampler )
+    {
+        if (!samplings.containsKey( sampler )) {
+            return null;
+        } else {
+            return samplings.get( sampler ).getTotalResult();
+        }
+    }
+
+    /**
      * Returns the percentage of node utilization.</br>
      * By default it returns the size of the associated event queue.</br>
      * In case of any attached device an override of this method is suggested.
@@ -266,16 +360,6 @@ public abstract class Agent extends Thread
             return _availablePorts.remove( rand.nextInt( 64511 ) );
         }
     }
-    
-    @Override
-    public void run()
-    {
-        // TODO questo metodo dovrebbe richiamare il metodo execution()
-        // TODO nel quale uno puo' fare cio' che vuole..
-        //execution();
-    }
-    
-    //public abstract void execution();
     
     /**
      * Returns the next list of events.
@@ -319,13 +403,26 @@ public abstract class Agent extends Thread
     /**
      * Closes all the resources opened by this agent.
     */
-    public void shutdown()
+    public void shutdown() throws IOException
     {
         for (Device<?,?> device : _devices.values()) {
             try {
                 device.shutdown();
             } catch ( IOException e ) {
                 e.printStackTrace();
+            }
+        }
+        
+        if (samplings != null) {
+            for (Sampler sampler : samplings.values()) {
+                String logFile = sampler.getLogFile();
+                if (logFile != null) {
+                    PrintWriter writer = new PrintWriter( logFile, "UTF-8" );
+                    for (Pair<Double,Double> point : sampler.getValues()) {
+                        writer.println( point.getFirst() + " " + point.getSecond() );
+                    }
+                    writer.close();
+                }
             }
         }
     }

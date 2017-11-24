@@ -10,7 +10,6 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import simulator.core.Agent;
-import simulator.core.Device.Sampler.Sampling;
 import simulator.core.Simulator;
 import simulator.events.Event;
 import simulator.events.EventHandler;
@@ -25,6 +24,7 @@ import simulator.test.energy.CPUModel.Mode;
 import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.topology.NetworkTopology;
+import simulator.utils.Sampler.Sampling;
 import simulator.utils.SizeUnit;
 import simulator.utils.Time;
 import simulator.utils.Utils;
@@ -336,7 +336,7 @@ public class EnergyTestDIST
         }
         
         @Override
-        public void shutdown()
+        public void shutdown() throws IOException
         {
             EnergyCPU cpu = getDevice( new EnergyCPU() );
             cpu.computeIdleEnergy( getEventScheduler().getTimeDuration() );

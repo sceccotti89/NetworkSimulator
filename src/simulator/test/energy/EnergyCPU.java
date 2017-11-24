@@ -228,10 +228,10 @@ public class EnergyCPU extends CPU
     }
     
     @Override
-    public Double getResultSampled( String sampler ) {
-        // TODO RIMUOVERE QUESTO METODO DOPO I TEST
+    public void shutdown() throws IOException
+    {
         coeffWriter.close();
-        return super.getResultSampled( sampler );
+        super.shutdown();
     }
 
     @Override

@@ -1,6 +1,7 @@
 
 package simulator.test.energy;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -10,7 +11,6 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import simulator.core.Agent;
-import simulator.core.Device.Sampler.Sampling;
 import simulator.core.Simulator;
 import simulator.events.Event;
 import simulator.events.EventHandler;
@@ -22,6 +22,7 @@ import simulator.events.impl.ResponseEvent;
 import simulator.graphics.AnimationNetwork;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
+import simulator.graphics.plotter.Plotter.Line;
 import simulator.test.energy.CPUModel.CONSmodel;
 import simulator.test.energy.CPUModel.LOAD_SENSITIVEmodel;
 import simulator.test.energy.CPUModel.MY_model;
@@ -31,6 +32,8 @@ import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.CPUModel.Type;
 import simulator.topology.NetworkTopology;
+import simulator.utils.Pair;
+import simulator.utils.Sampler.Sampling;
 import simulator.utils.SizeUnit;
 import simulator.utils.Time;
 import simulator.utils.Utils;
@@ -523,11 +526,13 @@ public class EnergyTestMONO
         
         sim.start( duration, false );
         sim.close();
-
+        
         Utils.LOGGER.debug( model.getModelType( false ) + " - Total energy:      " + cpu.getResultSampled( Global.ENERGY_SAMPLING ) + "J" );
         Utils.LOGGER.debug( model.getModelType( false ) + " - Total Idle energy: " + cpu.getResultSampled( Global.IDLE_ENERGY_SAMPLING ) + "J" );
         
         System.out.println( "QUERIES: " + cpu.getExecutedQueries() );
+        
+        plotTailLatency( 95, model.getTimeBudget().getTimeMillis(), model.getMode().toString() );
         
         // PARAMETERS                                                                    0.03 0.03 0.01
         //              COEFFICIENTS           QUERY_FILE            NORMALIZED             PARAMETER                      MATTEO               IDLE 0
@@ -686,5 +691,52 @@ public class EnergyTestMONO
         Utils.LOGGER.info( model.getModelType( false ) + " - Total energy:      " + totalEnergy + "J" );
         Utils.LOGGER.info( model.getModelType( false ) + " - Total idle energy: " + totalIdleEnergy + "J" );
         System.out.println( "QUERIES: " + totalQueries );
+    }
+    
+    public static void plotTailLatency( int PERCENTILE, long time_budget, String mode ) throws IOException
+    {
+        final double interval = TimeUnit.MINUTES.toMicros( 5 );
+        
+        List<Pair<Double, Double>> points = new ArrayList<>();
+        for(int i = 0; i <= 1; i++) {
+            points.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), time_budget * 1000d ) );
+        }
+        
+        // Using NULL the percentiles will not be saved on file.
+        List<Pair<Double,Double>> pesosPercentiles = Utils.getPercentiles( PERCENTILE, interval,
+                                                                           "Log/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
+                                                                           "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
+        //List<Pair<Double,Double>> perfPercentiles = Utils.getPercentiles( PERCENTILE, interval,
+        //                                                                  "Log/Perf_Tail_Latency.log",
+        //                                                                  "Results/Perf_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
+        //List<Pair<Double,Double>> consPercentiles = Utils.getPercentiles( PERCENTILE, interval,
+        //                                                                  "Log/CONS_Tail_Latency.log",
+        //                                                                  "Results/CONS_Latency_" + PERCENTILE + "th_Percentile.txt" );
+        //List<Pair<Double,Double>> loadSensitivePercentiles = Utils.getPercentiles( PERCENTILE, interval,
+        //                                                                           "Log/LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
+        //                                                                           "Results/LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
+        //List<Pair<Double,Double>> myPercentiles = Utils.getPercentiles( PERCENTILE, interval,
+        //                                                                "Log/MY_Model_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
+        //                                                                "Results/MY_Model_" + mode + "_" + time_budget + "ms_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
+        
+        Plotter plotter = new Plotter( "Tail Latency " + PERCENTILE + "-th Percentile", 800, 600 );
+        plotter.setAxisName( "Time (h)", PERCENTILE + "th-tile response time (ms)" );
+        double yRange = time_budget * 1000d + 200000d;
+        plotter.setRange( Axis.Y, 0, yRange );
+        plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
+        plotter.setScaleY( 1000d );
+        
+        plotter.setRange( Axis.X, 0, TimeUnit.HOURS.toMicros( 24 ) );
+        plotter.setTicks( Axis.X, 24, 2 );
+        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
+        
+        //plotter.addPlot( percentiles, Line.UNIFORM, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
+        plotter.addPlot( pesosPercentiles, Line.UNIFORM, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
+        //plotter.addPlot( perfPercentiles, Line.UNIFORM, "Perf" );
+        //plotter.addPlot( consPercentiles, Line.UNIFORM, "CONS" );
+        //plotter.addPlot( loadSensitivePercentiles, Line.UNIFORM, "LS (" + mode + ", t=" + time_budget + "ms)" );
+        //plotter.addPlot( myPercentiles, Line.UNIFORM, "MY Model (" + mode + ", t=" + time_budget + "ms)" );
+        plotter.addPlot( points, Color.YELLOW, Line.DASHED, "Tail latency (" + time_budget + "ms)" );
+        plotter.setVisible( true );
     }
 }

@@ -107,7 +107,7 @@ public class Simulator implements AutoCloseable
      * @param parExe    {@code true} lets the simulation to start in parallel,
      *                  {@code false} otherwise.
     */
-    public void start( boolean parExe ) {
+    public void start( boolean parExe ) throws IOException {
         start( Time.INFINITE, parExe );
     }
     
@@ -118,7 +118,7 @@ public class Simulator implements AutoCloseable
      * @param parExe      {@code true} lets the simulation to start in parallel,
      *                    {@code false} otherwise.
     */
-    public void start( Time duration, boolean parExe )
+    public void start( Time duration, boolean parExe ) throws IOException
     {
         //List<SimulatorExecution> simExes = new ArrayList<>( _evtSchedulers.size() );
         for (NetworkNode node : _network.getNodes()) {
@@ -145,7 +145,7 @@ public class Simulator implements AutoCloseable
     }
     
     @Override
-    public void close()
+    public void close() throws IOException
     {
         for (SimulatorExecution exe : simExes) {
             try {
@@ -166,11 +166,16 @@ public class Simulator implements AutoCloseable
         }
         
         @Override
-        public void run() {
-            startSimulation( net );
+        public void run()
+        {
+            try {
+                startSimulation( net );
+            } catch ( IOException e ) {
+                e.printStackTrace();
+            }
         }
         
-        private static final void startSimulation( NetworkTopology net )
+        private static final void startSimulation( NetworkTopology net ) throws IOException
         {
             Utils.LOGGER.info( "Simulation start!" );
             long currentTime = System.currentTimeMillis();
