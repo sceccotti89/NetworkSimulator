@@ -1088,10 +1088,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             }
             
             if (!settings._settedXRangeByUser) {
-                //System.out.println( "QUI: " + minX + " : " + maxX );
                 if (minX == maxX) {
-                    //if (minX != 0)
-                    //    minX = Math.max( 0, minX - 0.1d );
                     minX -= 0.1d;
                     maxX += 0.1d;
                 }
@@ -1102,8 +1099,6 @@ public class Plotter extends WindowAdapter implements ActionListener
             
             if (!settings._settedYRangeByUser) {
                 if (minY == maxY) {
-                    //if (minY != 0)
-                    //minY = Math.max( 0, minY - 0.1d );
                     minY -= 0.1d;
                     maxY += 0.1d;
                 }
