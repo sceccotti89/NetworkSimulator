@@ -1053,6 +1053,12 @@ public class Plotter extends WindowAdapter implements ActionListener
                         if (!settings._settedXRangeByUser) {
                             minX = Math.min( minX, points.get( 0 ).getFirst() );
                             maxX = Math.max( maxX, points.get( points.size() - 1 ).getFirst() );
+                            if (minX == maxX) {
+                                minX -= 0.1d;
+                                maxX += 0.1d;
+                            }
+                            settings._range.minX = minX;
+                            settings._range.maxX = maxX;
                         }
                     }
                     
@@ -1087,22 +1093,11 @@ public class Plotter extends WindowAdapter implements ActionListener
                 settings._yNumTicks = maxYPoints;
             }
             
-            if (!settings._settedXRangeByUser) {
-                if (minX == maxX) {
-                    minX -= 0.1d;
-                    maxX += 0.1d;
-                }
-                // Set the X range of the plotter.
-                settings._range.minX = minX;
-                settings._range.maxX = maxX;
-            }
-            
             if (!settings._settedYRangeByUser) {
                 if (minY == maxY) {
                     minY -= 0.1d;
                     maxY += 0.1d;
                 }
-                // Set the Y range of the plotter.
                 settings._range.minY = minY;
                 settings._range.maxY = maxY;
             }
