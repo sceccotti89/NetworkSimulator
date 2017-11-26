@@ -92,7 +92,7 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
     
     private String getValue( double value )
     {
-        if (value == Double.MAX_VALUE || value == Double.MIN_VALUE) {
+        if (value == Double.POSITIVE_INFINITY || value == Double.NEGATIVE_INFINITY) {
             return "";
         } else {
             return value + "";

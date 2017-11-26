@@ -447,8 +447,8 @@ public class Plotter extends WindowAdapter implements ActionListener
     {
         private int maxXPoints;
         private int maxYPoints;
-        private double minX = Double.MAX_VALUE, maxX = Double.MIN_VALUE;
-        private double minY = Double.MAX_VALUE, maxY = Double.MIN_VALUE;
+        private double minX = Double.POSITIVE_INFINITY, maxX = Double.NEGATIVE_INFINITY;
+        private double minY = Double.POSITIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
         
         public Range() {
             // Empty constructor.
@@ -1023,74 +1023,59 @@ public class Plotter extends WindowAdapter implements ActionListener
         }
         
         /**
-         * Gets the range for the X and Y values.
+         * Gets the range for the X and Y axis.
         */
         private Range getRange()
         {
-            double maxX = Double.MIN_VALUE, maxY = Double.MIN_VALUE;
-            double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
+            double maxX, maxY, minX, minY;
             
             if (settings._settedXRangeByUser) {
                 maxX = settings._range.maxX;
                 minX = settings._range.minX;
+            } else {
+                maxX = Double.NEGATIVE_INFINITY;
+                minX = Double.POSITIVE_INFINITY;
             }
             if (settings._settedYRangeByUser) {
                 maxY = settings._range.maxY;
                 minY = settings._range.minY;
-            }
-            
-            if (!settings._settedXRangeByUser || !settings._settedYRangeByUser) {
-                for (Plot plot : _plots) {
-                    try {
-                        List<Pair<Double,Double>> points = plot.points;
-                        if (!points.isEmpty()) {
-                            if (points.size() == 1) {
-                                if (!settings._settedXRangeByUser) {
-                                    minX = points.get( 0 ).getFirst() - 0.1d;
-                                    maxX = points.get( 0 ).getFirst() + 0.1d;
-                                }
-                                if (!settings._settedYRangeByUser) {
-                                    minY = points.get( 0 ).getSecond() - 0.1d;
-                                    maxY = points.get( 0 ).getSecond() + 0.1d;
-                                }
-                            } else {
-                                if (!settings._settedXRangeByUser) {
-                                    minX = Math.min( minX, points.get( 0 ).getFirst() );
-                                    maxX = Math.max( maxX, points.get( points.size() - 1 ).getFirst() );
-                                }
-                                if (!settings._settedYRangeByUser) {
-                                    for (Pair<Double,Double> point : points) {
-                                        minY = Math.min( minY, point.getSecond() );
-                                        maxY = Math.max( maxY, point.getSecond() );
-                                    }
-                                }
-                            }
-                        }
-                    } catch ( ConcurrentModificationException e ) {
-                        // Empty body.
-                    }
-                }
+            } else {
+                maxY = Double.NEGATIVE_INFINITY;
+                minY = Double.POSITIVE_INFINITY;
             }
             
             int maxXPoints = 0;
             int maxYPoints = 0;
             for (Plot plot : _plots) {
-                List<Pair<Double,Double>> points = plot.points;
-                int rangePoints = 0;
                 try {
+                    List<Pair<Double,Double>> points = plot.points;
+                    if (!points.isEmpty()) {
+                        if (!settings._settedXRangeByUser) {
+                            minX = Math.min( minX, points.get( 0 ).getFirst() );
+                            maxX = Math.max( maxX, points.get( points.size() - 1 ).getFirst() );
+                        }
+                    }
+                    
+                    int rangePoints = 0;
                     for (Pair<Double,Double> point : points) {
-                        // Check if the point is inside the range.
+                        if (!settings._settedYRangeByUser) {
+                            minY = Math.min( minY, point.getSecond() );
+                            maxY = Math.max( maxY, point.getSecond() );
+                        }
+                        
                         if (isInsideRange( point.getFirst(), minX, maxX ) && 
                             isInsideRange( point.getSecond(), minY, maxY ) ) {
                             rangePoints++;
                         }
                     }
+                    
+                    maxXPoints = Math.max( maxXPoints, rangePoints );
+                    maxYPoints = Math.max( maxYPoints, rangePoints );
+                    
                 } catch ( ConcurrentModificationException e ) {
                     // Empty body.
+                    //e.printStackTrace();
                 }
-                
-                maxXPoints = Math.max( maxXPoints, rangePoints );
-                maxYPoints = Math.max( maxYPoints, rangePoints );
             }
             
             if (!XticksSettedByTheUser) {
@@ -1102,20 +1087,26 @@ public class Plotter extends WindowAdapter implements ActionListener
                 settings._yNumTicks = maxYPoints;
             }
             
-            if (minY == maxY) {
-                if (minY != 0) {
-                    minY = Math.max( 0, minY - 0.1d );
-                }
-                maxY += 0.1d;
-            }
-            
             if (!settings._settedXRangeByUser) {
+                //System.out.println( "QUI: " + minX + " : " + maxX );
+                if (minX == maxX) {
+                    //if (minX != 0)
+                    //    minX = Math.max( 0, minX - 0.1d );
+                    minX -= 0.1d;
+                    maxX += 0.1d;
+                }
                 // Set the X range of the plotter.
                 settings._range.minX = minX;
                 settings._range.maxX = maxX;
             }
             
             if (!settings._settedYRangeByUser) {
+                if (minY == maxY) {
+                    //if (minY != 0)
+                    //minY = Math.max( 0, minY - 0.1d );
+                    minY -= 0.1d;
+                    maxY += 0.1d;
+                }
                 // Set the Y range of the plotter.
                 settings._range.minY = minY;
                 settings._range.maxY = maxY;

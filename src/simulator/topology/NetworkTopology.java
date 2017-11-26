@@ -46,7 +46,13 @@ public class NetworkTopology
 
 
 
-    public NetworkTopology( JSONObject settings ) throws IOException
+    public NetworkTopology()
+    {
+        netID = getNextID();
+        agents = new HashMap<>();
+    }
+	
+	public NetworkTopology( JSONObject settings ) throws IOException
     {
         netID = getNextID();
         build( settings );
@@ -175,6 +181,9 @@ public class NetworkTopology
                          String linkType )
     {
         addLink( new NetworkLink( fromId, destId, bandwith, delay, linkType ) );
+        if(linkType.equals( NetworkLink.BIDIRECTIONAL )) {
+            addLink( new NetworkLink( destId, fromId, bandwith, delay, linkType ) );
+        }
     }
     
     public void addLink( NetworkLink link )
@@ -225,6 +234,10 @@ public class NetworkTopology
     	return null;
     }
     
+    public void addNode( long id, String name, long delay ) {
+        addNode( id, name, delay, 0, 0 );
+    }
+    
     public void addNode( long id, String name, long delay,
                          int xPos, int yPos ) {
         addNode( new NetworkNode( this, id, name, delay, xPos, yPos ) );
@@ -232,7 +245,7 @@ public class NetworkTopology
     
     public void addNode( NetworkNode node )
     {
-    	node.setIndex( _nextIndex++ );
+        node.setIndex( _nextIndex++ );
         nodes.put( node.getId(), node );
     }
     

@@ -43,6 +43,7 @@ public abstract class Agent
     private Map<String,Device<?,?>> _devices;
     
     private List<Integer> _availablePorts;
+    private final Random randPortGen = new Random( 64511 );
     
     
     
@@ -358,8 +359,7 @@ public abstract class Agent
             return null;
         } else {
             // Random port generator.
-            Random rand = new Random( 64511 );
-            return _availablePorts.remove( rand.nextInt( 64511 ) );
+            return _availablePorts.remove( randPortGen.nextInt( 64511 ) );
         }
     }
     

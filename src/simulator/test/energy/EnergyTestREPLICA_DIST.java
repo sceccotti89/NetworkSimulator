@@ -34,6 +34,7 @@ import simulator.test.energy.CPUModel.PERFmodel;
 import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.CPUModel.Type;
+import simulator.topology.NetworkLink;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Pair;
 import simulator.utils.Sampler;
@@ -45,7 +46,7 @@ import simulator.utils.Utils;
 public class EnergyTestREPLICA_DIST
 {
     private static final int NODES = 1;
-    private static final int REPLICAS_PER_NODE = 20;
+    private static final int REPLICAS_PER_NODE = 2;
     private static final int CPU_CORES = 4;
     
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
@@ -66,8 +67,8 @@ public class EnergyTestREPLICA_DIST
     
     private static class ClientGenerator extends EventGenerator
     {
-        //private static final String QUERY_TRACE = "Models/msn.day2.arrivals.txt";
-        private static final String QUERY_TRACE = "Models/test_arrivals.txt";
+        private static final String QUERY_TRACE = "Models/msn.day2.arrivals.txt";
+        //private static final String QUERY_TRACE = "Models/test_arrivals.txt";
         private static final int NUM_QUERIES = 10000;
         // Random generator seed.
         private static final int SEED = 50000;
@@ -440,12 +441,13 @@ public class EnergyTestREPLICA_DIST
         private int[] allReplicas;
         private ReplicatedGraph graph;
         
-        private int slotIndex;
+        private int slotIndex = -1;
         
         public static final int SEASONAL_ESTIMATOR            = 0;
         public static final int SEASONAL_ESTIMATOR_WITH_DRIFT = 1;
         private int estimatorType;
         
+        // Used in seasonal estimator with drift.
         private Integer arrivals;
         private List<Integer> currentArrivals;
         
@@ -454,7 +456,7 @@ public class EnergyTestREPLICA_DIST
         private static final double Pon      = 84;
         
         // The Lambda value used to balance the equation (lower for latency, higher for power).
-        private static final double LAMBDA = 0.75;
+        private static final double LAMBDA = 0.25;
         
         // Parameters used to normalize the latency.
         private static final double ALPHA = -0.01;
@@ -471,7 +473,7 @@ public class EnergyTestREPLICA_DIST
             
             this.estimatorType = estimatorType;
             this.latency_normalization = latencyNormalization;
-            slotIndex = -1;
+            
             loadMeanArrivalTime();
             loadQueryPerSlot();
             
@@ -479,7 +481,7 @@ public class EnergyTestREPLICA_DIST
                 final int size = meanCompletionTime.size();
                 createGraph( size );
                 // TODO per i test mettere questo EXIT.
-                System.exit( 0 );
+                //System.exit( 0 );
             } else {
                 arrivals = 0;
                 currentArrivals = new ArrayList<>( 2 );
@@ -516,17 +518,20 @@ public class EnergyTestREPLICA_DIST
         public void addEventOnQueue( Event e )
         {
             if (estimatorType == SEASONAL_ESTIMATOR_WITH_DRIFT) {
-                if (e.getSource().getId() == 1) {
-                    // From client.
-                    arrivals++;
-                    queries++;
-                } else {
-                    // From replica.
-                    queries--;
+                long sourceId = e.getSource().getId();
+                if (sourceId != getId()) {
+                    if (sourceId == 1) {
+                        // From client.
+                        arrivals++;
+                        queries++;
+                    } else {
+                        // From replica.
+                        queries--;
+                    }
                 }
             }
             
-            super.addEventOnQueue( e );
+            //super.addEventOnQueue( e );
         }
         
         public int getCurrentReplicas() {
@@ -579,11 +584,14 @@ public class EnergyTestREPLICA_DIST
                 double power   = getPowerCost( nodes );
                 double latency = getLatencyCost( queries, arrivalExtimation, completionExtimation, nodes );
                 double weight  = LAMBDA * power + (1 - LAMBDA) * latency;
+                //System.out.println( "NODE: " + nodes + ", WEIGHT: " + weight + ", MIN_WEIGHT: " + minWeight );
                 if (weight < minWeight) {
                     minWeight = weight;
                     replicas = nodes;
                 }
             }
+            
+            System.out.println( "SELECTED REPLICAS: " + replicas );
             
             return replicas;
         }
@@ -721,19 +729,23 @@ public class EnergyTestREPLICA_DIST
         final Time duration = new Time( 24, TimeUnit.HOURS );
         
         //NetworkTopology net = new NetworkTopology( "Topology/Animation/Topology_distributed_multiCore.json" );
-        NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_replica_multiCore.json" );
+        //NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_replica_multiCore.json" );
         //net.setTrackingEvent( "Results/distr_multi_core.txt" );
-        System.out.println( net.toString() );
+        //System.out.println( net.toString() );
+        
+        NetworkTopology net = new NetworkTopology();
         
         Simulator sim = new Simulator( net );
         
         // Create client.
         EventGenerator generator = new ClientGenerator( PACKET, PACKET );
         Agent client = new ClientAgent( 0, generator );
+        net.addNode( 0, "client", 0 );
         net.addAgent( client );
         
         // Create query broker.
         EventGenerator brokerGen = new BrokerGenerator( duration );
+        net.addNode( 1, "broker", 0 );
         
         // Create PESOS controller.
         if (type == Type.PESOS && PESOS_CONTROLLER) {
@@ -753,10 +765,13 @@ public class EnergyTestREPLICA_DIST
         for (int i = 0; i < NODES; i++) {
             // Create the switch associated to the REPLICA nodes.
             EventGenerator switchGen = new SwitchGenerator( duration, PACKET, PACKET );
-            SwitchAgent switchNode = new SwitchAgent( 2 + i * REPLICAS_PER_NODE + i,
+            final long switchId = 2 + i * REPLICAS_PER_NODE + i;
+            SwitchAgent switchNode = new SwitchAgent( switchId,
                                                       SwitchAgent.SEASONAL_ESTIMATOR,
                                                       latencyNormalization,
                                                       switchGen );
+            net.addNode( switchId, "switch_" + (i+1), 0 );
+            net.addLink( switchId, 1, 1000, 0, NetworkLink.BIDIRECTIONAL );
             net.addAgent( switchNode );
             brokerGen.connect( switchNode );
             
@@ -776,9 +791,6 @@ public class EnergyTestREPLICA_DIST
             for (int j = 0; j < REPLICAS_PER_NODE; j++) {
                 final long nodeId = (i * REPLICAS_PER_NODE + j + 1);
                 EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
-                //cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/Distributed_Replica_" + testMode + "_" + modelType + "_Node" + nodeId + "_Energy.log" );
-                //cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
-                //cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/Distributed_Replica_" + testMode + "_" + modelType + "_Node" + nodeId + "_Tail_Latency.log" );
                 cpus.add( cpu );
                 
                 // Add the model to the corresponding CPU.
@@ -789,6 +801,8 @@ public class EnergyTestREPLICA_DIST
                 final long id = i * (REPLICAS_PER_NODE + 1) + 3 + j;
                 Agent agentCore = new MulticoreAgent( id, sink );
                 agentCore.addDevice( cpu );
+                net.addNode( id, "node" + (i/REPLICAS_PER_NODE+1) + "_" + (i%REPLICAS_PER_NODE), 0 );
+                net.addLink( id, switchId, 1000, 0, NetworkLink.BIDIRECTIONAL );
                 net.addAgent( agentCore );
                 
                 agentCore.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/Distributed_Replica_" + testMode + "_" + modelType + "_Node" + nodeId + "_Energy.log", Sampling.CUMULATIVE ) );
@@ -812,6 +826,7 @@ public class EnergyTestREPLICA_DIST
         }
         
         Agent brokerAgent = new BrokerAgent( 1, timeBudget * 1000, brokerGen, testMode + "_" + modelType );
+        net.addLink( 0, 1, 1000, 0, NetworkLink.BIDIRECTIONAL );
         net.addAgent( brokerAgent );
         client.getEventGenerator( 0 ).connect( brokerAgent );
         
@@ -833,10 +848,11 @@ public class EnergyTestREPLICA_DIST
         for (int i = 0; i < NODES * REPLICAS_PER_NODE; i++) {
             EnergyCPU cpu = cpus.get( i );
             double energy = cpu.getAgent().getResultSampled( Global.ENERGY_SAMPLING );
+            double energyIdle = cpu.getAgent().getResultSampled( Global.IDLE_ENERGY_SAMPLING );
             totalEnergy += energy;
             System.out.println( testMode + " " + model.getModelType( false ) +
                                 " - CPU (" + (i/REPLICAS_PER_NODE + 1) + "-" + (i%REPLICAS_PER_NODE) + ") => Energy: " + energy +
-                                ", Queries: " + cpu.getExecutedQueries() );
+                                ", Idle: " + energyIdle + ", Queries: " + cpu.getExecutedQueries() );
         }
         System.out.println( testMode + " " + model.getModelType( false ) + " - Total energy: " + totalEnergy );
         
@@ -853,57 +869,27 @@ public class EnergyTestREPLICA_DIST
         // LongTerm, L2
         
         // Lambda = 0.25
-        // Total energy: 5386703.2933835270 (PERF)
-        // Total energy: 3108281.9522012580 (PESOS  500ms TC)
+        // Total energy: 1063473.7565400046 (PERF)
+        // Total energy:  (PESOS TC 500ms)
         // Total energy:  (PESOS 1000ms TC)
         
-//        0.25_LongTerm_L2 PERF - CPU (1-0) => Energy: 752982.59694510190, Queries: 416429
-//        0.25_LongTerm_L2 PERF - CPU (1-1) => Energy: 310491.15959490290, Queries: 128289
-//        0.25_LongTerm_L2 PERF - CPU (2-0) => Energy: 804368.84045665300, Queries: 416429
-//        0.25_LongTerm_L2 PERF - CPU (2-1) => Energy: 326347.04536502710, Queries: 128289
-//        0.25_LongTerm_L2 PERF - CPU (3-0) => Energy: 751965.94864508860, Queries: 416429
-//        0.25_LongTerm_L2 PERF - CPU (3-1) => Energy: 310152.69606989936, Queries: 128289
-//        0.25_LongTerm_L2 PERF - CPU (4-0) => Energy: 767873.59698172750, Queries: 416429
-//        0.25_LongTerm_L2 PERF - CPU (4-1) => Energy: 315000.56966503740, Queries: 128289
-//        0.25_LongTerm_L2 PERF - CPU (5-0) => Energy: 740867.50053629360, Queries: 416429
-//        0.25_LongTerm_L2 PERF - CPU (5-1) => Energy: 306653.33912379440, Queries: 128289
-        
-        // Lambda = 0.5
+        // Lambda = 0.5 (stesso numero di server di 0.25)
         // Total energy:  5386703.293383527 (PERF)
         
-//        0.50_LongTerm_L2 PERF - CPU (1-0) => Energy: 752982.59694510190, Queries: 416429
-//        0.50_LongTerm_L2 PERF - CPU (1-1) => Energy: 310491.15959490290, Queries: 128289
-//        0.50_LongTerm_L2 PERF - CPU (2-0) => Energy: 804368.84045665300, Queries: 416429
-//        0.50_LongTerm_L2 PERF - CPU (2-1) => Energy: 326347.04536502710, Queries: 128289
-//        0.50_LongTerm_L2 PERF - CPU (3-0) => Energy: 751965.94864508860, Queries: 416429
-//        0.50_LongTerm_L2 PERF - CPU (3-1) => Energy: 310152.69606989936, Queries: 128289
-//        0.50_LongTerm_L2 PERF - CPU (4-0) => Energy: 767873.59698172750, Queries: 416429
-//        0.50_LongTerm_L2 PERF - CPU (4-1) => Energy: 315000.56966503740, Queries: 128289
-//        0.50_LongTerm_L2 PERF - CPU (5-0) => Energy: 740867.50053629360, Queries: 416429
-//        0.50_LongTerm_L2 PERF - CPU (5-1) => Energy: 306653.33912379440, Queries: 128289
-        
         // Lambda = 0.75
-        // Total energy: 5386703.2933820090 (PERF)
-        // Total energy: 3160533.9400715795 (PESOS 500ms TC)
-        
-//        0.75_LongTerm_L2 PERF - CPU (1-0) => Energy:  947094.55171991850, Queries: 542010
-//        0.75_LongTerm_L2 PERF - CPU (1-1) => Energy:  116379.20481976704, Queries:   2708
-//        0.75_LongTerm_L2 PERF - CPU (2-0) => Energy: 1014022.13255152920, Queries: 542010
-//        0.75_LongTerm_L2 PERF - CPU (2-1) => Energy:  116693.75326976694, Queries:   2708
-//        0.75_LongTerm_L2 PERF - CPU (3-0) => Energy:  945743.06346998980, Queries: 542010
-//        0.75_LongTerm_L2 PERF - CPU (3-1) => Energy:  116375.58124476702, Queries:   2708
-//        0.75_LongTerm_L2 PERF - CPU (4-0) => Energy:  966402.30622668660, Queries: 542010
-//        0.75_LongTerm_L2 PERF - CPU (4-1) => Energy:  116471.86041976605, Queries:   2708
-//        0.75_LongTerm_L2 PERF - CPU (5-0) => Energy:  931215.56476505110, Queries: 542010
-//        0.75_LongTerm_L2 PERF - CPU (5-1) => Energy:  116305.27489476671, Queries:   2708
+        // Total energy: 1063473.7565396855 (PERF)
+        // Total energy:  (PESOS TC 500ms)
         
         // ShortTerm, L2
         
         // Lambda = 0.25
+        // Total energy: 1063473.7565400046 (PERF)
+        // Total energy:  (PESOS TC 500ms)
         
         // Lambda = 0.5
         
         // Lambda = 0.75
+        // Total energy:  (PESOS TC 500ms)
     }
     
     public static void plotEnergyConsumption( long time_budget, String mode,
