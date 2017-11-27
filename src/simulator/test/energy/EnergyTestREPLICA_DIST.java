@@ -692,12 +692,12 @@ public class EnergyTestREPLICA_DIST
             showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
         }
         
-        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
-        testNetwork( Type.PERF, null, 0 );
+        //testNetwork( Type.PERF, null, 0 );
         //testNetwork( Type.CONS, null, 0 );
         
         //testNetwork( Type.PEGASUS, null,  500 );
@@ -706,10 +706,13 @@ public class EnergyTestREPLICA_DIST
     
     private static CPUModel getModel( Type type, Mode mode, long timeBudget, int node )
     {
+        // TODO solo per testing usare il monolitico.
         CPUModel model = null;
         switch ( type ) {
-            case PESOS  : model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
-            case PERF   : model = new PERFmodel( "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
+            //case PESOS  : model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
+            case PESOS  : model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" ); break;
+            //case PERF   : model = new PERFmodel( "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
+            case PERF   : model = new PERFmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
             case CONS   : model = new CONSmodel( "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
             case PEGASUS: model = new PEGASUSmodel( timeBudget, "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
             default     : break;
@@ -730,11 +733,10 @@ public class EnergyTestREPLICA_DIST
         
         //NetworkTopology net = new NetworkTopology( "Topology/Animation/Topology_distributed_multiCore.json" );
         //NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_replica_multiCore.json" );
-        //net.setTrackingEvent( "Results/distr_multi_core.txt" );
+        //net.setTrackingEvent( "Results/distributed_replica_multi_core.txt" );
         //System.out.println( net.toString() );
         
         NetworkTopology net = new NetworkTopology();
-        
         Simulator sim = new Simulator( net );
         
         // Create client.
@@ -815,7 +817,7 @@ public class EnergyTestREPLICA_DIST
                 }
                 
                 if (showGUI) {
-                    plotter.addPlot( agentCore.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + nodeId + " " + p_model.getModelType( false ) );
+                    plotter.addPlot( agentCore.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + nodeId );
                 }
                 
                 switchGen.connect( agentCore );
@@ -869,16 +871,16 @@ public class EnergyTestREPLICA_DIST
         // LongTerm, L2
         
         // Lambda = 0.25
-        // Total energy: 1063473.7565400046 (PERF)
-        // Total energy:  (PESOS TC 500ms)
-        // Total energy:  (PESOS 1000ms TC)
+        // Total energy: 1104638.7760717103 (PERF)
+        // Total energy:  678575.5409967459 (PESOS TC 500ms)
+        // Total energy:  (PESOS TC 1000ms)
         
         // Lambda = 0.5 (stesso numero di server di 0.25)
-        // Total energy:  5386703.293383527 (PERF)
+        // Total energy: 1104638.7760717103 (PERF)
         
         // Lambda = 0.75
         // Total energy: 1063473.7565396855 (PERF)
-        // Total energy:  (PESOS TC 500ms)
+        // Total energy:  694987.4373546678 (PESOS TC 500ms)
         
         // ShortTerm, L2
         
@@ -907,7 +909,7 @@ public class EnergyTestREPLICA_DIST
         plotter.setTicks( Axis.X, 24, 2 );
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         
-        // TODO Completare
+        // TODO Completare inserendo il file in input
         plotter.addPlot( "Log/", "PESOS (" + mode + ", t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ")" );
         
         plotter.setVisible( true );

@@ -657,7 +657,7 @@ public class EnergyTestDIST2
                 agentCore.addEventGenerator( evtGen );
             }
             
-            plotter.addPlot( agentCore.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) + " " + p_model.getModelType( false ) );
+            plotter.addPlot( agentCore.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) );
             
             switchGen.connect( agentCore );
             

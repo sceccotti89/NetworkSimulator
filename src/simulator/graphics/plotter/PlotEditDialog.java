@@ -9,11 +9,15 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 
 import javax.swing.BoxLayout;
@@ -25,6 +29,7 @@ import javax.swing.JTextField;
 
 import simulator.graphics.plotter.Plotter.Line;
 import simulator.graphics.plotter.Plotter.Plot;
+import simulator.graphics.plotter.Plotter.Pointer;
 
 public class PlotEditDialog extends JDialog implements ActionListener
 {
@@ -35,8 +40,11 @@ public class PlotEditDialog extends JDialog implements ActionListener
     private final Plot plotClone;
     
     private JButton buttonLine;
+    private JButton pointTypeButton;
     private JTextField fieldName;
     private JTextField lineWidth;
+    
+    private int pointLineIndex;
     
     private final PlotEditDialog DIALOG = this;
     
@@ -53,11 +61,20 @@ public class PlotEditDialog extends JDialog implements ActionListener
         this.plot = plot;
         plotClone = plot.clone();
         
+        switch (plot.pointer) {
+            case NOTHING  : pointLineIndex = 0; break;
+            case CIRCLE   : pointLineIndex = 1; break;
+            case QUADRATE : pointLineIndex = 2; break;
+            case TRIANGLE : pointLineIndex = 3; break;
+            case CROSS    : pointLineIndex = 4; break;
+        }
+        
         JPanel boxPanel = new JPanel();
         boxPanel.setLayout( new BoxLayout( boxPanel, BoxLayout.Y_AXIS ) );
         
         boxPanel.add( createTitlePanel( plot.title ) );
         boxPanel.add( createLinePanel() );
+        boxPanel.add( createPointTypePanel() );
         boxPanel.add( createLineWidthPanel( plot.lineWidth + "" ) );
         boxPanel.add( createColorPanel( frame ) );
         
@@ -113,6 +130,77 @@ public class PlotEditDialog extends JDialog implements ActionListener
         g.dispose();
     }
     
+    private JPanel createPointTypePanel()
+    {
+        JPanel panel = new JPanel();
+        JTextField typeField = new JTextField( "Points", 6 );
+        typeField.setEditable( false );
+        typeField.setHorizontalAlignment( JTextField.CENTER );
+        typeField.setBorder( null );
+        panel.add( typeField );
+        
+        pointTypeButton = new JButton();
+        pointTypeButton.setBackground( Color.GRAY );
+        pointTypeButton.setFocusable( false );
+        panel.add( pointTypeButton );
+        
+        drawPointType( pointTypeButton );
+        
+        pointTypeButton.addActionListener( new ActionListener() {
+            private static final int MAX_TYPES = 5;
+            
+            @Override
+            public void actionPerformed( ActionEvent e )
+            {
+                pointLineIndex = (pointLineIndex + 1) % MAX_TYPES;
+                drawPointType( pointTypeButton );
+                drawLineOnButton( buttonLine );
+            }
+        } );
+        
+        return panel;
+    }
+    
+    private void drawPointType( JButton button )
+    {
+        BufferedImage lineImage = new BufferedImage( BI_WIDTH, BI_HEIGHT, BufferedImage.TYPE_INT_RGB );
+        Graphics2D g = (Graphics2D) lineImage.createGraphics();
+        g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+        g.setColor( button.getBackground() );
+        g.fillRect( 0, 0, BI_WIDTH, BI_HEIGHT );
+        g.setColor( plotClone.color );
+        g.setStroke( plotClone.stroke );
+        
+        g.drawLine( 2, BI_HEIGHT/2, BI_WIDTH - 2, BI_HEIGHT/2 );
+        
+        final int WIDTH = Plot.WIDTH;
+        final int HEIGHT = Plot.HEIGHT;
+        
+        Shape shape = null;
+        switch (pointLineIndex) {
+            case( 0 ) : plotClone.pointer = Pointer.NOTHING;
+                        shape = new Rectangle(); break;
+            case( 1 ) : plotClone.pointer = Pointer.CIRCLE;
+                        shape = new Ellipse2D.Double( BI_WIDTH/2 - WIDTH/2, BI_HEIGHT/2 - HEIGHT/2, WIDTH, HEIGHT ); break;
+            case( 2 ) : plotClone.pointer = Pointer.QUADRATE;
+                        shape = new Rectangle( BI_WIDTH/2 - WIDTH/2, BI_HEIGHT/2 - HEIGHT/2, WIDTH, HEIGHT ); break;
+            case( 3 ) : plotClone.pointer = Pointer.TRIANGLE;
+                        shape = new Polygon( new int[]{ BI_WIDTH/2 - WIDTH/2, BI_WIDTH/2 + WIDTH/2, BI_WIDTH/2 },
+                                             new int[]{ BI_HEIGHT/2 + HEIGHT/2, BI_HEIGHT/2 + HEIGHT/2, BI_HEIGHT/2 - HEIGHT/2 }, 3 );
+                        break;
+            case( 4 ) : plotClone.pointer = Pointer.CROSS;
+                        g.drawLine( BI_WIDTH/2 - WIDTH/2, BI_HEIGHT/2 - HEIGHT/2, BI_WIDTH/2 + WIDTH/2, BI_HEIGHT/2 + WIDTH/2 );
+                        g.drawLine( BI_WIDTH/2 - WIDTH/2, BI_HEIGHT/2 + HEIGHT/2, BI_WIDTH/2 + WIDTH/2, BI_HEIGHT/2 - HEIGHT/2 );
+                        break;
+        }
+        
+        if (shape != null)
+            g.fill( shape );
+        
+        button.setIcon( new ImageIcon( lineImage ) );
+        g.dispose();
+    }
+    
     private JPanel createLinePanel()
     {
         JPanel panel = new JPanel();
@@ -133,7 +221,8 @@ public class PlotEditDialog extends JDialog implements ActionListener
         
         buttonLine.addActionListener( new ActionListener() {
             @Override
-            public void actionPerformed( ActionEvent e ) {
+            public void actionPerformed( ActionEvent e )
+            {
                 BasicStroke stroke = (BasicStroke) plotClone.stroke;
                 if (stroke.getDashArray() != null) {
                     plotClone.line = Line.UNIFORM;
@@ -144,6 +233,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
                                                         0, new float[]{ 20f, 10f }, 0 );
                 }
                 drawLineOnButton( buttonLine );
+                drawPointType( pointTypeButton );
             }
         } );
         
@@ -178,6 +268,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
                                                             0, new float[]{ 20f, 10f }, 0 );
                     }
                     drawLineOnButton( buttonLine );
+                    drawPointType( pointTypeButton );
                 } catch ( NumberFormatException ex ) {}
                 
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
@@ -236,10 +327,11 @@ public class PlotEditDialog extends JDialog implements ActionListener
     private void saveAndExit()
     {
         // Save the inserted values.
-        plot.title = fieldName.getText();
-        plot.line  = plotClone.line;
+        plot.title     = fieldName.getText();
+        plot.line      = plotClone.line;
+        plot.pointer   = plotClone.pointer;
         plot.lineWidth = Float.parseFloat( lineWidth.getText() );
-        plot.color = plotClone.color;
+        plot.color     = plotClone.color;
         
         plot.updateValues();
         dispose();

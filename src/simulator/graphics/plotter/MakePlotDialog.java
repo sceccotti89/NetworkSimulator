@@ -29,6 +29,7 @@ import javax.swing.JTextField;
 
 import simulator.graphics.plotter.Plotter.Line;
 import simulator.graphics.plotter.Plotter.Plot;
+import simulator.graphics.plotter.Plotter.Pointer;
 import simulator.graphics.plotter.evaluator.EvaluationException;
 import simulator.graphics.plotter.evaluator.Evaluator;
 import simulator.utils.Pair;
@@ -57,7 +58,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
         setTitle( "Plot" );
         
         this.plotter = plotter;
-        plot = new Plot( "", null, Color.GREEN, Line.UNIFORM, 2f, null );
+        plot = new Plot( "", null, Color.GREEN, Line.UNIFORM, Pointer.NOTHING, 2f, null );
         
         JPanel boxPanel = new JPanel();
         boxPanel.setLayout( new BoxLayout( boxPanel, BoxLayout.Y_AXIS ) );

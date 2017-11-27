@@ -13,8 +13,10 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -85,9 +87,11 @@ public class Plotter extends WindowAdapter implements ActionListener
     private static final int MAX_TICKS = 30;
     
     
-    public enum Axis{ X, Y };
-    public enum Theme{ WHITE, BLACK };
-    public enum Line { UNIFORM, DASHED };
+    public enum Axis  { X, Y };
+    public enum Theme { WHITE, BLACK };
+    
+    public enum Line    { UNIFORM, DASHED };
+    public enum Pointer { NOTHING, CIRCLE, QUADRATE, TRIANGLE, CROSS };
     
     private PlotterSettings settings;
     
@@ -253,11 +257,11 @@ public class Plotter extends WindowAdapter implements ActionListener
     }
     
     public void addPlot( List<Pair<Double,Double>> points, Color color, Line line, String title ) {
-        plotter.addPlot( points, color, line, title );
+        plotter.addPlot( points, color, line, Pointer.NOTHING, title );
     }
     
     public void addPlot( Plot plot ) {
-        plotter.addPlot( plot.points, plot.color,plot.line , plot.title );
+        plotter.addPlot( plot.points, plot.color,plot.line, Pointer.NOTHING, plot.title );
     }
     
     public void savePlot( String dir, String file ) throws IOException {
@@ -490,19 +494,24 @@ public class Plotter extends WindowAdapter implements ActionListener
         protected List<Pair<Double,Double>> points;
         protected Color color;
         protected Line line;
+        protected Pointer pointer;
         protected float lineWidth;
         protected Stroke stroke;
         protected JCheckBox box;
         
+        public static final int WIDTH = 8;
+        public static final int HEIGHT = 8;
+        
         public Plot( String title,
                      List<Pair<Double,Double>> points,
-                     Color color, Line line,
+                     Color color, Line line, Pointer pointer,
                      float lineWidth, JCheckBox box )
         {
             this.title = title;
             this.points = points;
             this.color = color;
             this.line = line;
+            this.pointer = pointer;
             this.lineWidth = lineWidth;
             this.box = box;
             
@@ -526,11 +535,36 @@ public class Plotter extends WindowAdapter implements ActionListener
             }
         }
         
+        public void drawPoint( Graphics2D g, int x, int y )
+        {
+            Shape shape = null;
+            switch (pointer) {
+                case NOTHING : // Nothing.
+                            return;
+                case CIRCLE : // Circle.
+                            shape = new Ellipse2D.Double( x - WIDTH/2, y - HEIGHT/2, WIDTH, HEIGHT ); break;
+                case QUADRATE : // Quadrate.
+                            shape = new Rectangle( x - WIDTH/2, y - HEIGHT/2, WIDTH, HEIGHT ); break;
+                case TRIANGLE : // Triangle.
+                            shape = new Polygon( new int[]{ x - WIDTH/2, x + WIDTH/2, x },
+                                                 new int[]{ y + HEIGHT/2, y + HEIGHT/2, y - HEIGHT/2 }, 3 );
+                            break;
+                case CROSS : // Cross.
+                            g.drawLine( x - WIDTH/2, y - HEIGHT/2, x + WIDTH/2, y + WIDTH/2 );
+                            g.drawLine( x - WIDTH/2, y + HEIGHT/2, x + WIDTH/2, y - HEIGHT/2 );
+                            break;
+            }
+            
+            if (shape != null) {
+                g.fill( shape );
+            }
+        }
+        
         @Override
         public Plot clone()
         {
             Color nColor = new Color( color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() );
-            Plot plot = new Plot( title, points, nColor, line, lineWidth, box );
+            Plot plot = new Plot( title, points, nColor, line, pointer, lineWidth, box );
             return plot;
         }
     }
@@ -609,12 +643,12 @@ public class Plotter extends WindowAdapter implements ActionListener
         }
         
         public void addPlot( List<Pair<Double,Double>> points,
-                             Color color, Line line,
+                             Color color, Line line, Pointer pointer,
                              String title )
         {
             String text = makeBoxTitle( title );
             JCheckBox box = _legend.addPlot( this, text );
-            _plots.add( new Plot( title, points, chooseColor( color ), line, 2f, box ) );
+            _plots.add( new Plot( title, points, chooseColor( color ), line, pointer, 2f, box ) );
             add( box );
         }
         
@@ -795,6 +829,8 @@ public class Plotter extends WindowAdapter implements ActionListener
                 // Get the starting position.
                 double x = plotLocation.getX() + ((point.getFirst() - range.minX) * (xLength / range.getXRange()));
                 double y = plotLocation.getY() - ((point.getSecond() - range.minY) * (yLength / range.getYRange()));
+                g.setColor( plot.color );
+                plot.drawPoint( g, (int) x, (int) y );
                 p.setLocation( x, y );
                 if (!selected) {
                     Ellipse2D circle = new Ellipse2D.Double( x - pointRadius/2, y - pointRadius/2, pointRadius, pointRadius );
@@ -816,6 +852,7 @@ public class Plotter extends WindowAdapter implements ActionListener
                 double x = plotLocation.getX() + ((point.getFirst() - range.minX) * (xLength / range.getXRange()));
                 double y = plotLocation.getY() - ((point.getSecond() - range.minY) * (yLength / range.getYRange()));
                 g.drawLine( (int) p.getX(), (int) p.getY(), (int) x, (int) y );
+                plot.drawPoint( g, (int) x, (int) y );
             }
             
             for (int i = 1; i < plot.points.size(); i++) {
@@ -833,6 +870,7 @@ public class Plotter extends WindowAdapter implements ActionListener
                 g.setStroke( plot.stroke );
                 
                 g.drawLine( (int) p.getX(), (int) p.getY(), (int) x, (int) y );
+                plot.drawPoint( g, (int) x, (int) y );
                 
                 if (!selected && range.checkRange( point.getFirst(), point.getSecond() )) {
                     if (drawCircle) {
@@ -1014,6 +1052,7 @@ public class Plotter extends WindowAdapter implements ActionListener
                 g.setStroke( plot.stroke );
                 g.drawLine( p.x + size.width, p.y + size.height/2 - 1,
                             p.x + size.width + LEGEND_LINE_LENGTH, p.y + size.height/2 - 1 );
+                plot.drawPoint( g, p.x + size.width + LEGEND_LINE_LENGTH/2, p.y + size.height/2 );
             }
             
             _legend.draw( this, g );

@@ -686,7 +686,7 @@ public class EnergyTestMONO
                 node.addEventGenerator( evtGen );
             }
             
-            plotter.addPlot( node.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + i + " " + model.getModelType( true ) );
+            plotter.addPlot( node.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + i );
         }
         
         plotter.setAxisName( "Time (h)", "Energy (J)" );
