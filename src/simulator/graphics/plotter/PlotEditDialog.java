@@ -40,6 +40,9 @@ public class PlotEditDialog extends JDialog implements ActionListener
     
     private final PlotEditDialog DIALOG = this;
     
+    private static final int BI_WIDTH  = 155;
+    private static final int BI_HEIGHT =  15;
+    
 
     public PlotEditDialog( Frame frame, Plot plot )
     {
@@ -98,8 +101,6 @@ public class PlotEditDialog extends JDialog implements ActionListener
     
     private void drawLineOnButton( JButton button )
     {
-        final int BI_WIDTH  = 155;
-        final int BI_HEIGHT =  15;
         BufferedImage lineImage = new BufferedImage( BI_WIDTH, BI_HEIGHT, BufferedImage.TYPE_INT_RGB );
         Graphics2D g = (Graphics2D) lineImage.createGraphics();
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
@@ -115,7 +116,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
     private JPanel createLinePanel()
     {
         JPanel panel = new JPanel();
-        JTextField fieldName = new JTextField( "Line", 6 );
+        JTextField fieldName = new JTextField( "Shape", 6 );
         fieldName.setEditable( false );
         fieldName.setHorizontalAlignment( JTextField.CENTER );
         fieldName.setBorder( null );
@@ -137,7 +138,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
                 if (stroke.getDashArray() != null) {
                     plotClone.line = Line.UNIFORM;
                     plotClone.stroke = new BasicStroke( plotClone.lineWidth );
-                } else { // Dashed.
+                } else {
                     plotClone.line = Line.DASHED;
                     plotClone.stroke = new BasicStroke( plotClone.lineWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
                                                         0, new float[]{ 20f, 10f }, 0 );
@@ -191,8 +192,6 @@ public class PlotEditDialog extends JDialog implements ActionListener
     
     private void drawColorOnButton( JButton button )
     {
-        final int BI_WIDTH  = 155;
-        final int BI_HEIGHT =  15;
         BufferedImage lineImage = new BufferedImage( BI_WIDTH, BI_HEIGHT, BufferedImage.TYPE_INT_RGB );
         Graphics2D g = (Graphics2D) lineImage.createGraphics();
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );

@@ -518,7 +518,7 @@ public class EnergyTestDIST
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         plotter.setVisible( true );
         
-        sim.start( new Time( 24, TimeUnit.HOURS ), false );
+        sim.start( new Time( 23, TimeUnit.HOURS ), false );
         sim.close();
         
         double totalEnergy = 0;
@@ -626,7 +626,7 @@ public class EnergyTestDIST
         
         plotter.setAxisName( "Time (h)", "Energy (J)" );
         plotter.setTicks( Axis.Y, 10 );
-        plotter.setTicks( Axis.X, 24, 2 );
+        plotter.setTicks( Axis.X, 23, 2 );
         plotter.setRange( Axis.Y, 0, 4350 );
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         plotter.setVisible( true );

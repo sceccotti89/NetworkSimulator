@@ -81,8 +81,6 @@ public class Plotter extends WindowAdapter implements ActionListener
     private Theme theme = Theme.BLACK;
     
     
-    private boolean XticksSettedByTheUser = false;
-    private boolean YticksSettedByTheUser = false;
     // Max number of ticks drawn, unless specified by the user.
     private static final int MAX_TICKS = 30;
     
@@ -288,11 +286,11 @@ public class Plotter extends WindowAdapter implements ActionListener
         if (axis == Axis.X) {
             settings._xNumTicks = ticks;
             settings.xTickInterval = interval;
-            XticksSettedByTheUser = true;
+            settings.XticksSettedByTheUser = true;
         } else {
             settings._yNumTicks = ticks;
             settings.yTickInterval = interval;
-            YticksSettedByTheUser = true;
+            settings.YticksSettedByTheUser = true;
         }
         return this;
     }
@@ -427,17 +425,19 @@ public class Plotter extends WindowAdapter implements ActionListener
         frame.dispose();
         timer.stop();
     }
-
-
-
+    
+    
+    
     public static  class PlotterSettings
     {
         public boolean _settedXRangeByUser = false;
         public boolean _settedYRangeByUser = false;
         public int xTickInterval = 1;
         public int yTickInterval = 1;
-        public int _xNumTicks = Integer.MAX_VALUE;
-        public int _yNumTicks = Integer.MAX_VALUE;
+        public int _xNumTicks = 1;
+        public int _yNumTicks = 1;
+        public boolean XticksSettedByTheUser = false;
+        public boolean YticksSettedByTheUser = false;
         public double xScale = 1d;
         public double yScale = 1d;
         public Range _range = new Range();
@@ -445,8 +445,6 @@ public class Plotter extends WindowAdapter implements ActionListener
     
     public static class Range
     {
-        private int maxXPoints;
-        private int maxYPoints;
         private double minX = Double.POSITIVE_INFINITY, maxX = Double.NEGATIVE_INFINITY;
         private double minY = Double.POSITIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
         
@@ -454,12 +452,9 @@ public class Plotter extends WindowAdapter implements ActionListener
             // Empty constructor.
         }
         
-        public Range( int maxXPoints, int maxYPoints,
-                      double minX, double maxX,
+        public Range( double minX, double maxX,
                       double minY, double maxY )
         {
-            this.maxXPoints = maxXPoints;
-            this.maxYPoints = maxYPoints;
             this.minX = minX;
             this.maxX = maxX;
             this.minY = minY;
@@ -875,77 +870,79 @@ public class Plotter extends WindowAdapter implements ActionListener
         
         private void drawTicks( Graphics2D g, Range range )
         {
+            if (_plots.isEmpty()) {
+                return;
+            }
+            
             g.setStroke( new BasicStroke( 1f ) );
             g.setColor( (theme == Theme.BLACK) ? Color.WHITE : Color.BLACK );
             
-            if (range.maxXPoints == 1) {
-                range.maxXPoints = 2;
-            }
-            
-            if (range.maxYPoints == 1) {
-                range.maxYPoints = 2;
-            }
-            
-            // Get the number of ticks.
-            int xNumTicks = Math.min( range.maxXPoints, settings._xNumTicks );
-            final float xTicksOffset = xLength / xNumTicks;
+            // Get the number and offset of X ticks.
+            final int xNumTicks = settings._xNumTicks;
+            final float xTicksOffset = xLength / (xNumTicks + 1);
             float xTickPosition = xTicksOffset;
-            
-            int yNumTicks = Math.min( range.maxYPoints, settings._yNumTicks );
-            final float yTicksOffset = yLength / yNumTicks;
-            float yTickPosition = yTicksOffset;
             // Offset of the X axis from the grid.
             final float OFFSET_Y_XAXIS = 3;
             
-            if (xNumTicks > 0) {
-                float xTick = (float) plotLocation.getX();
-                double xValue = range.minX;
-                String xTickValue = stringValue( scaleX( xValue ), true );
-                g.drawString( xTickValue, xTick - getWidth( xTickValue, g )/2, plotLocation.y + getHeight( xTickValue, g ) + OFFSET_Y_XAXIS );
-            }
-            
-            // Draw the lines with the respective X and Y values of the tick.
-            for (int i = 0; i < xNumTicks; i++) {
-                if ((i+1) % settings.xTickInterval == 0) {
-                    float xTick = (float) plotLocation.getX() + xTickPosition;
-                    if (i < xNumTicks - 1) {
-                        if (showGrid) {
-                            drawGrid( Axis.X, new Point( (int) xTick, plotLocation.y ), g );
-                        }
-                        g.drawLine( (int) xTick, plotLocation.y, (int) xTick, (int) (plotLocation.getY() - lengthTick) );
+            // First X tick.
+            float xTick = (float) plotLocation.getX();
+            drawTick( Axis.X, g, range.minX, xTick, plotLocation.y + OFFSET_Y_XAXIS );
+            // Added X ticks.
+            for (int i = 1; i <= xNumTicks; i++) {
+                if (i % settings.xTickInterval == 0) {
+                    xTick = (float) plotLocation.getX() + xTickPosition;
+                    if (showGrid) {
+                        drawGrid( Axis.X, new Point( (int) xTick, plotLocation.y ), g );
                     }
+                    g.drawLine( (int) xTick, plotLocation.y, (int) xTick, (int) (plotLocation.getY() - lengthTick) );
                     
-                    double xValue = range.minX + (range.getXRange() / xNumTicks) * (i+1);
-                    String xTickValue = stringValue( scaleX( xValue ), true );
-                    g.drawString( xTickValue, xTick - getWidth( xTickValue, g )/2, plotLocation.y + getHeight( xTickValue, g ) + OFFSET_Y_XAXIS );
+                    double xValue = range.minX + (range.getXRange() / (xNumTicks+1)) * i;
+                    drawTick( Axis.X, g, xValue, xTick, plotLocation.y + OFFSET_Y_XAXIS );
                 }
                 
                 xTickPosition += xTicksOffset;
             }
+            //Last X tick.
+            xTick = (float) (plotLocation.getX() + xLength);
+            drawTick( Axis.X, g, range.maxX, xTick, plotLocation.y + OFFSET_Y_XAXIS );
             
-            if (yNumTicks > 0) {
-                float yTick = (float) plotLocation.getY();
-                double yValue = range.minY;
-                String yTickValue = stringValue( scaleY( yValue ), false );
-                g.drawString( yTickValue, plotLocation.x - getWidth( yTickValue, g ) - lengthTick, yTick + getHeight( yTickValue, g )/2 - 2f );
-            }
             
-            for (int i = 0; i < yNumTicks; i++) {
-                if ((i+1) % settings.yTickInterval == 0) {
-                    float yTick = (float) plotLocation.getY() - yTickPosition;
-                    if (i < yNumTicks - 1) {
-                        if (showGrid) {
-                            drawGrid( Axis.Y, new Point( plotLocation.x, (int) yTick ), g );
-                        }
-                        g.drawLine( plotLocation.x, (int) yTick, (int) (plotLocation.getX() + lengthTick), (int) yTick );
+            // Get the number and offset of Y Ticks.
+            final int yNumTicks = settings._yNumTicks;
+            final float yTicksOffset = yLength / (yNumTicks+1);
+            float yTickPosition = yTicksOffset;
+            
+            // First Y tick.
+            float yTick = (float) plotLocation.getY();
+            drawTick( Axis.Y, g, range.minY, plotLocation.x, yTick );
+            // Added Y ticks.
+            for (int i = 1; i <= yNumTicks; i++) {
+                if (i % settings.yTickInterval == 0) {
+                    yTick = (float) plotLocation.getY() - yTickPosition;
+                    if (showGrid) {
+                        drawGrid( Axis.Y, new Point( plotLocation.x, (int) yTick ), g );
                     }
+                    g.drawLine( plotLocation.x, (int) yTick, (int) (plotLocation.getX() + lengthTick), (int) yTick );
                     
-                    double yValue = range.minY + (range.getYRange() / yNumTicks) * (i+1);
-                    String yTickValue = stringValue( scaleY( yValue ), false );
-                    g.drawString( yTickValue, plotLocation.x - getWidth( yTickValue, g ) - lengthTick, yTick + getHeight( yTickValue, g )/2 - 2f );
+                    double yValue = range.minY + (range.getYRange() / (yNumTicks+1)) * i;
+                    drawTick( Axis.Y, g, yValue, plotLocation.x, yTick );
                 }
                 
                 yTickPosition += yTicksOffset;
+            }
+            // Last Y tick.
+            yTick = (float) (plotLocation.getY() - yLength);
+            drawTick( Axis.Y, g, range.maxY, plotLocation.x, yTick );
+        }
+        
+        private void drawTick( Axis axe, Graphics2D g, double value, float x, float y )
+        {
+            if (axe == Axis.X) {
+                String xTickValue = stringValue( scaleX( value ), true );
+                g.drawString( xTickValue, x - getWidth( xTickValue, g )/2, y + getHeight( xTickValue, g ) );
+            } else {
+                String yTickValue = stringValue( scaleY( value ), false );
+                g.drawString( yTickValue, x - getWidth( yTickValue, g ) - lengthTick, y + getHeight( yTickValue, g )/2 - 2f );
             }
         }
 
@@ -1044,8 +1041,7 @@ public class Plotter extends WindowAdapter implements ActionListener
                 minY = Double.POSITIVE_INFINITY;
             }
             
-            int maxXPoints = 0;
-            int maxYPoints = 0;
+            int maxPoints = 0;
             for (Plot plot : _plots) {
                 try {
                     List<Pair<Double,Double>> points = plot.points;
@@ -1075,8 +1071,7 @@ public class Plotter extends WindowAdapter implements ActionListener
                         }
                     }
                     
-                    maxXPoints = Math.max( maxXPoints, rangePoints );
-                    maxYPoints = Math.max( maxYPoints, rangePoints );
+                    maxPoints = Math.max( maxPoints, rangePoints );
                     
                 } catch ( ConcurrentModificationException e ) {
                     // Empty body.
@@ -1084,13 +1079,11 @@ public class Plotter extends WindowAdapter implements ActionListener
                 }
             }
             
-            if (!XticksSettedByTheUser) {
-                maxXPoints = Math.min( maxXPoints, MAX_TICKS );
-                settings._xNumTicks = maxXPoints;
+            if (!settings.XticksSettedByTheUser) {
+                settings._xNumTicks = Math.min( maxPoints, MAX_TICKS );
             }
-            if (!YticksSettedByTheUser) {
-                maxYPoints = Math.min( maxYPoints, MAX_TICKS );
-                settings._yNumTicks = maxYPoints;
+            if (!settings.YticksSettedByTheUser) {
+                settings._yNumTicks = Math.min( maxPoints, MAX_TICKS );
             }
             
             if (!settings._settedYRangeByUser) {
@@ -1102,7 +1095,7 @@ public class Plotter extends WindowAdapter implements ActionListener
                 settings._range.maxY = maxY;
             }
             
-            return new Range( maxXPoints, maxYPoints, minX, maxX, minY, maxY );
+            return new Range( minX, maxX, minY, maxY );
         }
         
         @Override

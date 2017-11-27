@@ -536,7 +536,7 @@ public class EnergyTestMONO
         plotter.addPlot( server.getSampledValues( Global.ENERGY_SAMPLING ), model.getModelType( false ) );
         plotter.setAxisName( "Time (h)", "Energy (J)" );
         plotter.setTicks( Axis.Y, 10 );
-        plotter.setTicks( Axis.X, 24, 2 );
+        plotter.setTicks( Axis.X, 23, 2 );
         plotter.setRange( Axis.Y, 0, 4350 );
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         plotter.setVisible( true );
@@ -691,7 +691,7 @@ public class EnergyTestMONO
         
         plotter.setAxisName( "Time (h)", "Energy (J)" );
         plotter.setTicks( Axis.Y, 10 );
-        plotter.setTicks( Axis.X, 24, 2 );
+        plotter.setTicks( Axis.X, 23, 2 );
         plotter.setRange( Axis.Y, 0, 1800 );
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         plotter.setVisible( true );

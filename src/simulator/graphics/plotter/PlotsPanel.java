@@ -58,7 +58,7 @@ public class PlotsPanel implements MouseListener, FocusListener
         this.plotter = plotter;
         text = "Plots";
         font = new Font( "sans-serif", Font.PLAIN, 12 );
-        selected = true;
+        selected = false;
         background = new Color( 200, 200, 220 );
         this.x = x;
         size = new Dimension( width, getHeight() );
@@ -109,6 +109,7 @@ public class PlotsPanel implements MouseListener, FocusListener
         size.height = (int) box.getBounds().getMaxY();
         box.addFocusListener( this );
         box.addMouseListener( this );
+        selected = true;
         return box;
     }
     
@@ -129,6 +130,7 @@ public class PlotsPanel implements MouseListener, FocusListener
         }
         
         if (plots.size() == 0) {
+            selected = false;
             size.height = POLY_SIZE;
         } else {
             size.height = y;

@@ -578,7 +578,7 @@ public class EnergyTestREPLICA_DIST
                 arrivalExtimation += (currentArrivals.get( 1 ) - currentArrivals.get( 0 ));
             }
             
-            double minWeight = Double.MAX_VALUE;
+            double minWeight = 0;
             int replicas = 0;
             for (int nodes = 1; nodes <= REPLICAS_PER_NODE; nodes++) {
                 double power   = getPowerCost( nodes );
@@ -834,7 +834,7 @@ public class EnergyTestREPLICA_DIST
             plotter.setTitle( "DISTRIBUTED REPLICA (" + testMode + ") - " + modelType );
             plotter.setAxisName( "Time (h)", "Energy (J)" );
             plotter.setTicks( Axis.Y, 10 );
-            plotter.setTicks( Axis.X, 24, 2 );
+            plotter.setTicks( Axis.X, 23, 2 );
             plotter.setRange( Axis.Y, 0, 4300 );
             plotter.setScaleX( 60d * 60d * 1000d * 1000d );
             plotter.setVisible( true );

@@ -668,7 +668,7 @@ public class EnergyTestDIST2
         
         plotter.setAxisName( "Time (h)", "Energy (J)" );
         plotter.setTicks( Axis.Y, 10 );
-        plotter.setTicks( Axis.X, 24, 2 );
+        plotter.setTicks( Axis.X, 23, 2 );
         plotter.setRange( Axis.Y, 0, 4300 );
         plotter.setScaleX( 60d * 60d * 1000d * 1000d );
         plotter.setVisible( true );

@@ -48,8 +48,8 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
         
         int xNumTicks = (settings._xNumTicks == Integer.MAX_VALUE) ? 1 : settings._xNumTicks;
         int yNumTicks = (settings._yNumTicks == Integer.MAX_VALUE) ? 1 : settings._yNumTicks;
-        boxPanel.add( createPanel( "X ticks", "Value", xNumTicks + "", "Interval", settings.xTickInterval + "" ) );
-        boxPanel.add( createPanel( "Y ticks", "Value", yNumTicks + "", "Interval", settings.yTickInterval + "" ) );
+        boxPanel.add( createPanel( "X ticks", "Number", xNumTicks + "", "Interval", settings.xTickInterval + "" ) );
+        boxPanel.add( createPanel( "Y ticks", "Number", yNumTicks + "", "Interval", settings.yTickInterval + "" ) );
         Range range = settings._range;
         boxPanel.add( createPanel( "X range", "From", getValue( range.getMinX() ), "To", getValue( range.getMaxX() ) ) );
         boxPanel.add( createPanel( "Y range", "From", getValue( range.getMinY() ), "To", getValue( range.getMaxY() ) ) );
@@ -168,6 +168,7 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
                     case( 0 ):
                         if (value <= 0) { showErrorDialog( "Number of X ticks must be greater then 0." ); return; }
                         settings._xNumTicks = (int) value;
+                        settings.XticksSettedByTheUser = true;
                         break;
                     case( 1 ):
                         if (value <= 0) { showErrorDialog( "X intervals must be greater then 0." ); return; }
@@ -176,6 +177,7 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
                     case( 2 ):
                         if (value <= 0) { showErrorDialog( "Number of Y ticks must be greater then 0." ); return; }
                         settings._yNumTicks = (int) value;
+                        settings.YticksSettedByTheUser = true;
                         break;
                     case( 3 ):
                         if (value <= 0) { showErrorDialog( "Y intervals must be greater then 0." ); return; }
@@ -188,6 +190,7 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
                     case( 5 ):
                         if (value < 0) { showErrorDialog( "X maximum range cannot be less then 0." ); return; }
                         if (value < min) { settings._range.setMinX( oldMinX ); showErrorDialog( "X maximum range cannot be less then the minimum." ); return; }
+                        if (value == min) { showErrorDialog( "X maximum range cannot be equal to the minimum." ); return; }
                         settings._range.setMaxX( value );
                         settings._settedXRangeByUser = true;
                         break;
@@ -198,6 +201,7 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
                     case( 7 ):
                         if (value < 0) { showErrorDialog( "Y maximum range cannot be less then 0." ); return; }
                         if (value < min) { settings._range.setMinY( oldMinY ); showErrorDialog( "Y maximum range cannot be less then the minimum." ); return; }
+                        if (value == min) { showErrorDialog( "Y maximum range cannot be equal to the minimum." ); return; }
                         settings._range.setMaxY( value );
                         settings._settedYRangeByUser = true;
                         break;
