@@ -4,16 +4,23 @@
 
 package simulator.network.protocols;
 
+import simulator.network.NetworkLayer;
 import simulator.topology.NetworkNode;
+import simulator.topology.NetworkTopology;
 
-public interface RoutingProtocol
+public abstract class RoutingProtocol extends Protocol
 {
+    public RoutingProtocol( final NetworkLayer layer, final NetworkTopology net, final Protocol... baseProtocols ) {
+        super( layer, net, baseProtocols );
+    }
+    
     /**
      * Returns the next node starting from the current one.
      * 
-     * @param destID    destination node identifier.
+     * @param destID    destination node address.
      * 
-     * @return the next node in the graph.
+     * @return the next node in the path.
     */
-    public NetworkNode getNextNode( long destID );
+    public abstract NetworkNode getNextNode( final long destID );
+    //TODO public abstract NetworkNode getNextNode( final String destination );
 }

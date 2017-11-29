@@ -29,8 +29,12 @@ public class NetworkLink
     private boolean _active = true;
     private String _linkType;
     
+    /* Timers used to manage the utilization of the link. */
+    private Time startTime;
+    private Time endTime;
+    
     /** The Maximum Transmission Unit of the link. */
-    private long MTU = 1500;
+    private int MTU = 1500;
     
     public static final String UNIDIRECTIONAL = "simplex", BIDIRECTIONAL = "duplex";
     
@@ -98,11 +102,11 @@ public class NetworkLink
         return Math.random() < errorLink;
     }
     
-    public long getMTU() {
+    public int getMTU() {
         return MTU;
     }
     
-    public void setMTU( long value ) {
+    public void setMTU( int value ) {
         MTU = value;
     }
     
@@ -120,6 +124,12 @@ public class NetworkLink
     
     public boolean isActive() {
         return _active;
+    }
+    
+    public void setUtilization( final Time start, final Time end )
+    {
+        startTime.setTime( start );
+        endTime.setTime( end.addTime( getTprop(), TimeUnit.MICROSECONDS ) );
     }
 
     @Override

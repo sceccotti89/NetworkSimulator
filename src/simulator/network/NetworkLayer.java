@@ -4,12 +4,10 @@
 
 package simulator.network;
 
-/** The OSI stack model. */
+/** The TCP/IP stack model. */
 public enum NetworkLayer
 {
-    APPLICATION( 7 ),
-    PRESENTATION( 6 ),
-    SESSION( 5 ),
+    APPLICATION( 5 ),
     TRANSPORT( 4 ),
     NETWORK( 3 ),
     DATA_LINK( 2 ),
@@ -17,7 +15,7 @@ public enum NetworkLayer
     
     private int index;
     
-    NetworkLayer( int index ) {
+    NetworkLayer( final int index ) {
         this.index = index;
     }
     
@@ -26,5 +24,5 @@ public enum NetworkLayer
     }
     
     /** Number of stack layers. */
-    public static final int STACK_LENGTH = 7;
+    public static final int STACK_LENGTH = 5;
 }

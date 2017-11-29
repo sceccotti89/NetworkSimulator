@@ -10,7 +10,6 @@ import simulator.core.Agent;
 import simulator.events.Event;
 import simulator.events.Packet;
 import simulator.network.NetworkSettings;
-import simulator.network.protocols.NetworkProtocol;
 import simulator.utils.Time;
 
 /**
@@ -106,12 +105,12 @@ public class NetworkNode
     
     public Event analyzePacket( Packet packet )
     {
-        final String protocol_ID = packet.getContent( "Protocol_ID" );
+        /*final String protocol_ID = packet.getContent( "Protocol_ID" );
         for (NetworkProtocol protocol : _settings.getRoutingProtocols()) {
             if (protocol.getID().equals( protocol_ID )) {
                 return protocol.processPacket( packet );
             }
-        }
+        }*/
         return null;
     }
 

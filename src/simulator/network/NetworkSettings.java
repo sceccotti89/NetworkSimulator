@@ -6,9 +6,11 @@ package simulator.network;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import simulator.network.protocols.NetworkProtocol;
+import simulator.network.protocols.Protocol;
 import simulator.network.protocols.RoutingProtocol;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Utils;
@@ -24,13 +26,14 @@ public class NetworkSettings
     */
     public static enum IPversion { IPv4, IPv6 };
     
-    private List<NetworkProtocol> _routingProtocols;
+    private Map<Integer,List<Protocol>> _protocols;
+    private List<RoutingProtocol> _routingProtocols;
     
     private String loopback = "127.0.0.1";
-    private String IPv4public;
-    private String IPv4private;
-    private String IPv6;
-    private String IPv6LinkLocal;
+    private String IPv4public = "";
+    private String IPv4private = "";
+    private String IPv6 = "";
+    private String IPv6LinkLocal = "";
     //private String careOfAddress; // TODO Utilizzato per i nodi mobili.
     private boolean useDHCP = true;
     private String subnetMask;
@@ -38,17 +41,18 @@ public class NetworkSettings
     
     
     
-    public NetworkSettings( NetworkTopology net )
+    public NetworkSettings( final NetworkTopology net )
     {
+        _protocols = new HashMap<>();
         _routingProtocols = new ArrayList<>();
         
         subnetMask = "255.255.255.0";
-        MACaddress = MACAddressFactory.getMACaddress();
+        MACaddress = MACaddressFactory.getMACaddress();
         
         IPv6LinkLocal = IPv6StatelessConfiguration();
     }
     
-    public NetworkSettings setSubnetMask( String subnetMask ) {
+    public NetworkSettings setSubnetMask( final String subnetMask ) {
         this.subnetMask = subnetMask;
         return this;
     }
@@ -60,7 +64,7 @@ public class NetworkSettings
      * @param version     the IP version (4 or 6, see {@linkplain IPversion})
      * @param publicIP    {@code true} if the IP is public, {@code false} otherwise
     */
-    public NetworkSettings setIPaddress( String address, IPversion version, boolean publicIP )
+    public NetworkSettings setIPaddress( final String address, final IPversion version, final boolean publicIP )
     {
         if (version == IPversion.IPv4) {
             if (publicIP) {
@@ -86,9 +90,13 @@ public class NetworkSettings
         return IPv6;
     }
     
-    public NetworkSettings setMACaddress( String address ) {
+    public NetworkSettings setMACaddress( final String address ) {
         MACaddress = address;
         return this;
+    }
+    
+    public String getMACaddress() {
+        return MACaddress;
     }
     
     /**
@@ -100,7 +108,7 @@ public class NetworkSettings
      * @param DHCPaddress    the DHCP IP address
      * @param version        the DHCP version (4 or 6, see {@linkplain IPversion})
     */
-    public NetworkSettings setDHCP( boolean useDHCP, String DHCPaddress, IPversion version ) {
+    public NetworkSettings setDHCP( final boolean useDHCP, final String DHCPaddress, final IPversion version ) {
         this.useDHCP = useDHCP;
         if (this.useDHCP) {
             if (DHCPaddress != null) {
@@ -120,8 +128,11 @@ public class NetworkSettings
         for (int i = binary.length(); i < 8; i++) {
             binary = "0" + binary;
         }
-        if (binary.charAt( 6 ) == '0') { binary = binary.substring( 0, 6 ) + "1" + binary.substring( 7 ); }
-        else { binary = binary.substring( 0, 6 ) + "0" + binary.substring( 7 ); }
+        if (binary.charAt( 6 ) == '0') {
+            binary = binary.substring( 0, 6 ) + "1" + binary.substring( 7 );
+        } else {
+            binary = binary.substring( 0, 6 ) + "0" + binary.substring( 7 );
+        }
         ip = new BigInteger( binary, 2 ).toString( 16 ) + ip.substring( 8 );
         
         // Create groups of 4 hexadecimal digits of the height 16-bit pieces of the address.
@@ -135,22 +146,39 @@ public class NetworkSettings
             }
         }
         
-        return "fe80::" + ip.replace( "-", "::" ).toLowerCase();
+        return "fe80::" + ip.replace( "-", ":" ).toLowerCase();
+    }
+    
+    public void addNetworkProtocol( final Protocol protocol )
+    {
+        int layer = protocol.getLayer().getIndex();
+        List<Protocol> protocols = _protocols.get( layer );
+        if (protocols == null) {
+            protocols = new ArrayList<>();
+            _protocols.put( layer, protocols );
+        }
+        protocols.add( protocol );
+    }
+    
+    public List<Protocol> getNetworkProtocols( final NetworkLayer layer ) {
+        return getNetworkProtocols( layer.getIndex() );
+    }
+    
+    public List<Protocol> getNetworkProtocols( final int layer ) {
+        return _protocols.get( layer );
     }
     
     /**
-     * Add a protocol used to transmit messages to a destination node
+     * Adds a protocol used to transmit messages to a destination node
      * using a certain routing strategy.
      * 
      * @param protocol    the routing protocol
     */
-    public <T extends NetworkProtocol & RoutingProtocol>
-            NetworkSettings addRoutingProtocol( T protocol ) {
+    public void addRoutingProtocol( final RoutingProtocol protocol ) {
         _routingProtocols.add( protocol );
-        return this;
     }
     
-    public List<NetworkProtocol> getRoutingProtocols() {
+    public List<RoutingProtocol> getRoutingProtocols() {
         return _routingProtocols;
     }
     
