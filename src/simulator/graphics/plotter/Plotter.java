@@ -165,7 +165,7 @@ public class Plotter extends WindowAdapter implements ActionListener
         frame = new JFrame( title );
         frame.setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
         
-        frame.setLocationRelativeTo( null );
+        //frame.setLocationRelativeTo( null );
         frame.setBounds( x, y, width, height );
         frame.setMinimumSize( new Dimension( 500, 300 ) );
         
@@ -179,7 +179,7 @@ public class Plotter extends WindowAdapter implements ActionListener
         
         frame.setLayout( new BorderLayout() );
         frame.getContentPane().add( plotter );
-        //frame.setLocationByPlatform( true );
+        frame.setLocationByPlatform( true );
         
         frame.pack();
         frame.setVisible( false );
@@ -229,19 +229,31 @@ public class Plotter extends WindowAdapter implements ActionListener
     }
     
     public void addPlot( String filePlotter, String title ) throws IOException {
-        addPlot( readPlot( filePlotter ), null, Line.UNIFORM, title );
+        addPlot( readPlot( filePlotter ), null, Line.NOTHING, PointType.CIRCLE, title );
     }
-
+    
     public void addPlot( String filePlotter, Color color, String title ) throws IOException {
-        addPlot( readPlot( filePlotter ), color, Line.UNIFORM, title );
+        addPlot( readPlot( filePlotter ), color, Line.NOTHING, PointType.CIRCLE, title );
     }
     
     public void addPlot( String filePlotter, Line line, String title ) throws IOException {
-        addPlot( readPlot( filePlotter ), null, line, title );
+        addPlot( readPlot( filePlotter ), null, line, PointType.NOTHING, title );
+    }
+    
+    public void addPlot( String filePlotter, PointType pType, String title ) throws IOException {
+        addPlot( readPlot( filePlotter ), null, pType, title );
     }
     
     public void addPlot( String filePlotter, Color color, Line line, String title ) throws IOException {
         addPlot( readPlot( filePlotter ), color, line, title );
+    }
+    
+    public void addPlot( String filePlotter, Color color, PointType pType, String title ) throws IOException {
+        addPlot( readPlot( filePlotter ), color, pType, title );
+    }
+    
+    public void addPlot( String filePlotter, Color color, Line line, PointType pType, String title ) throws IOException {
+        addPlot( readPlot( filePlotter ), color, line, pType, title );
     }
     
     public void addPlot( List<Pair<Double,Double>> points, String title ) {
@@ -253,27 +265,23 @@ public class Plotter extends WindowAdapter implements ActionListener
     }
     
     public void addPlot( List<Pair<Double,Double>> points, Color color, String title ) {
-        addPlot( points, color, Line.UNIFORM, title );
+        addPlot( points, color, Line.NOTHING, PointType.CIRCLE, title );
     }
     
     public void addPlot( List<Pair<Double,Double>> points, Color color, Line line, String title ) {
         addPlot( points, color, line, PointType.NOTHING, title );
     }
     
-    public void addPlot( String file, Color color, PointType point, String title ) throws IOException {
-        plotter.addPlot( readPlot( file ), color, Line.NOTHING, point, title );
+    public void addPlot( List<Pair<Double,Double>> points, Color color, PointType pType, String title ) {
+        addPlot( points, color, Line.NOTHING, pType, title );
     }
     
-    public void addPlot( String file, Color color, Line line, PointType point, String title ) throws IOException {
-        plotter.addPlot( readPlot( file ), color, line, point, title );
-    }
-    
-    public void addPlot( List<Pair<Double,Double>> points, Color color, Line line, PointType point, String title ) {
-        plotter.addPlot( points, color, line, point, title );
+    public void addPlot( List<Pair<Double,Double>> points, Color color, Line line, PointType pType, String title ) {
+        plotter.addPlot( points, color, line, pType, title );
     }
     
     public void addPlot( Plot plot ) {
-        plotter.addPlot( plot.points, plot.color,plot.line, PointType.NOTHING, plot.title );
+        plotter.addPlot( plot.points, plot.color, plot.line, plot.pointer, plot.title );
     }
     
     public void savePlot( String dir, String file ) throws IOException {
@@ -638,32 +646,15 @@ public class Plotter extends WindowAdapter implements ActionListener
             _legend = new PlotsPanel( this, (int) (width - 370), 350 );
         }
         
-        private String makeBoxTitle( String title )
-        {
-            final Graphics g = getGraphics();
-            final int pointsLength = getWidth( "...", g );
-            String text = title;
-            if (getWidth( title, getGraphics() ) > MAX_TEXT_LENGTH) {
-                for (int i = title.length() - 1; i >= 0; i--) {
-                    text = text.substring( 0, text.length() - 1 );
-                    if (getWidth( text, g ) + pointsLength <= MAX_TEXT_LENGTH) {
-                        return text + "...";
-                    }
-                }
-            }
-            return text;
-        }
-        
         public void addPlot( List<Pair<Double,Double>> points,
                              Color color, Line line, PointType pointer,
                              String title )
         {
-            String text = makeBoxTitle( title );
-            JCheckBox box = _legend.addPlot( this, text );
+            JCheckBox box = _legend.addPlot( this, title, MAX_TEXT_LENGTH );
             _plots.add( new Plot( title, points, chooseColor( color ), line, pointer, 2f, box ) );
             add( box );
         }
-        
+
         public void savePlot( String dir, String file ) throws IOException
         {
             FileWriter fw = new FileWriter( dir + "/" + file );
@@ -1067,10 +1058,10 @@ public class Plotter extends WindowAdapter implements ActionListener
                 g.setColor( plot.color );
                 g.setStroke( plot.stroke );
                 if (plot.line != Line.NOTHING) {
-                    g.drawLine( p.x + size.width, p.y + size.height/2 - 1,
-                                p.x + size.width + LEGEND_LINE_LENGTH, p.y + size.height/2 - 1 );
+                    g.drawLine( p.x + MAX_TEXT_LENGTH, p.y + size.height/2 - 1,
+                                p.x + MAX_TEXT_LENGTH + LEGEND_LINE_LENGTH, p.y + size.height/2 - 1 );
                 }
-                plot.drawPoint( g, p.x + size.width + LEGEND_LINE_LENGTH/2, p.y + size.height/2 );
+                plot.drawPoint( g, p.x + MAX_TEXT_LENGTH + LEGEND_LINE_LENGTH/2, p.y + size.height/2 );
             }
             
             _legend.draw( this, g );

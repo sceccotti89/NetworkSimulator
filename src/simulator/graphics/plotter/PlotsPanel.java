@@ -91,14 +91,13 @@ public class PlotsPanel implements MouseListener, FocusListener
         return POLY_SIZE;
     }
     
-    public JCheckBox addPlot( GraphicPlotter plotter, String title )
+    public JCheckBox addPlot( GraphicPlotter plotter, String title, int maxWidth )
     {
-        int maxWidth = 0;
+        //int maxWidth = 0;
         int y = startY;
         for (Plot plot : plotter.getPlots()) {
             JCheckBox box = plot.box;
-            y        = (int) box.getBounds().getMaxY();
-            maxWidth = (int) Math.max( maxWidth, box.getBounds().getWidth() );
+            y = (int) box.getBounds().getMaxY();
         }
         
         JCheckBox box = new JCheckBox( title, true );
