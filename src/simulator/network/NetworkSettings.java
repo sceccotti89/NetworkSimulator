@@ -12,7 +12,6 @@ import java.util.Map;
 
 import simulator.network.protocols.Protocol;
 import simulator.network.protocols.RoutingProtocol;
-import simulator.topology.NetworkTopology;
 import simulator.utils.Utils;
 
 public class NetworkSettings
@@ -41,7 +40,7 @@ public class NetworkSettings
     
     
     
-    public NetworkSettings( NetworkTopology net )
+    public NetworkSettings()
     {
         _protocols = new HashMap<>();
         _routingProtocols = new ArrayList<>();

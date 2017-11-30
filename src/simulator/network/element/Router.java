@@ -15,7 +15,7 @@ public class Router extends Agent
 {
     public Router( NetworkNode node, NetworkTopology net )
     {
-        super( NetworkAgent.FULL_DUPLEX, NetworkLayer.NETWORK, net, node );
+        super( NetworkAgent.FULL_DUPLEX, NetworkLayer.NETWORK, node );
         
         // By default it executes the RIP protocol.
         _settings.addRoutingProtocol( new RIP( net ) );

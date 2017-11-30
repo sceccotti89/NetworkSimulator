@@ -126,7 +126,7 @@ public class EnergyTestMONO
     {
         public ClientAgent( long id, EventGenerator evGenerator )
         {
-            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( evGenerator );
         }
     }
@@ -174,7 +174,7 @@ public class EnergyTestMONO
     private static class SwitchAgent extends Agent implements EventHandler
     {
         public SwitchAgent( long id, EventGenerator evGenerator ) {
-            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( evGenerator );
             addEventHandler( this );
         }
@@ -250,7 +250,7 @@ public class EnergyTestMONO
     {
         public MulticoreAgent( long id, EventGenerator evtGenerator )
         {
-            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( evtGenerator );
             addEventHandler( this );
         }

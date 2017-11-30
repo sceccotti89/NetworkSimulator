@@ -50,7 +50,7 @@ public class NetworkTest
     {
         public SwitchAgent( long id, EventGenerator evGenerator )
         {
-            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( evGenerator );
         }
         
@@ -89,7 +89,7 @@ public class NetworkTest
     {
         public ClientAgent( long id, EventGenerator evGenerator )
         {
-            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( evGenerator );
         }
     }
@@ -98,7 +98,7 @@ public class NetworkTest
     {
         public ServerAgent( long id )
         {
-            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
         }
     }
     
@@ -106,7 +106,7 @@ public class NetworkTest
     {
         public ResponseServerAgent( long id, EventGenerator generator )
         {
-            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( generator );
         }
     }

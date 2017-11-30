@@ -39,7 +39,6 @@ public abstract class NetworkAgent
     protected NetworkNode _node;
     protected NetworkTopology _net;
     
-    // TODO capire se puo' servire, altrimenti rimetterlo nell'agent oppure rimuoverlo
     protected List<Event> _eventQueue;
     
     protected Map<String,Device<?,?>> _devices;
@@ -65,7 +64,7 @@ public abstract class NetworkAgent
     
     
     
-    public NetworkAgent( int channelType, NetworkLayer layer, NetworkTopology net )
+    public NetworkAgent( int channelType, NetworkLayer layer )
     {
         _time = new Time( 0, TimeUnit.MICROSECONDS );
         
@@ -83,7 +82,7 @@ public abstract class NetworkAgent
         
         this.channelType = channelType;
         
-        _settings = new NetworkSettings( net );
+        _settings = new NetworkSettings();
         _settings.addNetworkProtocol( new UDP() );
         _settings.addNetworkProtocol( new TCP() );
         _settings.addNetworkProtocol( new IPv4() );
@@ -135,7 +134,7 @@ public abstract class NetworkAgent
         node.setAgent( (Agent) this );
     }
     
-    protected NetworkNode getNode() {
+    public NetworkNode getNode() {
         return _node;
     }
     

@@ -15,7 +15,7 @@ public class Switch extends Agent
 {
     public Switch( NetworkNode node, NetworkTopology net )
     {
-        super( NetworkAgent.FULL_DUPLEX, NetworkLayer.DATA_LINK, net, node );
+        super( NetworkAgent.FULL_DUPLEX, NetworkLayer.DATA_LINK, node );
         
         // By default it executes the RIP protocol.
         _settings.addRoutingProtocol( new RIP( net ) );

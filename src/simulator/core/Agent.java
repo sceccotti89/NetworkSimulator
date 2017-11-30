@@ -19,7 +19,6 @@ import simulator.events.generator.EventGenerator;
 import simulator.network.NetworkAgent;
 import simulator.network.NetworkLayer;
 import simulator.topology.NetworkNode;
-import simulator.topology.NetworkTopology;
 import simulator.utils.Pair;
 import simulator.utils.Sampler;
 import simulator.utils.Time;
@@ -40,15 +39,15 @@ public abstract class Agent extends NetworkAgent
     
     
     
-    public Agent( int channelType, NetworkLayer layer, NetworkTopology net, NetworkNode node )
+    public Agent( int channelType, NetworkLayer layer, NetworkNode node )
     {
-        this( channelType, layer, net, node.getId() );
+        this( channelType, layer, node.getId() );
         setNode( node );
     }
     
-    public Agent( int channelType, NetworkLayer layer, NetworkTopology net, long id )
+    public Agent( int channelType, NetworkLayer layer, long id )
     {
-        super( channelType, layer, net );
+        super( channelType, layer );
         
         _id = id;
         
@@ -60,10 +59,6 @@ public abstract class Agent extends NetworkAgent
     
     public long getId() {
         return _id;
-    }
-    
-    public NetworkNode getNode() {
-        return _node;
     }
     
     public void addEventGenerator( EventGenerator evGenerator )
@@ -107,33 +102,6 @@ public abstract class Agent extends NetworkAgent
         }
         samplings.put( samplerId, sampler );
     }
-
-    /**
-     * Sets the time of the agent.</br>
-     * The internal time of the agent will be updated only if the input time is greater
-     * than the current one.
-     * 
-     * @param now    set the current time
-    */
-    public void setTime( Time now )
-    {
-        if (now.compareTo( _time ) > 0) {
-            _time.setTime( now );
-            for (Device<?,?> device : getDevices()) {
-                device.setTime( now );
-            }
-        }
-    }
-
-    public Time getTime() {
-        return _time.clone();
-    }
-    
-    public void setNode( NetworkNode node )
-    {
-        _node = node;
-        node.setAgent( this );
-    }
     
     public void setEventScheduler( EventScheduler evtScheduler )
     {
@@ -155,7 +123,7 @@ public abstract class Agent extends NetworkAgent
     public EventGenerator getEventGenerator( int index ) {
         return _evtGenerators.get( index );
     }
-
+    
     /**
      * Puts an input event into the queue.
      * 
@@ -172,7 +140,8 @@ public abstract class Agent extends NetworkAgent
      * 
      * @return e    the removed event
     */
-    public Event removeEventFromQueue( Event event ) {
+    public Event removeEventFromQueue( Event event )
+    {
         _eventQueue.remove( event );
         return event;
     }
@@ -184,7 +153,8 @@ public abstract class Agent extends NetworkAgent
      * 
      * @return the removed event
     */
-    public Event removeEventFromQueue( int index ) {
+    public Event removeEventFromQueue( int index )
+    {
         if (!_eventQueue.isEmpty()) {
             return _eventQueue.remove( index );
         }

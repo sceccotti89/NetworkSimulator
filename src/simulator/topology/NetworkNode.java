@@ -42,13 +42,11 @@ public class NetworkNode
     
     
     
-    public NetworkNode( NetworkTopology net, long id,
-                        String name, long delay ) {
-        this( net, id, name, delay, 0, 0 );
+    public NetworkNode( long id, String name, long delay ) {
+        this( id, name, delay, 0, 0 );
     }
     
-    public NetworkNode( NetworkTopology net, long id, String name,
-                        long delay, int xPos, int yPos )
+    public NetworkNode( long id, String name, long delay, int xPos, int yPos )
     {
         _id = id;
         _name = name;
@@ -57,7 +55,7 @@ public class NetworkNode
         
         _xPos = xPos;
         _yPos = yPos;
-        _settings = new NetworkSettings( net );
+        _settings = new NetworkSettings();
     }
     
     public long getId() {

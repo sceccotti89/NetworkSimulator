@@ -116,7 +116,7 @@ public class NetworkTopology
             int xPos        = (node.has( NetworkNode.X_POS )) ? node.getInt( NetworkNode.X_POS ) : 0;
             int yPos        = (node.has( NetworkNode.Y_POS )) ? node.getInt( NetworkNode.Y_POS ) : 0;
             
-            NetworkNode _node = new NetworkNode( this, id, name, delay, xPos, yPos );
+            NetworkNode _node = new NetworkNode( id, name, delay, xPos, yPos );
             addNode( _node );
         }
         
@@ -240,7 +240,7 @@ public class NetworkTopology
     
     public void addNode( long id, String name, long delay,
                          int xPos, int yPos ) {
-        addNode( new NetworkNode( this, id, name, delay, xPos, yPos ) );
+        addNode( new NetworkNode( id, name, delay, xPos, yPos ) );
     }
     
     public void addNode( NetworkNode node )

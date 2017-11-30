@@ -133,7 +133,7 @@ public class EnergyTestDIST2
     {
         public ClientAgent( long id, EventGenerator evGenerator )
         {
-            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( evGenerator );
         }
     }
@@ -172,7 +172,7 @@ public class EnergyTestDIST2
         
         public SwitchAgent( long id, long target, EventGenerator evGenerator ) throws IOException
         {
-            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( evGenerator );
             addEventHandler( this );
             
@@ -299,7 +299,7 @@ public class EnergyTestDIST2
         
         public MulticoreAgent( long id, EventGenerator evtGenerator )
         {
-            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( evtGenerator );
             addEventHandler( this );
         }

@@ -8,15 +8,14 @@ import simulator.core.Agent;
 import simulator.network.NetworkAgent;
 import simulator.network.NetworkLayer;
 import simulator.topology.NetworkNode;
-import simulator.topology.NetworkTopology;
 
 /**
  * Layer 1 Hub class.
 */
 public class Hub extends Agent
 {
-    public Hub( NetworkNode node, NetworkTopology net ) {
-        super( NetworkAgent.HALF_DUPLEX, NetworkLayer.PHYSICAL, net, node );
+    public Hub( NetworkNode node ) {
+        super( NetworkAgent.HALF_DUPLEX, NetworkLayer.PHYSICAL, node );
     }
     
     /*@Override
