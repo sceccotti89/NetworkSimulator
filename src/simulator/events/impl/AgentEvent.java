@@ -18,14 +18,14 @@ public class AgentEvent extends Event
     private Header message;
     private Connection conn;
     
-    public AgentEvent( final Time time, final Agent source )
+    public AgentEvent( Time time, Agent source )
     {
         super( time );
         setSource( source );
         setDestination( source );
     }
     
-    public void setMessage( final Header message, final Connection conn )
+    public void setMessage( Header message, Connection conn )
     {
         this.message = message;
         this.conn = conn;

@@ -32,11 +32,11 @@ public class Ethernet extends DataLinkProtocol
     
     public Ethernet() {}
     
-    public Ethernet( final int etherType ) {
+    public Ethernet( int etherType ) {
         setEtherType( etherType );
     }
     
-    private void setAddressValue( final Header header, final Range range, final String address )
+    private void setAddressValue( Header header, Range range, String address )
     {
         int octet = 0;
         for (String value : address.split( "-" )) {
@@ -47,7 +47,7 @@ public class Ethernet extends DataLinkProtocol
     }
     
     @Override
-    public List<Header> makeHeader( final Header upperHeader, final ConnectionInfo info )
+    public List<Header> makeHeader( Header upperHeader, ConnectionInfo info )
     {
         Header header = new Header( 128 );
         header.setField( FRAME_CHECK_SEQUENCE, 0 );
@@ -67,7 +67,7 @@ public class Ethernet extends DataLinkProtocol
     }
     
     @Override
-    public ProtocolReference processHeader( final Header header )
+    public ProtocolReference processHeader( Header header )
     {
         Header ethHeader = header.removeHeader( header.getSizeInBits() - 128, 128 );
         // TODO dovrebbe analizzarlo, ma lo ignoro
@@ -77,7 +77,7 @@ public class Ethernet extends DataLinkProtocol
     }
     
     @Override
-    public LinkedHashMap<String, String> getFields( final Header header )
+    public LinkedHashMap<String, String> getFields( Header header )
     {
         LinkedHashMap<String,String> fields;
         if (header.getSizeInBytes() == 16) {
@@ -96,7 +96,7 @@ public class Ethernet extends DataLinkProtocol
         return fields;
     }
     
-    private String getAddress( final Header header, final Range range )
+    private String getAddress( Header header, Range range )
     {
         String address = "";
         for (int i = 0; i < range.length() - 8; i += 8) {
@@ -114,7 +114,7 @@ public class Ethernet extends DataLinkProtocol
     }
     
     @Override
-    public void printHeader( final Header header )
+    public void printHeader( Header header )
     {
         String content = "=============== ETHERNET ===============\n";
         if (header.getSizeInBytes() == 16) {
@@ -132,14 +132,14 @@ public class Ethernet extends DataLinkProtocol
     }
     
     @Override
-    public String getName( final boolean extended ) {
+    public String getName( boolean extended ) {
         if (extended) return "Ethernet II";
         else return "ETH";
     }
 
     /*private static class Frame extends Header
     {
-        public Frame( final int size ) {
+        public Frame( int size ) {
             super( size );
         }
         
@@ -163,7 +163,7 @@ public class Ethernet extends DataLinkProtocol
             return fields;
         }
         
-        private String getAddress( final Range range )
+        private String getAddress( Range range )
         {
             String address = "";
             for (int i = 0; i < range.length() - 8; i += 8) {

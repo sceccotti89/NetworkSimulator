@@ -13,7 +13,7 @@ import simulator.topology.NetworkTopology;
 
 public class Switch extends Agent
 {
-    public Switch( final NetworkNode node, final NetworkTopology net )
+    public Switch( NetworkNode node, NetworkTopology net )
     {
         super( NetworkAgent.FULL_DUPLEX, NetworkLayer.DATA_LINK, net, node );
         
@@ -28,7 +28,7 @@ public class Switch extends Agent
     }
     
     @Override
-    public long receivedMessage( final Packet message, final Connection conn )
+    public long receivedMessage( Packet message, Connection conn )
     {
         // TODO capire come funziona uno switch.
         //Header msg = (Header) message;
@@ -38,7 +38,7 @@ public class Switch extends Agent
     }
     
     @Override
-    public long notifyEvent( final Event event ) {
+    public long notifyEvent( Event event ) {
         return 0;
     }*/
 

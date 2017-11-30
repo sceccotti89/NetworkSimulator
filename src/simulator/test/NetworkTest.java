@@ -13,6 +13,8 @@ import simulator.events.generator.EventGenerator;
 import simulator.events.impl.RequestEvent;
 import simulator.exception.SimulatorException;
 import simulator.graphics.AnimationNetwork;
+import simulator.network.NetworkAgent;
+import simulator.network.NetworkLayer;
 import simulator.topology.NetworkTopology;
 import simulator.utils.SizeUnit;
 import simulator.utils.Time;
@@ -48,7 +50,7 @@ public class NetworkTest
     {
         public SwitchAgent( long id, EventGenerator evGenerator )
         {
-            super( id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
             addEventGenerator( evGenerator );
         }
         
@@ -87,7 +89,7 @@ public class NetworkTest
     {
         public ClientAgent( long id, EventGenerator evGenerator )
         {
-            super( id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
             addEventGenerator( evGenerator );
         }
     }
@@ -96,7 +98,7 @@ public class NetworkTest
     {
         public ServerAgent( long id )
         {
-            super( id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
         }
     }
     
@@ -104,7 +106,7 @@ public class NetworkTest
     {
         public ResponseServerAgent( long id, EventGenerator generator )
         {
-            super( id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
             addEventGenerator( generator );
         }
     }

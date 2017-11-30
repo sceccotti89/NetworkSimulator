@@ -81,11 +81,11 @@ public class TCP extends TransportProtocol implements EventProtocol
     
     
     
-    public TCP( final Protocol... baseProtocols ) {
+    public TCP( Protocol... baseProtocols ) {
         super( NetworkLayer.TRANSPORT, baseProtocols );
     }
     
-    public TCP( final int port )
+    public TCP( int port )
     {
         super( NetworkLayer.TRANSPORT );
         
@@ -101,7 +101,7 @@ public class TCP extends TransportProtocol implements EventProtocol
     }
     
     @Override
-    public void setAgent( final Agent node )
+    public void setAgent( Agent node )
     {
         node.removeAvailablePort( sourcePort );
         bufferSize = node.getBufferSize();
@@ -112,7 +112,7 @@ public class TCP extends TransportProtocol implements EventProtocol
     // TODO per realizzare CWIN e WIN ci sara' da divertirsi con tutti quei valori..
     
     @Override
-    public List<Header> makeHeader( final Header upperHeader, final ConnectionInfo info )
+    public List<Header> makeHeader( Header upperHeader, ConnectionInfo info )
     {
         if (state <= 3) {
             return handShake( upperHeader, info );
@@ -126,7 +126,7 @@ public class TCP extends TransportProtocol implements EventProtocol
         }
     }
     
-    private List<Header> handShake( final Header upperHeader, final ConnectionInfo info )
+    private List<Header> handShake( Header upperHeader, ConnectionInfo info )
     {
         Header header = null;
         switch (state) {
@@ -140,7 +140,7 @@ public class TCP extends TransportProtocol implements EventProtocol
         return Collections.singletonList( header );
     }
     
-    private List<Header> established( final Header upperHeader, final ConnectionInfo info )
+    private List<Header> established( Header upperHeader, ConnectionInfo info )
     {
         // TODO terminato di spedire tutto il messaggio metterlo di nuovo a NULL.
         // TODO creare tanti messaggi quanto e' l'MSS
@@ -149,13 +149,13 @@ public class TCP extends TransportProtocol implements EventProtocol
         return null;
     }
     
-    private List<Header> close( final Header upperHeader, final ConnectionInfo info )
+    private List<Header> close( Header upperHeader, ConnectionInfo info )
     {
         return null;
     }
     
     @Override
-    public ProtocolReference processHeader( final Header header )
+    public ProtocolReference processHeader( Header header )
     {
         Header tcpHeader = header.removeHeader( SIZE * Byte.SIZE );
         Header response = null;
@@ -208,7 +208,7 @@ public class TCP extends TransportProtocol implements EventProtocol
         return new ProtocolReference( response );
     }
     
-    private boolean checkBits( final Header h, final Integer... controlBits )
+    private boolean checkBits( Header h, Integer... controlBits )
     {
         for (Integer bit : controlBits) {
             if (h.getBitField( CONTROL_BITS.from() + bit ) != 1) {
@@ -218,21 +218,21 @@ public class TCP extends TransportProtocol implements EventProtocol
         return true;
     }
     
-    private Header createHeader( final Header inputHeader, final Header payload, final Integer... controlBits )
+    private Header createHeader( Header inputHeader, Header payload, Integer... controlBits )
     {
         final int sourcePort = inputHeader.getField( DESTINATION_PORT );
         final int destPort   = inputHeader.getField( SOURCE_PORT );
         return createHeader( sourcePort, destPort, payload, controlBits );
     }
     
-    private Header createHeader( final ConnectionInfo info, final Header payload, final Integer... controlBits )
+    private Header createHeader( ConnectionInfo info, Header payload, Integer... controlBits )
     {
         final int sourcePort = info.getDestinationPort();
         final int destPort   = info.getSourcePort();
         return createHeader( sourcePort, destPort, payload, controlBits );
     }
     
-    private Header createHeader( final int sourcePort, final int destPort, final Header payload, final Integer... controlBits )
+    private Header createHeader( int sourcePort, int destPort, Header payload, Integer... controlBits )
     {
         int payloadSize = (payload == null) ? 0 : payload.getSizeInBits();
         Header header = new Header( SIZE * Byte.SIZE + payloadSize );
@@ -255,7 +255,7 @@ public class TCP extends TransportProtocol implements EventProtocol
     }
     
     @Override
-    public Header processEvent( final TimeoutEvent event )
+    public Header processEvent( TimeoutEvent event )
     {
         // TODO Leggendo pero' si capisce che il rinvio non e' di ogni singolo pacchetto ma solo dell'ultimo.
         // TODO Recuperare il messaggio associato all'event.
@@ -279,7 +279,7 @@ public class TCP extends TransportProtocol implements EventProtocol
     }
 
     @Override
-    public void printHeader( final Header header )
+    public void printHeader( Header header )
     {
         String content = "================== UDP =================\n";
         content += "Source Port:            " + header.getField( SOURCE_PORT ) + "\n";
@@ -298,7 +298,7 @@ public class TCP extends TransportProtocol implements EventProtocol
     }
     
     @Override
-    public LinkedHashMap<String, String> getFields( final Header header )
+    public LinkedHashMap<String, String> getFields( Header header )
     {
         LinkedHashMap<String,String> fields = new LinkedHashMap<>( 11 );
         fields.put( "Source Port", "" + header.getField( SOURCE_PORT ) );
@@ -316,7 +316,7 @@ public class TCP extends TransportProtocol implements EventProtocol
     }
     
     @Override
-    public String getName( final boolean extended ) {
+    public String getName( boolean extended ) {
         if (extended) return "Transmission Control Protocol";
         else return "TCP";
     }

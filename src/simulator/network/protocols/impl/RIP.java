@@ -19,14 +19,14 @@ public class RIP extends /*ApplicationLayerProtocol implements*/ RoutingProtocol
 {
     //private static final Time UPDATE_TIME = new Time( 30, TimeUnit.SECONDS );
     
-    public RIP( final NetworkTopology net )
+    public RIP( NetworkTopology net )
     {
         super( NetworkLayer.APPLICATION, net );
         setNextProtocol( new UDP( 520 ) );
     }
     
     @Override
-    public NetworkNode getNextNode( final long destID ) {
+    public NetworkNode getNextNode( long destID ) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -44,31 +44,31 @@ public class RIP extends /*ApplicationLayerProtocol implements*/ RoutingProtocol
     }*/
     
     @Override
-    public List<Header> makeHeader( final Header upperHeader, final ConnectionInfo info ) {
+    public List<Header> makeHeader( Header upperHeader, ConnectionInfo info ) {
         // TODO Auto-generated method stub
         return null;
     }
     
     @Override
-    public ProtocolReference processHeader( final Header header ) {
+    public ProtocolReference processHeader( Header header ) {
         // TODO Auto-generated method stub
         return null;
     }
     
     @Override
-    public void printHeader( final Header header ) {
+    public void printHeader( Header header ) {
         // TODO Auto-generated method stub
         
     }
     
     @Override
-    public LinkedHashMap<String, String> getFields( final Header header ) {
+    public LinkedHashMap<String, String> getFields( Header header ) {
         // TODO Auto-generated method stub
         return null;
     }
     
     @Override
-    public String getName( final boolean extended ) {
+    public String getName( boolean extended ) {
         if (extended) return "Routing Information Protocol";
         else return "RIP";
     }

@@ -20,7 +20,7 @@ public class ConnectionInfo
         
     }
     
-    public void setSourceIPaddress( final String address ) {
+    public void setSourceIPaddress( String address ) {
         sourceIPaddress = address;
     }
     
@@ -28,7 +28,7 @@ public class ConnectionInfo
         return sourceIPaddress;
     }
     
-    public void setDestinationIPaddress( final String address ) {
+    public void setDestinationIPaddress( String address ) {
         destIPaddress = address;
     }
     
@@ -36,7 +36,7 @@ public class ConnectionInfo
         return destIPaddress;
     }
     
-    public void setDestinationPort( final int port ) {
+    public void setDestinationPort( int port ) {
         destPort = port;
     }
     
@@ -44,7 +44,7 @@ public class ConnectionInfo
         return destPort;
     }
     
-    public void setSourcePort( final int port ) {
+    public void setSourcePort( int port ) {
         sourcePort = port;
     }
     
@@ -52,7 +52,7 @@ public class ConnectionInfo
         return sourcePort;
     }
     
-    public void setSourceMACaddress( final String address ) {
+    public void setSourceMACaddress( String address ) {
         sourceMACaddress = address;
     }
     
@@ -60,7 +60,7 @@ public class ConnectionInfo
         return sourceMACaddress;
     }
     
-    public void setDestinationMACaddress( final String address ) {
+    public void setDestinationMACaddress( String address ) {
         destMACaddress = address;
     }
     
@@ -68,7 +68,7 @@ public class ConnectionInfo
         return destMACaddress;
     }
     
-    public void setLink( final NetworkLink link ) {
+    public void setLink( NetworkLink link ) {
         this.link = link;
     }
     

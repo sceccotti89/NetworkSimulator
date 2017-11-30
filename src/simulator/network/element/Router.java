@@ -13,7 +13,7 @@ import simulator.topology.NetworkTopology;
 
 public class Router extends Agent
 {
-    public Router( final NetworkNode node, final NetworkTopology net )
+    public Router( NetworkNode node, NetworkTopology net )
     {
         super( NetworkAgent.FULL_DUPLEX, NetworkLayer.NETWORK, net, node );
         
@@ -28,14 +28,14 @@ public class Router extends Agent
     }
     
     @Override
-    public long receivedMessage( final Packet message, final Connection conn )
+    public long receivedMessage( Packet message, Connection conn )
     {
         // TODO preso l'header dovrebbe semplicemente instradarlo verso il prossimo link
         return 0;
     }
 
     @Override
-    public long notifyEvent( final Event event ) {
+    public long notifyEvent( Event event ) {
         return 0;
     }*/
 

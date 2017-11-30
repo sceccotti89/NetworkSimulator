@@ -33,40 +33,40 @@ public class ARP extends DataLinkProtocol implements EventProtocol
     }
     
     @Override
-    public List<Header> makeHeader( final Header upperHeader, final ConnectionInfo info )
+    public List<Header> makeHeader( Header upperHeader, ConnectionInfo info )
     {
         // TODO Auto-generated method stub
         return null;
     }
     
     @Override
-    public ProtocolReference processHeader( final Header header )
+    public ProtocolReference processHeader( Header header )
     {
         // TODO Auto-generated method stub
         return null;
     }
     
     @Override
-    public Header processEvent( final TimeoutEvent event ) {
+    public Header processEvent( TimeoutEvent event ) {
         // TODO Auto-generated method stub
         return null;
     }
     
     @Override
-    public void printHeader( final Header header )
+    public void printHeader( Header header )
     {
         // TODO Auto-generated method stub
         
     }
     
     @Override
-    public LinkedHashMap<String, String> getFields( final Header header ) {
+    public LinkedHashMap<String, String> getFields( Header header ) {
         // TODO Auto-generated method stub
         return null;
     }
     
     @Override
-    public String getName( final boolean extended ) {
+    public String getName( boolean extended ) {
         if (extended) return "Address Resolution Protocol";
         else return "ARP";
     }
@@ -79,7 +79,7 @@ public class ARP extends DataLinkProtocol implements EventProtocol
         public static final int DYNAMIC = 0;
         public static final int STATIC = 1;
         
-        public CacheInfo( final String MACaddress, final int type )
+        public CacheInfo( String MACaddress, int type )
         {
             this.MACaddress = MACaddress;
             this.type = type;

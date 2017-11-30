@@ -65,7 +65,7 @@ public abstract class NetworkAgent
     
     
     
-    public NetworkAgent( final int channelType, final NetworkLayer layer, final NetworkTopology net )
+    public NetworkAgent( int channelType, NetworkLayer layer, NetworkTopology net )
     {
         _time = new Time( 0, TimeUnit.MICROSECONDS );
         
@@ -111,7 +111,7 @@ public abstract class NetworkAgent
      * 
      * @param now    the current time
     */
-    public void setTime( final Time now )
+    public void setTime( Time now )
     {
         if (now.compareTo( _time ) > 0) {
             _time.setTime( now );
@@ -125,11 +125,11 @@ public abstract class NetworkAgent
         return _time.clone();
     }
     
-    public void setNetworkTopology( final NetworkTopology net ) {
+    public void setNetworkTopology( NetworkTopology net ) {
         _net = net;
     }
     
-    public void setNode( final NetworkNode node )
+    public void setNode( NetworkNode node )
     {
         _node = node;
         node.setAgent( (Agent) this );
@@ -139,7 +139,7 @@ public abstract class NetworkAgent
         return _node;
     }
     
-    protected Connection waitForConnection( final TransportProtocol protocol )
+    protected Connection waitForConnection( TransportProtocol protocol )
     {
         Connection conn = new Connection( (Agent) this, _net, protocol );
         connections.put( protocol.getIdentifier(), conn );
@@ -148,7 +148,7 @@ public abstract class NetworkAgent
         return conn;
     }
     
-    protected Connection createConnection( final TransportProtocol protocol )
+    protected Connection createConnection( TransportProtocol protocol )
     {
         Connection conn = new Connection( (Agent) this, _net, protocol );
         connections.put( protocol.getIdentifier(), conn );
@@ -156,7 +156,7 @@ public abstract class NetworkAgent
         return conn;
     }
     
-    protected Connection createConnection( final String destAddress, final TransportProtocol protocol )
+    protected Connection createConnection( String destAddress, TransportProtocol protocol )
     {
         Connection conn = new Connection( (Agent) this, destAddress, _net, protocol );
         connections.put( protocol.getIdentifier(), conn );
@@ -170,7 +170,7 @@ public abstract class NetworkAgent
         return conn;
     }
     
-    protected Connection getConnection( final Object... params )
+    protected Connection getConnection( Object... params )
     {
         if (params == null || params.length == 0) {
             // TODO Ritornare errore
@@ -186,7 +186,7 @@ public abstract class NetworkAgent
         return connections.get( builder.toString() );
     }
     
-    private Protocol getProtocol( final int layer, final Integer type )
+    private Protocol getProtocol( int layer, Integer type )
     {
         if (type == null) {
             return null;
@@ -211,7 +211,7 @@ public abstract class NetworkAgent
         }
     }
     
-    public void setBufferSize( final int size ) {
+    public void setBufferSize( int size ) {
         bufferSize = size;
     }
     
@@ -219,7 +219,7 @@ public abstract class NetworkAgent
         return bufferSize;
     }
     
-    public void addEventOnQueue( final Event event )
+    public void addEventOnQueue( Event event )
     {
         if (event instanceof TimeoutEvent) {
             TimeoutEvent timeout = (TimeoutEvent) event;
@@ -278,7 +278,7 @@ public abstract class NetworkAgent
      * 
      * @param event    the event to execute.
     */
-    public void executeEvent( final Event event )
+    public void executeEvent( Event event )
     {
         AgentEvent e = (AgentEvent) event;
         Header message = e.getMessage();
@@ -292,7 +292,7 @@ public abstract class NetworkAgent
      * 
      * @param port    the port to remove.
     */
-    public void removeAvailablePort( final int port )
+    public void removeAvailablePort( int port )
     {
         for (int index = 0; index < _availablePorts.size(); index++) {
             if (_availablePorts.get( index ) == port) {
@@ -307,7 +307,7 @@ public abstract class NetworkAgent
      * 
      * @param port    the available port.
     */
-    protected void setAvailablePort( final int port )
+    protected void setAvailablePort( int port )
     {
         int index;
         for (index = 0; index < _availablePorts.size(); index++) {

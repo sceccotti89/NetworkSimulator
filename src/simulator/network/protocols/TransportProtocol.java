@@ -12,18 +12,18 @@ public abstract class TransportProtocol extends Protocol
 {
     protected EventScheduler scheduler;
     
-    public TransportProtocol( final NetworkLayer layer, final Protocol... baseProtocols ) {
+    public TransportProtocol( NetworkLayer layer, Protocol... baseProtocols ) {
         super( layer );
     }
     
     @Override
-    public void setAgent( final Agent node )
+    public void setAgent( Agent node )
     {
         setScheduler( node.getEventScheduler() );
         super.setAgent( node );
     }
     
-    private void setScheduler( final EventScheduler scheduler) {
+    private void setScheduler( EventScheduler scheduler) {
         this.scheduler = scheduler;
     }
     

@@ -23,13 +23,13 @@ public class Header extends Event implements Packet
         this( 0 );
     }
     
-    public Header( final byte[] data )
+    public Header( byte[] data )
     {
         this( data.length * Byte.SIZE );
         byteArray2BitArray( data );
     }
     
-    public Header( final int size )
+    public Header( int size )
     {
         super( new Time( 0, TimeUnit.MICROSECONDS ) );
         header = new boolean[size];
@@ -41,7 +41,7 @@ public class Header extends Event implements Packet
      * 
      * @param bytes    the byte array
     */
-    private void byteArray2BitArray( final byte[] bytes )
+    private void byteArray2BitArray( byte[] bytes )
     {
         for (int i = 0; i < bytes.length * 8; i++) {
             if ((bytes[i / 8] & (1 << (7 - (i % 8)))) > 0) {
@@ -70,7 +70,7 @@ public class Header extends Event implements Packet
         clear( 0 );
     }
     
-    public void clear( final int newSize )
+    public void clear( int newSize )
     {
         index = 0;
         if (newSize <= 0) {
@@ -85,7 +85,7 @@ public class Header extends Event implements Packet
      * 
      * @param h    the header to add.
     */
-    public void addHeader( final Header h ) {
+    public void addHeader( Header h ) {
         addHeader( index, h );
     }
     
@@ -96,7 +96,7 @@ public class Header extends Event implements Packet
      * @param offset    position where the header will be added.
      * @param h         the header.
     */
-    public void addHeader( final int offset, final Header h )
+    public void addHeader( int offset, Header h )
     {
         final int length = getSizeInBits();
         int dimension = offset + h.getSizeInBits();
@@ -115,7 +115,7 @@ public class Header extends Event implements Packet
      * 
      * @param length    number of bits to retrieve.
     */
-    public Header getHeader( final int length ) {
+    public Header getHeader( int length ) {
         return getSubHeader( 0, length );
     }
     
@@ -126,7 +126,7 @@ public class Header extends Event implements Packet
      * @param offset    the starting position.
      * @param length    number of bits to retrieve.
     */
-    public Header getSubHeader( final int offset, final int length )
+    public Header getSubHeader( int offset, int length )
     {
         Header h = new Header( length );
         System.arraycopy( header, offset, h.header, 0, length );
@@ -139,7 +139,7 @@ public class Header extends Event implements Packet
      * 
      * @param length    number of bits to remove.
     */
-    public Header removeHeader( final int length ) {
+    public Header removeHeader( int length ) {
         return removeHeader( 0, length );
     }
     
@@ -150,7 +150,7 @@ public class Header extends Event implements Packet
      * @param offset    the starting position.
      * @param length    number of bits to remove.
     */
-    public Header removeHeader( final int offset, final int length )
+    public Header removeHeader( int offset, int length )
     {
         Header h = new Header( length );
         System.arraycopy( header, offset, h.header, 0, length );
@@ -179,7 +179,7 @@ public class Header extends Event implements Packet
      * @param range    contains the informatin used to identify the field.
      * @param value    the value to set.
     */
-    public void setField( final Range range, final int value ) {
+    public void setField( Range range, int value ) {
         setField( range.from, value, range.length );
     }
     
@@ -191,7 +191,7 @@ public class Header extends Event implements Packet
      * @param input     the given input.
      * @param bits      length (in bits) of the field.
     */
-    public void setField( final int offset, final int input, final int bits )
+    public void setField( int offset, int input, int bits )
     {
         for (int i = 0; i < bits; i++) {
             header[offset+i] = (1 << bits - i - 1 & input) != 0;
@@ -206,7 +206,7 @@ public class Header extends Event implements Packet
      * @param range    contain field boundaries.
      * @param bits     the given input vector.
     */
-    public void setField( final Range range, final int[] bits ) {
+    public void setField( Range range, int[] bits ) {
         setField( range.from, bits );
     }
     
@@ -217,7 +217,7 @@ public class Header extends Event implements Packet
      * @param offset    starting position.
      * @param bits      the given input vector.
     */
-    private void setField( final int offset, final int[] bits )
+    private void setField( int offset, int[] bits )
     {
         for (int i = 0; i < bits.length; i++) {
             header[offset+i] = (bits[i] == 1);
@@ -231,7 +231,7 @@ public class Header extends Event implements Packet
      * 
      * @param range    contain the values to retrieve the field.
     */
-    public int getField( final Range range ) {
+    public int getField( Range range ) {
         return getField( range.from, range.length );
     }
     
@@ -242,7 +242,7 @@ public class Header extends Event implements Packet
      * @param offset    starting position.
      * @param length    length of the filed (in bits).
     */
-    public int getField( final int offset, final int length )
+    public int getField( int offset, int length )
     {
         int value = 0;
         for (int i = 0; i < length; i++) {
@@ -258,7 +258,7 @@ public class Header extends Event implements Packet
      * @param range     contains the starting position of the field.
      * @param offset    the given offset.
     */
-    public int getBitField( final Range range, final int offset ) {
+    public int getBitField( Range range, int offset ) {
         return getBitField( range.from + offset );
     }
     
@@ -267,7 +267,7 @@ public class Header extends Event implements Packet
      * 
      * @param position    the bit position.
     */
-    public int getBitField( final int position ) {
+    public int getBitField( int position ) {
         return header[position] ? 1 : 0;
     }
     
@@ -292,13 +292,13 @@ public class Header extends Event implements Packet
         private int from;
         private int length;
         
-        public Range( final int from, final int length )
+        public Range( int from, int length )
         {
             this.from = from;
             this.length = length;
         }
         
-        public void setFrom( final int from ) {
+        public void setFrom( int from ) {
             this.from = from;
         }
         

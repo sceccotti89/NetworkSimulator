@@ -23,6 +23,8 @@ import simulator.graphics.AnimationNetwork;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
 import simulator.graphics.plotter.Plotter.Line;
+import simulator.network.NetworkAgent;
+import simulator.network.NetworkLayer;
 import simulator.test.energy.CPUModel.CONSmodel;
 import simulator.test.energy.CPUModel.LOAD_SENSITIVEmodel;
 import simulator.test.energy.CPUModel.MY_model;
@@ -124,7 +126,7 @@ public class EnergyTestMONO
     {
         public ClientAgent( long id, EventGenerator evGenerator )
         {
-            super( id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
             addEventGenerator( evGenerator );
         }
     }
@@ -172,7 +174,7 @@ public class EnergyTestMONO
     private static class SwitchAgent extends Agent implements EventHandler
     {
         public SwitchAgent( long id, EventGenerator evGenerator ) {
-            super( id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
             addEventGenerator( evGenerator );
             addEventHandler( this );
         }
@@ -248,7 +250,7 @@ public class EnergyTestMONO
     {
         public MulticoreAgent( long id, EventGenerator evtGenerator )
         {
-            super( id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
             addEventGenerator( evtGenerator );
             addEventHandler( this );
         }

@@ -9,15 +9,15 @@ public class ProtocolReference
     private Integer nextProtocol;
     private Header response;
     
-    public ProtocolReference( final Integer nextProtocol ) {
+    public ProtocolReference( Integer nextProtocol ) {
         this( nextProtocol, null );
     }
     
-    public ProtocolReference( final Header response ) {
+    public ProtocolReference( Header response ) {
         this( null, response );
     }
     
-    public ProtocolReference( final Integer nextProtocol, final Header response )
+    public ProtocolReference( Integer nextProtocol, Header response )
     {
         this.nextProtocol = nextProtocol;
         this.response = response;

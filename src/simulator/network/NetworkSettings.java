@@ -41,7 +41,7 @@ public class NetworkSettings
     
     
     
-    public NetworkSettings( final NetworkTopology net )
+    public NetworkSettings( NetworkTopology net )
     {
         _protocols = new HashMap<>();
         _routingProtocols = new ArrayList<>();
@@ -52,7 +52,7 @@ public class NetworkSettings
         IPv6LinkLocal = IPv6StatelessConfiguration();
     }
     
-    public NetworkSettings setSubnetMask( final String subnetMask ) {
+    public NetworkSettings setSubnetMask( String subnetMask ) {
         this.subnetMask = subnetMask;
         return this;
     }
@@ -64,7 +64,7 @@ public class NetworkSettings
      * @param version     the IP version (4 or 6, see {@linkplain IPversion})
      * @param publicIP    {@code true} if the IP is public, {@code false} otherwise
     */
-    public NetworkSettings setIPaddress( final String address, final IPversion version, final boolean publicIP )
+    public NetworkSettings setIPaddress( String address, IPversion version, boolean publicIP )
     {
         if (version == IPversion.IPv4) {
             if (publicIP) {
@@ -90,7 +90,7 @@ public class NetworkSettings
         return IPv6;
     }
     
-    public NetworkSettings setMACaddress( final String address ) {
+    public NetworkSettings setMACaddress( String address ) {
         MACaddress = address;
         return this;
     }
@@ -108,7 +108,7 @@ public class NetworkSettings
      * @param DHCPaddress    the DHCP IP address
      * @param version        the DHCP version (4 or 6, see {@linkplain IPversion})
     */
-    public NetworkSettings setDHCP( final boolean useDHCP, final String DHCPaddress, final IPversion version ) {
+    public NetworkSettings setDHCP( boolean useDHCP, String DHCPaddress, IPversion version ) {
         this.useDHCP = useDHCP;
         if (this.useDHCP) {
             if (DHCPaddress != null) {
@@ -149,7 +149,7 @@ public class NetworkSettings
         return "fe80::" + ip.replace( "-", ":" ).toLowerCase();
     }
     
-    public void addNetworkProtocol( final Protocol protocol )
+    public void addNetworkProtocol( Protocol protocol )
     {
         int layer = protocol.getLayer().getIndex();
         List<Protocol> protocols = _protocols.get( layer );
@@ -160,11 +160,11 @@ public class NetworkSettings
         protocols.add( protocol );
     }
     
-    public List<Protocol> getNetworkProtocols( final NetworkLayer layer ) {
+    public List<Protocol> getNetworkProtocols( NetworkLayer layer ) {
         return getNetworkProtocols( layer.getIndex() );
     }
     
-    public List<Protocol> getNetworkProtocols( final int layer ) {
+    public List<Protocol> getNetworkProtocols( int layer ) {
         return _protocols.get( layer );
     }
     
@@ -174,7 +174,7 @@ public class NetworkSettings
      * 
      * @param protocol    the routing protocol
     */
-    public void addRoutingProtocol( final RoutingProtocol protocol ) {
+    public void addRoutingProtocol( RoutingProtocol protocol ) {
         _routingProtocols.add( protocol );
     }
     

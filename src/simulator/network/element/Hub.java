@@ -15,12 +15,12 @@ import simulator.topology.NetworkTopology;
 */
 public class Hub extends Agent
 {
-    public Hub( final NetworkNode node, final NetworkTopology net ) {
+    public Hub( NetworkNode node, NetworkTopology net ) {
         super( NetworkAgent.HALF_DUPLEX, NetworkLayer.PHYSICAL, net, node );
     }
     
     /*@Override
-    public long receivedMessage( final Packet message, final Connection conn )
+    public long receivedMessage( Packet message, Connection conn )
     {
         // TODO Ricevuto un pacchetto in ingresso, lo invia in broadcast su tutte le altre porte.
         // TODO Per questo e' half-duplex.
@@ -28,7 +28,7 @@ public class Hub extends Agent
     }
     
     @Override
-    public long notifyEvent( final Event event ) {
+    public long notifyEvent( Event event ) {
         return 0;
     }*/
 

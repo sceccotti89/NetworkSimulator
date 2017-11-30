@@ -18,44 +18,44 @@ import simulator.topology.NetworkTopology;
 
 public class OSPF extends /*extends TransportLayerProtocol*/ RoutingProtocol
 {
-    public OSPF( final NetworkTopology net )
+    public OSPF( NetworkTopology net )
     {
         super( NetworkLayer.NETWORK, net, new IPv4( 89 ) );
         // TODO utilizza un indirizzo broadcast (capire quale) per trasmettere le informazioni
     }
     
     @Override
-    public NetworkNode getNextNode( final long destID ) {
+    public NetworkNode getNextNode( long destID ) {
         // TODO Auto-generated method stub
         return null;
     }
     
     @Override
-    public List<Header> makeHeader( final Header upperLayer, final ConnectionInfo info ) {
+    public List<Header> makeHeader( Header upperLayer, ConnectionInfo info ) {
         // TODO Auto-generated method stub
         return null;
     }
     
     @Override
-    public ProtocolReference processHeader( final Header header ) {
+    public ProtocolReference processHeader( Header header ) {
         // TODO Auto-generated method stub
         return null;
     }
     
     @Override
-    public void printHeader( final Header header ) {
+    public void printHeader( Header header ) {
         // TODO Auto-generated method stub
         
     }
     
     @Override
-    public LinkedHashMap<String, String> getFields( final Header header ) {
+    public LinkedHashMap<String, String> getFields( Header header ) {
         // TODO Auto-generated method stub
         return null;
     }
     
     @Override
-    public String getName( final boolean extended ) {
+    public String getName( boolean extended ) {
         if (extended) return "Open Shortest Path First Routing Protocol";
         else return "OSPF";
     }

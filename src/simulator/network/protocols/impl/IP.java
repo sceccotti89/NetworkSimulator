@@ -30,7 +30,7 @@ public abstract class IP extends NetworkProtocol
     protected static final Range VERSION = new Range( 0, 4 );
     
     
-    public IP( final int protocolID, final int etherType )
+    public IP( int protocolID, int etherType )
     {
         this.protocolID = protocolID;
         // By default it makes use of Ethernet frames.
@@ -71,11 +71,11 @@ public abstract class IP extends NetworkProtocol
             fragments = new HashMap<>();
         }
         
-        public IPv4( final TransportProtocol protocol ) {
+        public IPv4( TransportProtocol protocol ) {
             this( protocol.getProtocol() );
         }
         
-        public IPv4( final int protocolID ) {
+        public IPv4( int protocolID ) {
             super( protocolID, 0x0800 );
         }
         
@@ -101,7 +101,7 @@ public abstract class IP extends NetworkProtocol
         }
         
         @Override
-        public List<Header> makeHeader( final Header upperHeader, final ConnectionInfo info )
+        public List<Header> makeHeader( Header upperHeader, ConnectionInfo info )
         {
             boolean isRouter = this.node instanceof Router;
             final int MTU = info.getLink().getMTU();
@@ -147,7 +147,7 @@ public abstract class IP extends NetworkProtocol
             return headers;
         }
         
-        private Header createHeader( final ConnectionInfo info, final int identification, final int byte_offset, final int length, final int moreFragments )
+        private Header createHeader( ConnectionInfo info, int identification, int byte_offset, int length, int moreFragments )
         {
             // TODO IHL varia da 5 word (20 Byte) a 15 word (60 Byte) a seconda della presenza del campo opzioni.
             
@@ -171,7 +171,7 @@ public abstract class IP extends NetworkProtocol
             return header;
         }
         
-        private void setAddressValue( final Header header, final Range range, final String address )
+        private void setAddressValue( Header header, Range range, String address )
         {
             int octet = 0;
             for (String value : address.split( "\\." )) {
@@ -181,12 +181,12 @@ public abstract class IP extends NetworkProtocol
             }
         }
         
-        private int getPayloadSize( final Header header ) {
+        private int getPayloadSize( Header header ) {
             return header.getField( TOTAL_LENGTH ) - header.getField( INTERNET_HEADER_LENGTH ) * 4;
         }
         
         @Override
-        public ProtocolReference processHeader( final Header header )
+        public ProtocolReference processHeader( Header header )
         {
             System.out.println( "IP HEADER: " );
             printHeader( header.getHeader( header.getField( INTERNET_HEADER_LENGTH ) * 4 * Byte.SIZE ) );
@@ -247,7 +247,7 @@ public abstract class IP extends NetworkProtocol
             return new ProtocolReference( ipHeader.getField( PROTOCOL ) );
         }
         
-        private String getAddress( final Header header, final Range range )
+        private String getAddress( Header header, Range range )
         {
             String address = "";
             for (int i = 0; i < range.length() - 8; i += 8) {
@@ -261,7 +261,7 @@ public abstract class IP extends NetworkProtocol
         }
         
         @Override
-        public LinkedHashMap<String, String> getFields( final Header header )
+        public LinkedHashMap<String, String> getFields( Header header )
         {
             LinkedHashMap<String,String> fields = new LinkedHashMap<>( 14 );
             fields.put( "Version", "" + header.getField( VERSION ) );
@@ -280,7 +280,7 @@ public abstract class IP extends NetworkProtocol
         }
         
         @Override
-        public void printHeader( final Header header )
+        public void printHeader( Header header )
         {
             System.out.println( "================= IPv4 =================" );
             System.out.println( "Version:                 " + header.getField( VERSION ) );
@@ -306,11 +306,11 @@ public abstract class IP extends NetworkProtocol
         
         /*private static class Datagram extends Header
         {
-            public Datagram( final int size ) {
+            public Datagram( int size ) {
                 super( size );
             }
             
-            private String getAddress( final Range range )
+            private String getAddress( Range range )
             {
                 String address = "";
                 for (int i = 0; i < range.length() - 8; i += 8) {
@@ -323,7 +323,7 @@ public abstract class IP extends NetworkProtocol
                 return address;
             }
             
-            private String getBitField( final Range range )
+            private String getBitField( Range range )
             {
                 String value = "";
                 for (int i = 0; i < range.length(); i++) {
@@ -382,7 +382,7 @@ public abstract class IP extends NetworkProtocol
         }
         
         @Override
-        public String getName( final boolean extended ) {
+        public String getName( boolean extended ) {
             if (extended) return "Internet Protocol version 4";
             else return "IPv4";
         }
@@ -404,12 +404,12 @@ public abstract class IP extends NetworkProtocol
             super( -1, -1 );
         }
         
-        public IPv6( final int next_header ) {
+        public IPv6( int next_header ) {
             super( next_header, 0x86DD );
         }
         
         @Override
-        public List<Header> makeHeader( final Header upperHeader, final ConnectionInfo info )
+        public List<Header> makeHeader( Header upperHeader, ConnectionInfo info )
         {
             final int identification = getIdentificationID();
             Header header = new Header( SIZE * Byte.SIZE );
@@ -424,7 +424,7 @@ public abstract class IP extends NetworkProtocol
             return Collections.singletonList( header );
         }
         
-        private void setAddressValue( final Header header, final Range range, final String address )
+        private void setAddressValue( Header header, Range range, String address )
         {
             int hextet = 0;
             for (String value : address.split( ":" )) {
@@ -443,11 +443,11 @@ public abstract class IP extends NetworkProtocol
         }
         
         @Override
-        public ProtocolReference processHeader( final Header header ) {
+        public ProtocolReference processHeader( Header header ) {
             return new ProtocolReference( header.getField( NEXT_HEADER ) );
         }
         
-        private String getAddress( final Header header, final Range range )
+        private String getAddress( Header header, Range range )
         {
             String address = "";
             for (int i = 0; i < range.length() - 16; i += 16) {
@@ -461,7 +461,7 @@ public abstract class IP extends NetworkProtocol
         }
         
         @Override
-        public LinkedHashMap<String, String> getFields( final Header header )
+        public LinkedHashMap<String, String> getFields( Header header )
         {
             LinkedHashMap<String,String> fields = new LinkedHashMap<>( 8 );
             fields.put( "Version", "" + header.getField( VERSION ) );
@@ -476,7 +476,7 @@ public abstract class IP extends NetworkProtocol
         }
         
         @Override
-        public void printHeader( final Header header )
+        public void printHeader( Header header )
         {
             String content = "================= IPv6 =================\n";
             content += "Version:             " + header.getField( VERSION ) + "\n";
@@ -498,11 +498,11 @@ public abstract class IP extends NetworkProtocol
         
         /*private static class Datagram extends Header
         {
-            public Datagram( final int size ) {
+            public Datagram( int size ) {
                 super( size );
             }
             
-            private String getAddress( final Range range )
+            private String getAddress( Range range )
             {
                 String address = "";
                 for (int i = 0; i < range.length() - 16; i += 16) {
@@ -557,7 +557,7 @@ public abstract class IP extends NetworkProtocol
         }
         
         @Override
-        public String getName( final boolean extended ) {
+        public String getName( boolean extended ) {
             if (extended) return "Internet Protocol version 6";
             else return "IPv6";
         }

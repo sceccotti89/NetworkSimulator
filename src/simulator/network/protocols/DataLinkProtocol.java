@@ -19,7 +19,7 @@ public abstract class DataLinkProtocol extends Protocol
      * 
      * @param type    the ethernet type.
     */
-    public void setEtherType( final int type ) {
+    public void setEtherType( int type ) {
         etherType = type;
     }
 }

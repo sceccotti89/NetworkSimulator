@@ -16,18 +16,18 @@ public class Message implements Packet
     private static final char HEX_DIGIT[] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
     
     
-    public Message( final long size, final SizeUnit unit ) {
+    public Message( long size, SizeUnit unit ) {
         //setMessage( createMessage( unit.getBytes( size ) ) );
         byte[] data = Utils.serializeObject( new byte[(int) unit.getBytes( size )] );
         setMessage( data );
     }
     
-    public <T extends Serializable> Message( final T message ) {
+    public <T extends Serializable> Message( T message ) {
         //setMessage( Utils.serializeObject( message ) );
         addMessage( message );
     }
     
-    private <T extends Serializable> void addMessage( final T message )
+    private <T extends Serializable> void addMessage( T message )
     {
         if (message instanceof byte[]) {
             setMessage( (byte[]) message );
@@ -36,7 +36,7 @@ public class Message implements Packet
         }
     }
     
-    private void setMessage( final byte[] message ) {
+    private void setMessage( byte[] message ) {
         this.message = message;
     }
     
@@ -52,7 +52,7 @@ public class Message implements Packet
      * 
      * @param length    length of the message
     */
-    /*private static byte[] createMessage( final long length )
+    /*private static byte[] createMessage( long length )
     {
         StringBuilder message = new StringBuilder();
         for (long i = 0; i < length; i++) {

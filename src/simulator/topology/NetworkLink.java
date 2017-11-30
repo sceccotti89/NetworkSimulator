@@ -126,7 +126,7 @@ public class NetworkLink
         return _active;
     }
     
-    public void setUtilization( final Time start, final Time end )
+    public void setUtilization( Time start, Time end )
     {
         startTime.setTime( start );
         endTime.setTime( end.addTime( getTprop(), TimeUnit.MICROSECONDS ) );

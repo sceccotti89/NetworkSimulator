@@ -10,7 +10,7 @@ public abstract class CSMA
 {
     public static class CSMA_CD extends CSMA
     {
-        public CSMA_CD( final NetworkLink link )
+        public CSMA_CD( NetworkLink link )
         {
             
         }
@@ -18,7 +18,7 @@ public abstract class CSMA
     
     public static class CSMA_CA extends CSMA
     {
-        public CSMA_CA( final NetworkLink link )
+        public CSMA_CA( NetworkLink link )
         {
             
         }

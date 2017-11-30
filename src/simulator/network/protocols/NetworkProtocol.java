@@ -8,7 +8,7 @@ import simulator.network.NetworkLayer;
 
 public abstract class NetworkProtocol extends Protocol
 {
-    public NetworkProtocol( final Protocol... baseProtocols ) {
+    public NetworkProtocol( Protocol... baseProtocols ) {
         super( NetworkLayer.NETWORK, baseProtocols );
     }
     

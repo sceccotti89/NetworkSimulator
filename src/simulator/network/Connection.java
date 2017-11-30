@@ -32,11 +32,11 @@ public class Connection implements Closeable
     
     
     
-    public Connection( final Agent source, final NetworkTopology net, final TransportProtocol protocol ) {
+    public Connection( Agent source, NetworkTopology net, TransportProtocol protocol ) {
         this( source, null, net, protocol );
     }
     
-    public Connection( final Agent source, final String destination, final NetworkTopology net, final TransportProtocol protocol )
+    public Connection( Agent source, String destination, NetworkTopology net, TransportProtocol protocol )
     {
         this.source = source;
         this.net = net;
@@ -70,15 +70,15 @@ public class Connection implements Closeable
         info.setDestinationIPaddress( destination );
     }
     
-    public Protocol getProtocol( final NetworkLayer layer ) {
+    public Protocol getProtocol( NetworkLayer layer ) {
         return protocols.get( layer.getIndex() );
     }
     
-    protected void setBufferSpace( final int size ) {
+    protected void setBufferSpace( int size ) {
         bufferSpace = size;
     }
     
-    protected boolean checkBufferSpace( final int size )
+    protected boolean checkBufferSpace( int size )
     {
         if (bufferSpace >= size) {
             bufferSpace -= size;
@@ -88,13 +88,13 @@ public class Connection implements Closeable
         }
     }
     
-    protected void freeBufferSpace( final int size ) {
+    protected void freeBufferSpace( int size ) {
         bufferSpace += size;
     }
     
     // TODO Per il MAC address dovrebbe consultare il protocollo ARP!!!
     
-    public void sendMessage( final String destination, final Message message )
+    public void sendMessage( String destination, Message message )
     {
         if (dest != null) {
             throw new RuntimeException( "Destination is already specified." );
@@ -105,7 +105,7 @@ public class Connection implements Closeable
         sendMessage( message );
     }
     
-    public void sendMessage( final Message message )
+    public void sendMessage( Message message )
     {
         if (dest == null) {
             throw new RuntimeException( "Destination not specified." );
@@ -132,7 +132,7 @@ public class Connection implements Closeable
         }
     }
     
-    protected long send( final int layer, final Header header )
+    protected long send( int layer, Header header )
     {
         long expiredTime = 0;
         Protocol protocol = protocols.get( layer );
@@ -160,7 +160,7 @@ public class Connection implements Closeable
      * 
      * @param header    the message to send.
     */
-    private long send0( final Header header )
+    private long send0( Header header )
     {
         System.out.println( "SENDING MESSAGE: " + header.getSizeInBits() );
         NetworkLink link = info.getLink();

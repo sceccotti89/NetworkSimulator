@@ -10,7 +10,7 @@ import simulator.topology.NetworkTopology;
 
 public abstract class RoutingProtocol extends Protocol
 {
-    public RoutingProtocol( final NetworkLayer layer, final NetworkTopology net, final Protocol... baseProtocols ) {
+    public RoutingProtocol( NetworkLayer layer, NetworkTopology net, Protocol... baseProtocols ) {
         super( layer, net, baseProtocols );
     }
     
@@ -21,6 +21,6 @@ public abstract class RoutingProtocol extends Protocol
      * 
      * @return the next node in the path.
     */
-    public abstract NetworkNode getNextNode( final long destID );
-    //TODO public abstract NetworkNode getNextNode( final String destination );
+    public abstract NetworkNode getNextNode( long destID );
+    //TODO public abstract NetworkNode getNextNode( String destination );
 }

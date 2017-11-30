@@ -19,7 +19,7 @@ public interface EventProtocol
      * 
      * @return the response message, {@code null} otherwise.
     */
-    public Header processEvent( final TimeoutEvent event );
+    public Header processEvent( TimeoutEvent event );
     
     /**
      * The TimeoutEvent class, used to generate events whose destination is the node generating this event.</br>
@@ -32,7 +32,7 @@ public interface EventProtocol
         private final int identifier;
         //private ... packet;
         
-        public TimeoutEvent( final Time time, final int layer, final int identifier )
+        public TimeoutEvent( Time time, int layer, int identifier )
         {
             super( time );
             this.layer = layer;

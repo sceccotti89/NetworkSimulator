@@ -40,24 +40,13 @@ public abstract class Agent extends NetworkAgent
     
     
     
-    public Agent( NetworkNode node )
-    {
-        this( node.getId() );
-        setNode( node );
-    }
-    
-    public Agent( long id ) {
-        // TODO questo costruttore andra' risistemato con tutti i parametri corretti (quindi andra' poi eleiminato)
-        this( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
-    }
-    
-    public Agent( final int channelType, final NetworkLayer layer, final NetworkTopology net, final NetworkNode node )
+    public Agent( int channelType, NetworkLayer layer, NetworkTopology net, NetworkNode node )
     {
         this( channelType, layer, net, node.getId() );
         setNode( node );
     }
     
-    public Agent( final int channelType, final NetworkLayer layer, final NetworkTopology net, final long id )
+    public Agent( int channelType, NetworkLayer layer, NetworkTopology net, long id )
     {
         super( channelType, layer, net );
         
@@ -111,7 +100,7 @@ public abstract class Agent extends NetworkAgent
      * 
      * @throws RuntimeException if the samplerId already exists.
     */
-    public void addSampler( final String samplerId, Sampler sampler )
+    public void addSampler( String samplerId, Sampler sampler )
     {
         if (samplings.containsKey( samplerId )) {
             throw new RuntimeException( "Selected name \"" + samplerId + "\" already exists." );

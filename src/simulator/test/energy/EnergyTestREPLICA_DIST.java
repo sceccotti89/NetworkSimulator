@@ -27,6 +27,8 @@ import simulator.events.impl.ResponseEvent;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
 import simulator.graphics.plotter.Plotter.Line;
+import simulator.network.NetworkAgent;
+import simulator.network.NetworkLayer;
 import simulator.test.energy.CPUModel.CONSmodel;
 import simulator.test.energy.CPUModel.Mode;
 import simulator.test.energy.CPUModel.PEGASUSmodel;
@@ -139,7 +141,7 @@ public class EnergyTestREPLICA_DIST
     {
         public ClientAgent( long id, EventGenerator evGenerator )
         {
-            super( id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
             addEventGenerator( evGenerator );
         }
     }
@@ -179,7 +181,7 @@ public class EnergyTestREPLICA_DIST
         public BrokerAgent( long id, long target, EventGenerator evGenerator, String testMode )
                 throws IOException
         {
-            super( id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
             addEventGenerator( evGenerator );
             addEventHandler( this );
             
@@ -291,7 +293,7 @@ public class EnergyTestREPLICA_DIST
         
         public MulticoreAgent( long id, EventGenerator evtGenerator )
         {
-            super( id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
             addEventGenerator( evtGenerator );
             addEventHandler( this );
         }
@@ -467,7 +469,7 @@ public class EnergyTestREPLICA_DIST
         public SwitchAgent( long id, int estimatorType, int latencyNormalization,
                             EventGenerator evGenerator ) throws IOException
         {
-            super( id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
             addEventGenerator( evGenerator );
             addEventHandler( this );
             

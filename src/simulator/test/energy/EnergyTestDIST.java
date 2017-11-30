@@ -20,6 +20,8 @@ import simulator.events.impl.ResponseEvent;
 import simulator.graphics.AnimationNetwork;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
+import simulator.network.NetworkAgent;
+import simulator.network.NetworkLayer;
 import simulator.test.energy.CPUModel.Mode;
 import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
@@ -115,7 +117,7 @@ public class EnergyTestDIST
     {
         public ClientAgent( long id, EventGenerator evGenerator )
         {
-            super( id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
             addEventGenerator( evGenerator );
         }
     }
@@ -196,7 +198,7 @@ public class EnergyTestDIST
     {
         public SwitchAgent( long id, EventGenerator evGenerator )
         {
-            super( id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
             addEventGenerator( evGenerator );
             //addEventHandler( this );
         }
@@ -276,7 +278,7 @@ public class EnergyTestDIST
     {
         public MulticoreAgent( long id, EventGenerator evtGenerator )
         {
-            super( id );
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, null, id );
             addEventGenerator( evtGenerator );
             addEventHandler( this );
         }

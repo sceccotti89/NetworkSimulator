@@ -28,11 +28,11 @@ public abstract class Protocol
     
     
     
-    public Protocol( final NetworkLayer layer, final Protocol... baseProtocols ) {
+    public Protocol( NetworkLayer layer, Protocol... baseProtocols ) {
         this( layer, null, baseProtocols );
     }
     
-    public Protocol( final NetworkLayer layer, final NetworkTopology net, final Protocol... baseProtocols )
+    public Protocol( NetworkLayer layer, NetworkTopology net, Protocol... baseProtocols )
     {
         time = new Time( 0, TimeUnit.MICROSECONDS );
         this.layer = layer;
@@ -43,7 +43,7 @@ public abstract class Protocol
         return layer;
     }
     
-    public void setAgent( final Agent node ) {
+    public void setAgent( Agent node ) {
         this.node = node;
     }
     
@@ -51,7 +51,7 @@ public abstract class Protocol
         return node;
     }
     
-    public void setNextProtocol( final Protocol protocol ) {
+    public void setNextProtocol( Protocol protocol ) {
         nextProtocol = protocol;
     }
     
@@ -68,7 +68,7 @@ public abstract class Protocol
      * @param header    the specified header.
      * @param range     the given range.
     */
-    protected String getBitField( final Header header, final Range range )
+    protected String getBitField( Header header, Range range )
     {
         String value = "";
         for (int i = 0; i < range.length(); i++) {
@@ -84,7 +84,7 @@ public abstract class Protocol
      * @param upperHeader    the header of the upper layer.
      * @param info           contains infos about the current connection.
     */
-    public abstract List<Header> makeHeader( final Header upperHeader, final ConnectionInfo info );
+    public abstract List<Header> makeHeader( Header upperHeader, ConnectionInfo info );
     
     /**
      * Process an incoming header.
@@ -94,14 +94,14 @@ public abstract class Protocol
      * @return an object containing either the protocol used in the upper layer or the response message (if any) or both,
      *         {@code null} otherwise.
     */
-    public abstract ProtocolReference processHeader( final Header header );
+    public abstract ProtocolReference processHeader( Header header );
     
     /**
      * Prints out the contents of the given header.
      * 
      * @param header    the header.
     */
-    public abstract void printHeader( final Header header );
+    public abstract void printHeader( Header header );
     
     /**
      * Returns the name of the protocol.
@@ -109,7 +109,7 @@ public abstract class Protocol
      * @param extended    if {@code true} returns the extended version of the name,
      *                    {@code false} only the acronym.
     */
-    public abstract String getName( final boolean extended );
+    public abstract String getName( boolean extended );
     
     /**
      * Returns a map of fields containing their current values.</br>
@@ -118,5 +118,5 @@ public abstract class Protocol
      * 
      * @param header    the header.
     */
-    public abstract LinkedHashMap<String, String> getFields( final Header header );
+    public abstract LinkedHashMap<String, String> getFields( Header header );
 }

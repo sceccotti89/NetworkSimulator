@@ -34,7 +34,7 @@ public class UDP extends TransportProtocol
         super( NetworkLayer.TRANSPORT );
     }
     
-    public UDP( final int port )
+    public UDP( int port )
     {
         super( NetworkLayer.TRANSPORT );
         
@@ -45,14 +45,14 @@ public class UDP extends TransportProtocol
     }
     
     @Override
-    public void setAgent( final Agent node )
+    public void setAgent( Agent node )
     {
         node.removeAvailablePort( sourcePort );
         super.setAgent( node );
     }
 
     @Override
-    public List<Header> makeHeader( final Header upperHeader, final ConnectionInfo info )
+    public List<Header> makeHeader( Header upperHeader, ConnectionInfo info )
     {
         Header header = new Header( SIZE * Byte.SIZE + upperHeader.getSizeInBits() );
         header.setField( SOURCE_PORT, info.getSourcePort() );
@@ -65,7 +65,7 @@ public class UDP extends TransportProtocol
     }
     
     @Override
-    public ProtocolReference processHeader( final Header header )
+    public ProtocolReference processHeader( Header header )
     {
         Header udpHeader = header.removeHeader( SIZE * Byte.SIZE );
         System.out.println( "RIMOSSO: " );
@@ -89,7 +89,7 @@ public class UDP extends TransportProtocol
     }
 
     @Override
-    public void printHeader( final Header header )
+    public void printHeader( Header header )
     {
         String content = "================== UDP =================\n";
         content += "Source Port:      " + header.getField( SOURCE_PORT ) + "\n";
@@ -101,7 +101,7 @@ public class UDP extends TransportProtocol
     }
     
     @Override
-    public LinkedHashMap<String, String> getFields( final Header header )
+    public LinkedHashMap<String, String> getFields( Header header )
     {
         LinkedHashMap<String,String> fields = new LinkedHashMap<>( 4 );
         fields.put( "Source Port", "" + header.getField( SOURCE_PORT ) );
@@ -112,14 +112,14 @@ public class UDP extends TransportProtocol
     }
     
     @Override
-    public String getName( final boolean extended ) {
+    public String getName( boolean extended ) {
         if (extended) return "UserDatagram Protocol";
         else return "UDP";
     }
 
     /*private static class Datagram extends Header
     {
-        public Datagram( final int size ) {
+        public Datagram( int size ) {
             super( size );
         }
         
