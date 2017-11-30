@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import simulator.core.Device;
 import simulator.events.Event;
+import simulator.test.energy.CPU.Core.State;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.utils.Time;
 
@@ -77,8 +78,16 @@ public abstract class CPU extends Device<QueryInfo,Long>
         return lastSelectedCore;
     }
     
-    public Core getCore( long index ) {
-        return coresMap.get( index );
+    public Core getCore( long coreId ) {
+        return coresMap.get( coreId );
+    }
+    
+    public void setCoreState( long coreId, State state ) {
+        setCoreState( getCore( coreId ), state );
+    }
+    
+    public void setCoreState( Core core, State state ) {
+        core.setState( state );
     }
     
     protected Time computeTime( QueryInfo query, Core core )
@@ -198,6 +207,13 @@ public abstract class CPU extends Device<QueryInfo,Long>
         private int queriesExecuted = 0;
         // Number of times this core has been selected in a tied situation.
         protected long tieSelected = 0;
+        protected State state;
+        
+        // Possible states of the CPU core.
+        public enum State {
+            RUNNING,
+            POWER_OFF
+        };
         
         // TODO implementare i context di ogni core della CPU (se proprio c'e' bisogno).
         
@@ -209,10 +225,21 @@ public abstract class CPU extends Device<QueryInfo,Long>
             time = new Time( 0, TimeUnit.MICROSECONDS );
             queryQueue = new ArrayList<>( 1024 );
             frequency = initFrequency;
+            
+            state = State.RUNNING;
         }
         
         public long getId() {
             return coreId;
+        }
+        
+        public void setState( State state )
+        {
+            this.state = state;
+            if (state == State.POWER_OFF) {
+                idleTime = 0;
+                idleTimeInterval = 0;
+            }
         }
         
         public int getExecutedQueries() {
@@ -247,7 +274,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
         public void addIdleEnergy( Time time, boolean allCores )
         {
             double idleEnergy = 0;
-            Time startTime = time.clone().subTime( getIdleTime(), TimeUnit.MICROSECONDS );
+            Time startTime = time.clone().subTime( idleTime, TimeUnit.MICROSECONDS );
             if (!allCores) { // Only the current core.
                 idleEnergy = getIdleEnergy();
             } else {
@@ -314,7 +341,9 @@ public abstract class CPU extends Device<QueryInfo,Long>
             if (this.time.compareTo( time ) <= 0) {
                 // This is idle time.
                 long elapsedTime = time.getTimeMicros() - this.time.getTimeMicros();
-                idleTime += elapsedTime;
+                if (state != State.POWER_OFF) {
+                    idleTime += elapsedTime;
+                }
                 this.time.setTime( time );
             }
         }
