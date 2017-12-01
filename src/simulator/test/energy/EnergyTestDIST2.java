@@ -224,7 +224,7 @@ public class EnergyTestDIST2
         public double getNodeUtilization( Time time )
         {
             double utilization = 0;
-            for (Agent agent : _evtGenerators.get( 0 ).getDestinations()) {
+            for (Agent agent : getEventGenerator( 0 ).getDestinations()) {
                 utilization += agent.getNodeUtilization( time );
             }
             return utilization;

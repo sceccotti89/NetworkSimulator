@@ -29,6 +29,7 @@ import simulator.graphics.plotter.Plotter.Axis;
 import simulator.graphics.plotter.Plotter.Line;
 import simulator.network.NetworkAgent;
 import simulator.network.NetworkLayer;
+import simulator.test.energy.CPU.Core.State;
 import simulator.test.energy.CPUModel.CONSmodel;
 import simulator.test.energy.CPUModel.Mode;
 import simulator.test.energy.CPUModel.PEGASUSmodel;
@@ -55,6 +56,7 @@ public class EnergyTestREPLICA_DIST
     
     private static boolean PESOS_CONTROLLER = true;
     private static boolean PEGASUS_CONTROLLER = false;
+    private static boolean SWITCH_OFF_MACHINES = false;
     
     private static final EnergyCPU CPU = new EnergyCPU();
     
@@ -424,15 +426,35 @@ public class EnergyTestREPLICA_DIST
         @Override
         protected int selectDestination( Time time )
         {
-            SwitchAgent switchAgent = (SwitchAgent) getAgent();
+            // Replica Round-Robin.
+            /*SwitchAgent switchAgent = (SwitchAgent) getAgent();
             //System.out.println( "REPLICAS: " + switchAgent.getCurrentReplicas() );
             nextReplica = (nextReplica + 1) % switchAgent.getCurrentReplicas();
+            return nextReplica;*/
+            
+            // Min utilization.
+            /*int selectedIndex = -1;
+            double minUtilization = Double.MAX_VALUE;
+            for (int index = 0; index < _destinations.size(); index++) {
+                Agent dest = _destinations.get( index );
+                double utilization = dest.getNodeUtilization( time );
+                if (utilization < minUtilization) {
+                    selectedIndex = index;
+                    minUtilization = utilization;
+                }
+            }
+            return selectedIndex;*/
+            
+            // Round-Robin.
+            nextReplica = (nextReplica + 1) % _destinations.size();
             return nextReplica;
         }
     }
     
     public static class SwitchAgent extends Agent implements EventHandler
     {
+        private List<Agent> destinations;
+        
         private int queries;
         
         private int currentReplicas;
@@ -464,6 +486,8 @@ public class EnergyTestREPLICA_DIST
         private static final double ALPHA = -0.01;
         private int latency_normalization;
         
+        //private static final Time WAKE_UP_TIME = new Time( 200, TimeUnit.SECONDS );
+        
         
         
         public SwitchAgent( long id, int estimatorType, int latencyNormalization,
@@ -472,6 +496,8 @@ public class EnergyTestREPLICA_DIST
             super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( evGenerator );
             addEventHandler( this );
+            
+            destinations = evGenerator.getDestinations();
             
             this.estimatorType = estimatorType;
             this.latency_normalization = latencyNormalization;
@@ -522,13 +548,13 @@ public class EnergyTestREPLICA_DIST
             if (estimatorType == SEASONAL_ESTIMATOR_WITH_DRIFT) {
                 long sourceId = e.getSource().getId();
                 if (sourceId != getId()) {
-                    if (sourceId == 1) {
+                    if (sourceId != 1) {
+                        // From replica.
+                        queries--;
+                    } else {
                         // From client.
                         arrivals++;
                         queries++;
-                    } else {
-                        // From replica.
-                        queries--;
                     }
                 }
             }
@@ -537,7 +563,46 @@ public class EnergyTestREPLICA_DIST
         public int getCurrentReplicas() {
             return currentReplicas;
         }
-
+        
+        /**
+         * Sets the state of the associated nodes.
+         * 
+         * @param time    time of evaluation.
+        */
+        private void setNodesState( Time time )
+        {
+            // Turn-on the sleeped nodes.
+            for (int i = 0; i < currentReplicas; i++) {
+                destinations.get( i ).getDevice( CPU ).setState( time, State.RUNNING );
+            }
+            
+            if (slotIndex < allReplicas.length - 1) {
+                if (allReplicas[slotIndex + 1] < currentReplicas) {
+                    //System.out.println( "SLOT: " + slotIndex + ", SWITCH-ON PREVENTLY: " + (currentReplicas - allReplicas[slotIndex+1]) );
+                    // TODO Mettere questo tempo va in bug il sistema, il che sarebbe anche ovvio visto che gli metto un time maggiore rispetto a quello attuale
+                    //Time powerOn = time.clone().addTime( SwitchTimeSlotGenerator.TIME_SLOT ).subTime( WAKE_UP_TIME );
+                    // Turn-on the subsequent needed replicas.
+                    for (int i = allReplicas[slotIndex+1]; i < currentReplicas; i++) {
+                        destinations.get( i ).getDevice( CPU ).setState( time, State.RUNNING );
+                    }
+                } else {
+                    if (SWITCH_OFF_MACHINES) {
+                        //System.out.println( "SLOT: " + slotIndex + ", SWITCH-OFF: " + (REPLICAS_PER_NODE - currentReplicas) );
+                        for (int i = currentReplicas; i < REPLICAS_PER_NODE; i++) {
+                            destinations.get( i ).getDevice( CPU ).setState( time, State.POWER_OFF);
+                        }
+                    }
+                }
+            } else {
+                // Last slot: just turn-off the unused nodes.
+                if (SWITCH_OFF_MACHINES) {
+                    for (int i = currentReplicas; i < REPLICAS_PER_NODE; i++) {
+                        destinations.get( i ).getDevice( CPU ).setState( time, State.POWER_OFF );
+                    }
+                }
+            }
+        }
+        
         @Override
         public Time handle( Event e, EventType type )
         {
@@ -546,6 +611,7 @@ public class EnergyTestREPLICA_DIST
                 if (estimatorType == SEASONAL_ESTIMATOR) {
                     //System.out.println( "REPLICAS: " + allReplicas[slotIndex+1] );
                     currentReplicas = allReplicas[++slotIndex];
+                    setNodesState( e.getTime() );
                 } else {
                     // Get the number of replicas using also the current informations.
                     if (slotIndex >= 0) {
@@ -685,8 +751,9 @@ public class EnergyTestREPLICA_DIST
     public static void main( String[] args ) throws Exception
     {
         Utils.VERBOSE = false;
-        PESOS_CONTROLLER   = false;
-        PEGASUS_CONTROLLER = false;
+        PESOS_CONTROLLER    = false;
+        PEGASUS_CONTROLLER  = false;
+        SWITCH_OFF_MACHINES = false;
         
         if (System.getProperty( "showGUI" ) != null) {
             showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
@@ -868,6 +935,7 @@ public class EnergyTestREPLICA_DIST
             an.start();*/
         }
         
+        // TODO questi valori sono stati presi senza spegnere le macchine
         // LongTerm, L2
         
         // Lambda = 0.25
@@ -875,8 +943,10 @@ public class EnergyTestREPLICA_DIST
         // Total energy:  678575.5409967459 (PESOS TC 500ms)
         // Total energy:  (PESOS TC 1000ms)
         
+        // Round-Robin
+        // Total energy:  673676.8520004768 (PESOS TC 500ms)
+        
         // Lambda = 0.5 (stesso numero di server di 0.25)
-        // Total energy: 1104638.7760717103 (PERF)
         
         // Lambda = 0.75
         // Total energy: 1063473.7565396855 (PERF)

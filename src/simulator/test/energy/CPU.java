@@ -3,6 +3,8 @@ package simulator.test.energy;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -23,6 +25,10 @@ public abstract class CPU extends Device<QueryInfo,Long>
     protected long lastSelectedCore = -1;
     protected QueryInfo lastQuery;
     
+    protected boolean centralizedQueue = false;
+    protected Map<Long,List<QueryInfo>> coreQueue;
+    protected LinkedList<QueryReference> queries;
+    
     
     
     public CPU( String name, List<Long> frequencies ) {
@@ -31,6 +37,15 @@ public abstract class CPU extends Device<QueryInfo,Long>
     
     public void setEnergyModel( EnergyModel model ) {
         energyModel = model;
+    }
+    
+    public void setCentralizedQueue( boolean centralized )
+    {
+        centralizedQueue = centralized;
+        if (centralized) {
+            coreQueue = new HashMap<>();
+            queries = new LinkedList<>();
+        }
     }
     
     public abstract void addQuery( long coreId, QueryInfo q );
@@ -62,6 +77,100 @@ public abstract class CPU extends Device<QueryInfo,Long>
     */
     public abstract long selectCore( Time time, QueryInfo query );
     
+    protected void analyzeFrequency( Time time, long currentCore )
+    {
+        int[] currentQueries = new int[(int) _cores];
+        long[] frequencies = new long[(int) _cores];
+        for (Core core : getCores()) {
+            frequencies[(int) core.getId()] = core.getFrequency();
+            List<QueryInfo> queue = core.getQueue();
+            coreQueue.put( core.getId(), queue );
+            currentQueries[(int) core.getId()] = queue.size();
+        }
+        
+        // TODO Per adesso assegna le query in base al miglior core.
+        // TODO In futuro, forse, eseguire tutte le possibili combinazioni.
+        //System.out.println( "QUERIES: " + queries.size() );
+        for (int i = queries.size() - 1; i >= 0; i--) {
+            QueryReference ref = queries.get( i );
+            long minFrequency = Long.MAX_VALUE;
+            long coreId = -1;
+            long tiedSelection = Long.MAX_VALUE;
+            boolean tieSituation = false;
+            
+            for (Core core : getCores()) {
+                List<QueryInfo> queue = coreQueue.get( core.getId() );
+                queue.add( ref.getQuery() );
+                long frequency = _model.eval( time, queue.toArray( new QueryInfo[0] ) );
+                if (frequency < minFrequency) {
+                    minFrequency = frequency;
+                    coreId = core.getId();
+                    tiedSelection = core.tieSelected;
+                } else if (minFrequency == frequency) {
+                    if (core.tieSelected < tiedSelection) {
+                        coreId = core.getId();
+                        minFrequency = frequency;
+                        tiedSelection = core.tieSelected;
+                    }
+                    tieSituation = true;
+                }
+                queue.remove( queue.size() - 1 );
+            }
+            
+            ref.coreId = coreId;
+            frequencies[(int) coreId] = minFrequency;
+            List<QueryInfo> queue = coreQueue.get( coreId );
+            queue.add( ref.getQuery() );
+            
+            System.out.println( "QUERY: " + ref.getQuery().getId() + ", ASSEGNATA A: " + coreId + ", FREQ: " + frequencies[(int) coreId] );
+            
+            if (tieSituation) {
+                getCore( coreId ).tieSelected++;
+            }
+        }
+        
+        for (Core core : getCores()) {
+            int queries = currentQueries[(int) core.getId()];
+            // Remove the added queries.
+            for (int i = coreQueue.get( core.getId() ).size() - queries; i > 0; i--) {
+                core.removeQuery( time, queries, false );
+            }
+            
+            // Set the new frequency.
+            long frequency = frequencies[(int) core.getId()];
+            if (queries == 0) {
+                core.setFrequency( frequency );
+                if (currentCore != -1 && core.getId() != currentCore) {
+                    // Add and execute immediately the next available query (if any).
+                    core.addQuery( getNextQuery( time, core.getId() ), true );
+                }
+            } else {
+                QueryInfo first = core.getFirstQueryInQueue();
+                if (first.getStartTime().getTimeMicros() > 0) {
+                    core.setFrequency( time, frequency );
+                }
+            }
+        }
+    }
+    
+    /**
+     * Returns the first query associated to the requesting core.
+     * 
+     * @param time      time of evaluation.
+     * @param coreId    requesting core identifier.
+    */
+    protected QueryInfo getNextQuery( Time time, long coreId )
+    {
+        for (int i = 0; i < queries.size(); i++) {
+            QueryReference ref = queries.get( i );
+            if (ref.getCoreId() == coreId) {
+                QueryInfo query = queries.remove( i ).getQuery();
+                return query;
+            }
+        }
+        return null;
+    }
+    
     public Collection<Core> getCores() {
         return coresMap.values();
     }
@@ -78,16 +187,23 @@ public abstract class CPU extends Device<QueryInfo,Long>
         return lastSelectedCore;
     }
     
+    public void setState( Time time, State state )
+    {
+        for (Core core : coresMap.values()) {
+            core.setState( time, state );
+        }
+    }
+    
     public Core getCore( long coreId ) {
         return coresMap.get( coreId );
     }
     
-    public void setCoreState( long coreId, State state ) {
-        setCoreState( getCore( coreId ), state );
+    public void setCoreState( Time time, long coreId, State state ) {
+        setCoreState( time, getCore( coreId ), state );
     }
     
-    public void setCoreState( Core core, State state ) {
-        core.setState( state );
+    public void setCoreState( Time time, Core core, State state ) {
+        core.setState( time, state );
     }
     
     protected Time computeTime( QueryInfo query, Core core )
@@ -193,6 +309,26 @@ public abstract class CPU extends Device<QueryInfo,Long>
                _contexts + ((_contexts == 1) ? " thread per core." : " threads per core.");
     }
     
+    protected static class QueryReference
+    {
+        private long coreId;
+        private QueryInfo query;
+        
+        public QueryReference( long coreId, QueryInfo query )
+        {
+            this.coreId = coreId;
+            this.query = query;
+        }
+        
+        public long getCoreId() {
+            return coreId;
+        }
+        
+        public QueryInfo getQuery() {
+            return query;
+        }
+    }
+    
     // Core of the CPU.
     public static abstract class Core
     {
@@ -233,13 +369,10 @@ public abstract class CPU extends Device<QueryInfo,Long>
             return coreId;
         }
         
-        public void setState( State state )
+        public void setState( Time time, State state )
         {
+            setTime( time );
             this.state = state;
-            if (state == State.POWER_OFF) {
-                idleTime = 0;
-                idleTimeInterval = 0;
-            }
         }
         
         public int getExecutedQueries() {
@@ -461,6 +594,9 @@ public abstract class CPU extends Device<QueryInfo,Long>
             return idleTime;
         }
         
+        /**
+         * Returns the energy consumption during the idle period.
+        */
         public abstract double getIdleEnergy();
         
         public double getUtilization( Time time )

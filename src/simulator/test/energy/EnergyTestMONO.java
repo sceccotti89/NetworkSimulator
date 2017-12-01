@@ -192,7 +192,7 @@ public class EnergyTestMONO
         
         public void computeIdleEnergy( long sourceId, Time time )
         {
-            for (Agent dest : _evtGenerators.get( 0 ).getDestinations()) {
+            for (Agent dest : getEventGenerator( 0 ).getDestinations()) {
                 if (dest.getNode().getId() != sourceId) {
                     EnergyCPU cpu = dest.getDevice( new EnergyCPU() );
                     if (cpu != null) {
@@ -210,7 +210,7 @@ public class EnergyTestMONO
         public double getNodeUtilization( Time time )
         {
             double utilization = 0;
-            for (Agent agent : _evtGenerators.get( 0 ).getDestinations()) {
+            for (Agent agent : getEventGenerator( 0 ).getDestinations()) {
                 utilization += agent.getNodeUtilization( time );
             }
             return utilization;
@@ -259,12 +259,7 @@ public class EnergyTestMONO
         public void addEventOnQueue( Event e )
         {
             Packet p = e.getPacket();
-            CPU cpu;
-            if (CENTRALIZED_PESOS_QUEUE) {
-                cpu = getDevice( new PESOScpu() );
-            } else {
-                cpu = getDevice( new EnergyCPU() );
-            }
+            CPU cpu = getDevice( new EnergyCPU() );
             
             if (p.hasContent( Global.CONS_CONTROL )) {
                 cpu.evalCONSparameters( e.getTime() );
@@ -281,13 +276,7 @@ public class EnergyTestMONO
         @Override
         public Time handle( Event e, EventType type )
         {
-            CPU cpu;
-            if (CENTRALIZED_PESOS_QUEUE) {
-                cpu = getDevice( new PESOScpu() );
-            } else {
-                cpu = getDevice( new EnergyCPU() );
-            }
-            
+            CPU cpu = getDevice( new EnergyCPU() );
             Packet p = e.getPacket();
             if (p.hasContent( Global.CONS_CONTROL )) {
                 return Time.ZERO;
@@ -316,12 +305,7 @@ public class EnergyTestMONO
         @Override
         public double getNodeUtilization( Time time )
         {
-            CPU cpu;
-            if (CENTRALIZED_PESOS_QUEUE) {
-                cpu = getDevice( new PESOScpu() );
-            } else {
-                cpu = getDevice( new EnergyCPU() );
-            }
+            CPU cpu = getDevice( new EnergyCPU() );
             return cpu.getUtilization( time );
         }
     }
@@ -336,7 +320,7 @@ public class EnergyTestMONO
     public static void main( String[] args ) throws Exception
     {
         Utils.VERBOSE = false;
-        CENTRALIZED_PESOS_QUEUE = false;
+        CENTRALIZED_PESOS_QUEUE = true;
         
         CPUModel model = null;
         
@@ -484,24 +468,13 @@ public class EnergyTestMONO
         
         final Time duration = new Time( 24, TimeUnit.HOURS );
         
-        CPU cpu;
-        if (!CENTRALIZED_PESOS_QUEUE) {
-            cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
-        } else {
-            cpu = new PESOScpu( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
-        }
+        CPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
+        cpu.setCentralizedQueue( CENTRALIZED_PESOS_QUEUE );
         cpu.setModel( model );
         
         String modelType = model.getModelType( true );
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         final Time meanSamplingTime = new Time( 15, TimeUnit.MINUTES );
-        //cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
-        //cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
-        //cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
-        if (model.getType() == Type.PERF) {
-            //cpu.addSampler( Global.MEAN_COMPLETION_TIME, meanSamplingTime, Sampling.AVERAGE, "Log/MeanCompletionTime.log" );
-            //cpu.addSampler( Global.QUERY_PER_TIME_SLOT, meanSamplingTime, Sampling.CUMULATIVE, "Log/QueryPerTimeSlot.log" );
-        }
         
         NetworkTopology net = new NetworkTopology( "Topology/Topology_mono_multiCore.json" );
         System.out.println( net.toString() );
@@ -526,8 +499,6 @@ public class EnergyTestMONO
         server.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
         server.addSampler( Global.TAIL_LATENCY_SAMPLING, new Sampler( null, "Log/" + modelType + "_Tail_Latency.log", null ) );
         if (model.getType() == Type.PERF) {
-            //cpu.addSampler( Global.MEAN_COMPLETION_TIME, meanSamplingTime, Sampling.AVERAGE, "Log/MeanCompletionTime.log" );
-            //cpu.addSampler( Global.QUERY_PER_TIME_SLOT, meanSamplingTime, Sampling.CUMULATIVE, "Log/QueryPerTimeSlot.log" );
             server.addSampler( Global.MEAN_COMPLETION_TIME, new Sampler( meanSamplingTime, "Log/MeanCompletionTime.log", Sampling.AVERAGE ) );
             server.addSampler( Global.QUERY_PER_TIME_SLOT, new Sampler( meanSamplingTime, "Log/QueryPerTimeSlot.log", Sampling.CUMULATIVE ) );
         }
@@ -608,13 +579,13 @@ public class EnergyTestMONO
         //600729.1560297232J
         //587644.5832437798J
         // 13085 (2%) Joule in meno!!
-        // Sia arriva a un netto 10% (circa 40k Joule) in meno per TC 1000ms
+        // Si arriva a un netto 10% (circa 40k Joule) in meno per TC 1000ms
         
         // Con il JOB STEALING
         //600729.1560297232J
         //582700.8963847428J
         // 18029 (3%) Joule in meno!!
-        // Sia arriva a un netto 11% (circa 50k Joule) in meno per TC 1000ms
+        // Si arriva a un netto 11% (circa 50k Joule) in meno per TC 1000ms
         
         // Nuova strategia (MY_MODEL): prendo il massimo tra il budget predittato da PESOS e da LOAD_SENSITIVE
         // La Tail Latency e' rispettata.

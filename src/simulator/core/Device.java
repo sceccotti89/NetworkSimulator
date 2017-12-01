@@ -50,7 +50,7 @@ public abstract class Device<I,O>
     
     
     /**
-     * Create a new Device object.
+     * Creates a new Device object.
      * 
      * @param name              name of the device
      * @param frequency_file    file where the frequencies are taken.
@@ -60,7 +60,7 @@ public abstract class Device<I,O>
     }
     
     /**
-     * Create a new Device object.
+     * Creates a new Device object.
      * 
      * @param name           name of the device.
      * @param frequencies    list of frequencies.

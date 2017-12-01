@@ -29,7 +29,7 @@ public abstract class Agent extends NetworkAgent
     
     private EventScheduler _evtScheduler;
     private EventHandler _evtHandler = null;
-    protected List<EventGenerator> _evtGenerators;
+    private List<EventGenerator> _evtGenerators;
     
     private boolean _parallelTransmission = false;
     
@@ -122,6 +122,10 @@ public abstract class Agent extends NetworkAgent
     */
     public EventGenerator getEventGenerator( int index ) {
         return _evtGenerators.get( index );
+    }
+    
+    public EventGenerator getEventGenerator( EventGenerator generator ) {
+        return _evtGenerators.get( _evtGenerators.indexOf( generator ) );
     }
     
     /**
