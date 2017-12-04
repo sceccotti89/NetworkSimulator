@@ -37,6 +37,8 @@ public class EnergyTestDIST
     private static final int NODES = 1;
     private static final int CPU_CORES = 4;
     
+    private static final Class<EnergyCPU> CPU = EnergyCPU.class;
+    
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
     
     
@@ -249,7 +251,7 @@ public class EnergyTestDIST
         public void addEventOnQueue( Event e )
         {
             Packet p = e.getPacket();
-            EnergyCPU cpu = getDevice( new EnergyCPU() );
+            EnergyCPU cpu = getDevice( CPU );
             PESOSmodel model = (PESOSmodel) cpu.getModel();
             
             if (p.hasContent( Global.PESOS_TIME_BUDGET )) {
@@ -272,7 +274,7 @@ public class EnergyTestDIST
         public Time handle( Event e, EventType type )
         {
             if (e instanceof ResponseEvent) {
-                EnergyCPU cpu = getDevice( new EnergyCPU() );
+                EnergyCPU cpu = getDevice( CPU );
                 if (type == EventType.GENERATED) {
                     QueryInfo query = cpu.getLastQuery();
                     query.setEvent( e );
@@ -285,7 +287,7 @@ public class EnergyTestDIST
                 if (e.getPacket().hasContent( Global.QUERY_ID )) {
                     System.out.println( "NODO: " + getId() + ", ESEGUO PROSSIMA QUERY SUL NODO: " + getId() );
                     // Compute the time to complete the query.
-                    EnergyCPU cpu = getDevice( new EnergyCPU() );
+                    EnergyCPU cpu = getDevice( CPU );
                     return cpu.timeToCompute( null );
                 } else {
                     return Time.ZERO;
@@ -297,13 +299,13 @@ public class EnergyTestDIST
         
         @Override
         public double getNodeUtilization( Time time ) {
-            return getDevice( new EnergyCPU() ).getUtilization( time );
+            return getDevice( CPU ).getUtilization( time );
         }
         
         @Override
         public void shutdown() throws IOException
         {
-            EnergyCPU cpu = getDevice( new EnergyCPU() );
+            EnergyCPU cpu = getDevice( CPU );
             cpu.computeIdleEnergy( getEventScheduler().getTimeDuration() );
             super.shutdown();
         }

@@ -221,11 +221,6 @@ public abstract class Device<I,O>
     public abstract double getUtilization( Time time );
     
     /**
-     * Returns the associated ID.
-    */
-    public abstract String getID();
-    
-    /**
      * Shutdowns the device, closing all the opened resources
      * and writing on file any registered sampling.
     */

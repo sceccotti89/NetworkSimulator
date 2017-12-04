@@ -41,7 +41,7 @@ public abstract class NetworkAgent
     
     protected List<Event> _eventQueue;
     
-    protected Map<String,Device<?,?>> _devices;
+    protected Map<Class<?>,Device<?,?>> _devices;
     
     protected NetworkSettings _settings;
     private List<Integer> _availablePorts;

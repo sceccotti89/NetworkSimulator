@@ -50,7 +50,7 @@ public class EnergyTestDIST2
     private static boolean PESOS_CONTROLLER = true;
     private static boolean PEGASUS_CONTROLLER = false;
     
-    private static final EnergyCPU CPU = new EnergyCPU();
+    private static final Class<EnergyCPU> CPU = EnergyCPU.class;
     
     private static List<EnergyCPU> cpus = new ArrayList<>( NODES );
     private static PESOScontroller controller;

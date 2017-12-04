@@ -71,17 +71,35 @@ public abstract class Agent extends NetworkAgent
     {
         device.setAgent( this );
         device.setEventScheduler( _evtScheduler );
-        _devices.put( device.getID(), device );
+        //_devices.put( device.getID(), device );
+        _devices.put( device.getClass(), device );
     }
     
+    @SuppressWarnings("unchecked")
     public <T extends Device<?,?>> T getDevice( T device ) {
+        return (T) getDevice( device.getClass() );
+    }
+    
+    @SuppressWarnings("unchecked")
+    public <T extends Device<?,?>> T getDevice( Class<T> device ) {
+        return (T) _devices.get( device );
+        /*try {
+            Method method = device.getMethod( "getID" );
+            return getDevice( (String) method.invoke( device.newInstance() ) );
+        } catch ( Exception e ) {
+            e.printStackTrace();
+            return null;
+        }*/
+    }
+    
+    /*public <T extends Device<?,?>> T getDevice( T device ) {
         return getDevice( device.getID() );
     }
     
     @SuppressWarnings("unchecked")
     public <T extends Device<?,?>> T getDevice( String id ) {
         return (T) _devices.get( id );
-    }
+    }*/
     
     public Collection<Device<?,?>> getDevices() {
         return _devices.values();

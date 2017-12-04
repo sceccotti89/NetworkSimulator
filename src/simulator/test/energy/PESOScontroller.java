@@ -280,10 +280,6 @@ public class PESOScontroller
         public double getUtilization( Time time ) {
             return 0;
         }
-        @Override
-        public String getID() {
-            return null;
-        }
     }
     
     private static class CoreInfo

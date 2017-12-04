@@ -236,11 +236,6 @@ public class EnergyCPU extends CPU
         coeffWriter.close();
         super.shutdown();
     }
-
-    @Override
-    public String getID() {
-        return "EnergyCPU";
-    }
     
     
     

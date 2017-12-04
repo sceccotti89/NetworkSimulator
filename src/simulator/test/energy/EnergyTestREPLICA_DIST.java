@@ -58,7 +58,7 @@ public class EnergyTestREPLICA_DIST
     private static boolean PEGASUS_CONTROLLER = false;
     private static boolean SWITCH_OFF_MACHINES = false;
     
-    private static final EnergyCPU CPU = new EnergyCPU();
+    private static final Class<EnergyCPU> CPU = EnergyCPU.class;
     
     private static List<EnergyCPU> cpus = new ArrayList<>( NODES );
     private static PESOScontroller controller;
@@ -304,7 +304,8 @@ public class EnergyTestREPLICA_DIST
         public void addEventOnQueue( Event e )
         {
             Packet p = e.getPacket();
-            EnergyCPU cpu = getDevice( CPU );
+            EnergyCPU cpu = getDevice( EnergyCPU.class );
+            //EnergyCPU cpu = getDevice( CPU );
             CPUModel model = (CPUModel) cpu.getModel();
             
             //System.out.println( "RECEIVED QUERY: " + e.getPacket().getContents() );
@@ -326,8 +327,8 @@ public class EnergyTestREPLICA_DIST
                 cpu.addQuery( coreID, query );
                 
                 if (PESOS_CONTROLLER) {
-                    long versionId = _versionId++ % Long.MAX_VALUE;
-                    controller.addQuery( e.getTime(), getId(), coreID, query.getId(), versionId );
+                    _versionId = _versionId++ % Long.MAX_VALUE;
+                    controller.addQuery( e.getTime(), getId(), coreID, query.getId(), _versionId );
                 }
             }
         }
