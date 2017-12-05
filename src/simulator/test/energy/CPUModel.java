@@ -220,6 +220,13 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             for (int i = 1; i < values.length; i+=2) {
                 double qTime  = Double.parseDouble( values[i] );
                 double energy = Double.parseDouble( values[i+1] );
+                // TODO questo e' in Joule,
+                // TODO per il reale valore dovrei convertirlo in Watt:
+                // TODO W = E / (qTime/1000)
+                // TODO dopo di che testare.
+                if (energy <= 1.3) {
+                    System.out.println( "TROVATA: " + queryID + ", FREQ: " + (i/2) );
+                }
                 long time     = Utils.getTimeInMicroseconds( qTime, TimeUnit.MILLISECONDS );
                 query.setTimeAndEnergy( FREQUENCIES[index++], time, energy );
             }

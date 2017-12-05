@@ -57,10 +57,10 @@ public class EnergyCPU extends CPU
         setFrequency( getMaxFrequency() );
         coresMap = new HashMap<>( (int) _cores );
         
-        setEnergyModel( new QueryEnergyModel() );
-        //setEnergyModel( new CoefficientEnergyModel() );
-        //setEnergyModel( new NormalizedEnergyModel() );
-        //setEnergyModel( new ParameterEnergyModel() );
+        setEnergyModel( new QueryEnergyModel( cores ) );
+        //setEnergyModel( new CoefficientEnergyModel( cores ) );
+        //setEnergyModel( new NormalizedEnergyModel( cores ) );
+        //setEnergyModel( new ParameterEnergyModel( cores ) );
     }
     
     @Override

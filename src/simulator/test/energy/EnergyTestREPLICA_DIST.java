@@ -427,7 +427,7 @@ public class EnergyTestREPLICA_DIST
         @Override
         protected int selectDestination( Time time )
         {
-            // Replica Round-Robin.
+            // Bounded Round-Robin.
             /*SwitchAgent switchAgent = (SwitchAgent) getAgent();
             //System.out.println( "REPLICAS: " + switchAgent.getCurrentReplicas() );
             nextReplica = (nextReplica + 1) % switchAgent.getCurrentReplicas();

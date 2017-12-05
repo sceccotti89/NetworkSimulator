@@ -6,10 +6,21 @@ import simulator.utils.Utils;
 
 public abstract class EnergyModel
 {
-    // TODO su internet ho trovato che il TDP in idle di un i7 4770k e' di 2W.
-    private static final double ENERGY_IDLE = 1.3d / 4d;
+    protected double cores;
     
-    public EnergyModel()
+    /** For the meaning of the parameters, see:
+     * X.Fu and X. Wang,
+     * "Utilization-controlled Task Consolidation for Power
+     * Optimization in Multi-Core Real-Time Systems"
+    */
+    
+    /** Static power of all power consuming components (except the cores). */
+    private static final double Ps   = 0.9d;
+    //private static final double Ps   = 1.3d;
+    /** Static power of a core. */
+    private static final double Pind = 0.1d;
+    
+    public EnergyModel( double cores )
     {
         /*energyIdleValues = new HashMap<>( 15 );
         energyIdleValues.put( 3500000L, 4.3519141137124d / 4d );
@@ -27,6 +38,12 @@ public abstract class EnergyModel
         energyIdleValues.put( 1200000L, 1.1167856856187d / 4d );
         energyIdleValues.put( 1000000L, 1.1034046822742d / 4d );
         energyIdleValues.put(  800000L, 1.1007310702341d / 4d );*/
+        
+        this.cores = cores;
+    }
+    
+    public double getStaticPower() {
+        return Ps;
     }
     
     /**
@@ -71,6 +88,10 @@ public abstract class EnergyModel
     
     public static class QueryEnergyModel extends EnergyModel
     {
+        public QueryEnergyModel( double nCores ) {
+            super( nCores );
+        }
+        
         @Override
         public double computeEnergy( double energy, long frequency, Time interval, boolean idle) {
             return computeEnergy( energy, frequency, interval.getTimeMicros(), idle );
@@ -88,13 +109,17 @@ public abstract class EnergyModel
         
         @Override
         public double getIdleEnergy( long frequency, long interval ) {
-            return ENERGY_IDLE * (interval / Utils.MILLION);
+            return Pind * (cores-1) * (interval / Utils.MILLION);
         }
     }
     
     
     public static class NormalizedEnergyModel extends EnergyModel
     {
+        public NormalizedEnergyModel( double nCores ) {
+            super( nCores );
+        }
+        
         @Override
         public double computeEnergy( double energy, long frequency, Time interval, boolean idle ) {
             return computeEnergy( energy, 0L, interval.getTimeMicros(), idle );
@@ -102,7 +127,7 @@ public abstract class EnergyModel
         
         @Override
         public double computeEnergy( double energy, long frequency, double interval, boolean idle ) {
-            return energy - (3d * ENERGY_IDLE * (interval/Utils.MILLION));
+            return energy - (3d * Pind * (interval/Utils.MILLION));
         }
         
         @Override
@@ -112,7 +137,7 @@ public abstract class EnergyModel
         
         @Override
         public double getIdleEnergy( long frequency, long interval ) {
-            return ENERGY_IDLE * (interval / Utils.MILLION);
+            return Pind * (interval / Utils.MILLION);
         }
     }
     
@@ -120,7 +145,10 @@ public abstract class EnergyModel
     public static class CoefficientEnergyModel extends EnergyModel
     {
         private static final double[] COEFF = new double[]{ 1.29223297d, 0.94764905d };
-        private static final double Pind = 0.1d;
+        
+        public CoefficientEnergyModel( double nCores ) {
+            super( nCores );
+        }
         
         @Override
         public double computeEnergy( double energy, long frequency, Time interval, boolean idle ) {
@@ -156,6 +184,10 @@ public abstract class EnergyModel
         private static final double gamma = 0.01d;
         private static final double omega = 4d;
         
+        public ParameterEnergyModel( double nCores ) {
+            super( nCores );
+        }
+        
         @Override
         public double computeEnergy( double energy, long frequency, Time interval, boolean idle ) {
             return computeEnergy( energy, frequency, interval.getTimeMicros(), idle );
@@ -176,7 +208,7 @@ public abstract class EnergyModel
         
         @Override
         public double getIdleEnergy( long frequency, long interval ) {
-            return computeEnergy( ENERGY_IDLE * (interval / Utils.MILLION), frequency, 0d, true );
+            return computeEnergy( Pind * (interval / Utils.MILLION), frequency, 0d, true );
         }
     }
     
@@ -204,7 +236,7 @@ public abstract class EnergyModel
         
         @Override
         public double getIdleEnergy( long frequency, long interval ) {
-            return ENERGY_IDLE * (interval / Utils.MILLION);
+            return IDLE_POWER * (interval / Utils.MILLION);
         }
     }*/
 }

@@ -320,7 +320,7 @@ public class EnergyTestMONO
     public static void main( String[] args ) throws Exception
     {
         Utils.VERBOSE = false;
-        CENTRALIZED_PESOS_QUEUE = true;
+        CENTRALIZED_PESOS_QUEUE = false;
         
         CPUModel model = null;
         
@@ -340,7 +340,7 @@ public class EnergyTestMONO
         //model = loadModel( Type.PERF );
         //model = loadModel( Type.CONS );
         
-        model.loadModel();
+        //model.loadModel();
         
         //while (true) {
             System.out.println( "SEED: " + ClientGenerator.SEED );
