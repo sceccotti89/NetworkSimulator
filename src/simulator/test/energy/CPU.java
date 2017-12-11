@@ -387,13 +387,16 @@ public abstract class CPU extends Device<QueryInfo,Long>
             cpu.getAgent().addSampledValue( Global.TAIL_LATENCY_SAMPLING, endTime,
                                             endTime, tailLatency.getTimeMicros() );
             
+            // Add the static power consumed for the query.
+            double energy = currentQuery.getEnergyConsumption() +
+                            EnergyModel.getStaticPower( currentQuery.getCompletionTime() );
             cpu.getAgent().addSampledValue( Global.ENERGY_SAMPLING, startTime,
-                                            endTime, currentQuery.getEnergyConsumption() );
+                                            endTime, energy );
             
             cpu.getAgent().addSampledValue( Global.MEAN_COMPLETION_TIME, endTime,
                                             endTime, tailLatency.getTimeMicros() );
             
-            // TODO writeResult( currentQuery.getFrequency(), currentQuery.getLastEnergy() );
+            EnergyCPU.writeResult( currentQuery.getFrequency(), currentQuery.getLastEnergy() );
             
             // Compute the current idle energy.
             addIdleEnergy( endTime, true );
@@ -453,7 +456,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
                                                                    currentQuery.getTime( newFrequency ),
                                                                    false );
                     currentQuery.updateTimeEnergy( time, newFrequency, energy );
-                    //TODO writeResult( frequency, currentQuery.getElapsedEnergy() );
+                    EnergyCPU.writeResult( frequency, currentQuery.getElapsedEnergy() );
                     //System.out.println( "TIME: " + time + ", CORE: " + coreId + ", QUERY: " + currentQuery.getId() + ", NEW_END_TIME: " + currentQuery.getEndTime() );
                     this.time = currentQuery.getEndTime();
                     updateEventTime( currentQuery, this.time );
@@ -597,7 +600,17 @@ public abstract class CPU extends Device<QueryInfo,Long>
         /**
          * Returns the energy consumption during the idle period.
         */
-        public abstract double getIdleEnergy();
+        public double getIdleEnergy()
+        {
+            double idleEnergy = 0;
+            if (idleTime > 0) {
+                idleEnergy = cpu.energyModel.getIdleEnergy( frequency, idleTime );
+                idleTimeInterval += idleTime;
+                EnergyCPU.writeResult( frequency, idleEnergy );
+                idleTime = 0;
+            }
+            return idleEnergy;
+        }
         
         public double getUtilization( Time time )
         {

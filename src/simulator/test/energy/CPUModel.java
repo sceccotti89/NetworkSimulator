@@ -218,16 +218,16 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             QueryInfo query = queries.get( queryID );
             int index = 0;
             for (int i = 1; i < values.length; i+=2) {
-                double qTime  = Double.parseDouble( values[i] );
+                double qTime  = Double.parseDouble( values[i] ); // in ms.
                 double energy = Double.parseDouble( values[i+1] );
-                // TODO questo e' in Joule,
-                // TODO per il reale valore dovrei convertirlo in Watt:
-                // TODO W = E / (qTime/1000)
-                // TODO dopo di che testare.
-                if (energy <= 1.3) {
-                    System.out.println( "TROVATA: " + queryID + ", FREQ: " + (i/2) );
+                //double watt = energy / (qTime / 1000);
+                double Ps = (EnergyModel.Ps / 1000) * qTime;
+                if (energy <= Ps) {
+                    // FIXME qualche query ha un costo inferiore a 0.9 Watt.
+                    System.out.println( "ID: " + queryID + ", FREQ: " + (i/2) + ", J: " + energy + ", Ps: " + Ps );
                 }
-                long time     = Utils.getTimeInMicroseconds( qTime, TimeUnit.MILLISECONDS );
+                energy -= Ps;
+                long time = Utils.getTimeInMicroseconds( qTime, TimeUnit.MILLISECONDS );
                 query.setTimeAndEnergy( FREQUENCIES[index++], time, energy );
             }
         }
@@ -301,7 +301,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
          * @param mode           PESOS modality (see {@linkplain CPUModel.Mode Mode}).
          * @param directory      directory used to load the files.
          * 
-         * @throws IOException if a file doesn't exists or is malformed.
+         * @throws IOException if a file doesn't exist or is malformed.
         */
         public MY_model( long time_budget, Mode mode, String directory )
         {
@@ -319,7 +319,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
          * @param directory      directory used to load the files.
          * @param files          list of file used to load the model.
          * 
-         * @throws IOException if a file doesn't exists or is malformed.
+         * @throws IOException if a file doesn't exist or is malformed.
         */
         public MY_model( long time_budget, Mode mode, String directory, String... files ) {
             this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory, files );
@@ -637,7 +637,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
          * @param mode           the model regressors type.
          * @param directory      directory used to load the files.
          * 
-         * @throws IOException if a file doesn't exists or is malformed.
+         * @throws IOException if a file doesn't exist or is malformed.
         */
         public LOAD_SENSITIVEmodel( long time_budget, Mode mode, String directory ) {
             this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory,
@@ -838,7 +838,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
          * @param mode           PESOS modality (see {@linkplain CPUModel.Mode Mode}).
          * @param directory      directory used to load the files.
          * 
-         * @throws IOException if a file doesn't exists or is malformed.
+         * @throws IOException if a file doesn't exist or is malformed.
         */
         public PESOSmodel( long time_budget, Mode mode, String directory )
         {
@@ -855,7 +855,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
          * @param directory      directory used to load the files.
          * @param files          list of file used to load the model.
          * 
-         * @throws IOException if a file doesn't exists or is malformed.
+         * @throws IOException if a file doesn't exist or is malformed.
         */
         public PESOSmodel( long time_budget, Mode mode, String directory, String... files ) {
             this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory, files );
@@ -1045,7 +1045,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             if (delimeters) {
                 return "PESOS_" + getMode() + "_" + getTimeBudget().getTimeMillis() + "ms";
             } else {
-                return "PESOS (" + getMode() + ", t = " + getTimeBudget().getTimeMillis() + "ms)";
+                return "PESOS (" + getMode() + ",t=" + getTimeBudget().getTimeMillis() + "ms)";
             }
         }
 
@@ -1069,7 +1069,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
          * 
          * @param directory    directory used to load the files.
          * 
-         * @throws IOException if a file doesn't exists or is malformed.
+         * @throws IOException if a file doesn't exist or is malformed.
         */
         public PERFmodel( String directory ) {
             super( Type.PERF, directory, POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY );
@@ -1081,7 +1081,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
          * @param directory    directory used to load the files.
          * @param files        list of files used to load the model.
          * 
-         * @throws IOException if a file doesn't exists or is malformed.
+         * @throws IOException if a file doesn't exist or is malformed.
         */
         public PERFmodel( String directory, String... files ) {
             super( Type.PERF, directory, files );
@@ -1122,7 +1122,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
          * 
          * @param directory    directory used to load the files.
          * 
-         * @throws IOException if a file doesn't exists or is malformed.
+         * @throws IOException if a file doesn't exist or is malformed.
         */
         public CONSmodel( String directory ) {
             super( Type.CONS, directory, POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY );
@@ -1134,7 +1134,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
          * @param directory    directory used to load the files.
          * @param files        list of files used to load the model.
          * 
-         * @throws IOException if a file doesn't exists or is malformed.
+         * @throws IOException if a file doesn't exist or is malformed.
         */
         public CONSmodel( String directory, String... files ) {
             super( Type.CONS, directory, files );
@@ -1241,7 +1241,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
          * @param time_budget    time limit to complete a query (in ms).
          * @param directory      directory used to load the files.
          * 
-         * @throws IOException if a file doesn't exists or is malformed.
+         * @throws IOException if a file doesn't exist or is malformed.
         */
         public PEGASUSmodel( long time_budget, String directory ) {
             this( new Time( time_budget, TimeUnit.MILLISECONDS ), directory, POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY );
@@ -1398,9 +1398,9 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         
         public void updateTimeEnergy( Time time, long newFrequency, double energy )
         {
-            if (time.clone().subTime( currentTime ).getTimeMicros() == 0) {
+            /*if (time.clone().subTime( currentTime ).getTimeMicros() == 0) {
                 return;
-            }
+            }*/
             
             //System.out.println( "\nSTO AGGIORNANDO: " + time );
             //System.out.println( "FROM: " + currentTime + ", OLD_TO: " + endTime + ", ENERGY: " + lastEnergy );
@@ -1423,7 +1423,8 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             double newEnergy     = energyUnitNew * newQueryDuration;
             //System.out.println( "PERCENTAGE: " + percentageCompleted + ", ENERGY_ELAPSED: " + elapsedEnergy );
             //System.out.println( "NEW_ENERGY: " + energy + ", NEW_ENERGY_REAL: " + newEnergy );
-            //EnergyCPU.writeResult( _frequency, elapsedEnergy, false );
+            
+            //EnergyCPU.writeResult( _frequency, elapsedEnergy );
             
             //System.out.println( "ARRIVAL: " + arrivalTime + ", OLD TIME: " + endTime + ", NEW: " + newEndTime );
             

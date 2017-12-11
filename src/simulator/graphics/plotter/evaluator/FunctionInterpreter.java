@@ -30,7 +30,7 @@ public class FunctionInterpreter
     private double evalExpr( Expr e )
     {
         switch (e.getOp().getType()) {
-            case( Token.T_NUMBER):      return e.getExpr1().getOp().value;
+            case( Token.T_NUMBER):      return e.getExpr1().getOp().getValue();
             case( Token.T_IDENTIFIER ): return getValue( e.getExpr1().getOp() );
             case( Token.T_OPEN_PARENTHESIS ): return evalExpr( e.getExpr1() );
             case( Token.T_PLUS ) :     if (e.getExpr2() == null) return evalExpr( e.getExpr1() );
@@ -56,9 +56,9 @@ public class FunctionInterpreter
     
     private double getValue( Token token )
     {
-        Double result = values.get( token.stringValue );
+        Double result = values.get( token.getStringValue() );
         if (result == null) {
-            throw new EvaluationException( "No mappings for '" + token.stringValue + "'." );
+            throw new EvaluationException( "No mappings for '" + token.getStringValue() + "'." );
         }
         return result;
     }

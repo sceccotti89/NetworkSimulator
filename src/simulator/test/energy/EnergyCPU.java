@@ -25,9 +25,7 @@ import simulator.utils.Utils;
 
 public class EnergyCPU extends CPU
 {
-    private static final long QUEUE_CHECK = TimeUnit.SECONDS.toMicros( 1 );
-    
-    // TODO File usato per testing
+    // TODO File usato per ottenere i coefficienti
     protected static PrintWriter coeffWriter;
     
     
@@ -80,7 +78,7 @@ public class EnergyCPU extends CPU
                     timeBudget = cpuModel.getTimeBudget().getTimeMillis();
                     file = "PESOS_" + timeBudget + "_" + cpuModel.getMode();
                     break;
-                case CONS           : file = "CONS_" + cpuModel.getMode(); break;
+                case CONS           : file = "CONS"; break;
                 case LOAD_SENSITIVE :
                     timeBudget = cpuModel.getTimeBudget().getTimeMillis();
                     file = "LOAD_SENSITIVE_" + timeBudget; break;
@@ -276,6 +274,9 @@ public class EnergyCPU extends CPU
         
         private long queryExecutionTime = 0;
         
+        private static final long QUEUE_CHECK = TimeUnit.SECONDS.toMicros( 1 );
+        
+        
         public PESOScore( EnergyCPU cpu, long coreId, long initFrequency ) {
             super( cpu, coreId, initFrequency );
         }
@@ -456,19 +457,6 @@ public class EnergyCPU extends CPU
                 return false;
             }
         }
-        
-        @Override
-        public double getIdleEnergy()
-        {
-            double idleEnergy = 0;
-            if (idleTime > 0) {
-                idleEnergy = cpu.energyModel.getIdleEnergy( frequency, idleTime );
-                idleTimeInterval += idleTime;
-                writeResult( frequency, idleEnergy );
-                idleTime = 0;
-            }
-            return idleEnergy;
-        }
     }
     
     protected static class CONScore extends Core
@@ -554,19 +542,6 @@ public class EnergyCPU extends CPU
             processedQueries = 0;
             cumulativeTime = 0;
         }
-        
-        @Override
-        public double getIdleEnergy()
-        {
-            double idleEnergy = 0;
-            if (idleTime > 0) {
-                idleEnergy = cpu.energyModel.getIdleEnergy( frequency, idleTime );
-                idleTimeInterval += idleTime;
-                writeResult( frequency, idleEnergy );
-                idleTime = 0;
-            }
-            return idleEnergy;
-        }
     }
     
     public static class LOAD_SENSITIVEcore extends Core
@@ -646,19 +621,6 @@ public class EnergyCPU extends CPU
             }
             
             return queryExecutionTime;
-        }
-        
-        @Override
-        public double getIdleEnergy()
-        {
-            double idleEnergy = 0;
-            if (idleTime > 0) {
-                idleEnergy = cpu.energyModel.getIdleEnergy( frequency, idleTime );
-                idleTimeInterval += idleTime;
-                writeResult( frequency, idleEnergy );
-                idleTime = 0;
-            }
-            return idleEnergy;
         }
     }
     
@@ -742,19 +704,6 @@ public class EnergyCPU extends CPU
             
             return queryExecutionTime;
         }
-        
-        @Override
-        public double getIdleEnergy()
-        {
-            double idleEnergy = 0;
-            if (idleTime > 0) {
-                idleEnergy = cpu.energyModel.getIdleEnergy( frequency, idleTime );
-                idleTimeInterval += idleTime;
-                writeResult( frequency, idleEnergy );
-                idleTime = 0;
-            }
-            return idleEnergy;
-        }
     }
 
     private static class PEGASUScore extends Core
@@ -803,19 +752,6 @@ public class EnergyCPU extends CPU
             } else {
                 return false;
             }
-        }
-        
-        @Override
-        public double getIdleEnergy()
-        {
-            double idleEnergy = 0;
-            if (idleTime > 0) {
-                idleEnergy = cpu.energyModel.getIdleEnergy( frequency, idleTime );
-                idleTimeInterval += idleTime;
-                writeResult( frequency, idleEnergy );
-                idleTime = 0;
-            }
-            return idleEnergy;
         }
     }
 }

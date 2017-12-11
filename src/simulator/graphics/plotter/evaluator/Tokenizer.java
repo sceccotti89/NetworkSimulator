@@ -218,9 +218,9 @@ public class Tokenizer
         /* One of the above token codes. */
         private Integer type;
         /* Holds value if number. */
-        public Double value = null;
+        private Double value = null;
         /* Holds value if string. */
-        public String stringValue = null;
+        private String stringValue = null;
         
         public Token( int type ) {
             this.type = type;
@@ -228,6 +228,14 @@ public class Tokenizer
         
         public int getType() {
             return type;
+        }
+        
+        public double getValue() {
+            return value;
+        }
+        
+        public String getStringValue() {
+            return stringValue;
         }
         
         @Override

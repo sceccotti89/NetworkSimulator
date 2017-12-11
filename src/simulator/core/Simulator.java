@@ -21,7 +21,6 @@ import simulator.network.element.Switch;
 import simulator.topology.NetworkNode;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Time;
-import simulator.utils.Utils;
 import simulator.utils.resources.ResourceLoader;
 
 public class Simulator implements AutoCloseable
@@ -177,7 +176,7 @@ public class Simulator implements AutoCloseable
         
         private static final void startSimulation( NetworkTopology net ) throws IOException
         {
-            Utils.LOGGER.info( "Simulation start!" );
+            System.out.println( "Simulation start!" );
             long currentTime = System.currentTimeMillis();
             
             EventScheduler evtScheduler = net.getEventScheduler();
@@ -195,7 +194,7 @@ public class Simulator implements AutoCloseable
             long minutes = (elapsedTime - hours*3600000L)/60000L;
             long seconds = (elapsedTime - hours*3600000L - minutes*60000L)/1000L;
             long millis  =  elapsedTime - hours*3600000L - minutes*60000L - seconds*1000L;
-            Utils.LOGGER.info( "Simulation completed in " + hours + "h:" + minutes + "m:" + seconds + "s:" + millis + "ms" );
+            System.out.println( "Simulation completed in " + hours + "h:" + minutes + "m:" + seconds + "s:" + millis + "ms" );
         }
         
         public NetworkTopology getNetwork() {

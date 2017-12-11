@@ -9,7 +9,7 @@ public class Evaluator
     private FunctionInterpreter interpreter;
     
     public Evaluator( String expression ) {
-        Expr e = FunctionParser.parse( expression );
+        Expr e = new FunctionParser( expression ).parse();
         interpreter = new FunctionInterpreter( e );
     }
     

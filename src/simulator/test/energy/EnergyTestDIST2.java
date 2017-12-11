@@ -396,12 +396,15 @@ public class EnergyTestDIST2
     {
         final String dir = "Models/Monolithic/PESOS/MaxScore/";
         List<PrintWriter> writers = new ArrayList<>( NODES );
-        final double BASE_RANGE = 20;
-        final double RANDOM_RANGE = 10;
+        final double MIN_RANGE = 2;
+        final double MAX_RANGE = 5;
         
+        Random rand = new Random();
         List<Double> ranges = new ArrayList<>( NODES );
-        for (int i = 0; i < NODES; i++) {
-            ranges.add( (Math.random() * RANDOM_RANGE + BASE_RANGE)/100d );
+        // Node 0 has the original index.
+        ranges.add( 0d );
+        for (int i = 1; i < NODES; i++) {
+            ranges.add( (rand.nextInt() * (MAX_RANGE-MIN_RANGE) + MIN_RANGE)/100d );
         }
         
         String file = dir + "predictions.txt";
@@ -433,29 +436,6 @@ public class EnergyTestDIST2
         }
         writers.clear();
         loader.close();
-        
-        // TODO qui non so se va cambiato qualcosa
-        /*file = dir + "regressors_normse.txt";
-        loader = ResourceLoader.getResourceAsStream( file );
-        reader = new BufferedReader( new InputStreamReader( loader ) );
-        
-        for (int i = 1; i <= NODES; i++) {
-            writers.add( new PrintWriter( "Models/Distributed/Node_" + i + "/PESOS/MaxScore/predictions.txt", "UTF-8" ) );
-        }
-        
-        
-        
-        for (int i = 1; i <= NODES; i++) {
-            writers.get( i ).close();
-        }
-        writers.clear();
-        loader.close();
-        
-        file = dir + "regressors.txt";
-        loader = ResourceLoader.getResourceAsStream( file );
-        reader = new BufferedReader( new InputStreamReader( loader ) );
-        
-        loader.close();*/
         
         file = dir + "time_energy.txt";
         loader = ResourceLoader.getResourceAsStream( file );
@@ -516,6 +496,9 @@ public class EnergyTestDIST2
         Utils.VERBOSE = false;
         PESOS_CONTROLLER   = false;
         PEGASUS_CONTROLLER = false;
+        
+        Random rand = new Random();
+        System.out.println( "GAUSS: " + rand.nextGaussian() );
         
         //CPUEnergyModel model = null;
         

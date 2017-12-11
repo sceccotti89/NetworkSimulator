@@ -9,16 +9,15 @@ import simulator.graphics.plotter.evaluator.Tokenizer.Token;
 
 public class FunctionParser
 {
-    private static Tokenizer tokenizer;
-    private static Token token;
-    private static boolean readNext = true;
+    private Tokenizer tokenizer;
+    private Token token;
+    private boolean readNext = true;
     
     public FunctionParser( String expression ) {
         tokenizer = new Tokenizer( expression );
     }
     
-    public static Expr parse( String expression ) {
-        tokenizer = new Tokenizer( expression );
+    public Expr parse() {
         return parseEXPR();
     }
     
@@ -28,7 +27,7 @@ public class FunctionParser
      * @param current     the current token
      * @param expected    the expected token
     */
-    private static void expectedToken( int current, int expected ) throws EvaluationException
+    private void expectedToken( int current, int expected ) throws EvaluationException
     {
         if(current != expected) {
             throw new EvaluationException( "Error position " + tokenizer.getIndex() +
@@ -37,11 +36,11 @@ public class FunctionParser
         }
     }
     
-    private static Expr parseEXPR() {
+    private Expr parseEXPR() {
         return parseSUM_OP( parseSIGNED_TERM() );
     }
     
-    private static Expr parseSUM_OP( Expr e )
+    private Expr parseSUM_OP( Expr e )
     {
         if (readNext)
             token = tokenizer.nextToken();
@@ -55,11 +54,11 @@ public class FunctionParser
         }
     }
     
-    private static Expr parseSIGNED_TERM() {
+    private Expr parseSIGNED_TERM() {
         return parseTERM();
     }
     
-    private static Expr parseTERM()
+    private Expr parseTERM()
     {
         if (readNext)
             token = tokenizer.nextToken();
@@ -76,7 +75,7 @@ public class FunctionParser
         return parseTERM_OP( e );
     }
     
-    private static Expr parseTERM_OP( Expr e )
+    private Expr parseTERM_OP( Expr e )
     {
         if (readNext)
             token = tokenizer.nextToken();
@@ -90,7 +89,7 @@ public class FunctionParser
         }
     }
     
-    private static Expr parseSIGNED_FACTOR()
+    private Expr parseSIGNED_FACTOR()
     {
         if (readNext)
             token = tokenizer.nextToken();
@@ -104,11 +103,11 @@ public class FunctionParser
         }
     }
     
-    private static Expr parseFACTOR() {
+    private Expr parseFACTOR() {
         return parseFACTOR_OP( parseARGUMENT() );
     }
     
-    private static Expr parseFACTOR_OP( Expr e )
+    private Expr parseFACTOR_OP( Expr e )
     {
         if (readNext)
             token = tokenizer.nextToken();
@@ -122,7 +121,7 @@ public class FunctionParser
         }
     }
     
-    private static Expr parseARGUMENT()
+    private Expr parseARGUMENT()
     {
         if (readNext)
             token = tokenizer.nextToken();

@@ -340,10 +340,8 @@ public class EnergyTestMONO
         //model = loadModel( Type.PERF );
         //model = loadModel( Type.CONS );
         
-        //model.loadModel();
-        
         //while (true) {
-            System.out.println( "SEED: " + ClientGenerator.SEED );
+            //System.out.println( "SEED: " + ClientGenerator.SEED );
             testMultiCore( model );
             //testSingleCore( model );
             //testAnimationNetwork( model );
@@ -352,6 +350,8 @@ public class EnergyTestMONO
         //}
         
         //System.out.println( "EXEC: " + executed + ", SEED: " + ClientGenerator.SEED );
+        
+        //SIMUL: 467776
     }
     
     protected static CPUModel loadModel( Type type, Mode mode, long timeBudget ) throws Exception
@@ -443,11 +443,11 @@ public class EnergyTestMONO
             double energy = cpu.getAgent().getResultSampled( Global.ENERGY_SAMPLING );
             totalEnergy += energy;
             totalIdleEnergy += cpu.getAgent().getResultSampled( Global.IDLE_ENERGY_SAMPLING );
-            Utils.LOGGER.info( "CPU " + i + ", Energy consumed: " + energy + "J" );
+            System.out.println( "CPU " + i + ", Energy consumed: " + energy + "J" );
             totalQueries += cpu.getExecutedQueries();
         }
-        Utils.LOGGER.info( model.getModelType( false ) + " - Total energy:      " + totalEnergy + "J" );
-        Utils.LOGGER.info( model.getModelType( false ) + " - Total idle energy: " + totalIdleEnergy + "J" );
+        System.out.println( model.getModelType( false ) + " - Total energy:      " + totalEnergy + "J" );
+        System.out.println( model.getModelType( false ) + " - Total idle energy: " + totalIdleEnergy + "J" );
         System.out.println( "QUERIES: " + totalQueries );
         
         // Show the animation.
@@ -517,8 +517,8 @@ public class EnergyTestMONO
         sim.start( duration, false );
         sim.close();
         
-        Utils.LOGGER.debug( model.getModelType( false ) + " - Total energy:      " + server.getResultSampled( Global.ENERGY_SAMPLING ) + "J" );
-        Utils.LOGGER.debug( model.getModelType( false ) + " - Total Idle energy: " + server.getResultSampled( Global.IDLE_ENERGY_SAMPLING ) + "J" );
+        System.out.println( model.getModelType( false ) + " - Total energy:      " + server.getResultSampled( Global.ENERGY_SAMPLING ) + "J" );
+        System.out.println( model.getModelType( false ) + " - Total Idle energy: " + server.getResultSampled( Global.IDLE_ENERGY_SAMPLING ) + "J" );
         
         System.out.println( "QUERIES: " + cpu.getExecutedQueries() );
         
@@ -680,11 +680,11 @@ public class EnergyTestMONO
             double energy = cpu.getAgent().getResultSampled( Global.ENERGY_SAMPLING );
             totalEnergy += energy;
             totalIdleEnergy += cpu.getAgent().getResultSampled( Global.IDLE_ENERGY_SAMPLING );
-            Utils.LOGGER.info( "CPU " + i + ", Energy consumed: " + energy + "J" );
+            System.out.println( "CPU " + i + ", Energy consumed: " + energy + "J" );
             totalQueries += cpu.getExecutedQueries();
         }
-        Utils.LOGGER.info( model.getModelType( false ) + " - Total energy:      " + totalEnergy + "J" );
-        Utils.LOGGER.info( model.getModelType( false ) + " - Total idle energy: " + totalIdleEnergy + "J" );
+        System.out.println( model.getModelType( false ) + " - Total energy:      " + totalEnergy + "J" );
+        System.out.println( model.getModelType( false ) + " - Total idle energy: " + totalIdleEnergy + "J" );
         System.out.println( "QUERIES: " + totalQueries );
     }
     

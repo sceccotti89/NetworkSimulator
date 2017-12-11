@@ -10,7 +10,7 @@ import java.util.List;
 
 import simulator.utils.Utils;
 
-public class Test_Coefficients
+public class EvalCoefficients
 {
     private static final String FOLDER = "Results/Coefficients/";
     
@@ -23,7 +23,7 @@ public class Test_Coefficients
     private static final double MAX_VALUE = 1d;
     
     private static final double PERF_TARGET_VALUE = 790400d;
-    private static final double PERF_SIMULATOR_VALUE = 992317d;
+    private static final double PERF_SIMULATOR_VALUE = 926986d;
     
     private static final double MIN = PERF_TARGET_VALUE - (PERF_TARGET_VALUE/ROUNDNESS*ERROR_PRECISION);
     private static final double MAX = PERF_TARGET_VALUE + (PERF_TARGET_VALUE/ROUNDNESS*ERROR_PRECISION);
@@ -47,7 +47,7 @@ public class Test_Coefficients
         double beta  = roundValue( INCREMENT );
         double gamma = roundValue( INCREMENT );
         
-        PrintWriter writer = new PrintWriter( "Results/Coefficients/Final_Coefficients.txt", "UTF-8" );
+        PrintWriter writer = new PrintWriter( FOLDER + "Final_Coefficients.txt", "UTF-8" );
         
         for (int i = 0; i < ITERATIONS; i++) {
             if (alpha == MAX_VALUE) {
@@ -85,9 +85,10 @@ public class Test_Coefficients
         double totEnergy = 0;
         while ((line = reader.readLine()) != null) {
             String[] values = line.split( "\\s+" );
-            totEnergy += Double.parseDouble( values[1] );
+            double energy = Double.parseDouble( values[1] );
+            totEnergy += energy;
             freqList.add( Long.parseLong( values[0] ) );
-            energyList.add( Double.parseDouble( values[1] ) );
+            energyList.add( energy );
         }
         reader.close();
         System.out.println( "TOT: " + totEnergy );

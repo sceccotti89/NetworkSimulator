@@ -821,13 +821,20 @@ public class Plotter extends WindowAdapter implements ActionListener
 
         private boolean drawPlot( Graphics2D g, Range range, Plot plot, boolean selected )
         {
+            if (plot.points.size() == 0) {
+                return false;
+            }
+            
             g.setColor( (theme == Theme.BLACK) ? Color.WHITE : Color.BLACK );
+            
+            // Set the area to draw the points.
+            g.setClip( area );
             
             boolean drawCircle = true;
             int pointInfo = -1;
             Pair<Double,Double> point;
             Point p = new Point( plotLocation.x, plotLocation.y );
-            if (plot.points.size() > 0) {
+            //if (plot.points.size() > 0) {
                 point = plot.points.get( 0 );
                 // Get the starting position.
                 double x = plotLocation.getX() + ((point.getFirst() - range.minX) * (xLength / range.getXRange()));
@@ -842,23 +849,20 @@ public class Plotter extends WindowAdapter implements ActionListener
                         pointInfo = 0;
                     }
                 }
-            }
+            //}
             
-            // Set the area to draw the points.
-            g.setClip( area );
-            
-            if (plot.points.size() == 1) {
+            /*if (plot.points.size() == 1) {
                 // Draw the point.
                 g.setColor( plot.color );
                 g.setStroke( plot.stroke );
                 point = plot.points.get( 0 );
-                double x = plotLocation.getX() + ((point.getFirst() - range.minX) * (xLength / range.getXRange()));
-                double y = plotLocation.getY() - ((point.getSecond() - range.minY) * (yLength / range.getYRange()));
+                x = plotLocation.getX() + ((point.getFirst() - range.minX) * (xLength / range.getXRange()));
+                y = plotLocation.getY() - ((point.getSecond() - range.minY) * (yLength / range.getYRange()));
                 if (plot.line != Line.NOTHING) {
                     g.drawLine( (int) p.getX(), (int) p.getY(), (int) x, (int) y );
                 }
                 plot.drawPoint( g, (int) x, (int) y );
-            }
+            }*/
             
             for (int i = 1; i < plot.points.size(); i++) {
                 try {
@@ -867,8 +871,8 @@ public class Plotter extends WindowAdapter implements ActionListener
                     continue;
                 }
                 
-                double x = plotLocation.getX() + ((point.getFirst() - range.minX) * (xLength / range.getXRange()));
-                double y = plotLocation.getY() - ((point.getSecond() - range.minY) * (yLength / range.getYRange()));
+                x = plotLocation.getX() + ((point.getFirst() - range.minX) * (xLength / range.getXRange()));
+                y = plotLocation.getY() - ((point.getSecond() - range.minY) * (yLength / range.getYRange()));
                 
                 // Draw the point.
                 g.setColor( plot.color );
@@ -897,8 +901,8 @@ public class Plotter extends WindowAdapter implements ActionListener
             // Draw the info associated with the selected point.
             if (pointInfo >= 0) {
                 point = plot.points.get( pointInfo );
-                double x = plotLocation.getX() + ((point.getFirst() - range.minX) * (xLength / range.getXRange()));
-                double y = plotLocation.getY() - ((point.getSecond() - range.minY) * (yLength / range.getYRange()));
+                x = plotLocation.getX() + ((point.getFirst() - range.minX) * (xLength / range.getXRange()));
+                y = plotLocation.getY() - ((point.getSecond() - range.minY) * (yLength / range.getYRange()));
                 Ellipse2D circle = new Ellipse2D.Double( x - pointRadius/2, y - pointRadius/2, pointRadius, pointRadius );
                 g.setStroke( new BasicStroke( 2f ) );
                 g.setColor( (theme == Theme.BLACK) ? Color.WHITE : Color.GRAY );
@@ -932,7 +936,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             // First X tick.
             float xTick = (float) plotLocation.getX();
             drawTick( Axis.X, g, range.minX, xTick, plotLocation.y + OFFSET_Y_XAXIS );
-            // Added X ticks.
+            // Intermediate X ticks.
             for (int i = 1; i <= xNumTicks; i++) {
                 if (i % settings.xTickInterval == 0) {
                     xTick = (float) plotLocation.getX() + xTickPosition;
@@ -960,7 +964,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             // First Y tick.
             float yTick = (float) plotLocation.getY();
             drawTick( Axis.Y, g, range.minY, plotLocation.x, yTick );
-            // Added Y ticks.
+            // Intermediate Y ticks.
             for (int i = 1; i <= yNumTicks; i++) {
                 if (i % settings.yTickInterval == 0) {
                     yTick = (float) plotLocation.getY() - yTickPosition;

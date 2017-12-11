@@ -399,7 +399,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
             return;
         }
         
-        plot.points = new ArrayList<>();
+        plot.points = new ArrayList<>( (int) Math.ceil((to - from) / jump) );
         for (double x = from; x <= to; x += jump) {
             evaluator.putVariable( "x", x );
             double y = evaluator.eval();
