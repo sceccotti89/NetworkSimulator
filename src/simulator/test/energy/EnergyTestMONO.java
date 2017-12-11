@@ -324,7 +324,7 @@ public class EnergyTestMONO
         
         CPUModel model = null;
         
-        model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
@@ -337,7 +337,7 @@ public class EnergyTestMONO
         //model = loadModel( Type.MY_MODEL, Mode.TIME_CONSERVATIVE,  500 );
         //model = loadModel( Type.MY_MODEL, Mode.TIME_CONSERVATIVE, 1000 );
         
-        //model = loadModel( Type.PERF );
+        model = loadModel( Type.PERF );
         //model = loadModel( Type.CONS );
         
         //while (true) {

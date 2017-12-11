@@ -27,7 +27,8 @@ import simulator.utils.resources.ResourceLoader;
 public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneable
 {
     private static final String POSTINGS_PREDICTORS   = "predictions.txt";
-    private static final String EFFECTIVE_TIME_ENERGY = "time_energy.txt";
+    //private static final String EFFECTIVE_TIME_ENERGY = "time_energy.txt";
+    private static final String EFFECTIVE_TIME_ENERGY = "time_energy_fit.txt";
     
     private static final String SEPARATOR = "=";
     
