@@ -208,13 +208,14 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
     private void loadEffectiveTimeEnergy() throws IOException
     {
         InputStream fReader = ResourceLoader.getResourceAsStream( _effective_time_energy );
+        //InputStream fReader = ResourceLoader.getResourceAsStream( "/home/stefano/test.txt" );
         BufferedReader reader = new BufferedReader( new InputStreamReader( fReader ) );
         
         String line;
         while ((line = reader.readLine()) != null) {
             String[] values = line.split( "\\s+" );
             
-            long queryID = Long.parseLong( values[0] );
+            long queryID = (long) Double.parseDouble( values[0] );
             QueryInfo query = queries.get( queryID );
             int index = 0;
             for (int i = 1; i < values.length; i+=2) {
@@ -223,7 +224,6 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
                 //double watt = energy / (qTime / 1000);
                 double Ps = (EnergyModel.Ps / 1000) * qTime;
                 if (energy <= Ps) {
-                    // FIXME qualche query ha un costo inferiore a 0.9 Watt.
                     System.out.println( "ID: " + queryID + ", FREQ: " + (i/2) + ", J: " + energy + ", Ps: " + Ps );
                 }
                 energy -= Ps;

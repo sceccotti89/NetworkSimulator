@@ -194,7 +194,7 @@ public class EnergyTestMONO
         {
             for (Agent dest : getEventGenerator( 0 ).getDestinations()) {
                 if (dest.getNode().getId() != sourceId) {
-                    EnergyCPU cpu = dest.getDevice( new EnergyCPU() );
+                    EnergyCPU cpu = dest.getDevice( EnergyCPU.class );
                     if (cpu != null) {
                         cpu.computeIdleEnergy( time.clone() );
                     } else {
@@ -259,7 +259,7 @@ public class EnergyTestMONO
         public void addEventOnQueue( Event e )
         {
             Packet p = e.getPacket();
-            CPU cpu = getDevice( new EnergyCPU() );
+            CPU cpu = getDevice( EnergyCPU.class );
             
             if (p.hasContent( Global.CONS_CONTROL )) {
                 cpu.evalCONSparameters( e.getTime() );
@@ -276,7 +276,7 @@ public class EnergyTestMONO
         @Override
         public Time handle( Event e, EventType type )
         {
-            CPU cpu = getDevice( new EnergyCPU() );
+            CPU cpu = getDevice( EnergyCPU.class );
             Packet p = e.getPacket();
             if (p.hasContent( Global.CONS_CONTROL )) {
                 return Time.ZERO;
@@ -305,7 +305,7 @@ public class EnergyTestMONO
         @Override
         public double getNodeUtilization( Time time )
         {
-            CPU cpu = getDevice( new EnergyCPU() );
+            CPU cpu = getDevice( EnergyCPU.class );
             return cpu.getUtilization( time );
         }
     }

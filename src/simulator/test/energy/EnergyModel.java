@@ -9,7 +9,7 @@ public abstract class EnergyModel
     protected static double cores;
     
     /** Static power of all power consuming components (except the cores). */
-    public static final double Ps = 1.19d; //1.3d;
+    public static final double Ps = 0.84d; //1.3d;
     /** Static power of a core. */
     //private static final double Pind = 0.1d;
     

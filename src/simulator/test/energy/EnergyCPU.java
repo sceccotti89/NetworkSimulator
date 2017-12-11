@@ -6,7 +6,6 @@ package simulator.test.energy;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -31,16 +30,8 @@ public class EnergyCPU extends CPU
     
     
     
-    /**
-     * Constructor used to retrieve this device.
-    */
-    public EnergyCPU() {
-        super( "", Collections.singletonList( 0L ) );
-    }
-    
     public EnergyCPU( String machine, int cores, int contexts,
-                      String frequencies_file ) throws IOException
-    {
+                      String frequencies_file ) throws IOException {
         this( machine, cores, contexts, readFrequencies( frequencies_file ) );
     }
     
