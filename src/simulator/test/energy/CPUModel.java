@@ -27,8 +27,8 @@ import simulator.utils.resources.ResourceLoader;
 public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneable
 {
     private static final String POSTINGS_PREDICTORS   = "predictions.txt";
-    //private static final String EFFECTIVE_TIME_ENERGY = "time_energy.txt";
-    private static final String EFFECTIVE_TIME_ENERGY = "time_energy_fit.txt";
+    private static final String EFFECTIVE_TIME_ENERGY = "time_energy.txt";
+    //private static final String EFFECTIVE_TIME_ENERGY = "time_energy_fit.txt";
     
     private static final String SEPARATOR = "=";
     
@@ -222,6 +222,9 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             for (int i = 1; i < values.length; i+=2) {
                 double qTime  = Double.parseDouble( values[i] ); // in ms.
                 double energy = Double.parseDouble( values[i+1] );
+                if (energy < 0) {
+                    System.out.println( "FILE: " + _effective_time_energy );
+                }
                 //double watt = energy / (qTime / 1000);
                 double Ps = (EnergyModel.Ps / 1000) * qTime;
                 if (energy <= Ps) {

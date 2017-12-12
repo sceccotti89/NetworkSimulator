@@ -404,7 +404,7 @@ public class EnergyTestDIST2
         // Node 0 has the original index.
         ranges.add( 0d );
         for (int i = 1; i < NODES; i++) {
-            ranges.add( (rand.nextInt() * (MAX_RANGE-MIN_RANGE) + MIN_RANGE)/100d );
+            ranges.add( (rand.nextInt( 1 ) * (MAX_RANGE-MIN_RANGE) + MIN_RANGE)/100d );
         }
         
         String file = dir + "predictions.txt";
@@ -426,7 +426,7 @@ public class EnergyTestDIST2
                 if (i % 2 == 0) {
                     difference *= -1;
                 }
-                postings += difference;
+                postings = Math.max( 1, postings + difference );
                 writers.get( i ).println( queryID + "\t" + terms + "\t" + postings );
             }
         }
@@ -456,17 +456,19 @@ public class EnergyTestDIST2
                 double qTime  = Double.parseDouble( values[i] );
                 double energy = Double.parseDouble( values[i+1] );
                 for (int j = 0; j < NODES; j++) {
-                    int difference = (int) (energy * ranges.get( j ));
+                    double difference = energy * ranges.get( j );
                     if (j % 2 == 0) {
                         difference *= -1;
                     }
                     energy += difference;
+                    energy = Math.max( 0.0001, energy + difference );
                     
-                    difference = (int) (qTime * ranges.get( j ));
+                    difference = qTime * ranges.get( j );
                     if (j % 2 == 0) {
                         difference *= -1;
                     }
                     qTime += difference;
+                    qTime = Math.max( 1, qTime + difference );
                     
                     if (i < values.length - 2) {
                         writers.get( j ).print( qTime + " " + energy + " " );
@@ -491,7 +493,7 @@ public class EnergyTestDIST2
     
     public static void main( String[] args ) throws Exception
     {
-        createDistributedIndex();
+        //createDistributedIndex();
         
         Utils.VERBOSE = false;
         PESOS_CONTROLLER   = false;
@@ -618,8 +620,6 @@ public class EnergyTestDIST2
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         for (int i = 0; i < NODES; i++) {
             EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
-            //cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/Distributed_" + modelType + "_Energy.log" );
-            //cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
             //cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/Distributed_" + modelType + "_Node" + (i+1) + "_Tail_Latency.log" );
             cpus.add( cpu );
             
