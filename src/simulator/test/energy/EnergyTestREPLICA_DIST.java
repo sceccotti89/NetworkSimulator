@@ -774,13 +774,12 @@ public class EnergyTestREPLICA_DIST
     
     private static CPUModel getModel( Type type, Mode mode, long timeBudget, int node )
     {
-        // TODO solo per testing usare il monolitico.
         CPUModel model = null;
         switch ( type ) {
-            //case PESOS  : model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
-            case PESOS  : model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" ); break;
-            //case PERF   : model = new PERFmodel( "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
-            case PERF   : model = new PERFmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
+            case PESOS  : model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
+            //case PESOS  : model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" ); break;
+            case PERF   : model = new PERFmodel( "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
+            //case PERF   : model = new PERFmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
             case CONS   : model = new CONSmodel( "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
             case PEGASUS: model = new PEGASUSmodel( timeBudget, "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
             default     : break;

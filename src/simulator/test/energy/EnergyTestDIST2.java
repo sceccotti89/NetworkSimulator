@@ -396,8 +396,8 @@ public class EnergyTestDIST2
     {
         final String dir = "Models/Monolithic/PESOS/MaxScore/";
         List<PrintWriter> writers = new ArrayList<>( NODES );
-        final double MIN_RANGE = 2;
-        final double MAX_RANGE = 5;
+        final double MIN_RANGE = 1;
+        final double MAX_RANGE = 2;
         
         Random rand = new Random();
         List<Double> ranges = new ArrayList<>( NODES );
@@ -437,7 +437,7 @@ public class EnergyTestDIST2
         writers.clear();
         loader.close();
         
-        file = dir + "time_energy.txt";
+        file = dir + "time_energy_fit.txt";
         loader = ResourceLoader.getResourceAsStream( file );
         reader = new BufferedReader( new InputStreamReader( loader ) );
         
@@ -447,7 +447,7 @@ public class EnergyTestDIST2
         
         while ((line = reader.readLine()) != null) {
             String[] values = line.split( "\\s+" );
-            long queryID = Long.parseLong( values[0] );
+            long queryID = (long) Double.parseDouble( values[0] );
             for (int j = 0; j < NODES; j++) {
                 writers.get( j ).print( queryID + " " );
             }
@@ -491,14 +491,14 @@ public class EnergyTestDIST2
     
     public static void main( String[] args ) throws Exception
     {
-        //createDistributedIndex();
+        createDistributedIndex();
         
         Utils.VERBOSE = false;
         PESOS_CONTROLLER   = false;
         PEGASUS_CONTROLLER = false;
         
-        Random rand = new Random();
-        System.out.println( "GAUSS: " + rand.nextGaussian() );
+        //Random rand = new Random();
+        //System.out.println( "GAUSS: " + rand.nextGaussian() );
         
         //CPUEnergyModel model = null;
         
