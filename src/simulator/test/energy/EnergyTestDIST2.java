@@ -1,6 +1,7 @@
 
 package simulator.test.energy;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -23,6 +24,7 @@ import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
+import simulator.graphics.plotter.Plotter.Line;
 import simulator.network.NetworkAgent;
 import simulator.network.NetworkLayer;
 import simulator.test.energy.CPUModel.CONSmodel;
@@ -33,6 +35,7 @@ import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.CPUModel.Type;
 import simulator.topology.NetworkTopology;
+import simulator.utils.Pair;
 import simulator.utils.Sampler;
 import simulator.utils.Sampler.Sampling;
 import simulator.utils.SizeUnit;
@@ -683,5 +686,42 @@ public class EnergyTestDIST2
         
         // PESOS TC 500ms
         // Total energy: 2599029.532406005
+        
+        plotTailLatency( type, mode, timeBudget );
+    }
+    
+    public static void plotTailLatency( Type type, Mode mode, long time_budget ) throws IOException
+    {
+        final int percentile = 95;
+        
+        Plotter plotter = new Plotter( "DISTRIBUTED Tail Latency " + percentile + "-th Percentile", 800, 600 );
+        plotter.setAxisName( "Time (h)", percentile + "th-tile response time (ms)" );
+        double yRange = time_budget * 1000d + 200000d;
+        plotter.setRange( Axis.Y, 0, yRange );
+        plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
+        plotter.setScaleY( 1000d );
+        
+        plotter.setRange( Axis.X, 0, TimeUnit.HOURS.toMicros( 24 ) );
+        plotter.setTicks( Axis.X, 23, 2 );
+        plotter.setScaleX( TimeUnit.HOURS.toMicros( 1 ) );
+        
+        List<Pair<Double, Double>> points = new ArrayList<>();
+        for(int i = 0; i <= 1; i++) {
+            points.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), time_budget * 1000d ) );
+        }
+        plotter.addPlot( points, Color.YELLOW, Line.DASHED, "Tail latency (" + time_budget + "ms)" );
+        
+        List<Pair<Double,Double>> percentiles = Utils.getPercentiles( percentile, TimeUnit.MINUTES.toMicros( 5 ),
+                                                                      "Results/Distributed_Tail_Latency.txt",
+                                                                      "Results/Distributed_Tail_Latency_" + percentile + "th_Percentile.txt" );
+        switch ( type ) {
+            case PESOS   : plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms)" ); break;
+            case PERF    : plotter.addPlot( percentiles, "PERF" ); break;
+            case CONS    : plotter.addPlot( percentiles, "CONS (t=" + time_budget + "ms)" ); break;
+            case PEGASUS : plotter.addPlot( percentiles, "PEGASUS (t=" + time_budget + "ms)" ); break;
+            default      : break;
+        }
+        
+        plotter.setVisible( true );
     }
 }

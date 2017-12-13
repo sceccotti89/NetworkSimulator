@@ -279,7 +279,7 @@ public class EnergyCPU extends CPU
                 if (q != null) {
                     q.setCoreId( coreId );
                     queryQueue.add( q );
-                    // Here has the meaning of execute the query.
+                    // Here has the meaning of executing the query.
                     if (updateFrequency) {
                         cpu.computeTime( q, this );
                     }
@@ -329,9 +329,9 @@ public class EnergyCPU extends CPU
                 } else {
                     if (hasMoreQueries()) {
                         cpu.computeTime( getFirstQueryInQueue(), this );
-                    } else {
+                    }/* else {
                         startJobStealing( time );
-                    }
+                    }*/
                 }
                 
                 return true;

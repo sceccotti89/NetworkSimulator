@@ -337,8 +337,8 @@ public class EnergyTestMONO
         //model = loadModel( Type.MY_MODEL, Mode.TIME_CONSERVATIVE,  500 );
         //model = loadModel( Type.MY_MODEL, Mode.TIME_CONSERVATIVE, 1000 );
         
-        model = loadModel( Type.PERF );
-        //model = loadModel( Type.CONS );
+        //model = loadModel( Type.PERF );
+        model = loadModel( Type.CONS );
         
         //while (true) {
             //System.out.println( "SEED: " + ClientGenerator.SEED );
@@ -522,79 +522,75 @@ public class EnergyTestMONO
         
         System.out.println( "QUERIES: " + cpu.getExecutedQueries() );
         
-        plotTailLatency( 95, model.getTimeBudget().getTimeMillis(), model.getMode().toString() );
+        plotTailLatency( model.getType(), model.getMode(), model.getTimeBudget() );
         
-        // PARAMETERS                                                                    0.03 0.03 0.01
-        //              COEFFICIENTS           QUERY_FILE            NORMALIZED             PARAMETER                      MATTEO               IDLE 0
+        // PARAMETERS                         0.03 0.03 0.01 (NOW: TODO)
+        //                QUERY_FILE            PARAMETER
         //
         // TIME CONSERVATIVE 500ms
         // TARGET: 601670
         // 
-        // SIMULATOR:  754304.0207093941    594471.46526191400    477342.23502861796     541913.46662896510 (10%)     528119.30975986700
-        // IDLE:       196257.8677944194     75247.89537985546     75247.89537980038      71066.81117570659            75247.89537980038    36100 Joule in meno
+        // SIMULATOR:  510183.06404994790
+        // IDLE:        48653.39354192962
         
         // TIME CONSERVATIVE 1000ms
         // TARGET: 443730
         //
-        // SIMULATOR:  647974.3624506982    468742.25049613975    293876.55404496676     436421.00188829670 (5%)      396748.66580365730
-        // IDLE:       159577.0287529062     61183.97035269940     61183.97035269940      58061.62555988143            61183.97035273697
+        // SIMULATOR:  384469.73002268150
+        // IDLE:        39627.18491384348
         
         // ENERGY CONSERVATIVE 500ms
         // TARGET: 531100
         //
-        // SIMULATOR:  719986.3432093372    548442.27624212660    401489.20500958500     503171.36868913420 (5%)      481063.69885676424
-        // IDLE:       178953.7990861060     68613.28364962358     68613.28364962358      64970.61726727840            68613.28364967453
+        // SIMULATOR:  469209.54237407040
+        // IDLE:        44385.01033179365
         
         // ENERGY CONSERVATIVE 1000ms
         // TARGET: 412060
         //
-        // SIMULATOR:  642008.7743643910    458369.63022473130    270107.72210220364     427332.62510339730 (5%)
-        // IDLE:       152041.1380861678     58294.60892807464     58294.60892807464      55344.06185887506
+        // SIMULATOR:  371587.08914869634
+        // IDLE:        37802.37742955076
         
         // PERF
         // TARGET: 790400
         //
-        // SIMULATOR: 1145401.6003241960    992317.15024121070    940141.72685316140     862323.60355950530 (10%)     954884.43320349800
-        // IDLE:       247582.8117109840     94926.56637327410     94926.56637327410      82491.18617838359            75247.89537980030    60560 Joule in meno
+        // SIMULATOR:  949242.00703909280
+        // IDLE:        61336.88540427402
         
         // CONS
         // TARGET: 575000
         // 
-        // SIMULATOR:  911862.87644774050   557117.85926009370    639790.48538287170     510740.82836311805 (12%)
-        // IDLE:       207028.73735399803    70245.49618359195     79377.59104444605      74404.69254638738
+        // SIMULATOR:  457310.72095110260
+        // IDLE:        45471.40043715234
         
         // LOAD SENSITIVE TC 500ms
         // TARGET: 
         //
-        // SIMULATOR:  604005.33409397130 (2% in piu' di PESOS TC 500ms)
-        // IDLE:        77181.24141460801
+        // SIMULATOR:  
+        // IDLE:       
         
         // LOAD SENSITIVE TC 1000ms
         // TARGET: 
         //
-        // SIMULATOR:  445819.36355780874 (5% in meno di PESOS TC 1000ms)
-        // IDLE:        62591.81413098734
+        // SIMULATOR:  
+        // IDLE:       
         
         // Con la tecnica nuova (quella di scegliere il core con la minor frequenza predittata)
-        //600729.1560297232J
-        //587644.5832437798J
-        // 13085 (2%) Joule in meno!!
-        // Si arriva a un netto 10% (circa 40k Joule) in meno per TC 1000ms
+        // OLD: 
+        // NEW: 
         
         // Con il JOB STEALING
-        //600729.1560297232J
-        //582700.8963847428J
-        // 18029 (3%) Joule in meno!!
-        // Si arriva a un netto 11% (circa 50k Joule) in meno per TC 1000ms
+        // OLD: 
+        // NEW: 
         
         // Nuova strategia (MY_MODEL): prendo il massimo tra il budget predittato da PESOS e da LOAD_SENSITIVE
         // La Tail Latency e' rispettata.
         //
-        // 582892.3328821139 (circa il 3% meglio di PESOS TC 500ms)
-        // 439574.9182948345 (circa il 6% meglio di PESOS TC 1000ms)
+        // 500ms:  
+        // 1000ms: 
         
-        //SINGOLA CODA
-        //592223.9542908694
+        // PESOS SINGOLA CODA
+        // 
     }
     
     public static void testSingleCore( CPUModel model ) throws Exception
@@ -666,7 +662,7 @@ public class EnergyTestMONO
         plotter.setTicks( Axis.Y, 10 );
         plotter.setTicks( Axis.X, 23, 2 );
         plotter.setRange( Axis.Y, 0, 1800 );
-        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
+        plotter.setScaleX( TimeUnit.HOURS.toMicros( 1 ) );
         plotter.setVisible( true );
         
         sim.start( duration, false );
@@ -688,50 +684,67 @@ public class EnergyTestMONO
         System.out.println( "QUERIES: " + totalQueries );
     }
     
-    public static void plotTailLatency( int PERCENTILE, long time_budget, String mode ) throws IOException
+    public static void plotTailLatency( Type type, Mode mode, Time timeBudget ) throws IOException
     {
+        final int percentile = 95;
         final double interval = TimeUnit.MINUTES.toMicros( 5 );
+        long time_budget = (timeBudget == null) ? 1000000 : timeBudget.getTimeMillis();
         
-        List<Pair<Double, Double>> points = new ArrayList<>();
-        for(int i = 0; i <= 1; i++) {
-            points.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), time_budget * 1000d ) );
-        }
-        
-        // Using NULL the percentiles will not be saved on file.
-        List<Pair<Double,Double>> pesosPercentiles = Utils.getPercentiles( PERCENTILE, interval,
-                                                                           "Log/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
-                                                                           "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
-        //List<Pair<Double,Double>> perfPercentiles = Utils.getPercentiles( PERCENTILE, interval,
-        //                                                                  "Log/Perf_Tail_Latency.log",
-        //                                                                  "Results/Perf_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
-        //List<Pair<Double,Double>> consPercentiles = Utils.getPercentiles( PERCENTILE, interval,
-        //                                                                  "Log/CONS_Tail_Latency.log",
-        //                                                                  "Results/CONS_Latency_" + PERCENTILE + "th_Percentile.txt" );
-        //List<Pair<Double,Double>> loadSensitivePercentiles = Utils.getPercentiles( PERCENTILE, interval,
-        //                                                                           "Log/LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
-        //                                                                           "Results/LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
-        //List<Pair<Double,Double>> myPercentiles = Utils.getPercentiles( PERCENTILE, interval,
-        //                                                                "Log/MY_Model_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
-        //                                                                "Results/MY_Model_" + mode + "_" + time_budget + "ms_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
-        
-        Plotter plotter = new Plotter( "Tail Latency " + PERCENTILE + "-th Percentile", 800, 600 );
-        plotter.setAxisName( "Time (h)", PERCENTILE + "th-tile response time (ms)" );
-        double yRange = time_budget * 1000d + 200000d;
+        Plotter plotter = new Plotter( "DISTRIBUTED Tail Latency " + percentile + "-th Percentile", 800, 600 );
+        plotter.setAxisName( "Time (h)", percentile + "th-tile response time (ms)" );
+        double yRange = time_budget + 200000d;
         plotter.setRange( Axis.Y, 0, yRange );
         plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
         plotter.setScaleY( 1000d );
         
         plotter.setRange( Axis.X, 0, TimeUnit.HOURS.toMicros( 24 ) );
-        plotter.setTicks( Axis.X, 24, 2 );
-        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
+        plotter.setTicks( Axis.X, 23, 2 );
+        plotter.setScaleX( TimeUnit.HOURS.toMicros( 1 ) );
         
-        //plotter.addPlot( percentiles, Line.UNIFORM, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
-        plotter.addPlot( pesosPercentiles, Line.UNIFORM, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
-        //plotter.addPlot( perfPercentiles, Line.UNIFORM, "Perf" );
-        //plotter.addPlot( consPercentiles, Line.UNIFORM, "CONS" );
-        //plotter.addPlot( loadSensitivePercentiles, Line.UNIFORM, "LS (" + mode + ", t=" + time_budget + "ms)" );
-        //plotter.addPlot( myPercentiles, Line.UNIFORM, "MY Model (" + mode + ", t=" + time_budget + "ms)" );
-        plotter.addPlot( points, Color.YELLOW, Line.DASHED, "Tail latency (" + time_budget + "ms)" );
+        List<Pair<Double, Double>> tl_500ms = new ArrayList<>();
+        List<Pair<Double, Double>> tl_1000ms = new ArrayList<>();
+        for(int i = 0; i <= 1; i++) {
+            tl_500ms.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), 500000d ) );
+            tl_1000ms.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), 1000000d ) );
+        }
+        plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
+        plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
+        
+        List<Pair<Double,Double>> percentiles;
+        switch ( type ) {
+            case PESOS :
+                percentiles = Utils.getPercentiles( percentile, interval,
+                                                    "Log/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
+                                                    "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
+                break;
+            case PERF :
+                percentiles = Utils.getPercentiles( percentile, interval,
+                                                    "Log/PERF_Tail_Latency.log",
+                                                    "Results/PERF_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "PERF" );
+                break;
+            case CONS :
+                percentiles = Utils.getPercentiles( percentile, interval,
+                                                    "Log/CONS_Tail_Latency.log",
+                                                    "Results/CONS_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "CONS" );
+                break;
+            case LOAD_SENSITIVE :
+                percentiles = Utils.getPercentiles( percentile, interval,
+                                                    "Log/LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
+                                                    "Results/LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "LOAD_SENSITIVE (" + mode + ", t=" + time_budget + "ms)" );
+                break;
+            case MY_MODEL :
+                percentiles = Utils.getPercentiles( percentile, interval,
+                                                    "Log/MY_Model_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
+                                                    "Results/MY_Model_" + mode + "_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );                
+                plotter.addPlot( percentiles, "MY_Model (" + mode + ", t=" + time_budget + "ms)" );
+                break;
+            default : break;
+        }
+        
         plotter.setVisible( true );
     }
 }

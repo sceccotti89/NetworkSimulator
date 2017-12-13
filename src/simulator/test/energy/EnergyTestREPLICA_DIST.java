@@ -976,8 +976,8 @@ public class EnergyTestREPLICA_DIST
         plotter.setScaleY( 1000d );
         
         plotter.setRange( Axis.X, 0, TimeUnit.HOURS.toMicros( 24 ) );
-        plotter.setTicks( Axis.X, 24, 2 );
-        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
+        plotter.setTicks( Axis.X, 23, 2 );
+        plotter.setScaleX( TimeUnit.HOURS.toMicros( 1 ) );
         
         // TODO Completare inserendo il file in input
         plotter.addPlot( "Log/", "PESOS (" + mode + ", t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ")" );
@@ -999,8 +999,8 @@ public class EnergyTestREPLICA_DIST
         plotter.setScaleY( 1000d );
         
         plotter.setRange( Axis.X, 0, TimeUnit.HOURS.toMicros( 24 ) );
-        plotter.setTicks( Axis.X, 24, 2 );
-        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
+        plotter.setTicks( Axis.X, 23, 2 );
+        plotter.setScaleX( TimeUnit.HOURS.toMicros( 1 ) );
         
         List<Pair<Double, Double>> points = new ArrayList<>();
         for(int i = 0; i <= 1; i++) {
