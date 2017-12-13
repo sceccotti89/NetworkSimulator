@@ -25,22 +25,29 @@ public class PEGASUS
     private static final Time HOLD_TIME = new Time( 5, TimeUnit.MINUTES );*/
     
     private Map<Long,NodeInfo> _nodes;
+    private long _target;
     
-    public PEGASUS( List<EnergyCPU> nodes, long target )
+    public PEGASUS( long target )
     {
         //this.nodes = nodes;
         //this.target = target;
         //queries = new LinkedList<>();
         
-        long index = 0;
-        _nodes = new HashMap<>( nodes.size() );
-        for (EnergyCPU node : nodes) {
-            _nodes.put( index++, new NodeInfo( node, target ) );
-        }
+        //long index = 0;
+        _target = target;
+        _nodes = new HashMap<>();
+        //for (EnergyCPU node : nodes) {
+        //    _nodes.put( index++, new NodeInfo( node, target ) );
+        //}
+    }
+    
+    public void addNode( long nodeId, EnergyCPU node ) {
+        _nodes.put( nodeId, new NodeInfo( node, _target ) );
     }
     
     public void setCompletedQuery( Time now, long nodeId, Time completionTime )
     {
+        //System.out.println( "NODES: " + _nodes + ", NODE_ID: " + nodeId );
         _nodes.get( nodeId ).setCompletedQuery( now, completionTime );
         
         /*final Time lowerBound = now.clone().subTime( WINDOW );
@@ -155,27 +162,34 @@ public class PEGASUS
                 }
             }
             
+            // TODO Lavorare a una formula per modificare la frequenza in base alla potenza.
+            
             final long instantaneous = completionTime.getTimeMicros();
             average = average + ((instantaneous - average) / size);
             if (average > target) {
                 // Set max power, WAIT 5 minutes.
-                node.setFrequency( now, node.getMaxFrequency() );
+                //node.setFrequency( now, node.getMaxFrequency() );
+                node.setPower( now, node.getMaxPower() );
                 holdingTime = now.clone();
                 power_holding = true;
             } else if (instantaneous > 1.35d * target) {
                 // Set max power.
-                node.setFrequency( now, node.getMaxFrequency() );
+                //node.setFrequency( now, node.getMaxFrequency() );
+                node.setPower( now, node.getMaxPower() );
             } else if (instantaneous > target) {
                 // Increase power by 7% => increase frequency by 3.
-                node.increaseFrequency( now, 3 );
+                //node.increaseFrequency( now, 3 );
+                node.setPower( now, node.getPower() + node.getPower() * 0.7 );
             } else if(instantaneous >= 0.85 * target && instantaneous <= target) {
                 // Keep current power.
             } else if (instantaneous < 0.60 * target) {
                 // Lower power by 3% => decrease frequency by 2.
-                node.decreaseFrequency( now, 2 );
+                //node.decreaseFrequency( now, 2 );
+                node.setPower( now, node.getPower() - node.getPower() * 0.3 );
             } else if (instantaneous < 0.85 * target) {
                 // Lower power by 1% => decrease frequency by 1.
-                node.decreaseFrequency( now, 1 );
+                //node.decreaseFrequency( now, 1 );
+                node.setPower( now, node.getPower() - node.getPower() * 0.1 );
             }
         }
     }

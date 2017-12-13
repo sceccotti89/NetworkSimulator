@@ -9,9 +9,14 @@ public abstract class EnergyModel
     protected static double cores;
     
     /** Static power of all power consuming components (except the cores). */
-    public static final double Ps = 0.84d; //1.3d;
+    private static final double Ps = 0.84d; //1.3d;
     /** Static power of a core. */
-    //private static final double Pind = 0.1d;
+    private static final double Pind = 0.1d;
+    /***/
+    private static final double alpha = 1.49;
+    /***/
+    private static final double beta = 2.1;
+    
     
     /**
      * Creates a new energy model.
@@ -43,6 +48,14 @@ public abstract class EnergyModel
     /**
      * Returns the static power of all power consuming components (except the cores),
      * expressed in Joules.
+    */
+    public static double getStaticPower() {
+        return Ps;
+    }
+    
+    /**
+     * Returns the static power of all power consuming components (except the cores),
+     * expressed in Joules.
      * 
      * @param interval    static power calculated for the given interval.
     */
@@ -59,6 +72,43 @@ public abstract class EnergyModel
     */
     public static double getStaticPower( double interval ) {
         return (Ps / cores) * (interval / Utils.MILLION);
+    }
+    
+    /**
+     * Returns the static power of a core, expressed in Joules.
+    */
+    public static double getCoreStaticPower() {
+        return Pind;
+    }
+    
+    /**
+     * Returns the static power of a core, expressed in Joules.
+     * 
+     * @param interval    static power calculated for the given interval.
+     *                    Interval must be expressed in microseconds.
+    */
+    public static double getCoreStaticPower( Time interval ) {
+        return getCoreStaticPower( interval.getTimeMicros() );
+    }
+    
+    /**
+     * Returns the static power of a core, expressed in Joules.
+     * 
+     * @param interval    static power calculated for the given interval.
+     *                    Interval must be expressed in microseconds.
+    */
+    public static double getCoreStaticPower( double interval ) {
+        return (Pind / cores) * (interval / Utils.MILLION);
+    }
+    
+    /***/
+    public static double getAlpha() {
+        return alpha;
+    }
+    
+    /***/
+    public static double getBeta() {
+        return beta;
     }
     
     /**

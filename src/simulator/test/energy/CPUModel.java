@@ -177,7 +177,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         
         String line = null;
         while ((line = predictorReader.readLine()) != null) {
-            String[] values = line.split( "\\t+" );
+            String[] values = line.split( "[\\s+|\\t+]" );
             long queryID    = Long.parseLong( values[0] );
             int terms       = Integer.parseInt( values[1] );
             int postings    = Integer.parseInt( values[2] );
@@ -213,7 +213,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         
         String line;
         while ((line = reader.readLine()) != null) {
-            String[] values = line.split( "\\s+" );
+            String[] values = line.split( "[\\s+|\\t+]" );
             
             long queryID = (long) Double.parseDouble( values[0] );
             QueryInfo query = queries.get( queryID );
@@ -222,7 +222,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
                 double qTime  = Double.parseDouble( values[i] ); // in ms.
                 double energy = Double.parseDouble( values[i+1] );
                 //double watt = energy / (qTime / 1000);
-                double Ps = (EnergyModel.Ps / 1000) * qTime;
+                double Ps = (EnergyModel.getStaticPower() / 1000) * qTime;
                 if (energy <= Ps) {
                     System.out.println( "ID: " + queryID + ", FREQ: " + (i/2) + ", J: " + energy + ", Ps: " + Ps );
                 }

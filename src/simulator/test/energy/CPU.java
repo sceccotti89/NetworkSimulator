@@ -29,6 +29,10 @@ public abstract class CPU extends Device<QueryInfo,Long>
     protected Map<Long,List<QueryInfo>> coreQueue;
     protected LinkedList<QueryReference> queries;
     
+    protected double minPower;
+    protected double maxPower;
+    protected double currentPower;
+    
     
     
     public CPU( String name, List<Long> frequencies ) {
@@ -37,6 +41,72 @@ public abstract class CPU extends Device<QueryInfo,Long>
     
     public void setEnergyModel( EnergyModel model ) {
         energyModel = model;
+    }
+    
+    public double getPower() {
+        return currentPower;
+    }
+    
+    public void setPower( Time time, double maxPower )
+    {
+        double power = maxPower - EnergyModel.getStaticPower();
+        double activeCores = 0;
+        for (Core core : getCores()) {
+            if (core.isWorking( time )) {
+                activeCores++;
+                power -= EnergyModel.getCoreStaticPower();
+            }
+        }
+        power /= activeCores * EnergyModel.getAlpha();
+        double targetFrequency = Math.pow( power, 1/EnergyModel.getBeta() );
+        // Find the highest frequency less than the target.
+        List<Long> frequencies = getFrequencies();
+        for (int i = frequencies.size() - 1; i >= 0; i--) {
+            if (frequencies.get( i ) < targetFrequency) {
+                setFrequency( frequencies.get( i ) );
+                break;
+            }
+        }
+    }
+    
+    public void setMaxPower( double power ) {
+        currentPower = maxPower = power;
+    }
+    
+    public double getMaxPower() {
+        return maxPower;
+    }
+    
+    public void setMinPower( double power ) {
+        minPower = power;
+    }
+    
+    public double getMinPower() {
+        return minPower;
+    }
+    
+    public void setFrequency( Time now, long frequency )
+    {
+        for (Core core : getCores()) {
+            core.setFrequency( now, frequency );
+        }
+        setFrequency( frequency );
+    }
+    
+    public void increaseFrequency( Time now, int steps )
+    {
+        increaseFrequency( steps );
+        for (Core core : getCores()) {
+            core.setFrequency( now, getFrequency() );
+        }
+    }
+    
+    public void decreaseFrequency( Time now, int steps )
+    {
+        decreaseFrequency( steps );
+        for (Core core : getCores()) {
+            core.setFrequency( now, getFrequency() );
+        }
     }
     
     public void setCentralizedQueue( boolean centralized )
@@ -373,6 +443,10 @@ public abstract class CPU extends Device<QueryInfo,Long>
         {
             setTime( time );
             this.state = state;
+        }
+        
+        public boolean isWorking( Time time ) {
+            return currentQuery != null && currentQuery.getEndTime().compareTo( time ) > 0;
         }
         
         public int getExecutedQueries() {

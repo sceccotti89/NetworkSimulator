@@ -30,6 +30,12 @@ public class EnergyCPU extends CPU
     
     
     
+    /*public EnergyCPU( String specFile ) {
+        // TODO Creare un costruttore che prenda come parametri il file contenente le specifiche
+        // TODO della CPU.
+        
+    }*/
+    
     public EnergyCPU( String machine, int cores, int contexts,
                       String frequencies_file ) throws IOException {
         this( machine, cores, contexts, readFrequencies( frequencies_file ) );
@@ -45,6 +51,9 @@ public class EnergyCPU extends CPU
         
         setFrequency( getMaxFrequency() );
         coresMap = new HashMap<>( (int) _cores );
+        
+        setMaxPower( 84d );
+        setMinPower(  2d );
         
         setEnergyModel( new QueryEnergyModel( cores ) );
         //setEnergyModel( new CoefficientEnergyModel( cores ) );
@@ -170,30 +179,6 @@ public class EnergyCPU extends CPU
             currentCoreId = core.getId();
             long frequency = model.eval( null );
             core.setFrequency( time, frequency );
-        }
-    }
-    
-    public void setFrequency( Time now, long frequency )
-    {
-        for (Core core : getCores()) {
-            core.setFrequency( now, frequency );
-        }
-        setFrequency( frequency );
-    }
-    
-    public void increaseFrequency( Time now, int steps )
-    {
-        increaseFrequency( steps );
-        for (Core core : getCores()) {
-            core.setFrequency( now, getFrequency() );
-        }
-    }
-    
-    public void decreaseFrequency( Time now, int steps )
-    {
-        decreaseFrequency( steps );
-        for (Core core : getCores()) {
-            core.setFrequency( now, getFrequency() );
         }
     }
     

@@ -57,6 +57,9 @@ public abstract class Agent extends NetworkAgent
         _eventQueue = new ArrayList<>();
     }
     
+    /**
+     * Returns the unique agent identifier.
+    */
     public long getId() {
         return _id;
     }

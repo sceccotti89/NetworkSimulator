@@ -157,7 +157,7 @@ public class Utils
      * @param inputFileName     the input file name.
      *                          The file must be formatted in such a way that each line contains
      *                          only 2 values: the time and its associated value,
-     *                          separated by a space.
+     *                          separated by whitespaces (tabs or spaces).
      * @param outputFileName    where to save the generated output.
      *                          If {@code null} the generated output will be not saved.
      *                        

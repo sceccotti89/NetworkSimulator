@@ -1,9 +1,13 @@
 
 package simulator.test.energy;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -14,32 +18,42 @@ import simulator.core.Simulator;
 import simulator.events.Event;
 import simulator.events.EventHandler;
 import simulator.events.Packet;
+import simulator.events.generator.CBRGenerator;
 import simulator.events.generator.EventGenerator;
 import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
-import simulator.graphics.AnimationNetwork;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
+import simulator.graphics.plotter.Plotter.Line;
 import simulator.network.NetworkAgent;
 import simulator.network.NetworkLayer;
+import simulator.test.energy.CPUModel.CONSmodel;
 import simulator.test.energy.CPUModel.Mode;
+import simulator.test.energy.CPUModel.PEGASUSmodel;
+import simulator.test.energy.CPUModel.PERFmodel;
 import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
+import simulator.test.energy.CPUModel.Type;
 import simulator.topology.NetworkTopology;
-import simulator.utils.Sampler.Sampling;
+import simulator.utils.Pair;
 import simulator.utils.Sampler;
+import simulator.utils.Sampler.Sampling;
 import simulator.utils.SizeUnit;
 import simulator.utils.Time;
 import simulator.utils.Utils;
+import simulator.utils.resources.ResourceLoader;
 
 public class EnergyTestDIST
 {
-    private static final int NODES = 1;
+    private static final int NODES = 5;
     private static final int CPU_CORES = 4;
     
-    private static final Class<EnergyCPU> CPU = EnergyCPU.class;
-    
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
+    
+    private static boolean PESOS_CONTROLLER = true;
+    private static boolean PEGASUS_CONTROLLER = false;
+    
+    private static PESOScontroller controller;
     
     
     
@@ -127,46 +141,6 @@ public class EnergyTestDIST
     
     
     
-    private static class AnycastGenerator extends EventGenerator
-    {
-        public AnycastGenerator( Time duration,
-                                 Packet reqPacket,
-                                 Packet resPacket )
-        {
-            super( duration, Time.ZERO, reqPacket, resPacket );
-            setDelayedResponse( true );
-            setMaximumFlyingPackets( 1 );
-        }
-        
-        @Override
-        public Packet makePacket( Event e, long destination )
-        {
-            if (e instanceof RequestEvent) {
-                return super.makePacket( e, destination );
-            } else {
-                // New request from client: clone the packet.
-                return e.getPacket().clone();
-            }
-        }
-        
-        @Override
-        protected int selectDestination( Time time )
-        {
-            double minUtilization = Double.MAX_VALUE;
-            int nextDestination = -1;
-            for (int i = 0; i < _destinations.size(); i++) {
-                Agent agent = _destinations.get( i );
-                double nodeUtilization = agent.getNodeUtilization( time );
-                if (nodeUtilization < minUtilization) {
-                    nextDestination = i;
-                    minUtilization = nodeUtilization;
-                }
-            }
-            
-            return nextDestination;
-        }
-    }
-    
     private static class SwitchGenerator extends EventGenerator
     {
         public SwitchGenerator( Time duration )
@@ -183,25 +157,80 @@ public class EnergyTestDIST
                 packet = getResponsePacket();
             } else {
                 // New request from client: get a copy.
-                //System.out.println( "INPUT EVENT: " + e + ", PACKET: " + e.getPacket() );
                 packet = e.getPacket();
-                /*if (packet.hasContent( Global.QUERY_ID ) && PREDICTION_ON_SWITCH) {
-                    //System.out.println( "INOLTRO RICHIESTA: " + packet.getContent( Global.QUERY_ID ) );
-                    //System.out.println( "DESTINATION: " + destination );
-                    
-                }*/
             }
             
             return packet;
         }
     }
     
-    private static class SwitchAgent extends Agent
+    private static class SwitchAgent extends Agent implements EventHandler
     {
-        public SwitchAgent( long id, EventGenerator evGenerator )
+        private PrintWriter writer;
+        private List<QueryLatency> queries;
+        private PEGASUS pegasus;
+        
+        public SwitchAgent( long id, long target, EventGenerator evGenerator ) throws IOException
         {
             super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( evGenerator );
+            addEventHandler( this );
+            
+            writer = new PrintWriter( "Log/Distributed_Latency.txt", "UTF-8" );
+            queries = new ArrayList<>( 1 << 10 );
+            
+            if (PEGASUS_CONTROLLER) {
+                pegasus = new PEGASUS( target );
+            }
+        }
+        
+        /**
+         * Method used to connect PEGASUS to a remote node.
+         * 
+         * @param nodeId    destination node identifier.
+         * @param node      destination CPU node.
+        */
+        public void connectTo( long nodeId, EnergyCPU node )
+        {
+            if (pegasus != null) {
+                pegasus.addNode( nodeId, node );
+            }
+        }
+        
+        @Override
+        public Time handle( Event e, EventType type )
+        {
+            if (type == EventType.RECEIVED) {
+                long queryId = e.getPacket().getContent( Global.QUERY_ID );
+                if (e.getSource().getId() == 0) {
+                    queries.add( new QueryLatency( queryId, e.getTime() ) );
+                    //System.out.println( "RICEVUTO: " + p.getContents() );
+                } else {
+                    QueryLatency query = null;
+                    int index;
+                    for (index = 0; index < queries.size(); index++) {
+                        QueryLatency ql = queries.get( index );
+                        if (ql.id == queryId) {
+                            query = ql;
+                            break;
+                        }
+                    }
+                    
+                    if (++query.count == NODES) {
+                        // Save on file and remove from list.
+                        Time endTime = e.getTime();
+                        Time completionTime = e.getTime().subTime( query.startTime );
+                        writer.println( endTime + " " + completionTime );
+                        queries.remove( index );
+                        
+                        if (PEGASUS_CONTROLLER) {
+                            pegasus.setCompletedQuery( endTime, e.getSource().getId(), completionTime );
+                        }
+                    }
+                }
+            }
+            
+            return _node.getTcalc();
         }
         
         @Override
@@ -213,12 +242,51 @@ public class EnergyTestDIST
             }
             return utilization;
         }
+        
+        @Override
+        public void shutdown() throws IOException
+        {
+            writer.close();
+            queries.clear();
+            super.shutdown();
+        }
+        
+        private static class QueryLatency
+        {
+            private long id;
+            private Time startTime;
+            private int count;
+            
+            public QueryLatency( long id, Time startTime )
+            {
+                this.id = id;
+                this.startTime = startTime;
+                count = 0;
+            }
+        }
     }
     
     
     
     
     
+    
+    private static class ServerConsGenerator extends CBRGenerator
+    {
+        public static final Time PERIOD = new Time( CONSmodel.PERIOD, TimeUnit.MILLISECONDS );
+        
+        public ServerConsGenerator( Time duration ) {
+            super( Time.ZERO, duration, PERIOD, PACKET, PACKET );
+        }
+        
+        @Override
+        public Packet makePacket( Event e, long destination )
+        {
+            Packet packet = getRequestPacket();
+            packet.addContent( Global.CONS_CONTROL, "" );
+            return packet;
+        }
+    }
     
     private static class MulticoreGenerator extends EventGenerator
     {
@@ -240,6 +308,8 @@ public class EnergyTestDIST
     
     private static class MulticoreAgent extends Agent implements EventHandler
     {
+        private long _versionId = 0;
+        
         public MulticoreAgent( long id, EventGenerator evtGenerator )
         {
             super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
@@ -251,22 +321,31 @@ public class EnergyTestDIST
         public void addEventOnQueue( Event e )
         {
             Packet p = e.getPacket();
-            EnergyCPU cpu = getDevice( CPU );
-            PESOSmodel model = (PESOSmodel) cpu.getModel();
+            EnergyCPU cpu = getDevice( EnergyCPU.class );
+            CPUModel model = (CPUModel) cpu.getModel();
+            
+            //System.out.println( "RECEIVED QUERY: " + e.getPacket().getContents() );
             
             if (p.hasContent( Global.PESOS_TIME_BUDGET )) {
-                // TODO implementare
-                /*model.timeBudget = p.getContent( Global.PESOS_TIME_BUDGET );
-                long coreID = p.getContent( Global.PESOS_TIME_BUDGET );
-                cpu.evalFrequency( e.getTime(), cpu.getCore( coreID ) );*/
+                //PESOSmessage message = p.getContent( Global.PESOS_TIME_BUDGET );
+                //PESOScore core = (PESOScore) cpu.getCore( message.getCoreID() );
+                //core.setTimeBudget( e.getTime(), message.getTimeBudget(), message.getQueryID() );
+            }
+            
+            if (p.hasContent( Global.CONS_CONTROL )) {
+                cpu.evalCONSparameters( e.getTime() );
             } else {
-                //System.out.println( "AGGIUNGO EVENTO: " + e );
                 QueryInfo query = model.getQuery( p.getContent( Global.QUERY_ID ) );
                 //System.out.println( "RECEIVED QUERY: " + p.getContent( Global.QUERY_ID ) );
-                System.out.println( "TIME: " + e.getTime() + ", AGGIUNTA QUERY AL NODO: " + getId() + ", QUERY: " + query );
                 query.setEvent( e );
-                query.setArrivalTime( e.getTime() );
-                cpu.addQuery( cpu.selectCore( e.getTime(), query ), query );
+                query.setArrivalTime( e.getArrivalTime() );
+                long coreID = cpu.selectCore( e.getArrivalTime(), query );
+                cpu.addQuery( coreID, query );
+                
+                if (PESOS_CONTROLLER) {
+                    long versionId = _versionId++ % Long.MAX_VALUE;
+                    controller.addQuery( e.getTime(), getId(), coreID, query.getId(), versionId );
+                }
             }
         }
         
@@ -274,38 +353,47 @@ public class EnergyTestDIST
         public Time handle( Event e, EventType type )
         {
             if (e instanceof ResponseEvent) {
-                EnergyCPU cpu = getDevice( CPU );
+                EnergyCPU cpu = getDevice( EnergyCPU.class );
                 if (type == EventType.GENERATED) {
                     QueryInfo query = cpu.getLastQuery();
+                    Packet p = e.getPacket();
+                    p.addContent( Global.QUERY_ID, query.getId() );
                     query.setEvent( e );
                 } else { // EventType.SENT event.
                     // Set the time of the cpu as (at least) the time of the sending event.
                     cpu.setTime( e.getTime() );
-                    cpu.checkQueryCompletion( e.getTime() );
+                    if (!PESOS_CONTROLLER) {
+                        cpu.checkQueryCompletion( e.getTime() );
+                    } else {
+                        for (long i = 0; i < CPU_CORES; i++) {
+                            if (cpu.getCore( i ).checkQueryCompletion( e.getTime() )) {
+                                controller.completedQuery( e.getTime(), getId(), i );
+                            }
+                        }
+                    }
                 }
             } else {
                 if (e.getPacket().hasContent( Global.QUERY_ID )) {
-                    System.out.println( "NODO: " + getId() + ", ESEGUO PROSSIMA QUERY SUL NODO: " + getId() );
                     // Compute the time to complete the query.
-                    EnergyCPU cpu = getDevice( CPU );
+                    EnergyCPU cpu = getDevice( EnergyCPU.class );
                     return cpu.timeToCompute( null );
                 } else {
                     return Time.ZERO;
                 }
             }
             
-            return null;
+            return _node.getTcalc();
         }
         
         @Override
         public double getNodeUtilization( Time time ) {
-            return getDevice( CPU ).getUtilization( time );
+            return getDevice( EnergyCPU.class ).getUtilization( time );
         }
         
         @Override
         public void shutdown() throws IOException
         {
-            EnergyCPU cpu = getDevice( CPU );
+            EnergyCPU cpu = getDevice( EnergyCPU.class );
             cpu.computeIdleEnergy( getEventScheduler().getTimeDuration() );
             super.shutdown();
         }
@@ -317,27 +405,203 @@ public class EnergyTestDIST
     
     
     
+    public static void createDistributedIndex() throws Exception
+    {
+        final String dir = "Models/Monolithic/PESOS/MaxScore/";
+        List<PrintWriter> writers = new ArrayList<>( NODES );
+        final double MIN_RANGE = 1;
+        final double MAX_RANGE = 2;
+        
+        Random rand = new Random();
+        List<Double> ranges = new ArrayList<>( NODES );
+        // Node 0 has the original index.
+        ranges.add( 0d );
+        for (int i = 1; i < NODES; i++) {
+            double value;
+            boolean found = false;
+            do {
+                value = (rand.nextDouble() * (MAX_RANGE-MIN_RANGE) + MIN_RANGE)/100d;
+                for (Double range : ranges) {
+                    if (range == value) {
+                        found = true;
+                        break;
+                    }
+                }
+            } while(found);
+            ranges.add( value );
+        }
+        
+        String file = dir + "predictions.txt";
+        InputStream loader = ResourceLoader.getResourceAsStream( file );
+        BufferedReader reader = new BufferedReader( new InputStreamReader( loader ) );
+        
+        for (int i = 1; i <= NODES; i++) {
+            writers.add( new PrintWriter( "Models/Distributed/Node_" + i + "/PESOS/MaxScore/predictions.txt", "UTF-8" ) );
+        }
+        
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            String[] values = line.split( "\\t+" );
+            long queryID    = Long.parseLong( values[0] );
+            int terms       = Integer.parseInt( values[1] );
+            int postings    = Integer.parseInt( values[2] );
+            for (int i = 0; i < NODES; i++) {
+                int difference = (int) (postings * ranges.get( i ));
+                if (i % 2 == 0) {
+                    difference *= -1;
+                }
+                postings = Math.max( 1, postings + difference );
+                writers.get( i ).println( queryID + "\t" + terms + "\t" + postings );
+            }
+        }
+        
+        for (int i = 0; i < NODES; i++) {
+            writers.get( i ).close();
+        }
+        writers.clear();
+        loader.close();
+        
+        file = dir + "time_energy_fit.txt";
+        loader = ResourceLoader.getResourceAsStream( file );
+        reader = new BufferedReader( new InputStreamReader( loader ) );
+        
+        for (int i = 1; i <= NODES; i++) {
+            writers.add( new PrintWriter( "Models/Distributed/Node_" + i + "/PESOS/MaxScore/time_energy.txt", "UTF-8" ) );
+        }
+        
+        while ((line = reader.readLine()) != null) {
+            String[] values = line.split( "\\s+" );
+            long queryID = (long) Double.parseDouble( values[0] );
+            for (int j = 0; j < NODES; j++) {
+                writers.get( j ).print( queryID + " " );
+            }
+            
+            for (int i = 1; i < values.length; i+=2) {
+                double qTime  = Double.parseDouble( values[i] );
+                double energy = Double.parseDouble( values[i+1] );
+                for (int j = 0; j < NODES; j++) {
+                    double difference = energy * ranges.get( j );
+                    if (j % 2 == 0) {
+                        difference *= -1;
+                    }
+                    energy += difference;
+                    
+                    difference = qTime * ranges.get( j );
+                    if (j % 2 == 0) {
+                        difference *= -1;
+                    }
+                    qTime += difference;
+                    
+                    if (i < values.length - 2) {
+                        writers.get( j ).print( qTime + " " + energy + " " );
+                    } else {
+                        writers.get( j ).print( qTime + " " + energy );
+                    }
+                }
+            }
+            
+            for (int j = 0; j < NODES; j++) {
+                writers.get( j ).println();
+            }
+        }
+        
+        for (int i = 0; i < NODES; i++) {
+            writers.get( i ).close();
+        }
+        writers.clear();
+        
+        loader.close();
+    }
+    
     public static void main( String[] args ) throws Exception
     {
-        Utils.VERBOSE = false;
+        //createDistributedIndex();
         
-        execute( Mode.TIME_CONSERVATIVE,  500 );
-        //execute( Mode.TIME_CONSERVATIVE, 1000 );
-        //execute( Mode.ENERGY_CONSERVATIVE,  500 );
-        //execute( Mode.ENERGY_CONSERVATIVE, 1000 );
+        if (System.getProperty( "showGUI" ) != null) {
+            Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
+        }
+        
+        Utils.VERBOSE = false;
+        PESOS_CONTROLLER = false;
+        
+        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
+        //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
+        //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
+        
+        testNetwork( Type.PERF, null, 0 );
+        //testNetwork( Type.CONS, null, 0 );
+        
+        //testNetwork( Type.PEGASUS, null,  500 );
+        //testNetwork( Type.PEGASUS, null, 1000 );
+        
+        /* Controller OFF
+        500ms => pochissimo sopra la tail latency
+        CPU: 0, Energy: 510184.29294978790
+        CPU: 1, Energy: 517436.83143501723
+        CPU: 2, Energy: 505464.09523287165
+        CPU: 3, Energy: 515423.68479431875
+        CPU: 4, Energy: 505098.75745063850
+        
+        490ms => tail latency rispettata
+        CPU: 0, Energy: 514987.66590927080
+        CPU: 1, Energy: 522922.51765498940
+        CPU: 2, Energy: 510727.52246600826
+        CPU: 3, Energy: 520718.18692186824
+        CPU: 4, Energy: 510331.94529571820
+        */
+        
+        /* Controller ON
+        500ms
+        CPU: 0, Energy: 509779.17505582990
+        CPU: 1, Energy: 516857.99737529930
+        CPU: 2, Energy: 505372.26596979290
+        CPU: 3, Energy: 515128.59815541330
+        CPU: 4, Energy: 504986.23915390630
+        
+        490ms
+        CPU: 0, Energy: 514688.90826270124
+        CPU: 1, Energy: 522372.51843498480
+        CPU: 2, Energy: 510648.55334194500
+        CPU: 3, Energy: 520457.69276704575
+        CPU: 4, Energy: 510206.59131988365
+        */
+        
+        // PEGASUS 500ms
+        // 
+        
+        // PEGASUS 1000ms
+        // 
     }
     
-    private static void execute( Mode mode, long timeBudget ) throws Exception
+    private static CPUModel getModel( Type type, Mode mode, long timeBudget, int node )
     {
-        testMultiCore( timeBudget, mode );
-        //testSingleCore( timeBudget, mode );
-        //testAnimationNetwork( timeBudget, mode );
+        CPUModel model = null;
+        switch ( type ) {
+            case PESOS  : model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
+            case PERF   : model = new PERFmodel( "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
+            case CONS   : model = new CONSmodel( "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
+            case PEGASUS: model = new PEGASUSmodel( timeBudget, "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
+            default     : break;
+        }
+        return model;
     }
     
-    public static void testAnimationNetwork( long timeBudget, Mode mode ) throws Exception
+    private static CPUModel loadModel( Type type, Mode mode, long timeBudget, int node ) throws Exception
     {
-        NetworkTopology net = new NetworkTopology( "Topology/Animation/Topology_distributed_multiCore.json" );
-        net.setTrackingEvent( "Results/distr_multi_core.txt" );
+        CPUModel model = getModel( type, mode, timeBudget, node );
+        model.loadModel();
+        return model;
+    }
+    
+    public static void testNetwork( Type type, Mode mode, long timeBudget ) throws Exception
+    {
+        final Time duration = new Time( 24, TimeUnit.HOURS );
+        PEGASUS_CONTROLLER = type == Type.PEGASUS;
+        
+        //NetworkTopology net = new NetworkTopology( "Topology/Animation/Topology_distributed_multiCore.json" );
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_multiCore.json" );
+        //net.setTrackingEvent( "Results/distr_multi_core.txt" );
         System.out.println( net.toString() );
         
         Simulator sim = new Simulator( net );
@@ -347,293 +611,142 @@ public class EnergyTestDIST
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        EventGenerator switchGen = new SwitchGenerator( Time.INFINITE );
-        
         // Create switch.
-        Agent switchAgent = new SwitchAgent( 1, switchGen );
+        EventGenerator switchGen = new SwitchGenerator( Time.INFINITE );
+        SwitchAgent switchAgent = new SwitchAgent( 1, timeBudget * 1000, switchGen );
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
-        
-        final String modelType = "PESOS_" + mode + "_" + timeBudget + "ms";
-        final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         
         List<EnergyCPU> cpus = new ArrayList<>( NODES );
-        for (int i = 0; i < NODES; i++) {
-            EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
-            //cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
-            //cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
-            //cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
-            cpus.add( cpu );
-            
-            // Add the PESOS model to the corresponding cpu.
-            final String directory = "Models/Distributed/Node_" + (i+1) + "/PESOS/MaxScore/";
-            CPUModel model = new PESOSmodel( timeBudget, mode, directory );
-            model.loadModel();
-            cpu.setModel( model );
-            
-            EventGenerator sink = new MulticoreGenerator( Time.INFINITE );
-            Agent node = new MulticoreAgent( 2 + i, sink );
-            node.addDevice( cpu );
-            net.addAgent( node );
-            
-            node.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/" + modelType + "_Energy.log", Sampling.CUMULATIVE ) );
-            node.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
-            node.addSampler( Global.TAIL_LATENCY_SAMPLING, new Sampler( null, "Log/" + modelType + "_Tail_Latency.log", null ) );
-            
-            switchGen.connect( node );
+        
+        // Create PESOS controller.
+        if (type == Type.PESOS) {
+            controller = new PESOScontroller( timeBudget * 1000, mode, cpus, NODES, CPU_CORES );
         }
         
-        sim.start( new Time( 24, TimeUnit.HOURS ), false );
-        //sim.start( new Time( 13100, TimeUnit.MICROSECONDS ), false );
-        sim.close();
-        
-        // Show the animation.
-        AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );
-        an.loadSimulation( "Topology/Animation/Topology_distributed_multiCore.json", "./Results/distr_multi_core.txt" );
-        an.setTargetFrameRate( 90 );
-        an.setForceExit( false );
-        an.start();
-    }
-    
-    public static void testSingleCore( long timeBudget, Mode mode ) throws IOException
-    {
-        /*
-                                   / node_0   / node_2
-                                  / dynamic  / dynamic
-               1000Mb,0ms        /          /
-        client ---------- switch  ----------  --------- node_4
-          0ms               0ms  \          \          dynamic
-                                  \          \
-                                   \ node_1   \ node_3
-                                    dynamic    dynamic
-        
-                  / core_i_0  / core_i_2
-                 /  dynamic  /  dynamic
-                /           /
-        node_i  ----------
-          0ms   \           \
-                 \           \
-                  \ core_i_2  \ core_i_3
-                    dynamic     dynamic
-        */
-        
-        NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_singleCore.json" );
-        System.out.println( net.toString() );
-        
-        Simulator sim = new Simulator( net );
-        
-        
-        EventGenerator generator = new ClientGenerator( PACKET, PACKET );
-        Agent client = new ClientAgent( 0, generator );
-        net.addAgent( client );
-        
-        EventGenerator switchGen = new SwitchGenerator( Time.INFINITE );
-        Agent switchAgent = new SwitchAgent( 1, switchGen );
-        net.addAgent( switchAgent );
-        client.getEventGenerator( 0 ).connect( switchAgent );
-        
-        CPUModel model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/",
-                                               "predictions.txt", "time_energy.txt", "regressors.txt" );
-        model.loadModel();
-        String modelType = model.getModelType( true );
-        
-        Plotter plotter = new Plotter( "DISTRIBUTED SINGLE_CORE - " + model.getModelType( false ), 800, 600 );
-        List<EnergyCPU> cpus = new ArrayList<>( NODES * CPU_CORES );
+        CPUModel model = getModel( type, mode, timeBudget, 1 );
+        final String modelType = model.getModelType( true );
+        Plotter plotter = null;
+        if (Global.showGUI) {
+            plotter = new Plotter( "DISTRIBUTED VERSION - " + modelType, 800, 600 );
+        }
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
-        // Add the CPU nodes.
         for (int i = 0; i < NODES; i++) {
-            EventGenerator anyGen = new AnycastGenerator( Time.INFINITE, PACKET, PACKET );
-            Agent switchNode = new SwitchAgent( i * CPU_CORES + 2 + i, anyGen );
-            net.addAgent( switchNode );
-            switchAgent.getEventGenerator( 0 ).connect( switchNode );
+            EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
+            //cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/Distributed_" + modelType + "_Node" + (i+1) + "_Tail_Latency.log" );
+            cpus.add( cpu );
             
-            // Add the core to each CPU node.
-            for (int j = 0; j < NODES; j++) {
-                EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", 1, 1, "Models/cpu_frequencies.txt" );
-                //cpu.addSampler( Global.ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
-                //cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, samplingTime, Sampling.CUMULATIVE, null );
-                //cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
-                cpus.add( cpu );
-                
-                // Add the PESOS model to the corresponding cpu.
-                final String directory = "Models/Distributed/Node_" + (i+1) + "/PESOS/MaxScore/";
-                model = new PESOSmodel( timeBudget, mode, directory );
-                model.loadModel();
-                cpu.setModel( model );
-                
-                EventGenerator sink = new MulticoreGenerator( Time.INFINITE );
-                final long id = i * (CPU_CORES + 1) + 3 + j;
-                Agent node = new MulticoreAgent( id, sink );
-                node.addDevice( cpu );
-                net.addAgent( node );
-                
-                node.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/" + modelType + "_Energy.log", Sampling.CUMULATIVE ) );
-                node.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
-                node.addSampler( Global.TAIL_LATENCY_SAMPLING, new Sampler( null, "Log/" + modelType + "_Tail_Latency.log", null ) );
-                
-                switchNode.getEventGenerator( 0 ).connect( node );
-                
-                plotter.addPlot( node.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + id + " " + model.getModelType( true ) );
+            // Add the model to the corresponding cpu.
+            CPUModel p_model = loadModel( type, mode, timeBudget, i+1 );
+            p_model.loadModel();
+            cpu.setModel( p_model );
+            
+            EventGenerator sink = new MulticoreGenerator( Time.INFINITE );
+            Agent agentCore = new MulticoreAgent( 2 + i, sink );
+            agentCore.addDevice( cpu );
+            net.addAgent( agentCore );
+            
+            agentCore.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/Distributed_" + modelType + "_Energy.log", Sampling.CUMULATIVE ) );
+            agentCore.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
+            
+            if (type == Type.CONS) {
+                EventGenerator evtGen = new ServerConsGenerator( duration );
+                evtGen.connect( agentCore );
+                agentCore.addEventGenerator( evtGen );
+            }
+            
+            switchAgent.connectTo( agentCore.getId(), cpu );
+            
+            if (Global.showGUI) {
+                plotter.addPlot( agentCore.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) );
+            }
+            switchGen.connect( agentCore );
+            
+            if (type == Type.PESOS) {
+                controller.connect( agentCore );
             }
         }
         
-        plotter.setAxisName( "Time (h)", "Energy (J)" );
-        plotter.setTicks( Axis.Y, 10 );
-        plotter.setTicks( Axis.X, 24, 2 );
-        plotter.setRange( Axis.Y, 0, 1800 );
-        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
-        plotter.setVisible( true );
+        if (Global.showGUI) {
+            plotter.setAxisName( "Time (h)", "Energy (J)" );
+            plotter.setTicks( Axis.Y, 10 );
+            plotter.setTicks( Axis.X, 23, 2 );
+            plotter.setRange( Axis.Y, 0, 4300 );
+            plotter.setScaleX( 60d * 60d * 1000d * 1000d );
+            plotter.setVisible( true );
+        }
         
-        sim.start( new Time( 23, TimeUnit.HOURS ), false );
+        sim.start( duration, false );
+        //sim.start( new Time( 53100, TimeUnit.MICROSECONDS ), false );
         sim.close();
         
         double totalEnergy = 0;
-        double totalIdleEnergy = 0;
-        int totalQueries = 0;
-        for (int i = 0; i < NODES * CPU_CORES; i++) {
+        for (int i = 0; i < NODES; i++) {
             EnergyCPU cpu = cpus.get( i );
             double energy = cpu.getAgent().getResultSampled( Global.ENERGY_SAMPLING );
             totalEnergy += energy;
-            totalIdleEnergy += cpu.getAgent().getResultSampled( Global.IDLE_ENERGY_SAMPLING );
-            Utils.LOGGER.info( "CPU " + i + ", Energy consumed: " + energy + "J" );
-            totalQueries += cpu.getExecutedQueries();
+            System.out.println( "CPU: " + i + ", Energy: " + energy );
         }
-        Utils.LOGGER.info( model.getModelType( false ) + " - Total energy:      " + totalEnergy + "J" );
-        Utils.LOGGER.info( model.getModelType( false ) + " - Total idle energy: " + totalIdleEnergy + "J" );
-        System.out.println( "QUERIES: " + totalQueries );
+        System.out.println( "Total energy: " + totalEnergy );
         
+        // Show the animation.
+        /*AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );
+        an.loadSimulation( "Topology/Animation/Topology_distributed_multiCore.json", "./Results/distr_multi_core.txt" );
+        an.setTargetFrameRate( 90 );
+        an.setForceExit( false );
+        an.start();*/
         
-        // TIME CONSERVATIVE 500ms
-        // 
-        // SIMULATOR: 
-        // IDLE:      
+        // PERF
+        // Total energy: 4749979.250899715
         
-        // TIME CONSERVATIVE 1000ms
-        // 
-        // SIMULATOR: 
-        // IDLE:      
+        // PESOS TC 500ms
+        // Total energy: 2599029.532406005
         
-        // ENERGY CONSERVATIVE 500ms
-        // 
-        // SIMULATOR: 
-        // IDLE:      
+        // PEGASUS
+        // Total energy: 4746634.049346029
         
-        // ENERGY CONSERVATIVE 1000ms
-        // 
-        // SIMULATOR: 
-        // IDLE:         
+        if (Global.showGUI) {
+            plotTailLatency( type, mode, timeBudget );
+        }
     }
     
-    public static void testMultiCore( long timeBudget, Mode mode ) throws Exception
+    public static void plotTailLatency( Type type, Mode mode, long time_budget ) throws IOException
     {
-        /*
-        FIXME I link dallo switch ai nodi hanno tutti una banda di 1Gb/s e 0 ms di latenza.
+        final int percentile = 95;
+        final long timeBudget = (time_budget == 0) ? 1000000 : (time_budget * 1000);
+        final double interval = TimeUnit.MINUTES.toMicros( 5 );
         
-                                   / node0    / node2
-                                  / dynamic  / dynamic
-               1000Mb,0ms        /          /
-        client ---------- switch  ---------  --------- node4
-          0ms               0ms  \          \         dynamic
-                                  \          \
-                                   \ node1    \ node3
-                                    dynamic    dynamic
-        */
+        Plotter plotter = new Plotter( "DISTRIBUTED Tail Latency " + percentile + "-th Percentile", 800, 600 );
+        plotter.setAxisName( "Time (h)", percentile + "th-tile response time (ms)" );
+        double yRange = timeBudget + 200000d;
+        plotter.setRange( Axis.Y, 0, yRange );
+        plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
+        plotter.setScaleY( 1000d );
         
-        NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_multiCore.json" );
-        net.setTrackingEvent( "Results/distr_multi_core.txt" );
-        System.out.println( net.toString() );
-        
-        Simulator sim = new Simulator( net );
-        
-        EventGenerator generator = new ClientGenerator( PACKET, PACKET );
-        Agent client = new ClientAgent( 0, generator );
-        net.addAgent( client );
-        
-        EventGenerator switchGen = new SwitchGenerator( Time.INFINITE );
-        
-        Agent switchAgent = new SwitchAgent( 1, switchGen );
-        net.addAgent( switchAgent );
-        client.getEventGenerator( 0 ).connect( switchAgent );
-        
-        CPUModel model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" );
-        model.loadModel();
-        
-        final String modelType = model.getModelType( true );
-        final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
-        
-        List<EnergyCPU> cpus = new ArrayList<>( NODES );
-        Plotter plotter = new Plotter( "DISTRIBUTED MULTI_CORE - " + model.getModelType( false ), 800, 600 );
-        for (int i = 0; i < NODES; i++) {
-            EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
-            //cpu.addSampler( Global.ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, "Log/" + modelType + "_Energy.log" );
-            //cpu.addSampler( Global.IDLE_ENERGY_SAMPLING, new Time( 5, TimeUnit.MINUTES ), Sampling.CUMULATIVE, null );
-            //cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/" + modelType + "_Tail_Latency.log" );
-            cpus.add( cpu );
-            
-            // Add the PESOS model to the corresponding cpu.
-            final String directory = "Models/Distributed/Node_" + (i+1) + "/PESOS/MaxScore/";
-            model = new PESOSmodel( timeBudget, mode, directory );
-            model.loadModel();
-            cpu.setModel( model );
-            
-            EventGenerator sink = new MulticoreGenerator( Time.INFINITE );
-            Agent node = new MulticoreAgent( 2 + i, sink );
-            node.addDevice( cpu );
-            net.addAgent( node );
-            
-            node.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/" + modelType + "_Energy.log", Sampling.CUMULATIVE ) );
-            node.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
-            node.addSampler( Global.TAIL_LATENCY_SAMPLING, new Sampler( null, "Log/" + modelType + "_Tail_Latency.log", null ) );
-            
-            switchGen.connect( node );
-            
-            plotter.addPlot( node.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) + " " + model.getModelType( true ) );
-        }
-        
-        plotter.setAxisName( "Time (h)", "Energy (J)" );
-        plotter.setTicks( Axis.Y, 10 );
+        plotter.setRange( Axis.X, 0, TimeUnit.HOURS.toMicros( 24 ) );
         plotter.setTicks( Axis.X, 23, 2 );
-        plotter.setRange( Axis.Y, 0, 4350 );
-        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
-        plotter.setVisible( true );
+        plotter.setScaleX( TimeUnit.HOURS.toMicros( 1 ) );
         
-        sim.start( new Time( 24, TimeUnit.HOURS ), false );
-        sim.close();
-        
-        double totalEnergy = 0;
-        double totalIdleEnergy = 0;
-        int totalQueries = 0;
-        for (int i = 0; i < NODES; i++) {
-            EnergyCPU cpu = cpus.get( i );
-            double energy = cpu.getAgent().getResultSampled( Global.ENERGY_SAMPLING );
-            totalEnergy += energy;
-            totalIdleEnergy += cpu.getAgent().getResultSampled( Global.IDLE_ENERGY_SAMPLING );
-            Utils.LOGGER.info( "CPU " + i + ", Energy consumed: " + energy + "J" );
-            totalQueries += cpu.getExecutedQueries();
+        List<Pair<Double, Double>> tl_500ms  = new ArrayList<>( 2 );
+        List<Pair<Double, Double>> tl_1000ms = new ArrayList<>( 2 );
+        for(int i = 0; i <= 1; i++) {
+            tl_500ms.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), 500000d ) );
+            tl_1000ms.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), 1000000d ) );
         }
-        Utils.LOGGER.info( model.getModelType( false ) + " - Total energy:      " + totalEnergy + "J" );
-        Utils.LOGGER.info( model.getModelType( false ) + " - Total idle energy: " + totalIdleEnergy + "J" );
-        System.out.println( "QUERIES: " + totalQueries );
+        plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
+        plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
+        List<Pair<Double,Double>> percentiles = Utils.getPercentiles( percentile, interval,
+                                                                      "Log/Distributed_Latency.txt",
+                                                                      "Results/Distributed_Tail_Latency_" + percentile + "th_Percentile.txt" );
+        switch ( type ) {
+            case PESOS   : plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms)" ); break;
+            case PERF    : plotter.addPlot( percentiles, "PERF" ); break;
+            case CONS    : plotter.addPlot( percentiles, "CONS" ); break;
+            case PEGASUS : plotter.addPlot( percentiles, "PEGASUS (t=" + time_budget + "ms)" ); break;
+            default      : break;
+        }
         
-        // TIME CONSERVATIVE 500ms
-        // 
-        // SIMULATOR: 
-        // IDLE:      
-        
-        // TIME CONSERVATIVE 1000ms
-        // 
-        // SIMULATOR: 
-        // IDLE:      
-        
-        // ENERGY CONSERVATIVE 500ms
-        // 
-        // SIMULATOR: 
-        // IDLE:      
-        
-        // ENERGY CONSERVATIVE 1000ms
-        // 
-        // SIMULATOR:  
-        // IDLE:       
+        plotter.setVisible( true );
     }
 }

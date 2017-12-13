@@ -75,7 +75,8 @@ public class PESOScontroller
         
         analyzeSystem( time );
     }
-            public void completedQuery( Time time, long nodeID, long coreID )
+    
+    public void completedQuery( Time time, long nodeID, long coreID )
     {
         CpuInfo cpu = cpuInfos.get( nodeID );
         PesosQuery query = cpu.getCore( coreID ).getFirstQuery();
