@@ -322,6 +322,10 @@ public class EnergyTestMONO
         Utils.VERBOSE = false;
         CENTRALIZED_PESOS_QUEUE = false;
         
+        if (System.getProperty( "showGUI" ) != null) {
+            Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
+        }
+        
         CPUModel model = null;
         
         //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
@@ -505,14 +509,16 @@ public class EnergyTestMONO
         
         client.getEventGenerator( 0 ).connect( server );
         
-        Plotter plotter = new Plotter( "MONOLITHIC MULTI_CORE - " + model.getModelType( false ), 800, 600 );
-        plotter.addPlot( server.getSampledValues( Global.ENERGY_SAMPLING ), model.getModelType( false ) );
-        plotter.setAxisName( "Time (h)", "Energy (J)" );
-        plotter.setTicks( Axis.Y, 10 );
-        plotter.setTicks( Axis.X, 23, 2 );
-        plotter.setRange( Axis.Y, 0, 4350 );
-        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
-        plotter.setVisible( true );
+        if (Global.showGUI) {
+            Plotter plotter = new Plotter( "MONOLITHIC MULTI_CORE - " + model.getModelType( false ), 800, 600 );
+            plotter.addPlot( server.getSampledValues( Global.ENERGY_SAMPLING ), model.getModelType( false ) );
+            plotter.setAxisName( "Time (h)", "Energy (J)" );
+            plotter.setTicks( Axis.Y, 10 );
+            plotter.setTicks( Axis.X, 23, 2 );
+            plotter.setRange( Axis.Y, 0, 4350 );
+            plotter.setScaleX( 60d * 60d * 1000d * 1000d );
+            plotter.setVisible( true );
+        }
         
         sim.start( duration, false );
         sim.close();
@@ -522,7 +528,9 @@ public class EnergyTestMONO
         
         System.out.println( "QUERIES: " + cpu.getExecutedQueries() );
         
-        plotTailLatency( model.getType(), model.getMode(), model.getTimeBudget() );
+        if (Global.showGUI) {
+            plotTailLatency( model.getType(), model.getMode(), model.getTimeBudget() );
+        }
         
         // PARAMETERS                         0.03 0.03 0.01 (NOW: TODO)
         //                QUERY_FILE            PARAMETER
@@ -688,7 +696,7 @@ public class EnergyTestMONO
     {
         final int percentile = 95;
         final double interval = TimeUnit.MINUTES.toMicros( 5 );
-        long time_budget = (timeBudget == null) ? 1000000 : timeBudget.getTimeMillis();
+        final long time_budget = (timeBudget == null) ? 1000000 : timeBudget.getTimeMillis();
         
         Plotter plotter = new Plotter( "DISTRIBUTED Tail Latency " + percentile + "-th Percentile", 800, 600 );
         plotter.setAxisName( "Time (h)", percentile + "th-tile response time (ms)" );
@@ -701,8 +709,8 @@ public class EnergyTestMONO
         plotter.setTicks( Axis.X, 23, 2 );
         plotter.setScaleX( TimeUnit.HOURS.toMicros( 1 ) );
         
-        List<Pair<Double, Double>> tl_500ms = new ArrayList<>();
-        List<Pair<Double, Double>> tl_1000ms = new ArrayList<>();
+        List<Pair<Double, Double>> tl_500ms  = new ArrayList<>( 2 );
+        List<Pair<Double, Double>> tl_1000ms = new ArrayList<>( 2 );
         for(int i = 0; i <= 1; i++) {
             tl_500ms.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), 500000d ) );
             tl_1000ms.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), 1000000d ) );

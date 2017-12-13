@@ -179,7 +179,7 @@ public class EnergyTestDIST2
             addEventGenerator( evGenerator );
             addEventHandler( this );
             
-            writer = new PrintWriter( "Log/Distributed_Latencies.txt", "UTF-8" );
+            writer = new PrintWriter( "Log/Distributed_Latency.txt", "UTF-8" );
             queries = new ArrayList<>( 1 << 10 );
             
             if (PEGASUS_CONTROLLER) {
@@ -407,7 +407,18 @@ public class EnergyTestDIST2
         // Node 0 has the original index.
         ranges.add( 0d );
         for (int i = 1; i < NODES; i++) {
-            ranges.add( (rand.nextInt( 1 ) * (MAX_RANGE-MIN_RANGE) + MIN_RANGE)/100d );
+            double value;
+            boolean found = false;
+            do {
+                value = (rand.nextDouble() * (MAX_RANGE-MIN_RANGE) + MIN_RANGE)/100d;
+                for (Double range : ranges) {
+                    if (range == value) {
+                        found = true;
+                        break;
+                    }
+                }
+            } while(found);
+            ranges.add( value );
         }
         
         String file = dir + "predictions.txt";
@@ -464,14 +475,12 @@ public class EnergyTestDIST2
                         difference *= -1;
                     }
                     energy += difference;
-                    energy = Math.max( 0.0001, energy + difference );
                     
                     difference = qTime * ranges.get( j );
                     if (j % 2 == 0) {
                         difference *= -1;
                     }
                     qTime += difference;
-                    qTime = Math.max( 1, qTime + difference );
                     
                     if (i < values.length - 2) {
                         writers.get( j ).print( qTime + " " + energy + " " );
@@ -497,6 +506,10 @@ public class EnergyTestDIST2
     public static void main( String[] args ) throws Exception
     {
         //createDistributedIndex();
+        
+        if (System.getProperty( "showGUI" ) != null) {
+            Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
+        }
         
         Utils.VERBOSE = false;
         PESOS_CONTROLLER   = false;
@@ -619,7 +632,10 @@ public class EnergyTestDIST2
         
         CPUModel model = getModel( type, mode, timeBudget, 1 );
         final String modelType = model.getModelType( true );
-        Plotter plotter = new Plotter( "DISTRIBUTED MULTI_CORE - " + modelType, 800, 600 );
+        Plotter plotter = null;
+        if (Global.showGUI) {
+            plotter = new Plotter( "DISTRIBUTED MULTI_CORE - " + modelType, 800, 600 );
+        }
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         for (int i = 0; i < NODES; i++) {
             EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
@@ -645,8 +661,9 @@ public class EnergyTestDIST2
                 agentCore.addEventGenerator( evtGen );
             }
             
-            plotter.addPlot( agentCore.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) );
-            
+            if (Global.showGUI) {
+                plotter.addPlot( agentCore.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) );
+            }
             switchGen.connect( agentCore );
             
             if (type == Type.PESOS) {
@@ -654,12 +671,14 @@ public class EnergyTestDIST2
             }
         }
         
-        plotter.setAxisName( "Time (h)", "Energy (J)" );
-        plotter.setTicks( Axis.Y, 10 );
-        plotter.setTicks( Axis.X, 23, 2 );
-        plotter.setRange( Axis.Y, 0, 4300 );
-        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
-        plotter.setVisible( true );
+        if (Global.showGUI) {
+            plotter.setAxisName( "Time (h)", "Energy (J)" );
+            plotter.setTicks( Axis.Y, 10 );
+            plotter.setTicks( Axis.X, 23, 2 );
+            plotter.setRange( Axis.Y, 0, 4300 );
+            plotter.setScaleX( 60d * 60d * 1000d * 1000d );
+            plotter.setVisible( true );
+        }
         
         sim.start( duration, false );
         //sim.start( new Time( 53100, TimeUnit.MICROSECONDS ), false );
@@ -687,16 +706,20 @@ public class EnergyTestDIST2
         // PESOS TC 500ms
         // Total energy: 2599029.532406005
         
-        plotTailLatency( type, mode, timeBudget );
+        if (Global.showGUI) {
+            plotTailLatency( type, mode, timeBudget );
+        }
     }
     
     public static void plotTailLatency( Type type, Mode mode, long time_budget ) throws IOException
     {
         final int percentile = 95;
+        final long timeBudget = (time_budget == 0) ? 1000000 : (time_budget * 1000);
+        final double interval = TimeUnit.MINUTES.toMicros( 5 );
         
         Plotter plotter = new Plotter( "DISTRIBUTED Tail Latency " + percentile + "-th Percentile", 800, 600 );
         plotter.setAxisName( "Time (h)", percentile + "th-tile response time (ms)" );
-        double yRange = time_budget * 1000d + 200000d;
+        double yRange = timeBudget + 200000d;
         plotter.setRange( Axis.Y, 0, yRange );
         plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
         plotter.setScaleY( 1000d );
@@ -705,19 +728,22 @@ public class EnergyTestDIST2
         plotter.setTicks( Axis.X, 23, 2 );
         plotter.setScaleX( TimeUnit.HOURS.toMicros( 1 ) );
         
-        List<Pair<Double, Double>> points = new ArrayList<>();
+        List<Pair<Double, Double>> tl_500ms  = new ArrayList<>( 2 );
+        List<Pair<Double, Double>> tl_1000ms = new ArrayList<>( 2 );
         for(int i = 0; i <= 1; i++) {
-            points.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), time_budget * 1000d ) );
+            tl_500ms.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), 500000d ) );
+            tl_1000ms.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), 1000000d ) );
         }
-        plotter.addPlot( points, Color.YELLOW, Line.DASHED, "Tail latency (" + time_budget + "ms)" );
+        plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
+        plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
-        List<Pair<Double,Double>> percentiles = Utils.getPercentiles( percentile, TimeUnit.MINUTES.toMicros( 5 ),
-                                                                      "Results/Distributed_Tail_Latency.txt",
+        List<Pair<Double,Double>> percentiles = Utils.getPercentiles( percentile, interval,
+                                                                      "Log/Distributed_Latency.txt",
                                                                       "Results/Distributed_Tail_Latency_" + percentile + "th_Percentile.txt" );
         switch ( type ) {
             case PESOS   : plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms)" ); break;
             case PERF    : plotter.addPlot( percentiles, "PERF" ); break;
-            case CONS    : plotter.addPlot( percentiles, "CONS (t=" + time_budget + "ms)" ); break;
+            case CONS    : plotter.addPlot( percentiles, "CONS" ); break;
             case PEGASUS : plotter.addPlot( percentiles, "PEGASUS (t=" + time_budget + "ms)" ); break;
             default      : break;
         }

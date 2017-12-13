@@ -63,8 +63,6 @@ public class EnergyTestREPLICA_DIST
     private static List<EnergyCPU> cpus = new ArrayList<>( NODES );
     private static PESOScontroller controller;
     
-    private static boolean showGUI = true;
-    
     
     
     
@@ -180,14 +178,14 @@ public class EnergyTestREPLICA_DIST
         private List<QueryLatency> queries;
         private PEGASUS pegasus;
         
-        public BrokerAgent( long id, long target, EventGenerator evGenerator, String testMode )
+        public BrokerAgent( long id, long target, EventGenerator evGenerator )
                 throws IOException
         {
             super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( evGenerator );
             addEventHandler( this );
             
-            writer = new PrintWriter( "Log/Distributed_Replica_" + testMode + "_Tail_Latency.txt", "UTF-8" );
+            writer = new PrintWriter( "Log/Distributed_Replica_Latency.txt", "UTF-8" );
             queries = new ArrayList<>( 1 << 10 );
         }
         
@@ -757,7 +755,7 @@ public class EnergyTestREPLICA_DIST
         SWITCH_OFF_MACHINES = false;
         
         if (System.getProperty( "showGUI" ) != null) {
-            showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
+            Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
         }
         
         testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
@@ -824,7 +822,7 @@ public class EnergyTestREPLICA_DIST
         CPUModel model = getModel( type, mode, timeBudget, 1 );
         final String modelType = model.getModelType( true );
         Plotter plotter = null;
-        if (showGUI) {
+        if (Global.showGUI) {
             plotter = new Plotter( "", 800, 600 );
         }
         
@@ -883,7 +881,7 @@ public class EnergyTestREPLICA_DIST
                     agentCore.addEventGenerator( evtGen );
                 }
                 
-                if (showGUI) {
+                if (Global.showGUI) {
                     plotter.addPlot( agentCore.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + nodeId );
                 }
                 
@@ -894,12 +892,12 @@ public class EnergyTestREPLICA_DIST
             }
         }
         
-        Agent brokerAgent = new BrokerAgent( 1, timeBudget * 1000, brokerGen, testMode + "_" + modelType );
+        Agent brokerAgent = new BrokerAgent( 1, timeBudget * 1000, brokerGen );
         net.addLink( 0, 1, 1000, 0, NetworkLink.BIDIRECTIONAL );
         net.addAgent( brokerAgent );
         client.getEventGenerator( 0 ).connect( brokerAgent );
         
-        if (showGUI) {
+        if (Global.showGUI) {
             plotter.setTitle( "DISTRIBUTED REPLICA (" + testMode + ") - " + modelType );
             plotter.setAxisName( "Time (h)", "Energy (J)" );
             plotter.setTicks( Axis.Y, 10 );
@@ -926,7 +924,7 @@ public class EnergyTestREPLICA_DIST
         System.out.println( testMode + " " + model.getModelType( false ) + " - Total energy: " + totalEnergy );
         
         // Show the animation.
-        if (showGUI) {
+        if (Global.showGUI) {
             /*AnimationNetwork an = new AnimationNetwork( 800, 600, modelType );
             an.loadSimulation( "Topology/Animation/Topology_distributed_multiCore.json",
                                "./Results/distr_multi_core.txt" );
@@ -985,15 +983,16 @@ public class EnergyTestREPLICA_DIST
         plotter.setVisible( true );
     }
     
-    public static void plotTailLatency( int PERCENTILE, long time_budget, String mode,
-                                        double lambda, String type,
-                                        int latencyType ) throws IOException
+    public static void plotTailLatency( Type type, Mode mode, long time_budget,
+                                        double lambda, int latencyType ) throws IOException
     {
+        final int percentile = 95;
+        final long timeBudget = (time_budget == 0) ? 1000000 : time_budget;
         final double interval = TimeUnit.MINUTES.toMicros( 5 );
         
-        Plotter plotter = new Plotter( "PESOS (" + mode + ", t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ") - Tail Latency " + PERCENTILE + "-th Percentile", 800, 600 );
-        plotter.setAxisName( "Time (h)", PERCENTILE + "th-tile response time (ms)" );
-        double yRange = time_budget * 1000d + 200000d;
+        Plotter plotter = new Plotter( "DISTRIBUTED REPLICA Tail Latency " + percentile + "-th Percentile", 800, 600 );
+        plotter.setAxisName( "Time (h)", percentile + "th-tile response time (ms)" );
+        double yRange = timeBudget + 200000d;
         plotter.setRange( Axis.Y, 0, yRange );
         plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
         plotter.setScaleY( 1000d );
@@ -1002,15 +1001,25 @@ public class EnergyTestREPLICA_DIST
         plotter.setTicks( Axis.X, 23, 2 );
         plotter.setScaleX( TimeUnit.HOURS.toMicros( 1 ) );
         
-        List<Pair<Double, Double>> points = new ArrayList<>();
+        List<Pair<Double, Double>> tl_500ms  = new ArrayList<>( 2 );
+        List<Pair<Double, Double>> tl_1000ms = new ArrayList<>( 2 );
         for(int i = 0; i <= 1; i++) {
-            points.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), time_budget * 1000d ) );
+            tl_500ms.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), 500000d ) );
+            tl_1000ms.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), 1000000d ) );
         }
-        plotter.addPlot( points, Color.YELLOW, Line.DASHED, "Tail latency (" + time_budget + "ms)" );
+        plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
+        plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
-        List<Pair<Double,Double>> percentiles = Utils.getPercentiles( PERCENTILE, interval, "Results/Distributed_Replica_" + lambda + "_" + type + "_L" + latencyType + "_PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.txt",
-                                                                      "Results/Distributed_Replica_" + lambda + "_" + type + "_L" + latencyType + "_PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
-        plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ")" );
+        List<Pair<Double,Double>> percentiles = Utils.getPercentiles( percentile, interval,
+                                                                      "Results/Distributed_Replica_" + lambda + "_" + type + "_L" + latencyType + "ms_Latency.txt",
+                                                                      "Results/Distributed_Replica_" + lambda + "_" + type + "_L" + latencyType + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
+        switch ( type ) {
+            case PESOS   : plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ")" ); break;
+            case PERF    : plotter.addPlot( percentiles, "PERF (Lambda=" + lambda + ", Type=" + type + ")" ); break;
+            case CONS    : plotter.addPlot( percentiles, "CONS (Lambda=" + lambda + ", Type=" + type + ")" ); break;
+            case PEGASUS : plotter.addPlot( percentiles, "PEGASUS (t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ")" ); break;
+            default      : break;
+        }
         
         plotter.setVisible( true );
     }
