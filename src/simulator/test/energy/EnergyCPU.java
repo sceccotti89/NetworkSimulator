@@ -30,11 +30,9 @@ public class EnergyCPU extends CPU
     
     
     
-    /*public EnergyCPU( String specFile ) {
-        // TODO Creare un costruttore che prenda come parametri il file contenente le specifiche
-        // TODO della CPU.
-        
-    }*/
+    public EnergyCPU( String specFile ) throws IOException {
+        super( specFile );
+    }
     
     public EnergyCPU( String machine, int cores, int contexts,
                       String frequencies_file ) throws IOException {

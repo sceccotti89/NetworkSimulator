@@ -49,10 +49,14 @@ public abstract class Device<I,O>
     
     
     
+    public Device( String specFile ) throws IOException {
+        build( specFile );
+    }
+    
     /**
      * Creates a new Device object.
      * 
-     * @param name              name of the device
+     * @param name              name of the device.
      * @param frequency_file    file where the frequencies are taken.
     */
     public Device( String name, String frequency_file ) throws IOException {
@@ -60,7 +64,8 @@ public abstract class Device<I,O>
     }
     
     /**
-     * Creates a new Device object.
+     * Creates a new Device object,
+     * specifing only the name and its available frequencies.
      * 
      * @param name           name of the device.
      * @param frequencies    list of frequencies.
@@ -77,6 +82,15 @@ public abstract class Device<I,O>
         // By default the frequency is setted as the maximum one.
         _frequency = getMaxFrequency();
     }
+    
+    /**
+     * Builds the device using the input file which describes its internal structure.</br>
+     * The formatting of the file must follow the JSON rules, where the name of the labels
+     * are defined by the user, as well as their values.
+     * 
+     * @param inputFile    the input file used to define the device.
+    */
+    public abstract void build( String inputFile ) throws IOException;
     
     /**
      * Reads the list of available frequencies for this device.

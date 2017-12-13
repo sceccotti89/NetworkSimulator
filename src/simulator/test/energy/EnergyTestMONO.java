@@ -472,7 +472,7 @@ public class EnergyTestMONO
         
         final Time duration = new Time( 24, TimeUnit.HOURS );
         
-        CPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
+        CPU cpu = new EnergyCPU( "Models/cpu_spec.json" );
         cpu.setCentralizedQueue( CENTRALIZED_PESOS_QUEUE );
         cpu.setModel( model );
         

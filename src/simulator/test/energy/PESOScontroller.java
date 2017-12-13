@@ -253,6 +253,12 @@ public class PESOScontroller
             }
         }
         
+        @Override
+        public void build( String inputFile ) {
+            // TODO Auto-generated method stub
+            
+        }
+
         public void addQuery( Time time, long coreID, PesosQuery query ) {
             coresMap.get( coreID ).addQuery( time, query );
         }

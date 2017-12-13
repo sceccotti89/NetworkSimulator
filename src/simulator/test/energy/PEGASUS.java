@@ -120,8 +120,8 @@ public class PEGASUS
         private long target;
         private static final Time WINDOW = new Time( 30, TimeUnit.SECONDS );
         
-        private int size = 0;
-        private long average = 0;
+        private double size = 0;
+        private double average = 0;
         
         private Time holdingTime;
         private boolean power_holding = false;
@@ -144,14 +144,14 @@ public class PEGASUS
                 } else {
                     queries.remove( 0 );
                     if (size == 1) {
-                        average = 0;
+                        average = time.getTimeMicros();
                     } else {
                         average = ((average * size) - time.getTimeMicros()) / (size - 1);
                     }
                     size--;
                 }
             }
-            queries.add( completionTime );
+            queries.add( now );
             size++;
             
             if (power_holding) {
@@ -162,10 +162,14 @@ public class PEGASUS
                 }
             }
             
-            // TODO Lavorare a una formula per modificare la frequenza in base alla potenza.
+            // FIXME capire come mai ottengo valori negativi.
+            // FIXME fare dei test per capire come funziona la media.
             
             final long instantaneous = completionTime.getTimeMicros();
             average = average + ((instantaneous - average) / size);
+            //System.out.println( "ID: " + node.getAgent().getId() );
+            if (node.getAgent().getId() == 2)
+                System.out.println( "TARGET: " + target + ", AVG: " + average + ", INST: " + instantaneous );
             if (average > target) {
                 // Set max power, WAIT 5 minutes.
                 //node.setFrequency( now, node.getMaxFrequency() );
@@ -177,19 +181,19 @@ public class PEGASUS
                 //node.setFrequency( now, node.getMaxFrequency() );
                 node.setPower( now, node.getMaxPower() );
             } else if (instantaneous > target) {
-                // Increase power by 7% => increase frequency by 3.
+                // Increase power by 7%.
                 //node.increaseFrequency( now, 3 );
-                node.setPower( now, node.getPower() + node.getPower() * 0.7 );
+                node.setPower( now, node.getPower() + node.getPower() * 0.07 );
             } else if(instantaneous >= 0.85 * target && instantaneous <= target) {
                 // Keep current power.
             } else if (instantaneous < 0.60 * target) {
-                // Lower power by 3% => decrease frequency by 2.
+                // Lower power by 3%.
                 //node.decreaseFrequency( now, 2 );
-                node.setPower( now, node.getPower() - node.getPower() * 0.3 );
+                node.setPower( now, node.getPower() - node.getPower() * 0.03 );
             } else if (instantaneous < 0.85 * target) {
-                // Lower power by 1% => decrease frequency by 1.
+                // Lower power by 1%.
                 //node.decreaseFrequency( now, 1 );
-                node.setPower( now, node.getPower() - node.getPower() * 0.1 );
+                node.setPower( now, node.getPower() - node.getPower() * 0.01 );
             }
         }
     }

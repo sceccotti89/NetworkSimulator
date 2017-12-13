@@ -210,22 +210,26 @@ public class EnergyTestDIST
                     int index;
                     for (index = 0; index < queries.size(); index++) {
                         QueryLatency ql = queries.get( index );
+                        // FIXME questa operazione non e' detto che sia corretta
+                        // FIXME perche' la stessa query potrebbe essere eseguita
+                        // FIXME su core diversi a velocita' differenti
                         if (ql.id == queryId) {
                             query = ql;
                             break;
                         }
                     }
                     
+                    Time endTime = e.getTime();
+                    Time completionTime = e.getTime().subTime( query.startTime );
+                    
                     if (++query.count == NODES) {
                         // Save on file and remove from list.
-                        Time endTime = e.getTime();
-                        Time completionTime = e.getTime().subTime( query.startTime );
                         writer.println( endTime + " " + completionTime );
                         queries.remove( index );
-                        
-                        if (PEGASUS_CONTROLLER) {
-                            pegasus.setCompletedQuery( endTime, e.getSource().getId(), completionTime );
-                        }
+                    }
+                    
+                    if (PEGASUS_CONTROLLER) {
+                        pegasus.setCompletedQuery( endTime, e.getSource().getId(), completionTime );
                     }
                 }
             }
@@ -529,10 +533,10 @@ public class EnergyTestDIST
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
-        testNetwork( Type.PERF, null, 0 );
+        //testNetwork( Type.PERF, null, 0 );
         //testNetwork( Type.CONS, null, 0 );
         
-        //testNetwork( Type.PEGASUS, null,  500 );
+        testNetwork( Type.PEGASUS, null,  500 );
         //testNetwork( Type.PEGASUS, null, 1000 );
         
         /* Controller OFF

@@ -1,6 +1,10 @@
 
 package simulator.test.energy;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -9,11 +13,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import simulator.core.Device;
 import simulator.events.Event;
 import simulator.test.energy.CPU.Core.State;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.utils.Time;
+import simulator.utils.resources.ResourceLoader;
 
 public abstract class CPU extends Device<QueryInfo,Long>
 {
@@ -35,8 +43,37 @@ public abstract class CPU extends Device<QueryInfo,Long>
     
     
     
+    public CPU( String cpuSpec ) throws IOException {
+        super( cpuSpec );
+    }
+    
     public CPU( String name, List<Long> frequencies ) {
         super( name, frequencies );
+    }
+    
+    @Override
+    public void build( String cpuSpec ) throws IOException
+    {
+        InputStream fReader = ResourceLoader.getResourceAsStream( cpuSpec );
+        BufferedReader br = new BufferedReader( new InputStreamReader( fReader ) );
+        StringBuilder content = new StringBuilder( 64 );
+        String nextLine = null;
+        while((nextLine = br.readLine()) != null)
+            content.append( nextLine.trim() );
+        br.close();
+        
+        JSONObject settings = new JSONObject( content.toString() );
+        this._name  = settings.getString( "Name" );
+        this._cores = settings.getInt( "Cores" );
+        this._contexts = settings.getInt( "Threads" );
+        this.setMaxPower( settings.getDouble( "Max Power" ) );
+        this.setMinPower( settings.getDouble( "Min Power" ) );
+        //this._cache = settings.getInt( "Cache" );
+        JSONArray freqs = settings.getJSONArray( "frequencies" );
+        this._frequencies = new ArrayList<>( freqs.length() );
+        for (int i = 0; i < freqs.length(); i++) {
+            this._frequencies.add( freqs.getLong( i ) );
+        }
     }
     
     public void setEnergyModel( EnergyModel model ) {
@@ -47,9 +84,14 @@ public abstract class CPU extends Device<QueryInfo,Long>
         return currentPower;
     }
     
-    public void setPower( Time time, double maxPower )
+    public void setPower( Time time, double newPower )
     {
-        double power = maxPower - EnergyModel.getStaticPower();
+        newPower = Math.min( newPower, maxPower );
+        if (newPower == currentPower) {
+            return;
+        }
+        
+        double power = newPower - EnergyModel.getStaticPower();
         double activeCores = 0;
         for (Core core : getCores()) {
             if (core.isWorking( time )) {

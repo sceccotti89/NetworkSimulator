@@ -207,16 +207,19 @@ public class EnergyTestREPLICA_DIST
                         }
                     }
                     
+                    // FIXME stesso discorso del testDISTR switch node.
+                    
+                    Time endTime = e.getTime();
+                    Time completionTime = e.getTime().subTime( query.startTime );
+                    
                     if (++query.count == NODES) {
                         // Save on file and remove from list.
-                        Time endTime = e.getTime();
-                        Time completionTime = e.getTime().subTime( query.startTime );
                         writer.println( endTime + " " + completionTime );
                         queries.remove( index );
-                        
-                        if (PEGASUS_CONTROLLER) {
-                            pegasus.setCompletedQuery( endTime, getId(), completionTime );
-                        }
+                    }
+                    
+                    if (PEGASUS_CONTROLLER) {
+                        pegasus.setCompletedQuery( endTime, e.getSource().getId(), completionTime );
                     }
                 }
             }
