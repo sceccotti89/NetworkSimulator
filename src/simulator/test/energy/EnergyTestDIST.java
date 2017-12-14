@@ -170,13 +170,13 @@ public class EnergyTestDIST
         private List<QueryLatency> queries;
         private PEGASUS pegasus;
         
-        public SwitchAgent( long id, long target, EventGenerator evGenerator ) throws IOException
+        public SwitchAgent( long id, long target, EventGenerator evGenerator, String model ) throws IOException
         {
             super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( evGenerator );
             addEventHandler( this );
             
-            writer = new PrintWriter( "Log/Distributed_Latency.txt", "UTF-8" );
+            writer = new PrintWriter( "Log/Distributed_" + model + "_Tail_Latency.log", "UTF-8" );
             queries = new ArrayList<>( 1 << 10 );
             
             if (PEGASUS_CONTROLLER) {
@@ -610,6 +610,9 @@ public class EnergyTestDIST
         //net.setTrackingEvent( "Results/distr_multi_core.txt" );
         System.out.println( net.toString() );
         
+        CPUModel model = getModel( type, mode, timeBudget, 1 );
+        String modelType = model.getModelType( true );
+        
         Simulator sim = new Simulator( net );
         
         // Create client.
@@ -619,7 +622,7 @@ public class EnergyTestDIST
         
         // Create switch.
         EventGenerator switchGen = new SwitchGenerator( Time.INFINITE );
-        SwitchAgent switchAgent = new SwitchAgent( 1, timeBudget * 1000, switchGen );
+        SwitchAgent switchAgent = new SwitchAgent( 1, timeBudget * 1000, switchGen, modelType );
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
         
@@ -630,8 +633,6 @@ public class EnergyTestDIST
             controller = new PESOScontroller( timeBudget * 1000, mode, cpus, NODES, CPU_CORES );
         }
         
-        CPUModel model = getModel( type, mode, timeBudget, 1 );
-        String modelType = model.getModelType( true );
         Plotter plotter = null;
         if (Global.showGUI) {
             plotter = new Plotter( "DISTRIBUTED VERSION - " + modelType, 800, 600 );
@@ -683,7 +684,7 @@ public class EnergyTestDIST
         }
         
         sim.start( duration, false );
-        //sim.start( new Time( 60000000, TimeUnit.MICROSECONDS ), false );
+        //sim.start( new Time( 10000000, TimeUnit.MICROSECONDS ), false );
         sim.close();
         
         double totalEnergy = 0;
@@ -742,15 +743,33 @@ public class EnergyTestDIST
         plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
         plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
-        List<Pair<Double,Double>> percentiles = Utils.getPercentiles( percentile, interval,
-                                                                      "Log/Distributed_Latency.txt",
-                                                                      "Results/Distributed_Tail_Latency_" + percentile + "th_Percentile.txt" );
+        List<Pair<Double,Double>> percentiles;
         switch ( type ) {
-            case PESOS   : plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms)" ); break;
-            case PERF    : plotter.addPlot( percentiles, "PERF" ); break;
-            case CONS    : plotter.addPlot( percentiles, "CONS" ); break;
-            case PEGASUS : plotter.addPlot( percentiles, "PEGASUS (t=" + time_budget + "ms)" ); break;
-            default      : break;
+            case PESOS :
+                percentiles = Utils.getPercentiles( percentile, interval,
+                                                    "Log/Distributed_PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
+                                                    "Results/Distributed/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
+                break;
+            case PERF :
+                percentiles = Utils.getPercentiles( percentile, interval,
+                                                    "Log/Distributed_PERF_Tail_Latency.log",
+                                                    "Results/Distributed/PERF_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "PERF" );
+                break;
+            case CONS :
+                percentiles = Utils.getPercentiles( percentile, interval,
+                                                    "Log/Distributed_CONS_Tail_Latency.log",
+                                                    "Results/Distributed/CONS_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "CONS" );
+                break;
+            case PEGASUS :
+                percentiles = Utils.getPercentiles( percentile, interval,
+                                                    "Log/Distributed_PEGASUS_" + time_budget + "ms_Tail_Latency.log",
+                                                    "Results/Distributed/PEGASUS_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "PEGASUS (t=" + time_budget + "ms)" );
+                break;
+            default : break;
         }
         
         plotter.setVisible( true );

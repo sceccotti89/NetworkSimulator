@@ -178,14 +178,14 @@ public class EnergyTestREPLICA_DIST
         private List<QueryLatency> queries;
         private PEGASUS pegasus;
         
-        public BrokerAgent( long id, long target, EventGenerator evGenerator )
+        public BrokerAgent( long id, long target, EventGenerator evGenerator, String model )
                 throws IOException
         {
             super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( evGenerator );
             addEventHandler( this );
             
-            writer = new PrintWriter( "Log/Distributed_Replica_Latency.txt", "UTF-8" );
+            writer = new PrintWriter( "Log/Distributed_Replica_" + model + "_Tail_Latency.log", "UTF-8" );
             queries = new ArrayList<>( 1 << 10 );
         }
         
@@ -895,7 +895,7 @@ public class EnergyTestREPLICA_DIST
             }
         }
         
-        Agent brokerAgent = new BrokerAgent( 1, timeBudget * 1000, brokerGen );
+        Agent brokerAgent = new BrokerAgent( 1, timeBudget * 1000, brokerGen, modelType );
         net.addLink( 0, 1, 1000, 0, NetworkLink.BIDIRECTIONAL );
         net.addAgent( brokerAgent );
         client.getEventGenerator( 0 ).connect( brokerAgent );

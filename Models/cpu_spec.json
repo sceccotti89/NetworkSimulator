@@ -3,7 +3,7 @@
     "Cores"     :  4,
     "Threads"   :  2,
     "Max Power" : 84,
-    "Min Power" :  0.84,
+    "Min Power" :  2,
     "Cache"     :  8,
     "frequencies": [
          800000, 1000000, 1200000, 1400000, 1600000,

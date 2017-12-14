@@ -89,7 +89,10 @@ public class EnergyCPU extends CPU
                 case MY_MODEL :
                     timeBudget = cpuModel.getTimeBudget().getTimeMillis();
                     file = "MY_MODEL_" + timeBudget; break;
-                case PEGASUS        : file = "PEGASUS"; break;
+                case PEGASUS :
+                    timeBudget = cpuModel.getTimeBudget().getTimeMillis();
+                    file = "PEGASUS_" + timeBudget;
+                    break;
             }
             Utils.checkDirectory( "Results/Coefficients" );
             file += (_cores == 1) ? "_distr" : "_mono";
@@ -701,12 +704,21 @@ public class EnergyCPU extends CPU
                     q.setCoreId( coreId );
                     queryQueue.add( q );
                     if (execute) {
+                        if (isNextQuery( q )) {
+                            cpu.setFrequencyOnPower( getTime() );
+                        }
                         cpu.computeTime( q, this );
                     }
                 }
             } else {
                 q.setCoreId( coreId );
                 queryQueue.add( q );
+                if (isNextQuery( q )) {
+                    q.setTimeToComplete( Time.ZERO, Time.INFINITE );
+                    //System.out.println( "SONO QUI" );
+                    currentQuery = q;
+                    cpu.setFrequencyOnPower( getTime() );
+                }
             }
         }
         
@@ -721,10 +733,12 @@ public class EnergyCPU extends CPU
                     //System.out.println( "PROSSIMA QUERY: " + currentQuery );
                     if (currentQuery != null) {
                         addQuery( currentQuery, false );
+                        cpu.setFrequencyOnPower( time );
                         cpu.computeTime( currentQuery, this );
                     }
                 } else {
                     if (hasMoreQueries()) {
+                        cpu.setFrequencyOnPower( getTime() );
                         cpu.computeTime( getFirstQueryInQueue(), this );
                     }
                 }

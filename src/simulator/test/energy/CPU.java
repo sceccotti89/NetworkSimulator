@@ -91,18 +91,18 @@ public abstract class CPU extends Device<QueryInfo,Long>
     
     public void setPower( Time time, double newPower )
     {
-        // TODO questo valore lo sto calcolando in base al numero di core attivi
-        // TODO la cui somma non deve superare il power cap
-        // TODO quindi in teoria dovrei rivalutare la frequenza in base al numero di core attivi
-        
         newPower = Math.min( newPower, maxPower );
         newPower = Math.max( newPower, minPower );
         if (newPower == currentPower) {
             return;
         }
         currentPower = newPower;
-        
-        double power = newPower - EnergyModel.getStaticPower();
+        setFrequencyOnPower( time );
+    }
+    
+    protected void setFrequencyOnPower( Time time )
+    {
+        double power = currentPower - EnergyModel.getStaticPower();
         double activeCores = 0;
         for (Core core : getCores()) {
             if (core.isWorking( time )) {
@@ -110,8 +110,14 @@ public abstract class CPU extends Device<QueryInfo,Long>
                 power -= EnergyModel.getCoreStaticPower();
             }
         }
+        
+        if (activeCores == 0) {
+            return;
+        }
+        
         power /= activeCores * EnergyModel.getAlpha();
         double targetFrequency = Math.pow( power, 1/EnergyModel.getBeta() );
+        System.out.println( "AC: " + activeCores + ", POWER: " + power + ", C_P: " + currentPower + ", TARGET: " + targetFrequency );
         // Find the highest frequency less than the target.
         List<Long> frequencies = getFrequencies();
         for (int i = frequencies.size() - 1; i >= 0; i--) {
