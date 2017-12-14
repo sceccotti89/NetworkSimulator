@@ -30,8 +30,10 @@ public class EnergyCPU extends CPU
     
     
     
-    public EnergyCPU( String specFile ) throws IOException {
+    public EnergyCPU( String specFile ) throws IOException
+    {
         super( specFile );
+        setEnergyModel( (int) getCPUcores() );
     }
     
     public EnergyCPU( String machine, int cores, int contexts,
@@ -47,12 +49,16 @@ public class EnergyCPU extends CPU
         _cores = Math.max( 1, cores );
         _contexts = contexts;
         
-        setFrequency( getMaxFrequency() );
         coresMap = new HashMap<>( (int) _cores );
         
         setMaxPower( 84d );
         setMinPower(  2d );
         
+        setEnergyModel( cores );
+    }
+    
+    private void setEnergyModel( int cores )
+    {
         setEnergyModel( new QueryEnergyModel( cores ) );
         //setEnergyModel( new CoefficientEnergyModel( cores ) );
         //setEnergyModel( new NormalizedEnergyModel( cores ) );

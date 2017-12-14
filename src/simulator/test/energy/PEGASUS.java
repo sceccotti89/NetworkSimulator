@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import simulator.utils.Pair;
 import simulator.utils.Time;
 
 public class PEGASUS
@@ -115,7 +116,7 @@ public class PEGASUS
     {
         private EnergyCPU node;
         
-        private List<Time> queries;
+        private List<Pair<Time,Time>> queries;
         
         private long target;
         private static final Time WINDOW = new Time( 30, TimeUnit.SECONDS );
@@ -138,20 +139,26 @@ public class PEGASUS
         {
             final Time lowerBound = now.clone().subTime( WINDOW );
             while (size > 0) {
-                Time time = queries.get( 0 );
+                Pair<Time,Time> query = queries.get( 0 );
+                Time time = query.getFirst();
                 if (time.compareTo( lowerBound ) >= 0) {
                     break;
                 } else {
                     queries.remove( 0 );
                     if (size == 1) {
-                        average = time.getTimeMicros();
+                        average = 0;
                     } else {
-                        average = ((average * size) - time.getTimeMicros()) / (size - 1);
+                        long completion = query.getSecond().getTimeMicros();
+                        //if (node.getAgent().getId() == 2)
+                        //    System.out.println( now + ": DEVO RIMUOVERE: " + completion + ", FROM: " + average );
+                        average = ((average * size) - completion) / (size - 1);
+                        //if (node.getAgent().getId() == 2)
+                        //    System.out.println( now + ": NEW AVERAGE: " + average );
                     }
                     size--;
                 }
             }
-            queries.add( now );
+            queries.add( new Pair<>( now, completionTime ) );
             size++;
             
             if (power_holding) {
@@ -162,14 +169,11 @@ public class PEGASUS
                 }
             }
             
-            // FIXME capire come mai ottengo valori negativi.
-            // FIXME fare dei test per capire come funziona la media.
-            
             final long instantaneous = completionTime.getTimeMicros();
             average = average + ((instantaneous - average) / size);
             //System.out.println( "ID: " + node.getAgent().getId() );
-            if (node.getAgent().getId() == 2)
-                System.out.println( "TARGET: " + target + ", AVG: " + average + ", INST: " + instantaneous );
+            //if (node.getAgent().getId() == 2)
+            //    System.out.println( now + ": TARGET: " + target + ", AVG: " + average + ", INST: " + instantaneous );
             if (average > target) {
                 // Set max power, WAIT 5 minutes.
                 //node.setFrequency( now, node.getMaxFrequency() );

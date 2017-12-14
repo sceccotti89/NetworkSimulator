@@ -43,12 +43,17 @@ public abstract class CPU extends Device<QueryInfo,Long>
     
     
     
-    public CPU( String cpuSpec ) throws IOException {
+    public CPU( String cpuSpec/*, Class<? extends Core> coreClass*/ ) throws IOException
+    {
         super( cpuSpec );
+        coresMap = new HashMap<>( (int) _cores );
+        setFrequency( getMaxFrequency() );
     }
     
-    public CPU( String name, List<Long> frequencies ) {
+    public CPU( String name, List<Long> frequencies )
+    {
         super( name, frequencies );
+        setFrequency( getMaxFrequency() );
     }
     
     @Override
@@ -86,10 +91,16 @@ public abstract class CPU extends Device<QueryInfo,Long>
     
     public void setPower( Time time, double newPower )
     {
+        // TODO questo valore lo sto calcolando in base al numero di core attivi
+        // TODO la cui somma non deve superare il power cap
+        // TODO quindi in teoria dovrei rivalutare la frequenza in base al numero di core attivi
+        
         newPower = Math.min( newPower, maxPower );
+        newPower = Math.max( newPower, minPower );
         if (newPower == currentPower) {
             return;
         }
+        currentPower = newPower;
         
         double power = newPower - EnergyModel.getStaticPower();
         double activeCores = 0;
@@ -104,8 +115,8 @@ public abstract class CPU extends Device<QueryInfo,Long>
         // Find the highest frequency less than the target.
         List<Long> frequencies = getFrequencies();
         for (int i = frequencies.size() - 1; i >= 0; i--) {
-            if (frequencies.get( i ) < targetFrequency) {
-                setFrequency( frequencies.get( i ) );
+            if (frequencies.get( i ) <= targetFrequency) {
+                setFrequency( time, frequencies.get( i ) );
                 break;
             }
         }

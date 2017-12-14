@@ -45,7 +45,7 @@ import simulator.utils.resources.ResourceLoader;
 
 public class EnergyTestDIST
 {
-    private static final int NODES = 5;
+    private static final int NODES = 1;
     private static final int CPU_CORES = 4;
     
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
@@ -416,6 +416,8 @@ public class EnergyTestDIST
         final double MIN_RANGE = 1;
         final double MAX_RANGE = 2;
         
+        // TODO creare valori random AD OGNI QUERY invece di uno per tutti.
+        
         Random rand = new Random();
         List<Double> ranges = new ArrayList<>( NODES );
         // Node 0 has the original index.
@@ -629,14 +631,14 @@ public class EnergyTestDIST
         }
         
         CPUModel model = getModel( type, mode, timeBudget, 1 );
-        final String modelType = model.getModelType( true );
+        String modelType = model.getModelType( true );
         Plotter plotter = null;
         if (Global.showGUI) {
             plotter = new Plotter( "DISTRIBUTED VERSION - " + modelType, 800, 600 );
         }
-        final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
+        Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         for (int i = 0; i < NODES; i++) {
-            EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
+            EnergyCPU cpu = new EnergyCPU( "Models/cpu_spec.json" );
             //cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/Distributed_" + modelType + "_Node" + (i+1) + "_Tail_Latency.log" );
             cpus.add( cpu );
             
@@ -681,7 +683,7 @@ public class EnergyTestDIST
         }
         
         sim.start( duration, false );
-        //sim.start( new Time( 53100, TimeUnit.MICROSECONDS ), false );
+        //sim.start( new Time( 60000000, TimeUnit.MICROSECONDS ), false );
         sim.close();
         
         double totalEnergy = 0;
@@ -707,7 +709,7 @@ public class EnergyTestDIST
         // Total energy: 2599029.532406005
         
         // PEGASUS
-        // Total energy: 4746634.049346029
+        // Total energy: TODO
         
         if (Global.showGUI) {
             plotTailLatency( type, mode, timeBudget );
