@@ -506,7 +506,8 @@ public abstract class CPU extends Device<QueryInfo,Long>
         }
         
         public boolean isWorking( Time time ) {
-            return currentQuery != null && currentQuery.getEndTime().compareTo( time ) > 0;
+            //return currentQuery != null && currentQuery.getEndTime().compareTo( time ) > 0;
+            return !queryQueue.isEmpty();
         }
         
         public int getExecutedQueries() {

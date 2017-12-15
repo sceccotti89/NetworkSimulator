@@ -12,9 +12,9 @@ public abstract class EnergyModel
     private static final double Ps = 0.84d; //1.3d;
     /** Static power of a core. */
     private static final double Pind = 0.1d;
-    /***/
+    /** Alpha value used to evaluate the cpu power consumption. */
     private static final double alpha = 1.49;
-    /***/
+    /** Beta value used to evaluate the cpu power consumption. */
     private static final double beta = 2.1;
     
     

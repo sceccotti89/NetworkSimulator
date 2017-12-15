@@ -1013,18 +1013,40 @@ public class EnergyTestREPLICA_DIST
         plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
         plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
-        // TODO risistemare i percentili come nella versione distribuita
+        // TODO sistemare i percentili confrontando il file generato dal broker con quello
+        // TODO caricato qui dentro.
         
         final String folder = "Results/DistributedReplica/";
-        List<Pair<Double,Double>> percentiles = Utils.getPercentiles( percentile, interval,
-                                                                      "Log/Distributed_Replica_" + lambda + "_" + type + "_L" + latencyType + "ms_Latency.log",
-                                                                      "Results/Distributed_Replica_" + lambda + "_" + type + "_L" + latencyType + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
+        //List<Pair<Double,Double>> percentiles = Utils.getPercentiles( percentile, interval,
+        //                                                              "Log/Distributed_Replica_" + lambda + "_" + type + "_L" + latencyType + "ms_Latency.log",
+        //                                                              "Results/Distributed_Replica_" + lambda + "_" + type + "_L" + latencyType + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
+        List<Pair<Double,Double>> percentiles;
         switch ( type ) {
-            case PESOS   : plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ")" ); break;
-            case PERF    : plotter.addPlot( percentiles, "PERF (Lambda=" + lambda + ", Type=" + type + ")" ); break;
-            case CONS    : plotter.addPlot( percentiles, "CONS (Lambda=" + lambda + ", Type=" + type + ")" ); break;
-            case PEGASUS : plotter.addPlot( percentiles, "PEGASUS (t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ")" ); break;
-            default      : break;
+            case PESOS :
+                percentiles = Utils.getPercentiles( percentile, interval,
+                                                    "Log/Distributed_Replica_PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
+                                                    folder + "PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ")" );
+                break;
+            case PERF :
+                percentiles = Utils.getPercentiles( percentile, interval,
+                                                    "Log/Distributed_Replica_PERF_Tail_Latency.log",
+                                                    folder + "PERF_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "PERF (Lambda=" + lambda + ", Type=" + type + ")" );
+                break;
+            case CONS :
+                percentiles = Utils.getPercentiles( percentile, interval,
+                                                    "Log/Distributed_Replica_CONS_Tail_Latency.log",
+                                                    folder + "CONS_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "CONS (Lambda=" + lambda + ", Type=" + type + ")" );
+                break;
+            case PEGASUS :
+                percentiles = Utils.getPercentiles( percentile, interval,
+                                                    "Log/Distributed_Replica_PEGASUS_" + time_budget + "ms_Tail_Latency.log",
+                                                    folder + "PEGASUS_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "PEGASUS (t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ")" );
+                break;
+            default : break;
         }
         
         plotter.setVisible( true );

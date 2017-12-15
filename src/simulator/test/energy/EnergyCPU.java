@@ -714,9 +714,9 @@ public class EnergyCPU extends CPU
                 q.setCoreId( coreId );
                 queryQueue.add( q );
                 if (isNextQuery( q )) {
-                    q.setTimeToComplete( Time.ZERO, Time.INFINITE );
+                    //q.setTimeToComplete( Time.ZERO, Time.INFINITE );
                     //System.out.println( "SONO QUI" );
-                    currentQuery = q;
+                    //currentQuery = q;
                     cpu.setFrequencyOnPower( getTime() );
                 }
             }
