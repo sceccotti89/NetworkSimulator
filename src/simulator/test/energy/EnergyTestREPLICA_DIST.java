@@ -1013,8 +1013,11 @@ public class EnergyTestREPLICA_DIST
         plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
         plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
+        // TODO risistemare i percentili come nella versione distribuita
+        
+        final String folder = "Results/DistributedReplica/";
         List<Pair<Double,Double>> percentiles = Utils.getPercentiles( percentile, interval,
-                                                                      "Results/Distributed_Replica_" + lambda + "_" + type + "_L" + latencyType + "ms_Latency.txt",
+                                                                      "Log/Distributed_Replica_" + lambda + "_" + type + "_L" + latencyType + "ms_Latency.log",
                                                                       "Results/Distributed_Replica_" + lambda + "_" + type + "_L" + latencyType + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
         switch ( type ) {
             case PESOS   : plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ")" ); break;

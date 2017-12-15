@@ -21,6 +21,7 @@ import simulator.events.Event;
 import simulator.test.energy.CPU.Core.State;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.utils.Time;
+import simulator.utils.Utils;
 import simulator.utils.resources.ResourceLoader;
 
 public abstract class CPU extends Device<QueryInfo,Long>
@@ -116,7 +117,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
         }
         
         power /= activeCores * EnergyModel.getAlpha();
-        double targetFrequency = Math.pow( power, 1/EnergyModel.getBeta() );
+        double targetFrequency = Math.pow( power, 1/EnergyModel.getBeta() ) * Utils.MILLION;
         System.out.println( "AC: " + activeCores + ", POWER: " + power + ", C_P: " + currentPower + ", TARGET: " + targetFrequency );
         // Find the highest frequency less than the target.
         List<Long> frequencies = getFrequencies();

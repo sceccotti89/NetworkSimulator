@@ -718,36 +718,37 @@ public class EnergyTestMONO
         plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
         plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
+        final String folder = "Results/Monolithic/";
         List<Pair<Double,Double>> percentiles;
         switch ( type ) {
             case PESOS :
                 percentiles = Utils.getPercentiles( percentile, interval,
                                                     "Log/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
-                                                    "Results/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                                                    folder + "PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
                 plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
                 break;
             case PERF :
                 percentiles = Utils.getPercentiles( percentile, interval,
                                                     "Log/PERF_Tail_Latency.log",
-                                                    "Results/PERF_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                                                    folder + "PERF_Tail_Latency_" + percentile + "th_Percentile.txt" );
                 plotter.addPlot( percentiles, "PERF" );
                 break;
             case CONS :
                 percentiles = Utils.getPercentiles( percentile, interval,
                                                     "Log/CONS_Tail_Latency.log",
-                                                    "Results/CONS_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                                                    folder + "CONS_Tail_Latency_" + percentile + "th_Percentile.txt" );
                 plotter.addPlot( percentiles, "CONS" );
                 break;
             case LOAD_SENSITIVE :
                 percentiles = Utils.getPercentiles( percentile, interval,
                                                     "Log/LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
-                                                    "Results/LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                                                    folder + "LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
                 plotter.addPlot( percentiles, "LOAD_SENSITIVE (" + mode + ", t=" + time_budget + "ms)" );
                 break;
             case MY_MODEL :
                 percentiles = Utils.getPercentiles( percentile, interval,
                                                     "Log/MY_Model_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
-                                                    "Results/MY_Model_" + mode + "_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );                
+                                                    folder + "MY_Model_" + mode + "_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );                
                 plotter.addPlot( percentiles, "MY_Model (" + mode + ", t=" + time_budget + "ms)" );
                 break;
             default : break;

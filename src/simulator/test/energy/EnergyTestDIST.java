@@ -743,30 +743,31 @@ public class EnergyTestDIST
         plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
         plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
+        final String folder = "Results/Distributed/";
         List<Pair<Double,Double>> percentiles;
         switch ( type ) {
             case PESOS :
                 percentiles = Utils.getPercentiles( percentile, interval,
                                                     "Log/Distributed_PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
-                                                    "Results/Distributed/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                                                    folder + "PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
                 plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
                 break;
             case PERF :
                 percentiles = Utils.getPercentiles( percentile, interval,
                                                     "Log/Distributed_PERF_Tail_Latency.log",
-                                                    "Results/Distributed/PERF_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                                                    folder + "PERF_Tail_Latency_" + percentile + "th_Percentile.txt" );
                 plotter.addPlot( percentiles, "PERF" );
                 break;
             case CONS :
                 percentiles = Utils.getPercentiles( percentile, interval,
                                                     "Log/Distributed_CONS_Tail_Latency.log",
-                                                    "Results/Distributed/CONS_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                                                    folder + "CONS_Tail_Latency_" + percentile + "th_Percentile.txt" );
                 plotter.addPlot( percentiles, "CONS" );
                 break;
             case PEGASUS :
                 percentiles = Utils.getPercentiles( percentile, interval,
                                                     "Log/Distributed_PEGASUS_" + time_budget + "ms_Tail_Latency.log",
-                                                    "Results/Distributed/PEGASUS_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                                                    folder + "PEGASUS_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
                 plotter.addPlot( percentiles, "PEGASUS (t=" + time_budget + "ms)" );
                 break;
             default : break;
