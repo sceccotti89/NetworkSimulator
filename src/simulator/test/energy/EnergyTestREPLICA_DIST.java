@@ -29,6 +29,7 @@ import simulator.graphics.plotter.Plotter.Axis;
 import simulator.graphics.plotter.Plotter.Line;
 import simulator.network.NetworkAgent;
 import simulator.network.NetworkLayer;
+import simulator.test.energy.CPU.Core;
 import simulator.test.energy.CPU.Core.State;
 import simulator.test.energy.CPUModel.CONSmodel;
 import simulator.test.energy.CPUModel.Mode;
@@ -37,6 +38,12 @@ import simulator.test.energy.CPUModel.PERFmodel;
 import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.CPUModel.Type;
+import simulator.test.energy.EnergyCPU.CONScore;
+import simulator.test.energy.EnergyCPU.LOAD_SENSITIVEcore;
+import simulator.test.energy.EnergyCPU.MY_MODELcore;
+import simulator.test.energy.EnergyCPU.PEGASUScore;
+import simulator.test.energy.EnergyCPU.PERFcore;
+import simulator.test.energy.EnergyCPU.PESOScore;
 import simulator.topology.NetworkLink;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Pair;
@@ -60,7 +67,7 @@ public class EnergyTestREPLICA_DIST
     
     private static final Class<EnergyCPU> CPU = EnergyCPU.class;
     
-    private static List<EnergyCPU> cpus = new ArrayList<>( NODES );
+    private static List<CPU> cpus = new ArrayList<>( NODES );
     private static PESOScontroller controller;
     
     
@@ -866,7 +873,7 @@ public class EnergyTestREPLICA_DIST
             
             for (int j = 0; j < REPLICAS_PER_NODE; j++) {
                 final long nodeId = (i * REPLICAS_PER_NODE + j + 1);
-                EnergyCPU cpu = new EnergyCPU( "Intel i7-4770K", CPU_CORES, 1, "Models/cpu_frequencies.txt" );
+                CPU cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( model.getType() ) );
                 cpus.add( cpu );
                 
                 // Add the model to the corresponding CPU.
@@ -923,7 +930,7 @@ public class EnergyTestREPLICA_DIST
         
         double totalEnergy = 0;
         for (int i = 0; i < NODES * REPLICAS_PER_NODE; i++) {
-            EnergyCPU cpu = cpus.get( i );
+            CPU cpu = cpus.get( i );
             double energy = cpu.getAgent().getResultSampled( Global.ENERGY_SAMPLING );
             double energyIdle = cpu.getAgent().getResultSampled( Global.IDLE_ENERGY_SAMPLING );
             totalEnergy += energy;
@@ -974,6 +981,19 @@ public class EnergyTestREPLICA_DIST
         
         // Lambda = 0.75
         // Total energy:  (PESOS TC 500ms)
+    }
+    
+    private static Class<? extends Core> getCoreClass( Type type )
+    {
+        switch ( type ) {
+            case PESOS          : return PESOScore.class;
+            case PERF           : return PERFcore.class;
+            case CONS           : return CONScore.class;
+            case LOAD_SENSITIVE : return LOAD_SENSITIVEcore.class;
+            case MY_MODEL       : return MY_MODELcore.class;
+            case PEGASUS        : return PEGASUScore.class;
+            default             : return null;
+        }
     }
     
     public static void plotEnergyConsumption( long time_budget, String mode,

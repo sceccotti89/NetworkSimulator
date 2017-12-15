@@ -30,9 +30,10 @@ public class EnergyCPU extends CPU
     
     
     
-    public EnergyCPU( String specFile ) throws IOException
+    public EnergyCPU( String specFile, Class<? extends Core> coreClass ) throws Exception
     {
-        super( specFile );
+        // TODO gi dovrei passare la classe del tipo di core da generare
+        super( specFile, coreClass );
         setEnergyModel( (int) getCPUcores() );
     }
     
@@ -260,7 +261,7 @@ public class EnergyCPU extends CPU
         private static final long QUEUE_CHECK = TimeUnit.SECONDS.toMicros( 1 );
         
         
-        public PESOScore( EnergyCPU cpu, long coreId, long initFrequency ) {
+        public PESOScore( CPU cpu, long coreId, long initFrequency ) {
             super( cpu, coreId, initFrequency );
         }
         
@@ -394,9 +395,9 @@ public class EnergyCPU extends CPU
         }
     }
     
-    private static class PERFcore extends Core
+    public static class PERFcore extends Core
     {
-        public PERFcore( EnergyCPU cpu, long coreId, long initFrequency ) {
+        public PERFcore( CPU cpu, long coreId, long initFrequency ) {
             super( cpu, coreId, initFrequency );
         }
         
@@ -442,13 +443,13 @@ public class EnergyCPU extends CPU
         }
     }
     
-    protected static class CONScore extends Core
+    public static class CONScore extends Core
     {
         private double receivedQueries;
         private double processedQueries;
         private double cumulativeTime;
         
-        public CONScore( EnergyCPU cpu, long coreId, long initFrequency ) {
+        public CONScore( CPU cpu, long coreId, long initFrequency ) {
             super( cpu, coreId, initFrequency );
         }
         
@@ -611,7 +612,7 @@ public class EnergyCPU extends CPU
     {
         private long queryExecutionTime = 0;
         
-        public MY_MODELcore( EnergyCPU cpu, long coreId, long initFrequency ) {
+        public MY_MODELcore( CPU cpu, long coreId, long initFrequency ) {
             super( cpu, coreId, initFrequency );
         }
         
@@ -689,9 +690,8 @@ public class EnergyCPU extends CPU
         }
     }
 
-    private static class PEGASUScore extends Core
+    public static class PEGASUScore extends Core
     {
-
         public PEGASUScore( CPU cpu, long coreId, long initFrequency ) {
             super( cpu, coreId, initFrequency );
         }
@@ -714,9 +714,6 @@ public class EnergyCPU extends CPU
                 q.setCoreId( coreId );
                 queryQueue.add( q );
                 if (isNextQuery( q )) {
-                    //q.setTimeToComplete( Time.ZERO, Time.INFINITE );
-                    //System.out.println( "SONO QUI" );
-                    //currentQuery = q;
                     cpu.setFrequencyOnPower( getTime() );
                 }
             }

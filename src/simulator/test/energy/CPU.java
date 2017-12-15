@@ -44,11 +44,16 @@ public abstract class CPU extends Device<QueryInfo,Long>
     
     
     
-    public CPU( String cpuSpec/*, Class<? extends Core> coreClass*/ ) throws IOException
+    public CPU( String cpuSpec, Class<? extends Core> coreClass ) throws Exception
     {
         super( cpuSpec );
         coresMap = new HashMap<>( (int) _cores );
         setFrequency( getMaxFrequency() );
+        
+        for (long i = 0; i < _cores; i++) {
+            coresMap.put( i, coreClass.getConstructor( CPU.class, long.class, long.class )
+                                      .newInstance( this, i, getMaxFrequency() ) );
+        }
     }
     
     public CPU( String name, List<Long> frequencies )
@@ -75,7 +80,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
         this.setMaxPower( settings.getDouble( "Max Power" ) );
         this.setMinPower( settings.getDouble( "Min Power" ) );
         //this._cache = settings.getInt( "Cache" );
-        JSONArray freqs = settings.getJSONArray( "frequencies" );
+        JSONArray freqs = settings.getJSONArray( "Frequencies" );
         this._frequencies = new ArrayList<>( freqs.length() );
         for (int i = 0; i < freqs.length(); i++) {
             this._frequencies.add( freqs.getLong( i ) );
@@ -118,7 +123,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
         
         power /= activeCores * EnergyModel.getAlpha();
         double targetFrequency = Math.pow( power, 1/EnergyModel.getBeta() ) * Utils.MILLION;
-        System.out.println( "AC: " + activeCores + ", POWER: " + power + ", C_P: " + currentPower + ", TARGET: " + targetFrequency );
+        //System.out.println( "AC: " + activeCores + ", POWER: " + power + ", C_P: " + currentPower + ", TARGET: " + targetFrequency );
         // Find the highest frequency less than the target.
         List<Long> frequencies = getFrequencies();
         for (int i = frequencies.size() - 1; i >= 0; i--) {

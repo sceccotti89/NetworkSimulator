@@ -21,7 +21,7 @@ public interface EventHandler
     };
     
     /**
-     * Invoked when a specific event for which this handler is registered happens.</br>
+     * Invoked when a specific event, for which this handler is registered, happens.</br>
      * The simplest implementation is returning the calculation time associated
      * with the {@link NetworkNode} (see {@link NetworkNode#getTcalc() getTcalc()} method).
      * 

@@ -27,6 +27,7 @@ import simulator.graphics.plotter.Plotter.Axis;
 import simulator.graphics.plotter.Plotter.Line;
 import simulator.network.NetworkAgent;
 import simulator.network.NetworkLayer;
+import simulator.test.energy.CPU.Core;
 import simulator.test.energy.CPUModel.CONSmodel;
 import simulator.test.energy.CPUModel.Mode;
 import simulator.test.energy.CPUModel.PEGASUSmodel;
@@ -34,6 +35,12 @@ import simulator.test.energy.CPUModel.PERFmodel;
 import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.CPUModel.Type;
+import simulator.test.energy.EnergyCPU.CONScore;
+import simulator.test.energy.EnergyCPU.LOAD_SENSITIVEcore;
+import simulator.test.energy.EnergyCPU.MY_MODELcore;
+import simulator.test.energy.EnergyCPU.PEGASUScore;
+import simulator.test.energy.EnergyCPU.PERFcore;
+import simulator.test.energy.EnergyCPU.PESOScore;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Pair;
 import simulator.utils.Sampler;
@@ -45,10 +52,12 @@ import simulator.utils.resources.ResourceLoader;
 
 public class EnergyTestDIST
 {
-    private static final int NODES = 1;
+    private static final int NODES = 5;
     private static final int CPU_CORES = 4;
     
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
+    
+    //private static final List<CPU> cpus = new ArrayList<>( NODES );
     
     private static boolean PESOS_CONTROLLER = true;
     private static boolean PEGASUS_CONTROLLER = false;
@@ -170,7 +179,8 @@ public class EnergyTestDIST
         private List<QueryLatency> queries;
         private PEGASUS pegasus;
         
-        public SwitchAgent( long id, long target, EventGenerator evGenerator, String model ) throws IOException
+        public SwitchAgent( long id, long target, EventGenerator evGenerator,
+                            List<CPU> nodes, String model ) throws IOException
         {
             super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( evGenerator );
@@ -180,22 +190,22 @@ public class EnergyTestDIST
             queries = new ArrayList<>( 1 << 10 );
             
             if (PEGASUS_CONTROLLER) {
-                pegasus = new PEGASUS( target );
+                pegasus = new PEGASUS( target, nodes );
             }
         }
         
-        /**
+        /*
          * Method used to connect PEGASUS to a remote node.
          * 
          * @param nodeId    destination node identifier.
          * @param node      destination CPU node.
         */
-        public void connectTo( long nodeId, EnergyCPU node )
+        /*public void connectTo( long nodeId, CPU node )
         {
             if (pegasus != null) {
                 pegasus.addNode( nodeId, node );
             }
-        }
+        }*/
         
         @Override
         public Time handle( Event e, EventType type )
@@ -615,6 +625,8 @@ public class EnergyTestDIST
         
         Simulator sim = new Simulator( net );
         
+        List<CPU> cpus = new ArrayList<>( NODES );
+        
         // Create client.
         EventGenerator generator = new ClientGenerator( PACKET, PACKET );
         Agent client = new ClientAgent( 0, generator );
@@ -622,11 +634,9 @@ public class EnergyTestDIST
         
         // Create switch.
         EventGenerator switchGen = new SwitchGenerator( Time.INFINITE );
-        SwitchAgent switchAgent = new SwitchAgent( 1, timeBudget * 1000, switchGen, modelType );
+        Agent switchAgent = new SwitchAgent( 1, timeBudget * 1000, switchGen, cpus, modelType );
         net.addAgent( switchAgent );
         client.getEventGenerator( 0 ).connect( switchAgent );
-        
-        List<EnergyCPU> cpus = new ArrayList<>( NODES );
         
         // Create PESOS controller.
         if (type == Type.PESOS) {
@@ -635,11 +645,11 @@ public class EnergyTestDIST
         
         Plotter plotter = null;
         if (Global.showGUI) {
-            plotter = new Plotter( "DISTRIBUTED VERSION - " + modelType, 800, 600 );
+            plotter = new Plotter( "DISTRIBUTED VERSION - " + model.getModelType( false ), 800, 600 );
         }
         Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         for (int i = 0; i < NODES; i++) {
-            EnergyCPU cpu = new EnergyCPU( "Models/cpu_spec.json" );
+            CPU cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( model.getType() ) );
             //cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/Distributed_" + modelType + "_Node" + (i+1) + "_Tail_Latency.log" );
             cpus.add( cpu );
             
@@ -662,7 +672,7 @@ public class EnergyTestDIST
                 agentCore.addEventGenerator( evtGen );
             }
             
-            switchAgent.connectTo( agentCore.getId(), cpu );
+            //switchAgent.connectTo( agentCore.getId(), cpu );
             
             if (Global.showGUI) {
                 plotter.addPlot( agentCore.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) );
@@ -689,7 +699,7 @@ public class EnergyTestDIST
         
         double totalEnergy = 0;
         for (int i = 0; i < NODES; i++) {
-            EnergyCPU cpu = cpus.get( i );
+            CPU cpu = cpus.get( i );
             double energy = cpu.getAgent().getResultSampled( Global.ENERGY_SAMPLING );
             totalEnergy += energy;
             System.out.println( "CPU: " + i + ", Energy: " + energy );
@@ -709,11 +719,24 @@ public class EnergyTestDIST
         // PESOS TC 500ms
         // Total energy: 2599029.532406005
         
-        // PEGASUS
-        // Total energy: TODO
+        // PEGASUS 500ms
+        // Total energy: 2894209.2631946327
         
         if (Global.showGUI) {
             plotTailLatency( type, mode, timeBudget );
+        }
+    }
+    
+    private static Class<? extends Core> getCoreClass( Type type )
+    {
+        switch ( type ) {
+            case PESOS          : return PESOScore.class;
+            case PERF           : return PERFcore.class;
+            case CONS           : return CONScore.class;
+            case LOAD_SENSITIVE : return LOAD_SENSITIVEcore.class;
+            case MY_MODEL       : return MY_MODELcore.class;
+            case PEGASUS        : return PEGASUScore.class;
+            default             : return null;
         }
     }
     

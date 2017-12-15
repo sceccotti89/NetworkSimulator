@@ -25,6 +25,7 @@ import simulator.graphics.plotter.Plotter.Axis;
 import simulator.graphics.plotter.Plotter.Line;
 import simulator.network.NetworkAgent;
 import simulator.network.NetworkLayer;
+import simulator.test.energy.CPU.Core;
 import simulator.test.energy.CPUModel.CONSmodel;
 import simulator.test.energy.CPUModel.LOAD_SENSITIVEmodel;
 import simulator.test.energy.CPUModel.MY_model;
@@ -33,6 +34,12 @@ import simulator.test.energy.CPUModel.PERFmodel;
 import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.CPUModel.Type;
+import simulator.test.energy.EnergyCPU.CONScore;
+import simulator.test.energy.EnergyCPU.LOAD_SENSITIVEcore;
+import simulator.test.energy.EnergyCPU.MY_MODELcore;
+import simulator.test.energy.EnergyCPU.PEGASUScore;
+import simulator.test.energy.EnergyCPU.PERFcore;
+import simulator.test.energy.EnergyCPU.PESOScore;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Pair;
 import simulator.utils.Sampler;
@@ -472,7 +479,7 @@ public class EnergyTestMONO
         
         final Time duration = new Time( 24, TimeUnit.HOURS );
         
-        CPU cpu = new EnergyCPU( "Models/cpu_spec.json" );
+        CPU cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( model.getType() ) );
         cpu.setCentralizedQueue( CENTRALIZED_PESOS_QUEUE );
         cpu.setModel( model );
         
@@ -690,6 +697,19 @@ public class EnergyTestMONO
         System.out.println( model.getModelType( false ) + " - Total energy:      " + totalEnergy + "J" );
         System.out.println( model.getModelType( false ) + " - Total idle energy: " + totalIdleEnergy + "J" );
         System.out.println( "QUERIES: " + totalQueries );
+    }
+    
+    private static Class<? extends Core> getCoreClass( Type type )
+    {
+        switch ( type ) {
+            case PESOS          : return PESOScore.class;
+            case PERF           : return PERFcore.class;
+            case CONS           : return CONScore.class;
+            case LOAD_SENSITIVE : return LOAD_SENSITIVEcore.class;
+            case MY_MODEL       : return MY_MODELcore.class;
+            case PEGASUS        : return PEGASUScore.class;
+            default             : return null;
+        }
     }
     
     public static void plotTailLatency( Type type, Mode mode, Time timeBudget ) throws IOException

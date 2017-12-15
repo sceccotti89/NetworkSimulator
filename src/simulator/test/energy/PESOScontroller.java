@@ -25,7 +25,7 @@ public class PESOScontroller
     private final long timeBudget;
     private final Mode mode;
     
-    private List<EnergyCPU> cpus;
+    private List<CPU> cpus;
     private static int cpu_cores;
     
     //private static final double WARNING_DELAY  = 100000d;
@@ -38,7 +38,7 @@ public class PESOScontroller
 
 
 
-    public PESOScontroller( long timeBudget, Mode mode, List<EnergyCPU> cpus, int nodes, int cores )
+    public PESOScontroller( long timeBudget, Mode mode, List<CPU> cpus, int nodes, int cores )
     {
         cpuInfos = new HashMap<>( nodes );
         this.timeBudget = timeBudget;
