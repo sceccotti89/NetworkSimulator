@@ -654,7 +654,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             _plots.add( new Plot( title, points, chooseColor( color ), line, pointer, 2f, box ) );
             add( box );
         }
-
+        
         public void savePlot( String dir, String file ) throws IOException
         {
             FileWriter fw = new FileWriter( dir + "/" + file );
@@ -665,7 +665,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             }
             fw.close();
         }
-
+        
         protected void removePlot( int index )
         {
             Plot plot = _plots.remove( index );

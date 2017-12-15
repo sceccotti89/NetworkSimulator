@@ -736,11 +736,17 @@ public class EnergyTestREPLICA_DIST
             return 0;
         }
 
-        public String getMode()
+        public String getMode( boolean compressed )
         {
-            return LAMBDA + "_" +
-                   ((estimatorType == SEASONAL_ESTIMATOR) ? "LongTerm" : "ShortTerm") +
-                    "_L" + latency_normalization;
+            if (compressed) {
+                return LAMBDA + "_" +
+                        ((estimatorType == SEASONAL_ESTIMATOR) ? "LongTerm" : "ShortTerm") +
+                         "_L" + latency_normalization;
+            } else {
+                return "Lambda=" + LAMBDA + ",Type=" +
+                        ((estimatorType == SEASONAL_ESTIMATOR) ? "LongTerm" : "ShortTerm") +
+                         ",L=" + latency_normalization;
+            }
         }
     }
     
@@ -778,9 +784,7 @@ public class EnergyTestREPLICA_DIST
         CPUModel model = null;
         switch ( type ) {
             case PESOS  : model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
-            //case PESOS  : model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" ); break;
             case PERF   : model = new PERFmodel( "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
-            //case PERF   : model = new PERFmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
             case CONS   : model = new CONSmodel( "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
             case PEGASUS: model = new PEGASUSmodel( timeBudget, "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
             default     : break;
@@ -829,7 +833,8 @@ public class EnergyTestREPLICA_DIST
             plotter = new Plotter( "", 800, 600 );
         }
         
-        String testMode = null;
+        String compressedReplicaMode = null;
+        String extendedReplicaMode   = null;
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         final int latencyNormalization = 2;
         for (int i = 0; i < NODES; i++) {
@@ -846,8 +851,9 @@ public class EnergyTestREPLICA_DIST
             brokerGen.connect( switchNode );
             
             // Get the type of simulation.
-            if (testMode == null) {
-                testMode = switchNode.getMode();
+            if (compressedReplicaMode == null) {
+                compressedReplicaMode = switchNode.getMode( true );
+                extendedReplicaMode   = switchNode.getMode( false );
             }
             
             // Add the time slot generator.
@@ -875,7 +881,7 @@ public class EnergyTestREPLICA_DIST
                 net.addLink( id, switchId, 1000, 0, NetworkLink.BIDIRECTIONAL );
                 net.addAgent( agentCore );
                 
-                agentCore.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/Distributed_Replica_" + testMode + "_" + modelType + "_Node" + nodeId + "_Energy.log", Sampling.CUMULATIVE ) );
+                agentCore.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/Distributed_Replica_" + compressedReplicaMode + "_" + modelType + "_Node" + nodeId + "_Energy.log", Sampling.CUMULATIVE ) );
                 agentCore.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
                 
                 if (type == Type.CONS) {
@@ -895,13 +901,14 @@ public class EnergyTestREPLICA_DIST
             }
         }
         
-        Agent brokerAgent = new BrokerAgent( 1, timeBudget * 1000, brokerGen, modelType );
+        //System.out.println( "TEST_MODE: " + testMode );
+        Agent brokerAgent = new BrokerAgent( 1, timeBudget * 1000, brokerGen, modelType + "_" + compressedReplicaMode );
         net.addLink( 0, 1, 1000, 0, NetworkLink.BIDIRECTIONAL );
         net.addAgent( brokerAgent );
         client.getEventGenerator( 0 ).connect( brokerAgent );
         
         if (Global.showGUI) {
-            plotter.setTitle( "DISTRIBUTED REPLICA (" + testMode + ") - " + modelType );
+            plotter.setTitle( "DISTRIBUTED REPLICA (" + extendedReplicaMode + ") - " + modelType );
             plotter.setAxisName( "Time (h)", "Energy (J)" );
             plotter.setTicks( Axis.Y, 10 );
             plotter.setTicks( Axis.X, 23, 2 );
@@ -920,11 +927,11 @@ public class EnergyTestREPLICA_DIST
             double energy = cpu.getAgent().getResultSampled( Global.ENERGY_SAMPLING );
             double energyIdle = cpu.getAgent().getResultSampled( Global.IDLE_ENERGY_SAMPLING );
             totalEnergy += energy;
-            System.out.println( testMode + " " + model.getModelType( false ) +
+            System.out.println( extendedReplicaMode + " " + model.getModelType( false ) +
                                 " - CPU (" + (i/REPLICAS_PER_NODE + 1) + "-" + (i%REPLICAS_PER_NODE) + ") => Energy: " + energy +
                                 ", Idle: " + energyIdle + ", Queries: " + cpu.getExecutedQueries() );
         }
-        System.out.println( testMode + " " + model.getModelType( false ) + " - Total energy: " + totalEnergy );
+        System.out.println( extendedReplicaMode + " " + model.getModelType( false ) + " - Total energy: " + totalEnergy );
         
         // Show the animation.
         if (Global.showGUI) {
@@ -934,6 +941,10 @@ public class EnergyTestREPLICA_DIST
             an.setTargetFrameRate( 90 );
             an.setForceExit( false );
             an.start();*/
+        }
+        
+        if (Global.showGUI) {
+            plotTailLatency( type, mode, timeBudget, compressedReplicaMode, extendedReplicaMode );
         }
         
         // TODO questi valori sono stati presi senza spegnere le macchine
@@ -986,11 +997,10 @@ public class EnergyTestREPLICA_DIST
         plotter.setVisible( true );
     }
     
-    public static void plotTailLatency( Type type, Mode mode, long time_budget,
-                                        double lambda, int latencyType ) throws IOException
+    public static void plotTailLatency( Type type, Mode mode, long time_budget, String compressedReplicaMode, String extendedReplicaMode ) throws IOException
     {
         final int percentile = 95;
-        final long timeBudget = (time_budget == 0) ? 1000000 : time_budget;
+        final long timeBudget = (time_budget == 0) ? 1000000 : (time_budget * 1000);
         final double interval = TimeUnit.MINUTES.toMicros( 5 );
         
         Plotter plotter = new Plotter( "DISTRIBUTED REPLICA Tail Latency " + percentile + "-th Percentile", 800, 600 );
@@ -1013,38 +1023,32 @@ public class EnergyTestREPLICA_DIST
         plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
         plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
-        // TODO sistemare i percentili confrontando il file generato dal broker con quello
-        // TODO caricato qui dentro.
-        
         final String folder = "Results/DistributedReplica/";
-        //List<Pair<Double,Double>> percentiles = Utils.getPercentiles( percentile, interval,
-        //                                                              "Log/Distributed_Replica_" + lambda + "_" + type + "_L" + latencyType + "ms_Latency.log",
-        //                                                              "Results/Distributed_Replica_" + lambda + "_" + type + "_L" + latencyType + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
         List<Pair<Double,Double>> percentiles;
         switch ( type ) {
             case PESOS :
                 percentiles = Utils.getPercentiles( percentile, interval,
-                                                    "Log/Distributed_Replica_PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
-                                                    folder + "PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
-                plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ")" );
+                                                    "Log/Distributed_Replica_PESOS_" + mode + "_" + time_budget + "ms_" + compressedReplicaMode + "_Tail_Latency.log",
+                                                    folder + "PESOS_" + mode + "_" + time_budget + "ms_" + compressedReplicaMode + "_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms, " + extendedReplicaMode + ")" );
                 break;
             case PERF :
                 percentiles = Utils.getPercentiles( percentile, interval,
-                                                    "Log/Distributed_Replica_PERF_Tail_Latency.log",
-                                                    folder + "PERF_Tail_Latency_" + percentile + "th_Percentile.txt" );
-                plotter.addPlot( percentiles, "PERF (Lambda=" + lambda + ", Type=" + type + ")" );
+                                                    "Log/Distributed_Replica_PERF_" + compressedReplicaMode + "_Tail_Latency.log",
+                                                    folder + "PERF_" + compressedReplicaMode + "_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "PERF (" + extendedReplicaMode + ")" );
                 break;
             case CONS :
                 percentiles = Utils.getPercentiles( percentile, interval,
-                                                    "Log/Distributed_Replica_CONS_Tail_Latency.log",
-                                                    folder + "CONS_Tail_Latency_" + percentile + "th_Percentile.txt" );
-                plotter.addPlot( percentiles, "CONS (Lambda=" + lambda + ", Type=" + type + ")" );
+                                                    "Log/Distributed_Replica_CONS_" + compressedReplicaMode + "_Tail_Latency.log",
+                                                    folder + "CONS_" + compressedReplicaMode + "_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "CONS (" + extendedReplicaMode + ")" );
                 break;
             case PEGASUS :
                 percentiles = Utils.getPercentiles( percentile, interval,
-                                                    "Log/Distributed_Replica_PEGASUS_" + time_budget + "ms_Tail_Latency.log",
-                                                    folder + "PEGASUS_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
-                plotter.addPlot( percentiles, "PEGASUS (t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ")" );
+                                                    "Log/Distributed_Replica_PEGASUS_" + time_budget + "ms_" + compressedReplicaMode + "_Tail_Latency.log",
+                                                    folder + "PEGASUS_" + time_budget + "ms_" + compressedReplicaMode + "_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "PEGASUS (t=" + time_budget + "ms, " + extendedReplicaMode + ")" );
                 break;
             default : break;
         }
