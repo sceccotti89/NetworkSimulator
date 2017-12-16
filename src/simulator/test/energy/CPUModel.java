@@ -213,7 +213,8 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         
         String line;
         while ((line = reader.readLine()) != null) {
-            String[] values = line.split( "[\\s+|\\t+]" );
+            //String[] values = line.split( "[\\s+|\\t+]" );
+            String[] values = line.split( "\\s+" );
             
             long queryID = (long) Double.parseDouble( values[0] );
             QueryInfo query = queries.get( queryID );
