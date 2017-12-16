@@ -1290,6 +1290,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
     public static class QueryInfo
     {
         private long _id;
+        private long _distributedId;
         private long coreId;
         
         private boolean isAvailable = false;
@@ -1324,6 +1325,14 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         
         public long getId() {
             return _id;
+        }
+        
+        public void setDistributedId( long id ) {
+            _distributedId = id;
+        }
+        
+        public long getDistributedId() {
+            return _distributedId;
         }
         
         public int getTerms() {

@@ -65,8 +65,6 @@ public class EnergyTestREPLICA_DIST
     private static boolean PEGASUS_CONTROLLER = false;
     private static boolean SWITCH_OFF_MACHINES = false;
     
-    private static final Class<EnergyCPU> CPU = EnergyCPU.class;
-    
     private static List<CPU> cpus = new ArrayList<>( NODES );
     private static PESOScontroller controller;
     
@@ -184,6 +182,7 @@ public class EnergyTestREPLICA_DIST
         private PrintWriter writer;
         private List<QueryLatency> queries;
         private PEGASUS pegasus;
+        private long queryDistrId = -1;
         
         public BrokerAgent( long id, long target, EventGenerator evGenerator, String model )
                 throws IOException
@@ -194,27 +193,31 @@ public class EnergyTestREPLICA_DIST
             
             writer = new PrintWriter( "Log/Distributed_Replica_" + model + "_Tail_Latency.log", "UTF-8" );
             queries = new ArrayList<>( 1 << 10 );
+            
+            if (PEGASUS_CONTROLLER) {
+                pegasus = new PEGASUS( target, cpus );
+            }
         }
         
         @Override
         public Time handle( Event e, EventType type )
         {
             if (type == EventType.RECEIVED) {
-                long queryId = e.getPacket().getContent( Global.QUERY_ID );
                 if (e.getSource().getId() == 0) {
-                    queries.add( new QueryLatency( queryId, e.getTime() ) );
+                    queryDistrId = (queryDistrId + 1) % Long.MAX_VALUE;
+                    e.getPacket().addContent( Global.QUERY_DISTR_ID, queryDistrId );
+                    queries.add( new QueryLatency( queryDistrId, e.getTime() ) );
                 } else {
+                    long queryDistrId = e.getPacket().getContent( Global.QUERY_DISTR_ID );
                     QueryLatency query = null;
                     int index;
                     for (index = 0; index < queries.size(); index++) {
                         QueryLatency ql = queries.get( index );
-                        if (ql.id == queryId) {
+                        if (ql.id == queryDistrId) {
                             query = ql;
                             break;
                         }
                     }
-                    
-                    // FIXME stesso discorso del testDISTR switch node.
                     
                     Time endTime = e.getTime();
                     Time completionTime = e.getTime().subTime( query.startTime );
@@ -328,6 +331,7 @@ public class EnergyTestREPLICA_DIST
                 cpu.evalCONSparameters( e.getTime() );
             } else {
                 QueryInfo query = model.getQuery( p.getContent( Global.QUERY_ID ) );
+                query.setDistributedId( p.getContent( Global.QUERY_DISTR_ID ) );
                 //System.out.println( "RECEIVED QUERY: " + p.getContent( Global.QUERY_ID ) );
                 query.setEvent( e );
                 query.setArrivalTime( e.getArrivalTime() );
@@ -335,8 +339,8 @@ public class EnergyTestREPLICA_DIST
                 cpu.addQuery( coreID, query );
                 
                 if (PESOS_CONTROLLER) {
-                    _versionId = _versionId++ % Long.MAX_VALUE;
-                    controller.addQuery( e.getTime(), getId(), coreID, query.getId(), _versionId );
+                    long versionId = _versionId++ % Long.MAX_VALUE;
+                    controller.addQuery( e.getTime(), getId(), coreID, query.getId(), versionId );
                 }
             }
         }
@@ -345,11 +349,12 @@ public class EnergyTestREPLICA_DIST
         public Time handle( Event e, EventType type )
         {
             if (e instanceof ResponseEvent) {
-                EnergyCPU cpu = getDevice( CPU );
+                EnergyCPU cpu = getDevice( EnergyCPU.class );
                 if (type == EventType.GENERATED) {
                     QueryInfo query = cpu.getLastQuery();
                     Packet p = e.getPacket();
                     p.addContent( Global.QUERY_ID, query.getId() );
+                    p.addContent( Global.QUERY_DISTR_ID, query.getDistributedId() );
                     query.setEvent( e );
                 } else { // EventType.SENT event.
                     // Set the time of the cpu as (at least) the time of the sending event.
@@ -359,7 +364,7 @@ public class EnergyTestREPLICA_DIST
                     } else {
                         for (long i = 0; i < CPU_CORES; i++) {
                             if (cpu.getCore( i ).checkQueryCompletion( e.getTime() )) {
-                                controller.completedQuery( e.getTime(), getId()-2, i );
+                                controller.completedQuery( e.getTime(), getId(), i );
                             }
                         }
                     }
@@ -367,7 +372,7 @@ public class EnergyTestREPLICA_DIST
             } else {
                 if (e.getPacket().hasContent( Global.QUERY_ID )) {
                     // Compute the time to complete the query.
-                    EnergyCPU cpu = getDevice( CPU );
+                    EnergyCPU cpu = getDevice( EnergyCPU.class );
                     return cpu.timeToCompute( null );
                 } else {
                     return Time.ZERO;
@@ -379,13 +384,13 @@ public class EnergyTestREPLICA_DIST
         
         @Override
         public double getNodeUtilization( Time time ) {
-            return getDevice( CPU ).getUtilization( time );
+            return getDevice( EnergyCPU.class ).getUtilization( time );
         }
         
         @Override
         public void shutdown() throws IOException
         {
-            EnergyCPU cpu = getDevice( CPU );
+            EnergyCPU cpu = getDevice( EnergyCPU.class );
             cpu.computeIdleEnergy( getEventScheduler().getTimeDuration() );
             super.shutdown();
         }
@@ -582,7 +587,7 @@ public class EnergyTestREPLICA_DIST
         {
             // Turn-on the sleeped nodes.
             for (int i = 0; i < currentReplicas; i++) {
-                destinations.get( i ).getDevice( CPU ).setState( time, State.RUNNING );
+                destinations.get( i ).getDevice( EnergyCPU.class ).setState( time, State.RUNNING );
             }
             
             if (slotIndex < allReplicas.length - 1) {
@@ -592,13 +597,13 @@ public class EnergyTestREPLICA_DIST
                     //Time powerOn = time.clone().addTime( SwitchTimeSlotGenerator.TIME_SLOT ).subTime( WAKE_UP_TIME );
                     // Turn-on the subsequent needed replicas.
                     for (int i = allReplicas[slotIndex+1]; i < currentReplicas; i++) {
-                        destinations.get( i ).getDevice( CPU ).setState( time, State.RUNNING );
+                        destinations.get( i ).getDevice( EnergyCPU.class ).setState( time, State.RUNNING );
                     }
                 } else {
                     if (SWITCH_OFF_MACHINES) {
                         //System.out.println( "SLOT: " + slotIndex + ", SWITCH-OFF: " + (REPLICAS_PER_NODE - currentReplicas) );
                         for (int i = currentReplicas; i < REPLICAS_PER_NODE; i++) {
-                            destinations.get( i ).getDevice( CPU ).setState( time, State.POWER_OFF);
+                            destinations.get( i ).getDevice( EnergyCPU.class ).setState( time, State.POWER_OFF);
                         }
                     }
                 }
@@ -606,7 +611,7 @@ public class EnergyTestREPLICA_DIST
                 // Last slot: just turn-off the unused nodes.
                 if (SWITCH_OFF_MACHINES) {
                     for (int i = currentReplicas; i < REPLICAS_PER_NODE; i++) {
-                        destinations.get( i ).getDevice( CPU ).setState( time, State.POWER_OFF );
+                        destinations.get( i ).getDevice( EnergyCPU.class ).setState( time, State.POWER_OFF );
                     }
                 }
             }
@@ -809,6 +814,7 @@ public class EnergyTestREPLICA_DIST
     public static void testNetwork( Type type, Mode mode, long timeBudget ) throws Exception
     {
         final Time duration = new Time( 24, TimeUnit.HOURS );
+        PEGASUS_CONTROLLER = type == Type.PEGASUS;
         
         //NetworkTopology net = new NetworkTopology( "Topology/Animation/Topology_distributed_multiCore.json" );
         //NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_replica_multiCore.json" );

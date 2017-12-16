@@ -181,6 +181,8 @@ public class EnergyTestDIST
         private List<QueryLatency> queries;
         private PEGASUS pegasus;
         
+        private long queryDistrId = -1;
+        
         public SwitchAgent( long id, long target, EventGenerator evGenerator,
                             List<CPU> nodes, String model ) throws IOException
         {
@@ -213,19 +215,19 @@ public class EnergyTestDIST
         public Time handle( Event e, EventType type )
         {
             if (type == EventType.RECEIVED) {
-                long queryId = e.getPacket().getContent( Global.QUERY_ID );
+                //long queryId = e.getPacket().getContent( Global.QUERY_ID );
                 if (e.getSource().getId() == 0) {
-                    queries.add( new QueryLatency( queryId, e.getTime() ) );
                     //System.out.println( "RICEVUTO: " + p.getContents() );
+                    queryDistrId = (queryDistrId + 1) % Long.MAX_VALUE;
+                    e.getPacket().addContent( Global.QUERY_DISTR_ID, queryDistrId );
+                    queries.add( new QueryLatency( queryDistrId, e.getTime() ) );
                 } else {
+                    long queryDistrId = e.getPacket().getContent( Global.QUERY_DISTR_ID );
                     QueryLatency query = null;
                     int index;
                     for (index = 0; index < queries.size(); index++) {
                         QueryLatency ql = queries.get( index );
-                        // FIXME questa operazione non e' detto che sia corretta
-                        // FIXME perche' la stessa query potrebbe essere eseguita
-                        // FIXME su core diversi a velocita' differenti
-                        if (ql.id == queryId) {
+                        if (ql.id == queryDistrId) {
                             query = ql;
                             break;
                         }
@@ -352,6 +354,7 @@ public class EnergyTestDIST
                 cpu.evalCONSparameters( e.getTime() );
             } else {
                 QueryInfo query = model.getQuery( p.getContent( Global.QUERY_ID ) );
+                query.setDistributedId( p.getContent( Global.QUERY_DISTR_ID ) );
                 //System.out.println( "RECEIVED QUERY: " + p.getContent( Global.QUERY_ID ) );
                 query.setEvent( e );
                 query.setArrivalTime( e.getArrivalTime() );
@@ -374,6 +377,7 @@ public class EnergyTestDIST
                     QueryInfo query = cpu.getLastQuery();
                     Packet p = e.getPacket();
                     p.addContent( Global.QUERY_ID, query.getId() );
+                    p.addContent( Global.QUERY_DISTR_ID, query.getDistributedId() );
                     query.setEvent( e );
                 } else { // EventType.SENT event.
                     // Set the time of the cpu as (at least) the time of the sending event.
@@ -496,7 +500,7 @@ public class EnergyTestDIST
     
     public static void main( String[] args ) throws Exception
     {
-        createDistributedIndex();
+        //createDistributedIndex();
         
         if (System.getProperty( "showGUI" ) != null) {
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
@@ -513,7 +517,7 @@ public class EnergyTestDIST
         //testNetwork( Type.PERF, null, 0 );
         //testNetwork( Type.CONS, null, 0 );
         
-        //testNetwork( Type.PEGASUS, null,  500 );
+        testNetwork( Type.PEGASUS, null,  500 );
         //testNetwork( Type.PEGASUS, null, 1000 );
         
         /* Controller OFF
