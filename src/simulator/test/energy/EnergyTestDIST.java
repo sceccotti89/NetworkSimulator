@@ -9,7 +9,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -422,116 +424,79 @@ public class EnergyTestDIST
     public static void createDistributedIndex() throws Exception
     {
         final String dir = "Models/Monolithic/PESOS/MaxScore/";
-        List<PrintWriter> writers = new ArrayList<>( NODES );
         final double MIN_RANGE = 1;
         final double MAX_RANGE = 2;
+        final Random rand = new Random();
         
-        // TODO creare valori random AD OGNI QUERY invece di uno per tutti.
-        
-        Random rand = new Random();
-        List<Double> ranges = new ArrayList<>( NODES );
-        // Node 0 has the original index.
-        ranges.add( 0d );
-        for (int i = 1; i < NODES; i++) {
-            double value;
-            boolean found = false;
-            do {
-                value = (rand.nextDouble() * (MAX_RANGE-MIN_RANGE) + MIN_RANGE)/100d;
-                for (Double range : ranges) {
-                    if (range == value) {
-                        found = true;
-                        break;
-                    }
+        for (int i = 2; i <= NODES; i++) {
+            String file = dir + "predictions.txt";
+            InputStream loader = ResourceLoader.getResourceAsStream( file );
+            BufferedReader reader = new BufferedReader( new InputStreamReader( loader ) );
+            
+            Map<Long,Double> queryRange = new HashMap<>();
+            
+            // Predictions.
+            PrintWriter writer = new PrintWriter( "Models/Distributed/Node_" + i + "/PESOS/MaxScore/predictions.txt", "UTF-8" );
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                double range = (rand.nextDouble() * (MAX_RANGE-MIN_RANGE) + MIN_RANGE)/100d;
+                int sign = rand.nextInt( 2 ) == 0 ? 1 : -1;
+                range *= sign;
+                
+                String[] values = line.split( "\\t+" );
+                long queryID    = Long.parseLong( values[0] );
+                int terms       = Integer.parseInt( values[1] );
+                int postings    = Integer.parseInt( values[2] );
+                int difference  = (int) (postings * range);
+                if (postings == postings + difference) {
+                    range = 0;
                 }
-            } while(found);
-            ranges.add( value );
-        }
-        
-        String file = dir + "predictions.txt";
-        InputStream loader = ResourceLoader.getResourceAsStream( file );
-        BufferedReader reader = new BufferedReader( new InputStreamReader( loader ) );
-        
-        for (int i = 1; i <= NODES; i++) {
-            writers.add( new PrintWriter( "Models/Distributed/Node_" + i + "/PESOS/MaxScore/predictions.txt", "UTF-8" ) );
-        }
-        
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            String[] values = line.split( "\\t+" );
-            long queryID    = Long.parseLong( values[0] );
-            int terms       = Integer.parseInt( values[1] );
-            int postings    = Integer.parseInt( values[2] );
-            for (int i = 0; i < NODES; i++) {
-                int difference = (int) (postings * ranges.get( i ));
-                if (i % 2 == 0) {
-                    difference *= -1;
-                }
-                postings = Math.max( 1, postings + difference );
-                writers.get( i ).println( queryID + "\t" + terms + "\t" + postings );
-            }
-        }
-        
-        for (int i = 0; i < NODES; i++) {
-            writers.get( i ).close();
-        }
-        writers.clear();
-        loader.close();
-        
-        file = dir + "time_energy_fit.txt";
-        loader = ResourceLoader.getResourceAsStream( file );
-        reader = new BufferedReader( new InputStreamReader( loader ) );
-        
-        for (int i = 1; i <= NODES; i++) {
-            writers.add( new PrintWriter( "Models/Distributed/Node_" + i + "/PESOS/MaxScore/time_energy.txt", "UTF-8" ) );
-        }
-        
-        while ((line = reader.readLine()) != null) {
-            String[] values = line.split( "\\s+" );
-            long queryID = (long) Double.parseDouble( values[0] );
-            for (int j = 0; j < NODES; j++) {
-                writers.get( j ).print( queryID + " " );
+                queryRange.put( queryID, range );
+                postings += postings + difference;
+                writer.println( queryID + "\t" + terms + "\t" + postings );
             }
             
-            for (int i = 1; i < values.length; i+=2) {
-                double qTime  = Double.parseDouble( values[i] );
-                double energy = Double.parseDouble( values[i+1] );
-                for (int j = 0; j < NODES; j++) {
-                    double difference = energy * ranges.get( j );
-                    if (j % 2 == 0) {
-                        difference *= -1;
-                    }
-                    energy += difference;
+            writer.close();
+            reader.close();
+            
+            // Time and energy.
+            file = dir + "time_energy_fit.txt";
+            loader = ResourceLoader.getResourceAsStream( file );
+            reader = new BufferedReader( new InputStreamReader( loader ) );
+            
+            writer = new PrintWriter( "Models/Distributed/Node_" + i + "/PESOS/MaxScore/time_energy.txt", "UTF-8" );
+            
+            while ((line = reader.readLine()) != null) {
+                String[] values = line.split( "\\s+" );
+                long queryID = (long) Double.parseDouble( values[0] );
+                writer.print( queryID + " " );
+                
+                double range = queryRange.get( queryID );
+                for (int j = 1; j < values.length; j+=2) {
+                    double qTime  = Double.parseDouble( values[j] );
+                    qTime += qTime * range;
+                    double energy = Double.parseDouble( values[j+1] );
+                    energy += energy * range;
                     
-                    difference = qTime * ranges.get( j );
-                    if (j % 2 == 0) {
-                        difference *= -1;
-                    }
-                    qTime += difference;
-                    
-                    if (i < values.length - 2) {
-                        writers.get( j ).print( qTime + " " + energy + " " );
+                    if (j < values.length - 2) {
+                        writer.print( qTime + " " + energy + " " );
                     } else {
-                        writers.get( j ).print( qTime + " " + energy );
+                        writer.print( qTime + " " + energy );
                     }
                 }
+                writer.println();
             }
             
-            for (int j = 0; j < NODES; j++) {
-                writers.get( j ).println();
-            }
+            writer.close();
+            reader.close();
+            
+            queryRange.clear();
         }
-        
-        for (int i = 0; i < NODES; i++) {
-            writers.get( i ).close();
-        }
-        writers.clear();
-        
-        loader.close();
     }
     
     public static void main( String[] args ) throws Exception
     {
-        //createDistributedIndex();
+        createDistributedIndex();
         
         if (System.getProperty( "showGUI" ) != null) {
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
@@ -548,7 +513,7 @@ public class EnergyTestDIST
         //testNetwork( Type.PERF, null, 0 );
         //testNetwork( Type.CONS, null, 0 );
         
-        testNetwork( Type.PEGASUS, null,  500 );
+        //testNetwork( Type.PEGASUS, null,  500 );
         //testNetwork( Type.PEGASUS, null, 1000 );
         
         /* Controller OFF
