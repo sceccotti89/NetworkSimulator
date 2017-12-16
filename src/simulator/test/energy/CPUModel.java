@@ -28,7 +28,6 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
 {
     private static final String POSTINGS_PREDICTORS   = "predictions.txt";
     private static final String EFFECTIVE_TIME_ENERGY = "time_energy.txt";
-    //private static final String EFFECTIVE_TIME_ENERGY = "time_energy_fit.txt";
     
     private static final String SEPARATOR = "=";
     
@@ -262,7 +261,8 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
                 utilization = coreUtilization;
                 tiedSelection = core.tieSelected;
                 tieSituation = false;
-            } else if (coreUtilization == utilization) { // TODO per testare l'abbassamento di frequenze di PESOS dovrei commentare questa parte
+                // TODO per testare l'abbassamento di frequenze di PESOS dovrei commentare questa parte
+            } else if (coreUtilization == utilization) {
                 if (core.tieSelected < tiedSelection) {
                     id = core.getId();
                     utilization = coreUtilization;
@@ -287,6 +287,467 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
     @Override
     protected CPUModel clone() {
         return cloneModel();
+    }
+    
+    public static class PESOSmodel extends CPUModel
+    {
+        private static final String REGRESSORS_TIME_CONSERVATIVE   = "regressors.txt";
+        private static final String REGRESSORS_ENERGY_CONSERVATIVE = "regressors_normse.txt";
+        
+        
+        /**
+         * Creates a new PESOS model.
+         * 
+         * @param time_budget    time limit to complete a query (in ms).
+         * @param mode           PESOS modality (see {@linkplain CPUModel.Mode Mode}).
+         * @param directory      directory used to load the files.
+         * 
+         * @throws IOException if a file doesn't exist or is malformed.
+        */
+        public PESOSmodel( long time_budget, Mode mode, String directory )
+        {
+            this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory,
+                  POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY,
+                  (mode == Mode.ENERGY_CONSERVATIVE) ? REGRESSORS_ENERGY_CONSERVATIVE : REGRESSORS_TIME_CONSERVATIVE );
+        }
+        
+        /**
+         * Creates a new PESOS model.
+         * 
+         * @param time_budget    time limit to complete a query (in ms).
+         * @param mode           PESOS modality (see {@linkplain CPUModel.Mode Mode}).
+         * @param directory      directory used to load the files.
+         * @param files          list of file used to load the model.
+         * 
+         * @throws IOException if a file doesn't exist or is malformed.
+        */
+        public PESOSmodel( long time_budget, Mode mode, String directory, String... files ) {
+            this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory, files );
+        }
+        
+        public PESOSmodel( Time time_budget, Mode mode, String directory, String... files ) {
+            super( getType( mode ), directory, files );
+            timeBudget = time_budget;
+        }
+        
+        private static Type getType( Mode mode )
+        {
+            Type type = Type.PESOS;
+            type.setMode( mode );
+            return type;
+        }
+        
+        @Override
+        public Long eval( Time now, QueryInfo... queries )
+        {
+            QueryInfo currentQuery = queries[0];
+            Time currentDeadline = currentQuery.getArrivalTime().addTime( timeBudget );
+            if (currentDeadline.compareTo( now ) <= 0) {
+                // Time to complete the query is already over.
+                return _device.getMaxFrequency();
+            }
+            
+            long lateness = getLateness( now, queries );
+            currentDeadline.subTime( lateness, TimeUnit.MICROSECONDS );
+            if (currentDeadline.compareTo( now ) <= 0) {
+                return _device.getMaxFrequency();
+            }
+            
+            int ppcRMSE = regressors.get( "class." + currentQuery.getTerms() + ".rmse" ).intValue();
+            long pcost = currentQuery.getPostings() + ppcRMSE;
+            long volume = pcost;
+            double maxDensity = volume / currentDeadline.subTime( now ).getTimeMicros();
+            
+            for (int i = 1; i < queries.length; i++) {
+                QueryInfo q = queries[i];
+                
+                ppcRMSE = regressors.get( "class." + q.getTerms() + ".rmse" ).intValue();
+                volume += q.getPostings() + ppcRMSE;
+                
+                Time qArrivalTime = q.getArrivalTime();
+                Time deadline = qArrivalTime.addTime( timeBudget.clone().subTime( lateness, TimeUnit.MICROSECONDS ) );
+                if (deadline.compareTo( now ) <= 0) {
+                    return _device.getMaxFrequency();
+                } else {
+                    double density = volume / (deadline.subTime( now ).getTimeMicros());
+                    if (density > maxDensity) {
+                        maxDensity = density;
+                    }
+                }
+            }
+            
+            double targetTime = pcost/maxDensity;
+            return identifyTargetFrequency( currentQuery.getTerms(), pcost, targetTime );
+        }
+        
+        private long getLateness( Time now, QueryInfo[] queries )
+        {
+            double lateness = 0;
+            int cnt = 0;
+            
+            for (int i = 0; i < queries.length; i++) {
+                QueryInfo q = queries[i];
+                int ppcRMSE = regressors.get( "class." + q.getTerms() + ".rmse" ).intValue();
+                long pcost = q.getPostings() + ppcRMSE;
+                long predictedTimeMaxFreq = predictServiceTimeAtMaxFrequency( q.getTerms(), pcost );
+                Time qArrivalTime = q.getArrivalTime();
+                long budget = timeBudget.clone().subTime( now.clone().subTime( qArrivalTime ) ).getTimeMicros();
+                
+                if (predictedTimeMaxFreq > budget) {
+                    lateness += predictedTimeMaxFreq - budget;
+                } else {
+                    cnt++;
+                }
+            }
+            
+            double result = lateness / cnt;
+            return Utils.getTimeInMicroseconds( result, TimeUnit.MICROSECONDS );
+        }
+        
+        public long predictServiceTimeAtMaxFrequency( int terms, long postings )
+        {
+            String base  = _device.getMaxFrequency() + "." + terms;
+            double alpha = regressors.get( base + ".alpha" );
+            double beta  = regressors.get( base + ".beta" );
+            double rmse  = regressors.get( base + ".rmse" );
+            return Utils.getTimeInMicroseconds( alpha * postings + beta + rmse, TimeUnit.MILLISECONDS );
+        }
+        
+        private long identifyTargetFrequency( int terms, long postings, double targetTime )
+        {
+            for (Long frequency : _device.getFrequencies()) {
+                final String base = frequency + "." + terms;
+                double alpha = regressors.get( base + ".alpha" );
+                double beta  = regressors.get( base + ".beta" );
+                double rmse  = regressors.get( base + ".rmse" );
+                
+                long extimatedTime = Utils.getTimeInMicroseconds( alpha * postings + beta + rmse, TimeUnit.MILLISECONDS );
+                if (extimatedTime <= targetTime) {
+                    return frequency;
+                }
+            }
+            
+            return _device.getMaxFrequency(); 
+        }
+        
+        public int getRMSE( int terms ) {
+            return regressors.get( "class." + terms + ".rmse" ).intValue();
+        }
+        
+        // TODO Per PESOS utilizzare questo: vince (di molto) nei 1000ms ma perde (di poco) nei 500ms.
+        /*@Override
+        public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
+        {
+            // NOTE: This is a new core selection technique,
+            //       based on the frequency evaluation.
+            
+            long id = -1;
+            long minFrequency = Long.MAX_VALUE;
+            long tiedSelection = Long.MAX_VALUE;
+            boolean tieSituation = false;
+            for (Core core : cpu.getCores()) {
+                long frequency = core.getFrequency();
+                core.addQuery( q, false );
+                if (core.getFrequency() < minFrequency) {
+                    id = core.getId();
+                    minFrequency = core.getFrequency();
+                    tiedSelection = core.tieSelected;
+                    tieSituation = false;
+                } else if (core.getFrequency() == minFrequency) {
+                    if (core.tieSelected < tiedSelection) {
+                        id = core.getId();
+                        minFrequency = core.getFrequency();
+                        tiedSelection = core.tieSelected;
+                    }
+                    tieSituation = true;
+                }
+                core.removeQuery( time, core.getQueue().size() - 1, false );
+                core.setFrequency( frequency );
+            }
+            
+            if (tieSituation) {
+                cpu.getCore( id ).tieSelected++;
+            }
+            
+            return cpu.lastSelectedCore = id;
+        }*/
+        
+        // Alternative technique selecting the core with the earliest completion time.
+        /*@Override
+        public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
+        {
+            long id = -1;
+            long minExecutionTime = Long.MAX_VALUE;
+            long tiedSelection = Long.MAX_VALUE;
+            boolean tieSituation = false;
+            for (Core core : cpu.getCores()) {
+                long executionTime = ((PESOScore) core).getQueryExecutionTime( time );
+                if (executionTime < minExecutionTime) {
+                    id = core.getId();
+                    minExecutionTime = executionTime;
+                    tiedSelection = core.tieSelected;
+                    tieSituation = false;
+                } else if (executionTime == minExecutionTime) {
+                    if (core.tieSelected < tiedSelection) {
+                        id = core.getId();
+                        minExecutionTime = executionTime;
+                        tiedSelection = core.tieSelected;
+                    }
+                    tieSituation = true;
+                }
+            }
+            
+            if (tieSituation) {
+                cpu.getCore( id ).tieSelected++;
+            }
+            
+            return cpu.lastSelectedCore = id;
+        }*/
+        
+        @Override
+        public String getModelType( boolean delimeters )
+        {
+            if (delimeters) {
+                return "PESOS_" + getMode() + "_" + getTimeBudget().getTimeMillis() + "ms";
+            } else {
+                return "PESOS (" + getMode() + ",t=" + getTimeBudget().getTimeMillis() + "ms)";
+            }
+        }
+
+        @Override
+        protected CPUModel cloneModel()
+        {
+            PESOSmodel model = new PESOSmodel( timeBudget.clone(), getMode(), "", _postings, _effective_time_energy, _regressors );
+            try { model.loadModel(); }
+            catch ( IOException e ) { e.printStackTrace(); }
+            return model;
+        }
+
+        @Override
+        public void close() {}
+    }
+    
+    public static class PERFmodel extends CPUModel
+    {
+        /**
+         * Creates a new PERF model.
+         * 
+         * @param directory    directory used to load the files.
+         * 
+         * @throws IOException if a file doesn't exist or is malformed.
+        */
+        public PERFmodel( String directory ) {
+            super( Type.PERF, directory, POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY );
+        }
+        
+        /**
+         * Creates a new PERF model.
+         * 
+         * @param directory    directory used to load the files.
+         * @param files        list of files used to load the model.
+         * 
+         * @throws IOException if a file doesn't exist or is malformed.
+        */
+        public PERFmodel( String directory, String... files ) {
+            super( Type.PERF, directory, files );
+        }
+        
+        @Override
+        public Long eval( Time now, QueryInfo... queries ) {
+            return _device.getMaxFrequency();
+        }
+        
+        @Override
+        public String getModelType( boolean delimeters ) {
+            return type.toString();
+        }
+        
+        @Override
+        protected CPUModel cloneModel()
+        {
+            PERFmodel model = new PERFmodel( "", _postings, _effective_time_energy );
+            try { model.loadModel(); }
+            catch ( IOException e ) { e.printStackTrace(); }
+            return model;
+        }
+
+        @Override
+        public void close() {}
+    }
+    
+    public static class CONSmodel extends CPUModel
+    {
+        private static final double TARGET = 0.70;
+        private static final double UP_THRESHOLD = 0.80;
+        private static final double DOWN_THRESHOLD = 0.20;
+        public static final long PERIOD = 2000; // in ms.
+        
+        /**
+         * Creates a new CONS model.
+         * 
+         * @param directory    directory used to load the files.
+         * 
+         * @throws IOException if a file doesn't exist or is malformed.
+        */
+        public CONSmodel( String directory ) {
+            super( Type.CONS, directory, POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY );
+        }
+        
+        /**
+         * Creates a new CONS model.
+         * 
+         * @param directory    directory used to load the files.
+         * @param files        list of files used to load the model.
+         * 
+         * @throws IOException if a file doesn't exist or is malformed.
+        */
+        public CONSmodel( String directory, String... files ) {
+            super( Type.CONS, directory, files );
+        }
+        
+        /**
+         * Evaluate the input parameter to decide which is the "best" frequency
+         * to complete the queued queries.
+         * 
+         * @param now       time of evaluation.
+         * @param queries   list of parameters.
+         * 
+         * @return the "best" frequency, expressed in KHz.
+        */
+        @Override
+        public Long eval( Time now, QueryInfo... queries )
+        {
+            EnergyCPU cpu = (EnergyCPU) _device;
+            CONScore core = (CONScore) cpu.getCore( cpu.getCurrentCoreId() );
+            return controlCPUfrequency( core );
+        }
+        
+        private long controlCPUfrequency( CONScore core )
+        {
+            double utilization = getUtilization( core );
+            if (utilization >= UP_THRESHOLD || utilization <= DOWN_THRESHOLD) {
+                long targetFrequency = computeTargetFrequency( core );
+                core.reset();
+                return targetFrequency;
+            }
+            
+            core.reset();
+            return core.getFrequency();
+        }
+        
+        private double getUtilization( CONScore core )
+        {
+            double utilization;
+            double serviceRate = core.getServiceRate();
+            double arrivalRate = core.getArrivalRate();
+            
+            if (serviceRate == 0) {
+                if (arrivalRate == 0) {
+                    utilization = 0.0;
+                } else {
+                    utilization = 1.0;
+                }
+            } else {
+                utilization = arrivalRate / serviceRate; //ro=lamda/mu
+            }
+            
+            return utilization;
+        }
+        
+        private long getFrequencyGEQ( long targetFrequency )
+        {
+            for (Long frequency : _device.getFrequencies()) {
+                if (frequency >= targetFrequency) {
+                    return frequency;
+                }
+            }
+            return _device.getMaxFrequency();
+        }
+        
+        private long computeTargetFrequency( CONScore core )
+        {
+            double serviceRate       = core.getServiceRate();
+            double targetServiceRate = core.getArrivalRate() / TARGET;
+            
+            if (serviceRate == 0.0) {
+                if (targetServiceRate == 0.0) {
+                    return _device.getMinFrequency();
+                } else {
+                    return _device.getMaxFrequency();
+                }
+            } else {
+                return getFrequencyGEQ( (long) Math.ceil( core.getFrequency() * (targetServiceRate / serviceRate) ) );
+            }
+        }
+        
+        @Override
+        public String getModelType( boolean delimeters ) {
+            return type.toString();
+        }
+        
+        @Override
+        protected CPUModel cloneModel()
+        {
+            CONSmodel model = new CONSmodel( "", _postings, _effective_time_energy );
+            try { model.loadModel(); }
+            catch ( IOException e ) { e.printStackTrace(); }
+            return model;
+        }
+
+        @Override
+        public void close() {}
+    }
+    
+    public static class PEGASUSmodel extends CPUModel
+    {
+        /**
+         * Creates a new PEGASUS model.
+         * 
+         * @param time_budget    time limit to complete a query (in ms).
+         * @param directory      directory used to load the files.
+         * 
+         * @throws IOException if a file doesn't exist or is malformed.
+        */
+        public PEGASUSmodel( long time_budget, String directory ) {
+            this( new Time( time_budget, TimeUnit.MILLISECONDS ), directory, POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY );
+        }
+        
+        public PEGASUSmodel( long time_budget, String dir, String... files ){
+            this( new Time( time_budget, TimeUnit.MILLISECONDS ), dir, files );
+        }
+        
+        public PEGASUSmodel( Time time_budget, String dir, String... files )
+        {
+            super( Type.PEGASUS, dir, files );
+            timeBudget = time_budget;
+        }
+        
+        @Override
+        public String getModelType( boolean delimeters )
+        {
+            if (delimeters) {
+                return "PEGASUS_" + getTimeBudget().getTimeMillis() + "ms";
+            } else {
+                return "PEGASUS (t = " + getTimeBudget().getTimeMillis() + "ms)";
+            }
+        }
+        
+        @Override
+        protected CPUModel cloneModel()
+        {
+            CPUModel model = new PEGASUSmodel( timeBudget, "", _postings, _effective_time_energy );
+            try { model.loadModel(); }
+            catch ( IOException e ) { e.printStackTrace(); }
+            return model;
+        }
+        
+        @Override
+        public Long eval( Time now, QueryInfo... params ) {
+            return _device.getFrequency();
+        }
+        
+        @Override
+        public void close() {}
     }
     
     public static class MY_model extends CPUModel
@@ -812,7 +1273,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
                 return "LOAD_SENSITIVE (" + getMode() + ", t = " + getTimeBudget().getTimeMillis() + "ms)";
             }
         }
-
+    
         @Override
         protected CPUModel cloneModel()
         {
@@ -821,472 +1282,11 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             catch ( IOException e ) { e.printStackTrace(); }
             return model;
         }
-
+    
         @Override
         public void close() {}
     }
     
-    public static class PESOSmodel extends CPUModel
-    {
-        private static final String REGRESSORS_TIME_CONSERVATIVE   = "regressors.txt";
-        private static final String REGRESSORS_ENERGY_CONSERVATIVE = "regressors_normse.txt";
-        
-        
-        /**
-         * Creates a new PESOS model.
-         * 
-         * @param time_budget    time limit to complete a query (in ms).
-         * @param mode           PESOS modality (see {@linkplain CPUModel.Mode Mode}).
-         * @param directory      directory used to load the files.
-         * 
-         * @throws IOException if a file doesn't exist or is malformed.
-        */
-        public PESOSmodel( long time_budget, Mode mode, String directory )
-        {
-            this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory,
-                  POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY,
-                  (mode == Mode.ENERGY_CONSERVATIVE) ? REGRESSORS_ENERGY_CONSERVATIVE : REGRESSORS_TIME_CONSERVATIVE );
-        }
-        
-        /**
-         * Creates a new PESOS model.
-         * 
-         * @param time_budget    time limit to complete a query (in ms).
-         * @param mode           PESOS modality (see {@linkplain CPUModel.Mode Mode}).
-         * @param directory      directory used to load the files.
-         * @param files          list of file used to load the model.
-         * 
-         * @throws IOException if a file doesn't exist or is malformed.
-        */
-        public PESOSmodel( long time_budget, Mode mode, String directory, String... files ) {
-            this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory, files );
-        }
-        
-        public PESOSmodel( Time time_budget, Mode mode, String directory, String... files ) {
-            super( getType( mode ), directory, files );
-            timeBudget = time_budget;
-        }
-        
-        private static Type getType( Mode mode )
-        {
-            Type type = Type.PESOS;
-            type.setMode( mode );
-            return type;
-        }
-        
-        @Override
-        public Long eval( Time now, QueryInfo... queries )
-        {
-            QueryInfo currentQuery = queries[0];
-            Time currentDeadline = currentQuery.getArrivalTime().addTime( timeBudget );
-            if (currentDeadline.compareTo( now ) <= 0) {
-                // Time to complete the query is already over.
-                return _device.getMaxFrequency();
-            }
-            
-            long lateness = getLateness( now, queries );
-            currentDeadline.subTime( lateness, TimeUnit.MICROSECONDS );
-            if (currentDeadline.compareTo( now ) <= 0) {
-                return _device.getMaxFrequency();
-            }
-            
-            int ppcRMSE = regressors.get( "class." + currentQuery.getTerms() + ".rmse" ).intValue();
-            long pcost = currentQuery.getPostings() + ppcRMSE;
-            long volume = pcost;
-            double maxDensity = volume / currentDeadline.subTime( now ).getTimeMicros();
-            
-            for (int i = 1; i < queries.length; i++) {
-                QueryInfo q = queries[i];
-                
-                ppcRMSE = regressors.get( "class." + q.getTerms() + ".rmse" ).intValue();
-                volume += q.getPostings() + ppcRMSE;
-                
-                Time qArrivalTime = q.getArrivalTime();
-                Time deadline = qArrivalTime.addTime( timeBudget.clone().subTime( lateness, TimeUnit.MICROSECONDS ) );
-                if (deadline.compareTo( now ) <= 0) {
-                    return _device.getMaxFrequency();
-                } else {
-                    double density = volume / (deadline.subTime( now ).getTimeMicros());
-                    if (density > maxDensity) {
-                        maxDensity = density;
-                    }
-                }
-            }
-            
-            double targetTime = pcost/maxDensity;
-            return identifyTargetFrequency( currentQuery.getTerms(), pcost, targetTime );
-        }
-        
-        private long getLateness( Time now, QueryInfo[] queries )
-        {
-            double lateness = 0;
-            int cnt = 0;
-            
-            for (int i = 0; i < queries.length; i++) {
-                QueryInfo q = queries[i];
-                int ppcRMSE = regressors.get( "class." + q.getTerms() + ".rmse" ).intValue();
-                long pcost = q.getPostings() + ppcRMSE;
-                long predictedTimeMaxFreq = predictServiceTimeAtMaxFrequency( q.getTerms(), pcost );
-                Time qArrivalTime = q.getArrivalTime();
-                long budget = timeBudget.clone().subTime( now.clone().subTime( qArrivalTime ) ).getTimeMicros();
-                
-                if (predictedTimeMaxFreq > budget) {
-                    lateness += predictedTimeMaxFreq - budget;
-                } else {
-                    cnt++;
-                }
-            }
-            
-            double result = lateness / cnt;
-            return Utils.getTimeInMicroseconds( result, TimeUnit.MICROSECONDS );
-        }
-        
-        public long predictServiceTimeAtMaxFrequency( int terms, long postings )
-        {
-            String base  = _device.getMaxFrequency() + "." + terms;
-            double alpha = regressors.get( base + ".alpha" );
-            double beta  = regressors.get( base + ".beta" );
-            double rmse  = regressors.get( base + ".rmse" );
-            return Utils.getTimeInMicroseconds( alpha * postings + beta + rmse, TimeUnit.MILLISECONDS );
-        }
-        
-        private long identifyTargetFrequency( int terms, long postings, double targetTime )
-        {
-            for (Long frequency : _device.getFrequencies()) {
-                final String base = frequency + "." + terms;
-                double alpha = regressors.get( base + ".alpha" );
-                double beta  = regressors.get( base + ".beta" );
-                double rmse  = regressors.get( base + ".rmse" );
-                
-                long extimatedTime = Utils.getTimeInMicroseconds( alpha * postings + beta + rmse, TimeUnit.MILLISECONDS );
-                if (extimatedTime <= targetTime) {
-                    return frequency;
-                }
-            }
-            
-            return _device.getMaxFrequency(); 
-        }
-        
-        public int getRMSE( int terms ) {
-            return regressors.get( "class." + terms + ".rmse" ).intValue();
-        }
-        
-        // TODO Per PESOS utilizzare questo: vince (di molto) nei 1000ms ma perde (di poco) nei 500ms.
-        /*@Override
-        public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
-        {
-            // NOTE: This is a new core selection technique,
-            //       based on the frequency evaluation.
-            
-            long id = -1;
-            long minFrequency = Long.MAX_VALUE;
-            long tiedSelection = Long.MAX_VALUE;
-            boolean tieSituation = false;
-            for (Core core : cpu.getCores()) {
-                long frequency = core.getFrequency();
-                core.addQuery( q, false );
-                if (core.getFrequency() < minFrequency) {
-                    id = core.getId();
-                    minFrequency = core.getFrequency();
-                    tiedSelection = core.tieSelected;
-                    tieSituation = false;
-                } else if (core.getFrequency() == minFrequency) {
-                    if (core.tieSelected < tiedSelection) {
-                        id = core.getId();
-                        minFrequency = core.getFrequency();
-                        tiedSelection = core.tieSelected;
-                    }
-                    tieSituation = true;
-                }
-                core.removeQuery( time, core.getQueue().size() - 1, false );
-                core.setFrequency( frequency );
-            }
-            
-            if (tieSituation) {
-                cpu.getCore( id ).tieSelected++;
-            }
-            
-            return cpu.lastSelectedCore = id;
-        }*/
-        
-        // Alternative technique selecting the core with the earliest completion time.
-        /*@Override
-        public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
-        {
-            long id = -1;
-            long minExecutionTime = Long.MAX_VALUE;
-            long tiedSelection = Long.MAX_VALUE;
-            boolean tieSituation = false;
-            for (Core core : cpu.getCores()) {
-                long executionTime = ((PESOScore) core).getQueryExecutionTime( time );
-                if (executionTime < minExecutionTime) {
-                    id = core.getId();
-                    minExecutionTime = executionTime;
-                    tiedSelection = core.tieSelected;
-                    tieSituation = false;
-                } else if (executionTime == minExecutionTime) {
-                    if (core.tieSelected < tiedSelection) {
-                        id = core.getId();
-                        minExecutionTime = executionTime;
-                        tiedSelection = core.tieSelected;
-                    }
-                    tieSituation = true;
-                }
-            }
-            
-            if (tieSituation) {
-                cpu.getCore( id ).tieSelected++;
-            }
-            
-            return cpu.lastSelectedCore = id;
-        }*/
-        
-        @Override
-        public String getModelType( boolean delimeters )
-        {
-            if (delimeters) {
-                return "PESOS_" + getMode() + "_" + getTimeBudget().getTimeMillis() + "ms";
-            } else {
-                return "PESOS (" + getMode() + ",t=" + getTimeBudget().getTimeMillis() + "ms)";
-            }
-        }
-
-        @Override
-        protected CPUModel cloneModel()
-        {
-            PESOSmodel model = new PESOSmodel( timeBudget.clone(), getMode(), "", _postings, _effective_time_energy, _regressors );
-            try { model.loadModel(); }
-            catch ( IOException e ) { e.printStackTrace(); }
-            return model;
-        }
-
-        @Override
-        public void close() {}
-    }
-    
-    public static class PERFmodel extends CPUModel
-    {
-        /**
-         * Creates a new PERF model.
-         * 
-         * @param directory    directory used to load the files.
-         * 
-         * @throws IOException if a file doesn't exist or is malformed.
-        */
-        public PERFmodel( String directory ) {
-            super( Type.PERF, directory, POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY );
-        }
-        
-        /**
-         * Creates a new PERF model.
-         * 
-         * @param directory    directory used to load the files.
-         * @param files        list of files used to load the model.
-         * 
-         * @throws IOException if a file doesn't exist or is malformed.
-        */
-        public PERFmodel( String directory, String... files ) {
-            super( Type.PERF, directory, files );
-        }
-        
-        @Override
-        public Long eval( Time now, QueryInfo... queries ) {
-            return _device.getMaxFrequency();
-        }
-        
-        @Override
-        public String getModelType( boolean delimeters ) {
-            return type.toString();
-        }
-        
-        @Override
-        protected CPUModel cloneModel()
-        {
-            PERFmodel model = new PERFmodel( "", _postings, _effective_time_energy );
-            try { model.loadModel(); }
-            catch ( IOException e ) { e.printStackTrace(); }
-            return model;
-        }
-
-        @Override
-        public void close() {}
-    }
-    
-    public static class CONSmodel extends CPUModel
-    {
-        private static final double TARGET = 0.70;
-        private static final double UP_THRESHOLD = 0.80;
-        private static final double DOWN_THRESHOLD = 0.20;
-        public static final long PERIOD = 2000; // in ms.
-        
-        /**
-         * Creates a new CONS model.
-         * 
-         * @param directory    directory used to load the files.
-         * 
-         * @throws IOException if a file doesn't exist or is malformed.
-        */
-        public CONSmodel( String directory ) {
-            super( Type.CONS, directory, POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY );
-        }
-        
-        /**
-         * Creates a new CONS model.
-         * 
-         * @param directory    directory used to load the files.
-         * @param files        list of files used to load the model.
-         * 
-         * @throws IOException if a file doesn't exist or is malformed.
-        */
-        public CONSmodel( String directory, String... files ) {
-            super( Type.CONS, directory, files );
-        }
-        
-        /**
-         * Evaluate the input parameter to decide which is the "best" frequency
-         * to complete the queued queries.
-         * 
-         * @param now       time of evaluation.
-         * @param queries   list of parameters.
-         * 
-         * @return the "best" frequency, expressed in KHz.
-        */
-        @Override
-        public Long eval( Time now, QueryInfo... queries )
-        {
-            EnergyCPU cpu = (EnergyCPU) _device;
-            CONScore core = (CONScore) cpu.getCore( cpu.getCurrentCoreId() );
-            return controlCPUfrequency( core );
-        }
-        
-        private long controlCPUfrequency( CONScore core )
-        {
-            double utilization = getUtilization( core );
-            if (utilization >= UP_THRESHOLD || utilization <= DOWN_THRESHOLD) {
-                long targetFrequency = computeTargetFrequency( core );
-                core.reset();
-                return targetFrequency;
-            }
-            
-            core.reset();
-            return core.getFrequency();
-        }
-        
-        private double getUtilization( CONScore core )
-        {
-            double utilization;
-            double serviceRate = core.getServiceRate();
-            double arrivalRate = core.getArrivalRate();
-            
-            if (serviceRate == 0) {
-                if (arrivalRate == 0) {
-                    utilization = 0.0;
-                } else {
-                    utilization = 1.0;
-                }
-            } else {
-                utilization = arrivalRate / serviceRate; //ro=lamda/mu
-            }
-            
-            return utilization;
-        }
-        
-        private long getFrequencyGEQ( long targetFrequency )
-        {
-            for (Long frequency : _device.getFrequencies()) {
-                if (frequency >= targetFrequency) {
-                    return frequency;
-                }
-            }
-            return _device.getMaxFrequency();
-        }
-        
-        private long computeTargetFrequency( CONScore core )
-        {
-            double serviceRate       = core.getServiceRate();
-            double targetServiceRate = core.getArrivalRate() / TARGET;
-            
-            if (serviceRate == 0.0) {
-                if (targetServiceRate == 0.0) {
-                    return _device.getMinFrequency();
-                } else {
-                    return _device.getMaxFrequency();
-                }
-            } else {
-                return getFrequencyGEQ( (long) Math.ceil( core.getFrequency() * (targetServiceRate / serviceRate) ) );
-            }
-        }
-        
-        @Override
-        public String getModelType( boolean delimeters ) {
-            return type.toString();
-        }
-        
-        @Override
-        protected CPUModel cloneModel()
-        {
-            CONSmodel model = new CONSmodel( "", _postings, _effective_time_energy );
-            try { model.loadModel(); }
-            catch ( IOException e ) { e.printStackTrace(); }
-            return model;
-        }
-
-        @Override
-        public void close() {}
-    }
-    
-    public static class PEGASUSmodel extends CPUModel
-    {
-        /**
-         * Creates a new PEGASUS model.
-         * 
-         * @param time_budget    time limit to complete a query (in ms).
-         * @param directory      directory used to load the files.
-         * 
-         * @throws IOException if a file doesn't exist or is malformed.
-        */
-        public PEGASUSmodel( long time_budget, String directory ) {
-            this( new Time( time_budget, TimeUnit.MILLISECONDS ), directory, POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY );
-        }
-        
-        public PEGASUSmodel( long time_budget, String dir, String... files ){
-            this( new Time( time_budget, TimeUnit.MILLISECONDS ), dir, files );
-        }
-        
-        public PEGASUSmodel( Time time_budget, String dir, String... files )
-        {
-            super( Type.PEGASUS, dir, files );
-            timeBudget = time_budget;
-        }
-        
-        @Override
-        public String getModelType( boolean delimeters )
-        {
-            if (delimeters) {
-                return "PEGASUS_" + getTimeBudget().getTimeMillis() + "ms";
-            } else {
-                return "PEGASUS (t = " + getTimeBudget().getTimeMillis() + "ms)";
-            }
-        }
-        
-        @Override
-        protected CPUModel cloneModel()
-        {
-            CPUModel model = new PEGASUSmodel( timeBudget, "", _postings, _effective_time_energy );
-            try { model.loadModel(); }
-            catch ( IOException e ) { e.printStackTrace(); }
-            return model;
-        }
-        
-        @Override
-        public Long eval( Time now, QueryInfo... params ) {
-            return _device.getFrequency();
-        }
-        
-        @Override
-        public void close() {}
-    }
-
     public static class QueryInfo
     {
         private long _id;

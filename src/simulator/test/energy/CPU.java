@@ -123,7 +123,6 @@ public abstract class CPU extends Device<QueryInfo,Long>
         
         power /= activeCores * EnergyModel.getAlpha();
         double targetFrequency = Math.pow( power, 1/EnergyModel.getBeta() ) * Utils.MILLION;
-        //System.out.println( "AC: " + activeCores + ", POWER: " + power + ", C_P: " + currentPower + ", TARGET: " + targetFrequency );
         // Find the highest frequency less than the target.
         List<Long> frequencies = getFrequencies();
         for (int i = frequencies.size() - 1; i >= 0; i--) {

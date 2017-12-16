@@ -53,7 +53,7 @@ public class EnergyTestMONO
     private static final int CPU_CORES = 4;
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
     
-    private static boolean CENTRALIZED_PESOS_QUEUE;
+    private static boolean CENTRALIZED_QUEUE;
     
     
     private static class ClientGenerator extends EventGenerator
@@ -327,7 +327,7 @@ public class EnergyTestMONO
     public static void main( String[] args ) throws Exception
     {
         Utils.VERBOSE = false;
-        CENTRALIZED_PESOS_QUEUE = false;
+        CENTRALIZED_QUEUE = false;
         
         if (System.getProperty( "showGUI" ) != null) {
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
@@ -337,7 +337,7 @@ public class EnergyTestMONO
         
         //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
-        //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
+        model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
         //model = loadModel( Type.LOAD_SENSITIVE, Mode.TIME_CONSERVATIVE,  500 );
@@ -349,7 +349,7 @@ public class EnergyTestMONO
         //model = loadModel( Type.MY_MODEL, Mode.TIME_CONSERVATIVE, 1000 );
         
         //model = loadModel( Type.PERF );
-        model = loadModel( Type.CONS );
+        //model = loadModel( Type.CONS );
         
         //while (true) {
             //System.out.println( "SEED: " + ClientGenerator.SEED );
@@ -480,7 +480,7 @@ public class EnergyTestMONO
         final Time duration = new Time( 24, TimeUnit.HOURS );
         
         CPU cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( model.getType() ) );
-        cpu.setCentralizedQueue( CENTRALIZED_PESOS_QUEUE );
+        cpu.setCentralizedQueue( CENTRALIZED_QUEUE );
         cpu.setModel( model );
         
         String modelType = model.getModelType( true );
@@ -539,28 +539,28 @@ public class EnergyTestMONO
             plotTailLatency( model.getType(), model.getMode(), model.getTimeBudget() );
         }
         
-        // PARAMETERS                         0.03 0.03 0.01 (NOW: TODO)
+        // PARAMETERS                         0.03 0.03 0.01 (NOW: 0.01 0.06 0.01)
         //                QUERY_FILE            PARAMETER
         //
-        // TIME CONSERVATIVE 500ms
+        // PESOS TC 500ms
         // TARGET: 601670
         // 
         // SIMULATOR:  510183.06404994790
         // IDLE:        48653.39354192962
         
-        // TIME CONSERVATIVE 1000ms
+        // PESOS TC 1000ms
         // TARGET: 443730
         //
         // SIMULATOR:  384469.73002268150
         // IDLE:        39627.18491384348
         
-        // ENERGY CONSERVATIVE 500ms
+        // PESOS EC 500ms
         // TARGET: 531100
         //
         // SIMULATOR:  469209.54237407040
         // IDLE:        44385.01033179365
         
-        // ENERGY CONSERVATIVE 1000ms
+        // PESOS EC 1000ms
         // TARGET: 412060
         //
         // SIMULATOR:  371587.08914869634

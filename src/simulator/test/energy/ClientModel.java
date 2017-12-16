@@ -39,7 +39,7 @@ public class ClientModel extends Model<Object,Object>
         String line = null;
         while ((line = queryReader.readLine()) != null) {
             String[] values = line.split( "\\s+" );
-            long queryID = Long.parseLong( values[0] );
+            long queryID = (long) Double.parseDouble( values[0] );
             _queries.add( queryID );
         }
         
