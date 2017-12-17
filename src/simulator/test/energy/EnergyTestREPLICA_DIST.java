@@ -879,7 +879,7 @@ public class EnergyTestREPLICA_DIST
             
             for (int j = 0; j < REPLICAS_PER_NODE; j++) {
                 final long nodeId = (i * REPLICAS_PER_NODE + j + 1);
-                CPU cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( model.getType() ) );
+                CPU cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( type ) );
                 cpus.add( cpu );
                 
                 // Add the model to the corresponding CPU.
@@ -894,7 +894,8 @@ public class EnergyTestREPLICA_DIST
                 net.addLink( id, switchId, 1000, 0, NetworkLink.BIDIRECTIONAL );
                 net.addAgent( agentCore );
                 
-                agentCore.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/Distributed_Replica_" + compressedReplicaMode + "_" + modelType + "_Node" + nodeId + "_Energy.log", Sampling.CUMULATIVE ) );
+                agentCore.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/Distributed_Replica_" + modelType + "_" + compressedReplicaMode + "_Node" + nodeId + "_Energy.log", Sampling.CUMULATIVE ) );
+                //agentCore.addSampler( Global.TAIL_LATENCY_SAMPLING, new Sampler( null, "Log/Distributed_Replica_" + modelType + "_" + compressedReplicaMode + "_Node" + nodeId + "_Tail_Latency.log", null ) );
                 agentCore.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
                 
                 if (type == Type.CONS) {
@@ -1002,11 +1003,10 @@ public class EnergyTestREPLICA_DIST
         }
     }
     
-    public static void plotEnergyConsumption( long time_budget, String mode,
-                                              double lambda, String type,
-                                              int latencyType ) throws IOException
+    public static void plotEnergyConsumption( int node, Type type, long time_budget, String mode,
+                                              String compressedReplicaMode, String extendedReplicaMode ) throws IOException
     {
-        Plotter plotter = new Plotter( "Energy (Lambda=" + lambda + ", Type=" + type + ")", 800, 600 );
+        Plotter plotter = new Plotter( "DISTRIBUTED REPLICA Energy Consumption", 800, 600 );
         plotter.setAxisName( "Time (h)", "Energy (J)" );
         double yRange = time_budget * 1000d + 200000d;
         plotter.setRange( Axis.Y, 0, yRange );
@@ -1017,9 +1017,21 @@ public class EnergyTestREPLICA_DIST
         plotter.setTicks( Axis.X, 23, 2 );
         plotter.setScaleX( TimeUnit.HOURS.toMicros( 1 ) );
         
-        // TODO Completare inserendo il file in input
-        plotter.addPlot( "Log/", "PESOS (" + mode + ", t=" + time_budget + "ms, Lambda=" + lambda + ", Type=" + type + ")" );
-        
+        switch ( type ) {
+            case PESOS :
+                plotter.addPlot( "Log/Distributed_Replica_PESOS_" + mode + "_" + time_budget + "ms_" + compressedReplicaMode + "_Node" + node + "_Energy.log", "PESOS (" + mode + ", t=" + time_budget + "ms, " + extendedReplicaMode + ")" );
+                break;
+            case PERF :
+                plotter.addPlot( "Log/Distributed_Replica_PERF_" + compressedReplicaMode + "_Node" + node + "_Energy.log", "PERF (" + extendedReplicaMode + ")" );
+                break;
+            case CONS :
+                plotter.addPlot( "Log/Distributed_Replica_CONS_" + compressedReplicaMode + "_Node" + node + "_Energy.log", "CONS (" + extendedReplicaMode + ")" );
+                break;
+            case PEGASUS :
+                plotter.addPlot( "Log/Distributed_Replica_PEGASUS_" + time_budget + "ms_" + compressedReplicaMode + "_Node" + node + "_Energy.log", "PEGASUS (t=" + time_budget + "ms, " + extendedReplicaMode + ")" );
+                break;
+            default : break;
+        }
         plotter.setVisible( true );
     }
     
@@ -1078,7 +1090,6 @@ public class EnergyTestREPLICA_DIST
                 break;
             default : break;
         }
-        
         plotter.setVisible( true );
     }
 }

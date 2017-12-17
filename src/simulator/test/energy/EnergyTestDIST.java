@@ -428,7 +428,7 @@ public class EnergyTestDIST
     public static void createDistributedIndex() throws Exception
     {
         final String dir = "Models/Monolithic/PESOS/MaxScore/";
-        final double MIN_RANGE = 1;
+        final double MIN_RANGE = 0;
         final double MAX_RANGE = 2;
         final Random rand = new Random();
         
@@ -464,7 +464,7 @@ public class EnergyTestDIST
             reader.close();
             
             // Time and energy.
-            file = dir + "time_energy_fit.txt";
+            file = dir + "time_energy.txt";
             loader = ResourceLoader.getResourceAsStream( file );
             reader = new BufferedReader( new InputStreamReader( loader ) );
             

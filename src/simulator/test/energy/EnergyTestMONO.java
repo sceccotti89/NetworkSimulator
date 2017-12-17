@@ -335,9 +335,9 @@ public class EnergyTestMONO
         
         CPUModel model = null;
         
-        //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
-        model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
+        //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
         //model = loadModel( Type.LOAD_SENSITIVE, Mode.TIME_CONSERVATIVE,  500 );
@@ -716,7 +716,8 @@ public class EnergyTestMONO
     {
         final int percentile = 95;
         final double interval = TimeUnit.MINUTES.toMicros( 5 );
-        final long time_budget = (timeBudget == null) ? 1000000 : timeBudget.getTimeMillis();
+        final long time_budget = (timeBudget == null) ? 1000000 : timeBudget.getTimeMicros();
+        final long plotTimeBudget = time_budget / 1000;
         
         Plotter plotter = new Plotter( "DISTRIBUTED Tail Latency " + percentile + "-th Percentile", 800, 600 );
         plotter.setAxisName( "Time (h)", percentile + "th-tile response time (ms)" );
@@ -743,9 +744,9 @@ public class EnergyTestMONO
         switch ( type ) {
             case PESOS :
                 percentiles = Utils.getPercentiles( percentile, interval,
-                                                    "Log/PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
-                                                    folder + "PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
-                plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
+                                                    "Log/PESOS_" + mode + "_" + plotTimeBudget + "ms_Tail_Latency.log",
+                                                    folder + "PESOS_" + mode + "_" + plotTimeBudget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + plotTimeBudget + "ms)" );
                 break;
             case PERF :
                 percentiles = Utils.getPercentiles( percentile, interval,
@@ -761,15 +762,15 @@ public class EnergyTestMONO
                 break;
             case LOAD_SENSITIVE :
                 percentiles = Utils.getPercentiles( percentile, interval,
-                                                    "Log/LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
-                                                    folder + "LOAD_SENSITIVE_" + mode + "_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
-                plotter.addPlot( percentiles, "LOAD_SENSITIVE (" + mode + ", t=" + time_budget + "ms)" );
+                                                    "Log/LOAD_SENSITIVE_" + mode + "_" + plotTimeBudget + "ms_Tail_Latency.log",
+                                                    folder + "LOAD_SENSITIVE_" + mode + "_" + plotTimeBudget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "LOAD_SENSITIVE (" + mode + ", t=" + plotTimeBudget + "ms)" );
                 break;
             case MY_MODEL :
                 percentiles = Utils.getPercentiles( percentile, interval,
-                                                    "Log/MY_Model_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
-                                                    folder + "MY_Model_" + mode + "_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );                
-                plotter.addPlot( percentiles, "MY_Model (" + mode + ", t=" + time_budget + "ms)" );
+                                                    "Log/MY_Model_" + mode + "_" + plotTimeBudget + "ms_Tail_Latency.log",
+                                                    folder + "MY_Model_" + mode + "_" + plotTimeBudget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );                
+                plotter.addPlot( percentiles, "MY_Model (" + mode + ", t=" + plotTimeBudget + "ms)" );
                 break;
             default : break;
         }
