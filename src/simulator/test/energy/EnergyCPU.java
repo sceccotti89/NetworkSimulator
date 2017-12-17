@@ -160,6 +160,8 @@ public class EnergyCPU extends CPU
             return lastSelectedCore = toAssign.getCoreId();
         } else {
             getAgent().addSampledValue( Global.QUERY_PER_TIME_SLOT, time, time, 1 );
+            // TODO qui in teoria dovrei far trascorrere un po' di tempo al core su cui gira il query router
+            // TODO senza pero' mandare avanti la query
             return ((CPUModel) _model).selectCore( time, this, query );
         }
     }

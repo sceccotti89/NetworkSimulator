@@ -281,13 +281,14 @@ public class Plotter extends WindowAdapter implements ActionListener
     }
     
     public void addPlot( Plot plot ) {
+        plot.setGraphicPlotter( plotter );
         plotter.addPlot( plot.points, plot.color, plot.line, plot.pointer, plot.title );
     }
     
     public void savePlot( String dir, String file ) throws IOException {
         plotter.savePlot( dir, file );
     }
-
+    
     public void setVisible( boolean visible )
     {
         menuBar.updateSelectedValue();
@@ -510,6 +511,8 @@ public class Plotter extends WindowAdapter implements ActionListener
     
     public static class Plot
     {
+        private GraphicPlotter plotter;
+        
         protected String title;
         protected List<Pair<Double,Double>> points;
         protected Color color;
@@ -519,14 +522,18 @@ public class Plotter extends WindowAdapter implements ActionListener
         protected Stroke stroke;
         protected JCheckBox box;
         
+        protected int realWidth;
+        
         public static final int WIDTH = 8;
         public static final int HEIGHT = 8;
         
-        public Plot( String title,
+        public Plot( GraphicPlotter plotter, String title,
                      List<Pair<Double,Double>> points,
                      Color color, Line line, PointType pointer,
                      float lineWidth, JCheckBox box )
         {
+            this.plotter = plotter;
+            
             this.title = title;
             this.points = points;
             this.color = color;
@@ -535,7 +542,13 @@ public class Plotter extends WindowAdapter implements ActionListener
             this.lineWidth = lineWidth;
             this.box = box;
             
+            realWidth = box.getWidth();
+            
             updateValues();
+        }
+        
+        public void setGraphicPlotter( GraphicPlotter plotter ) {
+            this.plotter = plotter;
         }
         
         public void setCheckBox( JCheckBox box ) {
@@ -546,6 +559,10 @@ public class Plotter extends WindowAdapter implements ActionListener
         {
             if (box != null) {
                 box.setText( title );
+                final int width = plotter.getWidth( title, plotter.getGraphics() ) + 40;
+                final int offsetX = box.getWidth() - width;
+                box.setBounds( box.getX() + offsetX, box.getY(), width, box.getHeight() );
+                realWidth = width;
             }
             
             if (line == Line.UNIFORM) {
@@ -584,7 +601,7 @@ public class Plotter extends WindowAdapter implements ActionListener
         public Plot clone()
         {
             Color nColor = new Color( color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() );
-            Plot plot = new Plot( title, points, nColor, line, pointer, lineWidth, box );
+            Plot plot = new Plot( plotter, title, points, nColor, line, pointer, lineWidth, box );
             return plot;
         }
     }
@@ -601,7 +618,6 @@ public class Plotter extends WindowAdapter implements ActionListener
         private long currentFPS = 0;
         private long timeElapsed = 0;
         
-        private static final int MAX_TEXT_LENGTH = 170;
         private static final long SECOND = 1000L;
         private static final int pointRadius = 10;
         private static final double ROUNDNESS = 0.0001d;
@@ -643,15 +659,15 @@ public class Plotter extends WindowAdapter implements ActionListener
                 }
             } );
             
-            _legend = new PlotsPanel( this, (int) (width - 370), 350 );
+            _legend = new PlotsPanel( this, (int) width );
         }
         
         public void addPlot( List<Pair<Double,Double>> points,
                              Color color, Line line, PointType pointer,
                              String title )
         {
-            JCheckBox box = _legend.addPlot( this, title, MAX_TEXT_LENGTH );
-            _plots.add( new Plot( title, points, chooseColor( color ), line, pointer, 2f, box ) );
+            JCheckBox box = _legend.addPlot( this, title );
+            _plots.add( new Plot( this, title, points, chooseColor( color ), line, pointer, 2f, box ) );
             add( box );
         }
         
@@ -676,7 +692,7 @@ public class Plotter extends WindowAdapter implements ActionListener
         protected List<Plot> getPlots() {
             return _plots;
         }
-
+        
         private Color chooseColor( Color selected )
         {
             if (selected != null) {
@@ -834,35 +850,20 @@ public class Plotter extends WindowAdapter implements ActionListener
             int pointInfo = -1;
             Pair<Double,Double> point;
             Point p = new Point( plotLocation.x, plotLocation.y );
-            //if (plot.points.size() > 0) {
-                point = plot.points.get( 0 );
-                // Get the starting position.
-                double x = plotLocation.getX() + ((point.getFirst() - range.minX) * (xLength / range.getXRange()));
-                double y = plotLocation.getY() - ((point.getSecond() - range.minY) * (yLength / range.getYRange()));
-                g.setColor( plot.color );
-                plot.drawPoint( g, (int) x, (int) y );
-                p.setLocation( x, y );
-                if (!selected) {
-                    Ellipse2D circle = new Ellipse2D.Double( x - pointRadius/2, y - pointRadius/2, pointRadius, pointRadius );
-                    if (circle.contains( mouse.x, mouse.y )) {
-                        drawCircle = false;
-                        pointInfo = 0;
-                    }
+            point = plot.points.get( 0 );
+            // Get the starting position.
+            double x = plotLocation.getX() + ((point.getFirst() - range.minX) * (xLength / range.getXRange()));
+            double y = plotLocation.getY() - ((point.getSecond() - range.minY) * (yLength / range.getYRange()));
+            g.setColor( plot.color );
+            plot.drawPoint( g, (int) x, (int) y );
+            p.setLocation( x, y );
+            if (!selected) {
+                Ellipse2D circle = new Ellipse2D.Double( x - pointRadius/2, y - pointRadius/2, pointRadius, pointRadius );
+                if (circle.contains( mouse.x, mouse.y )) {
+                    drawCircle = false;
+                    pointInfo = 0;
                 }
-            //}
-            
-            /*if (plot.points.size() == 1) {
-                // Draw the point.
-                g.setColor( plot.color );
-                g.setStroke( plot.stroke );
-                point = plot.points.get( 0 );
-                x = plotLocation.getX() + ((point.getFirst() - range.minX) * (xLength / range.getXRange()));
-                y = plotLocation.getY() - ((point.getSecond() - range.minY) * (yLength / range.getYRange()));
-                if (plot.line != Line.NOTHING) {
-                    g.drawLine( (int) p.getX(), (int) p.getY(), (int) x, (int) y );
-                }
-                plot.drawPoint( g, (int) x, (int) y );
-            }*/
+            }
             
             for (int i = 1; i < plot.points.size(); i++) {
                 try {
@@ -1033,39 +1034,28 @@ public class Plotter extends WindowAdapter implements ActionListener
             
             g.setStroke( new BasicStroke( 2f ) );
             
+            int maxWidth = 0;
+            for (Plot plot : _plots) {
+                maxWidth = Math.max( maxWidth, plot.realWidth + LEGEND_LINE_LENGTH );
+            }
+            _legend.setWidth( maxWidth );
+            
             // Draw the legend.
-            int saveStartY = 0;
             for (Plot plot : _plots) {
                 JCheckBox box = plot.box;
-                Rectangle bounds = box.getBounds();
                 box.setForeground( (theme == Theme.BLACK) ? Color.WHITE : Color.BLACK );
-                box.setBounds( getWidth() - 300, bounds.y, bounds.width, bounds.height );
+                box.setBounds( _legend.getStartXPlot(), box.getY(), maxWidth - LEGEND_LINE_LENGTH, box.getHeight() );
                 
-                // Draw the associated line.
+                // Draw the associated line and point.
                 Point p = box.getLocation();
-                Dimension size = box.getSize();
-                
-                if (box.isSelected()) {
-                    if (creatingImage) {
-                        if (saveStartY == 0) {
-                            saveStartY = p.y;
-                        }
-                        g.setColor( (theme == Theme.WHITE) ? Color.BLACK : Color.WHITE );
-                        String title = box.getText();
-                        int width  = getWidth( title, g );
-                        int height = getHeight( title, g );
-                        g.drawString( box.getText(), p.x + size.width - width - 10, saveStartY + height );
-                    }
-                    saveStartY += size.height;
-                }
-                
+                final int x = p.x + box.getWidth();
                 g.setColor( plot.color );
                 g.setStroke( plot.stroke );
                 if (plot.line != Line.NOTHING) {
-                    g.drawLine( p.x + MAX_TEXT_LENGTH, p.y + size.height/2 - 1,
-                                p.x + MAX_TEXT_LENGTH + LEGEND_LINE_LENGTH, p.y + size.height/2 - 1 );
+                    g.drawLine( x, p.y + box.getHeight()/2 - 1,
+                                x + LEGEND_LINE_LENGTH, p.y + box.getHeight()/2 - 1 );
                 }
-                plot.drawPoint( g, p.x + MAX_TEXT_LENGTH + LEGEND_LINE_LENGTH/2, p.y + size.height/2 );
+                plot.drawPoint( g, x + LEGEND_LINE_LENGTH/2, p.y + box.getHeight()/2 );
             }
             
             _legend.draw( this, g );
@@ -1219,7 +1209,7 @@ public class Plotter extends WindowAdapter implements ActionListener
         public void componentShown( ComponentEvent e ) {}
         @Override
         public void componentResized( ComponentEvent e ) {
-            _legend.setXPosition( (int) (getWidth() - 370) );
+            _legend.setXPosition( getWidth() );
         }
     }
 }

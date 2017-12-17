@@ -58,7 +58,7 @@ public class MakePlotDialog extends JDialog implements ActionListener
         setTitle( "Plot" );
         
         this.plotter = plotter;
-        plot = new Plot( "", null, Color.GREEN, Line.UNIFORM, PointType.NOTHING, 2f, null );
+        plot = new Plot( null, "", null, Color.GREEN, Line.UNIFORM, PointType.NOTHING, 2f, null );
         
         JPanel boxPanel = new JPanel();
         boxPanel.setLayout( new BoxLayout( boxPanel, BoxLayout.Y_AXIS ) );

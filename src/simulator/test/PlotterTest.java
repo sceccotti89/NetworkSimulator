@@ -15,7 +15,7 @@ public class PlotterTest
     {
         Plotter plotter = new Plotter( "prova", 800, 600 );
         //plotter.addPlot( "/home/stefano/test.txt", Color.GREEN, Line.UNIFORM, PointType.TRIANGLE, "test" );
-        plotter.addPlot( "C:/Users/Stefano/Desktop/test.txt", Color.GREEN, Line.UNIFORM, PointType.TRIANGLE, "test1" );
+        plotter.addPlot( "C:/Users/Stefano/Desktop/test.txt", Color.GREEN, Line.UNIFORM, PointType.TRIANGLE, "UN_NOME_VERAMENTE_LUNGO" );
         plotter.addPlot( "C:/Users/Stefano/Desktop/test.txt", Color.RED,   Line.UNIFORM, PointType.TRIANGLE, "test2" );
         plotter.addPlot( "C:/Users/Stefano/Desktop/test.txt", Color.BLUE,  Line.UNIFORM, PointType.TRIANGLE, "test3" );
         plotter.setRange( Axis.X, -5, 15 );

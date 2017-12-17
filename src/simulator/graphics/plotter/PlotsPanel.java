@@ -36,7 +36,6 @@ import simulator.graphics.plotter.Plotter.Plot;
 public class PlotsPanel implements MouseListener, FocusListener
 {
     private GraphicPlotter plotter;
-    private String text;
     private Font font;
     private boolean selected;
     private Rectangle target;
@@ -48,20 +47,23 @@ public class PlotsPanel implements MouseListener, FocusListener
     private Dimension size;
     private Color background;
     
+    private static final String TEXT = "Plots";
+    
+    private static final int W_PLOT_OFFSET = 30;
+    
     private static final int OFFSET = 30, PAD = 5;
     private static final int POLY_SIZE = 20;
     
     
     
-    public PlotsPanel( GraphicPlotter plotter, int x, int width )
+    public PlotsPanel( GraphicPlotter plotter, int width )
     {
         this.plotter = plotter;
-        text = "Plots";
         font = new Font( "sans-serif", Font.PLAIN, 12 );
         selected = false;
         background = new Color( 200, 200, 220 );
-        this.x = x;
-        size = new Dimension( width, getHeight() );
+        this.x = width/* - RIGHT_DISTANCE*/;
+        size = new Dimension( 300, getHeight() );
         
         int[] xPoly = { x + PAD + 3, x + PAD + 9, x + PAD + 15 };
         int[] yPoly = { PAD + 4, PAD + 16, PAD + 4 };
@@ -74,13 +76,24 @@ public class PlotsPanel implements MouseListener, FocusListener
         target = new Rectangle( x + PAD + 3, PAD + 4, 12, 12 );
     }
     
-    public void setXPosition( int x )
+    public int getStartXPlot() {
+        return x + W_PLOT_OFFSET;
+    }
+    
+    public void setXPosition( int width )
     {
+        int x = width - size.width - W_PLOT_OFFSET/* - RIGHT_DISTANCE*/;
         int offset = x - this.x;
         this.x = x;
         target.translate( offset, 0 );
         targetOpen.translate( offset, 0 );
         targetClose.translate( offset, 0 );
+    }
+    
+    public void setWidth( int width )
+    {
+        size.width = width + W_PLOT_OFFSET;
+        setXPosition( plotter.getWidth() );
     }
     
     public boolean isSelected() {
@@ -91,20 +104,20 @@ public class PlotsPanel implements MouseListener, FocusListener
         return POLY_SIZE;
     }
     
-    public JCheckBox addPlot( GraphicPlotter plotter, String title, int maxWidth )
+    public JCheckBox addPlot( GraphicPlotter plotter, String title )
     {
-        //int maxWidth = 0;
         int y = startY;
         for (Plot plot : plotter.getPlots()) {
             JCheckBox box = plot.box;
             y = (int) box.getBounds().getMaxY();
         }
         
+        int width  = plotter.getWidth( title, plotter.getGraphics() ) + 40;
+        int height = plotter.getHeight( title, plotter.getGraphics() ) + 10;
+        
         JCheckBox box = new JCheckBox( title, true );
         box.setBackground( new Color( 0, 0, 0, 0 ) );
-        box.setBounds( 0, y,
-                       Math.max( maxWidth, plotter.getWidth( title, plotter.getGraphics() ) + 40 ),
-                       plotter.getHeight( title, plotter.getGraphics() ) + 10 );
+        box.setBounds( 0, y, width, height );
         size.height = (int) box.getBounds().getMaxY();
         box.addFocusListener( this );
         box.addMouseListener( this );
@@ -275,11 +288,11 @@ public class PlotsPanel implements MouseListener, FocusListener
         
         g.setFont( font );
         FontRenderContext frc = g.getFontRenderContext();
-        LineMetrics lm = font.getLineMetrics( text, frc );
+        LineMetrics lm = font.getLineMetrics( TEXT, frc );
         float height = lm.getAscent() + lm.getDescent();
         float x = OFFSET;
         float y = (h + height) / 2 - lm.getDescent();
         g.setColor( Color.BLACK );
-        g.drawString( text, this.x + x, PAD + y );
+        g.drawString( TEXT, this.x + x, PAD + y );
     }
 }
