@@ -1407,6 +1407,21 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             energyConsumption = energy;
         }
         
+        public void setDelay( Time delay )
+        {
+            currentTime.addTime( delay );
+            endTime.addTime( delay );
+        }
+        
+        /**
+         * Updates the time to complete and the energy consumption of the
+         * current query.
+         * 
+         * @param time            the current time.
+         * @param newFrequency    the new frequency.
+         * @param energy          energy associated to the new frequency,
+         *                        computed using the energy model.
+        */
         public void updateTimeEnergy( Time time, long newFrequency, double energy )
         {
             /*if (time.clone().subTime( currentTime ).getTimeMicros() == 0) {

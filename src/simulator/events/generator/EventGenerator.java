@@ -339,11 +339,15 @@ public abstract class EventGenerator
         if (departureTime == null)
             return null; // No events from this generator.
         
+        // FIXME ora come ora i generatori attivi perdono il tempo di invio del
+        // FIXME precedente evento, cioe' e' in ritardo di 1.
+        // FIXME al fine del simulatore cambia poco ma dovrei trovare un modo per sistemarlo.
         if (!_activeGenerator) {
             _time.addTime( departureTime );
         }
-        if (_time.compareTo( _duration ) > 0)
+        if (_time.compareTo( _duration ) > 0) {
             return null; // No more events from this generator.
+        }
         
         // Load the current session.
         _session = getSession( e );

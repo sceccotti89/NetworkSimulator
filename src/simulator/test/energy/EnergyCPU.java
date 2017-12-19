@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import simulator.core.Model;
@@ -24,17 +25,27 @@ import simulator.utils.Utils;
 
 public class EnergyCPU extends CPU
 {
-    // TODO File usato per ottenere i coefficienti
+    // TODO File utilizzato per ottenere i coefficienti
     protected static PrintWriter coeffWriter;
+    
+    protected int routerCore = -1;
+    protected Map<Long,Time> ROUTER_COMPUTATION_TIME; 
     
     
     
     
     public EnergyCPU( String specFile, Class<? extends Core> coreClass ) throws Exception
     {
-        // TODO gi dovrei passare la classe del tipo di core da generare
         super( specFile, coreClass );
         setEnergyModel( (int) getCPUcores() );
+        
+        double startTime = TimeUnit.MILLISECONDS.toMicros( 2 );
+        double startFreq = 800000;
+        ROUTER_COMPUTATION_TIME = new HashMap<>();
+        for (Long frequency : getFrequencies()) {
+            long time = (long) ((startFreq / frequency) * startTime);
+            ROUTER_COMPUTATION_TIME.put( frequency, new Time( time, TimeUnit.MICROSECONDS ) );
+        }
     }
     
     public EnergyCPU( String machine, int cores, int contexts,
@@ -96,7 +107,7 @@ public class EnergyCPU extends CPU
                     break;
             }
             Utils.checkDirectory( "Results/Coefficients" );
-            file += (_cores == 1) ? "_distr" : "_mono";
+            file += (_cores == 1) ? "_single" : "_multi";
             coeffWriter = new PrintWriter( "Results/Coefficients/" + file + "_Freq_Energy.txt", "UTF-8" );
         } catch ( IOException e ) {
             e.printStackTrace();
@@ -160,9 +171,17 @@ public class EnergyCPU extends CPU
             return lastSelectedCore = toAssign.getCoreId();
         } else {
             getAgent().addSampledValue( Global.QUERY_PER_TIME_SLOT, time, time, 1 );
-            // TODO qui in teoria dovrei far trascorrere un po' di tempo al core su cui gira il query router
-            // TODO senza pero' mandare avanti la query
-            return ((CPUModel) _model).selectCore( time, this, query );
+            /*System.out.println( "SELECTING CORE AT: " + time + ", MY_TIME: " + getTime() );
+            for (Core core : getCores()) {
+                System.out.println( "CORE: " + core.getId() + ", TIME: " + core.getTime() );
+            }
+            routerCore = (routerCore + 1) % ((int) getCPUcores());
+            Core core = getCore( routerCore );
+            final Time routering_delay = ROUTER_COMPUTATION_TIME.get( core.getFrequency() );
+            core.delayTask( time, ROUTER_COMPUTATION_TIME );
+            long selectedCore = ((CPUModel) _model).selectCore( time.clone().addTime( delay ), this, query );*/
+            long selectedCore = ((CPUModel) _model).selectCore( time, this, query );
+            return selectedCore;
         }
     }
     
@@ -298,12 +317,11 @@ public class EnergyCPU extends CPU
         @Override
         public boolean checkQueryCompletion( Time time )
         {
-            if (currentQuery != null && currentQuery.isComplete( time )) {
-                //long queryId = currentQuery.getId();
-                //System.out.println( "TIME: " + time + ", CORE: " + getId() + ", COMPLETATA QUERY: " + currentQuery );
+            if (currentTask != null && currentTask.isComplete( time )) {
+                //System.out.println( "TIME: " + time + ", CORE: " + getId() + ", COMPLETATA QUERY: " + currentTask );
                 PESOSmodel model = (PESOSmodel) cpu.getModel();
-                final int postings = currentQuery.getPostings() + model.getRMSE( currentQuery.getTerms() );
-                queryExecutionTime -= model.predictServiceTimeAtMaxFrequency( currentQuery.getTerms(), postings );
+                final int postings = currentTask.getPostings() + model.getRMSE( currentTask.getTerms() );
+                queryExecutionTime -= model.predictServiceTimeAtMaxFrequency( currentTask.getTerms(), postings );
                 
                 if (timeBudget != baseTimeBudget) {
                     timeBudget = baseTimeBudget;
@@ -315,11 +333,11 @@ public class EnergyCPU extends CPU
                 
                 if (cpu.centralizedQueue) {
                     cpu.analyzeFrequency( time, getId() );
-                    currentQuery = cpu.getNextQuery( time, getId() );
-                    //System.out.println( "PROSSIMA QUERY: " + currentQuery );
-                    if (currentQuery != null) {
-                        addQuery( currentQuery, false );
-                        cpu.computeTime( currentQuery, this );
+                    currentTask = cpu.getNextQuery( time, getId() );
+                    //System.out.println( "PROSSIMA QUERY: " + currentTask );
+                    if (currentTask != null) {
+                        addQuery( currentTask, false );
+                        cpu.computeTime( currentTask, this );
                     }
                 } else {
                     if (hasMoreQueries()) {
@@ -345,10 +363,10 @@ public class EnergyCPU extends CPU
         {
             this.timeBudget = timeBudget;
             //System.out.println( "CORE: " + getId() + ", NUOVO TIME BUDGET: " + timeBudget );
-            if (queryID != null && currentQuery != null && currentQuery.getId() == queryID) {
+            if (queryID != null && currentTask != null && currentTask.getId() == queryID) {
                 PESOSmodel model = (PESOSmodel) cpu.getModel();
                 model.setTimeBudget( timeBudget );
-                long frequency = cpu.evalFrequency( currentQuery.getStartTime(), this );
+                long frequency = cpu.evalFrequency( currentTask.getStartTime(), this );
                 //long frequency = cpu.evalFrequency( t, this );
                 setFrequency( time, frequency );
             }
@@ -356,10 +374,10 @@ public class EnergyCPU extends CPU
         
         public long getQueryExecutionTime( Time time )
         {
-            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+            if (currentTask != null && currentTask.getEndTime().compareTo( time ) <= 0) {
                 PESOSmodel model = (PESOSmodel) cpu.getModel();
-                final int postings = currentQuery.getPostings() + model.getRMSE( currentQuery.getTerms() );
-                long predictedTime = model.predictServiceTimeAtMaxFrequency( currentQuery.getTerms(), postings );
+                final int postings = currentTask.getPostings() + model.getRMSE( currentTask.getTerms() );
+                long predictedTime = model.predictServiceTimeAtMaxFrequency( currentTask.getTerms(), postings );
                 return queryExecutionTime - predictedTime;
             }
             
@@ -423,15 +441,15 @@ public class EnergyCPU extends CPU
         @Override
         public boolean checkQueryCompletion( Time time )
         {
-            if (currentQuery != null && currentQuery.isComplete( time )) {
-                //long queryId = currentQuery.getId();
+            if (currentTask != null && currentTask.isComplete( time )) {
+                //long queryId = currentTask.getId();
                 addQueryOnSampling( time, false );
                 if (cpu.centralizedQueue) {
-                    currentQuery = cpu.getNextQuery( time, getId() );
-                    //System.out.println( "PROSSIMA QUERY: " + currentQuery );
-                    if (currentQuery != null) {
-                        addQuery( currentQuery, false );
-                        cpu.computeTime( currentQuery, this );
+                    currentTask = cpu.getNextQuery( time, getId() );
+                    //System.out.println( "PROSSIMA QUERY: " + currentTask );
+                    if (currentTask != null) {
+                        addQuery( currentTask, false );
+                        cpu.computeTime( currentTask, this );
                     }
                 } else {
                     if (hasMoreQueries()) {
@@ -477,19 +495,19 @@ public class EnergyCPU extends CPU
         @Override
         public boolean checkQueryCompletion( Time time )
         {
-            if (currentQuery != null && currentQuery.isComplete( time )) {
-                //long queryId = currentQuery.getId();
+            if (currentTask != null && currentTask.isComplete( time )) {
+                //long queryId = currentTask.getId();
                 processedQueries++;
-                cumulativeTime += currentQuery.getCompletionTime()/1000;
+                cumulativeTime += currentTask.getCompletionTime()/1000;
                 
                 addQueryOnSampling( time, false );
                 
                 if (cpu.centralizedQueue) {
-                    currentQuery = cpu.getNextQuery( time, getId() );
-                    //System.out.println( "PROSSIMA QUERY: " + currentQuery );
-                    if (currentQuery != null) {
-                        addQuery( currentQuery, false );
-                        cpu.computeTime( currentQuery, this );
+                    currentTask = cpu.getNextQuery( time, getId() );
+                    //System.out.println( "PROSSIMA QUERY: " + currentTask );
+                    if (currentTask != null) {
+                        addQuery( currentTask, false );
+                        cpu.computeTime( currentTask, this );
                     }
                 } else {
                     if (hasMoreQueries()) {
@@ -569,20 +587,20 @@ public class EnergyCPU extends CPU
         @Override
         public boolean checkQueryCompletion( Time time )
         {
-            if (currentQuery != null && currentQuery.isComplete( time )) {
+            if (currentTask != null && currentTask.isComplete( time )) {
                 LOAD_SENSITIVEmodel model = (LOAD_SENSITIVEmodel) cpu.getModel();
-                final int postings = currentQuery.getPostings() + model.getRMSE( currentQuery.getTerms() );
-                queryExecutionTime -= model.predictServiceTimeAtMaxFrequency( currentQuery.getTerms(), postings );
+                final int postings = currentTask.getPostings() + model.getRMSE( currentTask.getTerms() );
+                queryExecutionTime -= model.predictServiceTimeAtMaxFrequency( currentTask.getTerms(), postings );
                 
                 addQueryOnSampling( time, true );
                 
                 if (cpu.centralizedQueue) {
                     cpu.analyzeFrequency( time, getId() );
-                    currentQuery = cpu.getNextQuery( time, getId() );
-                    //System.out.println( "PROSSIMA QUERY: " + currentQuery );
-                    if (currentQuery != null) {
-                        addQuery( currentQuery, false );
-                        cpu.computeTime( currentQuery, this );
+                    currentTask = cpu.getNextQuery( time, getId() );
+                    //System.out.println( "PROSSIMA QUERY: " + currentTask );
+                    if (currentTask != null) {
+                        addQuery( currentTask, false );
+                        cpu.computeTime( currentTask, this );
                     }
                 } else {
                     if (hasMoreQueries()) {
@@ -599,10 +617,10 @@ public class EnergyCPU extends CPU
         
         public long getQueryExecutionTime( Time time )
         {
-            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+            if (currentTask != null && currentTask.getEndTime().compareTo( time ) <= 0) {
                 LOAD_SENSITIVEmodel model = (LOAD_SENSITIVEmodel) cpu.getModel();
-                final int postings = currentQuery.getPostings() + model.getRMSE( currentQuery.getTerms() );
-                long predictedTime = model.predictServiceTimeAtMaxFrequency( currentQuery.getTerms(), postings );
+                final int postings = currentTask.getPostings() + model.getRMSE( currentTask.getTerms() );
+                long predictedTime = model.predictServiceTimeAtMaxFrequency( currentTask.getTerms(), postings );
                 return queryExecutionTime - predictedTime;
             }
             
@@ -649,22 +667,22 @@ public class EnergyCPU extends CPU
         @Override
         public boolean checkQueryCompletion( Time time )
         {
-            if (currentQuery != null && currentQuery.isComplete( time )) {
-                //long queryId = currentQuery.getId();
-                //System.out.println( "TIME: " + time + ", CORE: " + getId() + ", COMPLETATA QUERY: " + currentQuery );
+            if (currentTask != null && currentTask.isComplete( time )) {
+                //long queryId = currentTask.getId();
+                //System.out.println( "TIME: " + time + ", CORE: " + getId() + ", COMPLETATA QUERY: " + currentTask );
                 MY_model model = (MY_model) cpu.getModel();
-                final int postings = currentQuery.getPostings() + model.getRMSE( currentQuery.getTerms() );
-                queryExecutionTime -= model.predictServiceTimeAtMaxFrequency( currentQuery.getTerms(), postings );
+                final int postings = currentTask.getPostings() + model.getRMSE( currentTask.getTerms() );
+                queryExecutionTime -= model.predictServiceTimeAtMaxFrequency( currentTask.getTerms(), postings );
                 
                 addQueryOnSampling( time, true );
                 
                 if (cpu.centralizedQueue) {
                     cpu.analyzeFrequency( time, getId() );
-                    currentQuery = cpu.getNextQuery( time, getId() );
-                    //System.out.println( "PROSSIMA QUERY: " + currentQuery );
-                    if (currentQuery != null) {
-                        addQuery( currentQuery, false );
-                        cpu.computeTime( currentQuery, this );
+                    currentTask = cpu.getNextQuery( time, getId() );
+                    //System.out.println( "PROSSIMA QUERY: " + currentTask );
+                    if (currentTask != null) {
+                        addQuery( currentTask, false );
+                        cpu.computeTime( currentTask, this );
                     }
                 } else {
                     if (hasMoreQueries()) {
@@ -681,10 +699,10 @@ public class EnergyCPU extends CPU
         
         public long getQueryExecutionTime( Time time )
         {
-            if (currentQuery != null && currentQuery.getEndTime().compareTo( time ) <= 0) {
+            if (currentTask != null && currentTask.getEndTime().compareTo( time ) <= 0) {
                 MY_model model = (MY_model) cpu.getModel();
-                final int postings = currentQuery.getPostings() + model.getRMSE( currentQuery.getTerms() );
-                long predictedTime = model.predictServiceTimeAtMaxFrequency( currentQuery.getTerms(), postings );
+                final int postings = currentTask.getPostings() + model.getRMSE( currentTask.getTerms() );
+                long predictedTime = model.predictServiceTimeAtMaxFrequency( currentTask.getTerms(), postings );
                 return queryExecutionTime - predictedTime;
             }
             
@@ -724,16 +742,16 @@ public class EnergyCPU extends CPU
         @Override
         public boolean checkQueryCompletion( Time time )
         {
-            if (currentQuery != null && currentQuery.isComplete( time )) {
+            if (currentTask != null && currentTask.isComplete( time )) {
                 addQueryOnSampling( time, false );
                 
                 if (cpu.centralizedQueue) {
-                    currentQuery = cpu.getNextQuery( time, getId() );
-                    //System.out.println( "PROSSIMA QUERY: " + currentQuery );
-                    if (currentQuery != null) {
-                        addQuery( currentQuery, false );
+                    currentTask = cpu.getNextQuery( time, getId() );
+                    //System.out.println( "PROSSIMA QUERY: " + currentTask );
+                    if (currentTask != null) {
+                        addQuery( currentTask, false );
                         cpu.setFrequencyOnPower( time );
-                        cpu.computeTime( currentQuery, this );
+                        cpu.computeTime( currentTask, this );
                     }
                 } else {
                     if (hasMoreQueries()) {

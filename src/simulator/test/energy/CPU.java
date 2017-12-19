@@ -470,7 +470,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
         protected Time time;
         protected List<QueryInfo> queryQueue;
         protected long frequency;
-        protected QueryInfo currentQuery = null;
+        protected QueryInfo currentTask = null;
         protected long idleTime = 0;
         protected CPU cpu;
         protected long idleTimeInterval = 0;
@@ -510,7 +510,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
         }
         
         public boolean isWorking( Time time ) {
-            //return currentQuery != null && currentQuery.getEndTime().compareTo( time ) > 0;
+            //return currentTask != null && currentTask.getEndTime().compareTo( time ) > 0;
             return !queryQueue.isEmpty();
         }
         
@@ -520,22 +520,22 @@ public abstract class CPU extends Device<QueryInfo,Long>
         
         protected void addQueryOnSampling( Time time, boolean updateFrequency )
         {
-            Time startTime   = currentQuery.getStartTime();
-            Time endTime     = currentQuery.getEndTime();
-            Time tailLatency = endTime.clone().subTime( currentQuery.getArrivalTime() );
+            Time startTime   = currentTask.getStartTime();
+            Time endTime     = currentTask.getEndTime();
+            Time tailLatency = endTime.clone().subTime( currentTask.getArrivalTime() );
             cpu.getAgent().addSampledValue( Global.TAIL_LATENCY_SAMPLING, endTime,
                                             endTime, tailLatency.getTimeMicros() );
             
             // Add the static power consumed for the query.
-            double energy = currentQuery.getEnergyConsumption() +
-                            EnergyModel.getStaticPower( currentQuery.getCompletionTime() );
+            double energy = currentTask.getEnergyConsumption() +
+                            EnergyModel.getStaticPower( currentTask.getCompletionTime() );
             cpu.getAgent().addSampledValue( Global.ENERGY_SAMPLING, startTime,
                                             endTime, energy );
             
             cpu.getAgent().addSampledValue( Global.MEAN_COMPLETION_TIME, endTime,
                                             endTime, tailLatency.getTimeMicros() );
             
-            EnergyCPU.writeResult( currentQuery.getFrequency(), currentQuery.getLastEnergy() );
+            EnergyCPU.writeResult( currentTask.getFrequency(), currentTask.getLastEnergy() );
             
             // Compute the current idle energy.
             addIdleEnergy( endTime, true );
@@ -543,7 +543,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
             removeQuery( time, 0, updateFrequency );
             
             queriesExecuted++;
-            currentQuery = null;
+            currentTask = null;
         }
         
         public void addIdleEnergy( Time time, boolean allCores )
@@ -566,12 +566,24 @@ public abstract class CPU extends Device<QueryInfo,Long>
             this.frequency = frequency;
         }
         
+        public void delayTask( Time time, Time delay )
+        {
+            if (currentTask == null) {
+                setTime( time.clone().addTime( delay ) );
+            } else {
+                System.out.println( getTime().addTime( delay ) + ": SONO QUI (" + getId() + ")" );
+                currentTask.setDelay( delay );
+                setTime( currentTask.getEndTime() );
+                updateEventTime( currentTask, getTime() );
+            }
+        }
+        
         protected void setFrequency( Time time, long newFrequency )
         {
             if (frequency != newFrequency) {
                 //System.out.println( "TIME_BUDGET: " + ((PESOSmodel) cpu.getModel()).getTimeBudget() );
                 //System.out.println( "TIME: " + time + ", NEW: " + newFrequency + ", OLD: " + frequency );
-                if (currentQuery != null) {
+                if (currentTask != null) {
                     /*if (newFrequency < frequency) {
                         // FIXME abbassamento frequenza (in genere con PESOS).
                         try {
@@ -590,17 +602,17 @@ public abstract class CPU extends Device<QueryInfo,Long>
                     }*/
                     
                     // Update the termination time and the energy consumption of the current query.
-                    double energy = cpu.energyModel.computeEnergy( currentQuery.getEnergy( newFrequency ),
+                    double energy = cpu.energyModel.computeEnergy( currentTask.getEnergy( newFrequency ),
                                                                    newFrequency,
-                                                                   currentQuery.getTime( newFrequency ),
+                                                                   currentTask.getTime( newFrequency ),
                                                                    false );
-                    currentQuery.updateTimeEnergy( time, newFrequency, energy );
-                    EnergyCPU.writeResult( frequency, currentQuery.getElapsedEnergy() );
-                    //System.out.println( "TIME: " + time + ", CORE: " + coreId + ", QUERY: " + currentQuery.getId() + ", NEW_END_TIME: " + currentQuery.getEndTime() );
-                    this.time = currentQuery.getEndTime();
-                    updateEventTime( currentQuery, this.time );
+                    currentTask.updateTimeEnergy( time, newFrequency, energy );
+                    EnergyCPU.writeResult( frequency, currentTask.getElapsedEnergy() );
+                    //System.out.println( "TIME: " + time + ", CORE: " + coreId + ", QUERY: " + currentTask.getId() + ", NEW_END_TIME: " + currentTask.getEndTime() );
+                    this.time.setTime( currentTask.getEndTime() );
+                    updateEventTime( currentTask, getTime() );
                     
-                    //System.out.println( "CORE: " + getId() + ", AGGIORNATA QUERY: " + currentQuery );
+                    //System.out.println( "CORE: " + getId() + ", AGGIORNATA QUERY: " + currentTask );
                 }
                 
                 frequency = newFrequency;
@@ -616,7 +628,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
             if (this.time.compareTo( time ) <= 0) {
                 // This is idle time.
                 long elapsedTime = time.getTimeMicros() - this.time.getTimeMicros();
-                if (state != State.POWER_OFF) {
+                if (state != State.POWER_OFF && currentTask == null) {
                     idleTime += elapsedTime;
                 }
                 this.time.setTime( time );
@@ -680,7 +692,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
         public void setCompletedQuery( QueryInfo query )
         {
             time = query.getEndTime();
-            currentQuery = query;
+            currentTask = query;
             idleTimeInterval = 0;
             idleTime = 0;
         }

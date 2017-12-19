@@ -96,7 +96,6 @@ public class EnergyTestREPLICA_DIST
             
             // Open the associated file.
             queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
-            // TODO estendere inserendo i file di tutti i nodi, ma solo se necessario
             model = new ClientModel( "Models/Monolithic/PESOS/MaxScore/time_energy.txt" );
             model.loadModel();
         }
@@ -772,7 +771,6 @@ public class EnergyTestREPLICA_DIST
     {
         Utils.VERBOSE = false;
         PESOS_CONTROLLER    = false;
-        PEGASUS_CONTROLLER  = false;
         SWITCH_OFF_MACHINES = false;
         
         if (System.getProperty( "showGUI" ) != null) {
@@ -789,6 +787,12 @@ public class EnergyTestREPLICA_DIST
         
         //testNetwork( Type.PEGASUS, null,  500 );
         //testNetwork( Type.PEGASUS, null, 1000 );
+        
+        // PESOS TC 500ms
+        // 660097.4990832877
+        
+        // PERF
+        // 
     }
     
     private static CPUModel getModel( Type type, Mode mode, long timeBudget, int node )
@@ -814,7 +818,7 @@ public class EnergyTestREPLICA_DIST
     public static void testNetwork( Type type, Mode mode, long timeBudget ) throws Exception
     {
         final Time duration = new Time( 24, TimeUnit.HOURS );
-        PEGASUS_CONTROLLER = type == Type.PEGASUS;
+        PEGASUS_CONTROLLER = (type == Type.PEGASUS);
         
         //NetworkTopology net = new NetworkTopology( "Topology/Animation/Topology_distributed_multiCore.json" );
         //NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_replica_multiCore.json" );
@@ -859,7 +863,8 @@ public class EnergyTestREPLICA_DIST
                                                       latencyNormalization,
                                                       switchGen );
             net.addNode( switchId, "switch_" + (i+1), 0 );
-            net.addLink( switchId, 1, 1000, 0, NetworkLink.BIDIRECTIONAL );
+            // From broker (1) to switch.
+            net.addLink( 1, switchId, 1000, 0, NetworkLink.BIDIRECTIONAL );
             net.addAgent( switchNode );
             brokerGen.connect( switchNode );
             
@@ -891,7 +896,8 @@ public class EnergyTestREPLICA_DIST
                 Agent agentCore = new MulticoreAgent( id, sink );
                 agentCore.addDevice( cpu );
                 net.addNode( id, "node" + (i/REPLICAS_PER_NODE+1) + "_" + (i%REPLICAS_PER_NODE), 0 );
-                net.addLink( id, switchId, 1000, 0, NetworkLink.BIDIRECTIONAL );
+                // From switch to core (id).
+                net.addLink( switchId, id, 1000, 0, NetworkLink.BIDIRECTIONAL );
                 net.addAgent( agentCore );
                 
                 agentCore.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/Distributed_Replica_" + modelType + "_" + compressedReplicaMode + "_Node" + nodeId + "_Energy.log", Sampling.CUMULATIVE ) );
@@ -917,6 +923,7 @@ public class EnergyTestREPLICA_DIST
         
         //System.out.println( "TEST_MODE: " + testMode );
         Agent brokerAgent = new BrokerAgent( 1, timeBudget * 1000, brokerGen, modelType + "_" + compressedReplicaMode );
+        // From client (0) to broker (1).
         net.addLink( 0, 1, 1000, 0, NetworkLink.BIDIRECTIONAL );
         net.addAgent( brokerAgent );
         client.getEventGenerator( 0 ).connect( brokerAgent );
@@ -955,9 +962,7 @@ public class EnergyTestREPLICA_DIST
             an.setTargetFrameRate( 90 );
             an.setForceExit( false );
             an.start();*/
-        }
-        
-        if (Global.showGUI) {
+            
             plotTailLatency( type, mode, timeBudget, compressedReplicaMode, extendedReplicaMode );
         }
         
@@ -1061,7 +1066,7 @@ public class EnergyTestREPLICA_DIST
         plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
         plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
-        final String folder = "Results/DistributedReplica/";
+        final String folder = "Results/Latency/DistributedReplica/";
         List<Pair<Double,Double>> percentiles;
         switch ( type ) {
             case PESOS :

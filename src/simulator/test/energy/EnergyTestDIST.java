@@ -55,13 +55,10 @@ import simulator.utils.resources.ResourceLoader;
 public class EnergyTestDIST
 {
     private static final int NODES = 5;
-    private static final int CPU_CORES = 4;
     
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
     
-    //private static final List<CPU> cpus = new ArrayList<>( NODES );
-    
-    private static boolean PESOS_CONTROLLER = true;
+    private static boolean PESOS_CONTROLLER   = false;
     private static boolean PEGASUS_CONTROLLER = false;
     
     private static PESOScontroller controller;
@@ -94,7 +91,6 @@ public class EnergyTestDIST
             
             // Open the associated file.
             queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
-            // TODO estendere inserendo i file di tutti i nodi, ma solo se necessario
             model = new ClientModel( "Models/Monolithic/PESOS/MaxScore/time_energy.txt" );
             model.loadModel();
         }
@@ -152,9 +148,9 @@ public class EnergyTestDIST
     
     
     
-    private static class SwitchGenerator extends EventGenerator
+    private static class BrokerGenerator extends EventGenerator
     {
-        public SwitchGenerator( Time duration )
+        public BrokerGenerator( Time duration )
         {
             super( duration, Time.ZERO, PACKET, PACKET );
             setDelayedResponse( true );
@@ -173,9 +169,20 @@ public class EnergyTestDIST
             
             return packet;
         }
+        
+//        @Override
+//        public Packet makePacket( Event e, long destination )
+//        {
+//            if (e instanceof RequestEvent) {
+//                return super.makePacket( e, destination );
+//            } else {
+//                // New request from client: clone the packet.
+//                return e.getPacket().clone();
+//            }
+//        }
     }
     
-    private static class SwitchAgent extends Agent implements EventHandler
+    private static class BrokerAgent extends Agent implements EventHandler
     {
         private PrintWriter writer;
         private List<QueryLatency> queries;
@@ -183,7 +190,7 @@ public class EnergyTestDIST
         
         private long queryDistrId = -1;
         
-        public SwitchAgent( long id, long target, EventGenerator evGenerator,
+        public BrokerAgent( long id, long target, EventGenerator evGenerator,
                             List<CPU> nodes, String model ) throws IOException
         {
             super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
@@ -198,67 +205,40 @@ public class EnergyTestDIST
             }
         }
         
-        /*
-         * Method used to connect PEGASUS to a remote node.
-         * 
-         * @param nodeId    destination node identifier.
-         * @param node      destination CPU node.
-        */
-        /*public void connectTo( long nodeId, CPU node )
-        {
-            if (pegasus != null) {
-                pegasus.addNode( nodeId, node );
-            }
-        }*/
-        
         @Override
         public Time handle( Event e, EventType type )
         {
             if (type == EventType.RECEIVED) {
-                //long queryId = e.getPacket().getContent( Global.QUERY_ID );
+                Packet p = e.getPacket();
                 if (e.getSource().getId() == 0) {
                     //System.out.println( "RICEVUTO: " + p.getContents() );
                     queryDistrId = (queryDistrId + 1) % Long.MAX_VALUE;
-                    e.getPacket().addContent( Global.QUERY_DISTR_ID, queryDistrId );
+                    p.addContent( Global.QUERY_DISTR_ID, queryDistrId );
                     queries.add( new QueryLatency( queryDistrId, e.getTime() ) );
                 } else {
-                    long queryDistrId = e.getPacket().getContent( Global.QUERY_DISTR_ID );
-                    QueryLatency query = null;
-                    int index;
-                    for (index = 0; index < queries.size(); index++) {
-                        QueryLatency ql = queries.get( index );
-                        if (ql.id == queryDistrId) {
-                            query = ql;
+                    long queryDistrId = p.getContent( Global.QUERY_DISTR_ID );
+                    for (int index = 0; index < queries.size(); index++) {
+                        QueryLatency query = queries.get( index );
+                        if (query.id == queryDistrId) {
+                            Time endTime = e.getTime();
+                            Time completionTime = e.getTime().subTime( query.startTime );
+                            
+                            if (++query.count == NODES) {
+                                // Save on file and remove from list.
+                                writer.println( endTime + " " + completionTime );
+                                queries.remove( index );
+                            }
+                            
+                            if (PEGASUS_CONTROLLER) {
+                                pegasus.setCompletedQuery( endTime, e.getSource().getId(), completionTime );
+                            }
                             break;
                         }
-                    }
-                    
-                    Time endTime = e.getTime();
-                    Time completionTime = e.getTime().subTime( query.startTime );
-                    
-                    if (++query.count == NODES) {
-                        // Save on file and remove from list.
-                        writer.println( endTime + " " + completionTime );
-                        queries.remove( index );
-                    }
-                    
-                    if (PEGASUS_CONTROLLER) {
-                        pegasus.setCompletedQuery( endTime, e.getSource().getId(), completionTime );
                     }
                 }
             }
             
             return _node.getTcalc();
-        }
-        
-        @Override
-        public double getNodeUtilization( Time time )
-        {
-            double utilization = 0;
-            for (Agent agent : getEventGenerator( 0 ).getDestinations()) {
-                utilization += agent.getNodeUtilization( time );
-            }
-            return utilization;
         }
         
         @Override
@@ -312,7 +292,7 @@ public class EnergyTestDIST
             super( duration, Time.ZERO, PACKET, PACKET );
         }
         
-        @Override
+        /*@Override
         protected Packet makePacket( Event e, long destination )
         {
             //System.out.println( "SERVER PACKET: " + e.getPacket().hasContent( Global.PESOS_CPU_FREQUENCY ) );
@@ -321,7 +301,7 @@ public class EnergyTestDIST
             } else {
                 return super.makePacket( e, destination );
             }
-        }
+        }*/
     }
     
     private static class MulticoreAgent extends Agent implements EventHandler
@@ -339,7 +319,7 @@ public class EnergyTestDIST
         public void addEventOnQueue( Event e )
         {
             Packet p = e.getPacket();
-            EnergyCPU cpu = getDevice( EnergyCPU.class );
+            CPU cpu = getDevice( EnergyCPU.class );
             CPUModel model = (CPUModel) cpu.getModel();
             
             //System.out.println( "RECEIVED QUERY: " + e.getPacket().getContents() );
@@ -357,8 +337,8 @@ public class EnergyTestDIST
                 query.setDistributedId( p.getContent( Global.QUERY_DISTR_ID ) );
                 //System.out.println( "RECEIVED QUERY: " + p.getContent( Global.QUERY_ID ) );
                 query.setEvent( e );
-                query.setArrivalTime( e.getArrivalTime() );
-                long coreID = cpu.selectCore( e.getArrivalTime(), query );
+                query.setArrivalTime( e.getTime() );
+                long coreID = cpu.selectCore( e.getTime(), query );
                 cpu.addQuery( coreID, query );
                 
                 if (PESOS_CONTROLLER) {
@@ -371,12 +351,12 @@ public class EnergyTestDIST
         @Override
         public Time handle( Event e, EventType type )
         {
+            CPU cpu = getDevice( EnergyCPU.class );
             if (e instanceof ResponseEvent) {
-                EnergyCPU cpu = getDevice( EnergyCPU.class );
                 if (type == EventType.GENERATED) {
                     QueryInfo query = cpu.getLastQuery();
                     Packet p = e.getPacket();
-                    p.addContent( Global.QUERY_ID, query.getId() );
+                    //p.addContent( Global.QUERY_ID, query.getId() );
                     p.addContent( Global.QUERY_DISTR_ID, query.getDistributedId() );
                     query.setEvent( e );
                 } else { // EventType.SENT event.
@@ -385,7 +365,7 @@ public class EnergyTestDIST
                     if (!PESOS_CONTROLLER) {
                         cpu.checkQueryCompletion( e.getTime() );
                     } else {
-                        for (long i = 0; i < CPU_CORES; i++) {
+                        for (long i = 0; i < cpu.getCPUcores(); i++) {
                             if (cpu.getCore( i ).checkQueryCompletion( e.getTime() )) {
                                 controller.completedQuery( e.getTime(), getId(), i );
                             }
@@ -395,7 +375,6 @@ public class EnergyTestDIST
             } else {
                 if (e.getPacket().hasContent( Global.QUERY_ID )) {
                     // Compute the time to complete the query.
-                    EnergyCPU cpu = getDevice( EnergyCPU.class );
                     return cpu.timeToCompute( null );
                 } else {
                     return Time.ZERO;
@@ -413,7 +392,7 @@ public class EnergyTestDIST
         @Override
         public void shutdown() throws IOException
         {
-            EnergyCPU cpu = getDevice( EnergyCPU.class );
+            CPU cpu = getDevice( EnergyCPU.class );
             cpu.computeIdleEnergy( getEventScheduler().getTimeDuration() );
             super.shutdown();
         }
@@ -425,7 +404,7 @@ public class EnergyTestDIST
     
     
     
-    public static void createDistributedIndex() throws Exception
+    protected static void createDistributedIndex() throws Exception
     {
         final String dir = "Models/Monolithic/PESOS/MaxScore/";
         final double MIN_RANGE = 0;
@@ -456,7 +435,7 @@ public class EnergyTestDIST
                     range = 0;
                 }
                 queryRange.put( queryID, range );
-                postings += postings + difference;
+                postings += difference;
                 writer.println( queryID + "\t" + terms + "\t" + postings );
             }
             
@@ -509,7 +488,7 @@ public class EnergyTestDIST
         Utils.VERBOSE = false;
         PESOS_CONTROLLER = false;
         
-        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
@@ -517,7 +496,7 @@ public class EnergyTestDIST
         //testNetwork( Type.PERF, null, 0 );
         //testNetwork( Type.CONS, null, 0 );
         
-        testNetwork( Type.PEGASUS, null,  500 );
+        //testNetwork( Type.PEGASUS, null,  500 );
         //testNetwork( Type.PEGASUS, null, 1000 );
         
         /* Controller OFF
@@ -582,7 +561,7 @@ public class EnergyTestDIST
     public static void testNetwork( Type type, Mode mode, long timeBudget ) throws Exception
     {
         final Time duration = new Time( 24, TimeUnit.HOURS );
-        PEGASUS_CONTROLLER = type == Type.PEGASUS;
+        PEGASUS_CONTROLLER = (type == Type.PEGASUS);
         
         //NetworkTopology net = new NetworkTopology( "Topology/Animation/Topology_distributed_multiCore.json" );
         NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_multiCore.json" );
@@ -601,16 +580,11 @@ public class EnergyTestDIST
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        // Create switch.
-        EventGenerator switchGen = new SwitchGenerator( Time.INFINITE );
-        Agent switchAgent = new SwitchAgent( 1, timeBudget * 1000, switchGen, cpus, modelType );
-        net.addAgent( switchAgent );
-        client.getEventGenerator( 0 ).connect( switchAgent );
-        
-        // Create PESOS controller.
-        if (type == Type.PESOS) {
-            controller = new PESOScontroller( timeBudget * 1000, mode, cpus, NODES, CPU_CORES );
-        }
+        // Create broker.
+        EventGenerator brokerGen = new BrokerGenerator( duration );
+        Agent broker = new BrokerAgent( 1, timeBudget * 1000, brokerGen, cpus, modelType );
+        net.addAgent( broker );
+        client.getEventGenerator( 0 ).connect( broker );
         
         Plotter plotter = null;
         if (Global.showGUI) {
@@ -619,37 +593,38 @@ public class EnergyTestDIST
         Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         for (int i = 0; i < NODES; i++) {
             CPU cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( model.getType() ) );
-            //cpu.addSampler( Global.TAIL_LATENCY_SAMPLING, null, null, "Log/Distributed_" + modelType + "_Node" + (i+1) + "_Tail_Latency.log" );
             cpus.add( cpu );
             
             // Add the model to the corresponding cpu.
             CPUModel p_model = loadModel( type, mode, timeBudget, i+1 );
-            p_model.loadModel();
             cpu.setModel( p_model );
             
-            EventGenerator sink = new MulticoreGenerator( Time.INFINITE );
-            Agent agentCore = new MulticoreAgent( 2 + i, sink );
-            agentCore.addDevice( cpu );
-            net.addAgent( agentCore );
+            // Create PESOS controller.
+            if (type == Type.PESOS && PESOS_CONTROLLER && controller == null) {
+                controller = new PESOScontroller( timeBudget * 1000, mode, cpus, NODES, (int) cpu.getCPUcores() );
+            }
             
-            agentCore.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/Distributed_" + modelType + "_Energy.log", Sampling.CUMULATIVE ) );
-            agentCore.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
+            EventGenerator sink = new MulticoreGenerator( duration );
+            Agent node = new MulticoreAgent( 2 + i, sink );
+            node.addDevice( cpu );
+            net.addAgent( node );
+            
+            node.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/Distributed_" + modelType + "_Node_" + (i+1) + "_Energy.log", Sampling.CUMULATIVE ) );
+            node.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
             
             if (type == Type.CONS) {
                 EventGenerator evtGen = new ServerConsGenerator( duration );
-                evtGen.connect( agentCore );
-                agentCore.addEventGenerator( evtGen );
+                evtGen.connect( node );
+                node.addEventGenerator( evtGen );
             }
-            
-            //switchAgent.connectTo( agentCore.getId(), cpu );
             
             if (Global.showGUI) {
-                plotter.addPlot( agentCore.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) );
+                plotter.addPlot( node.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) );
             }
-            switchGen.connect( agentCore );
+            brokerGen.connect( node );
             
-            if (type == Type.PESOS) {
-                controller.connect( agentCore );
+            if (type == Type.PESOS && PESOS_CONTROLLER) {
+                controller.connect( node );
             }
         }
         
@@ -735,7 +710,7 @@ public class EnergyTestDIST
         plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
         plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
-        final String folder = "Results/Distributed/";
+        final String folder = "Results/Latency/Distributed/";
         List<Pair<Double,Double>> percentiles;
         switch ( type ) {
             case PESOS :
