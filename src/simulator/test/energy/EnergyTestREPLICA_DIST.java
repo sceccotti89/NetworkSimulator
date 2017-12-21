@@ -57,7 +57,6 @@ public class EnergyTestREPLICA_DIST
 {
     private static final int NODES = 1;
     private static final int REPLICAS_PER_NODE = 2;
-    private static final int CPU_CORES = 4;
     
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
     
@@ -361,7 +360,7 @@ public class EnergyTestREPLICA_DIST
                     if (!PESOS_CONTROLLER) {
                         cpu.checkQueryCompletion( e.getTime() );
                     } else {
-                        for (long i = 0; i < CPU_CORES; i++) {
+                        for (long i = 0; i < cpu.getCPUcores(); i++) {
                             if (cpu.getCore( i ).checkQueryCompletion( e.getTime() )) {
                                 controller.completedQuery( e.getTime(), getId(), i );
                             }
@@ -440,10 +439,10 @@ public class EnergyTestREPLICA_DIST
         protected int selectDestination( Time time )
         {
             // Bounded Round-Robin.
-            /*SwitchAgent switchAgent = (SwitchAgent) getAgent();
+            SwitchAgent switchAgent = (SwitchAgent) getAgent();
             //System.out.println( "REPLICAS: " + switchAgent.getCurrentReplicas() );
             nextReplica = (nextReplica + 1) % switchAgent.getCurrentReplicas();
-            return nextReplica;*/
+            return nextReplica;
             
             // Min utilization.
             /*int selectedIndex = -1;
@@ -459,8 +458,8 @@ public class EnergyTestREPLICA_DIST
             return selectedIndex;*/
             
             // Round-Robin.
-            nextReplica = (nextReplica + 1) % _destinations.size();
-            return nextReplica;
+            //nextReplica = (nextReplica + 1) % _destinations.size();
+            //return nextReplica;
         }
     }
     
@@ -771,28 +770,36 @@ public class EnergyTestREPLICA_DIST
     {
         Utils.VERBOSE = false;
         PESOS_CONTROLLER    = false;
-        SWITCH_OFF_MACHINES = false;
+        SWITCH_OFF_MACHINES = true;
         
         if (System.getProperty( "showGUI" ) != null) {
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
         }
         
-        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
-        //testNetwork( Type.PERF, null, 0 );
+        testNetwork( Type.PERF, null, 0 );
         //testNetwork( Type.CONS, null, 0 );
         
         //testNetwork( Type.PEGASUS, null,  500 );
         //testNetwork( Type.PEGASUS, null, 1000 );
         
-        // PESOS TC 500ms
-        // 660097.4990832877
+        // SWITCH_OFF_MACHINES = false
+        // PESOS TC 500ms               Tail Latency
+        //  553689.6905329922        Poco sopra il limite
         
         // PERF
-        // 
+        // 1021819.338136006             Rispettato
+        
+        // SWITCH_OFF_MACHINES = true
+        // PESOS TC 500ms               Tail Latency
+        //  499257.7207767839 (2%)   Poco sopra il limite
+        
+        // PERF
+        //  967387.3381360096            Rispettato
     }
     
     private static CPUModel getModel( Type type, Mode mode, long timeBudget, int node )
@@ -837,11 +844,6 @@ public class EnergyTestREPLICA_DIST
         // Create query broker.
         EventGenerator brokerGen = new BrokerGenerator( duration );
         net.addNode( 1, "broker", 0 );
-        
-        // Create PESOS controller.
-        if (type == Type.PESOS && PESOS_CONTROLLER) {
-            controller = new PESOScontroller( timeBudget * 1000, mode, cpus, NODES, CPU_CORES );
-        }
         
         CPUModel model = getModel( type, mode, timeBudget, 1 );
         final String modelType = model.getModelType( true );
@@ -890,6 +892,11 @@ public class EnergyTestREPLICA_DIST
                 // Add the model to the corresponding CPU.
                 cpu.setModel( p_model );
                 //cpu.setModel( p_model.cloneModel() );
+                
+                // Create PESOS controller.
+                if (type == Type.PESOS && PESOS_CONTROLLER) {
+                    controller = new PESOScontroller( timeBudget * 1000, mode, cpus, NODES, cpu.getCPUcores() );
+                }
                 
                 EventGenerator sink = new MulticoreGenerator( duration );
                 final long id = i * (REPLICAS_PER_NODE + 1) + 3 + j;

@@ -601,7 +601,7 @@ public class EnergyTestDIST
             
             // Create PESOS controller.
             if (type == Type.PESOS && PESOS_CONTROLLER && controller == null) {
-                controller = new PESOScontroller( timeBudget * 1000, mode, cpus, NODES, (int) cpu.getCPUcores() );
+                controller = new PESOScontroller( timeBudget * 1000, mode, cpus, NODES, cpu.getCPUcores() );
             }
             
             EventGenerator sink = new MulticoreGenerator( duration );

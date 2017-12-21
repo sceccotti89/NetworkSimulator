@@ -20,6 +20,7 @@ import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.CPUModel.Type;
 import simulator.test.energy.EnergyModel.QueryEnergyModel;
+import simulator.utils.Pair;
 import simulator.utils.Time;
 import simulator.utils.Utils;
 
@@ -29,7 +30,7 @@ public class EnergyCPU extends CPU
     protected static PrintWriter coeffWriter;
     
     protected int routerCore = -1;
-    protected Map<Long,Time> ROUTER_COMPUTATION_TIME; 
+    protected Map<Long,Pair<Time,Double>> router_time_energy; 
     
     
     
@@ -37,14 +38,16 @@ public class EnergyCPU extends CPU
     public EnergyCPU( String specFile, Class<? extends Core> coreClass ) throws Exception
     {
         super( specFile, coreClass );
-        setEnergyModel( (int) getCPUcores() );
+        setEnergyModel( getCPUcores() );
         
-        double startTime = TimeUnit.MILLISECONDS.toMicros( 2 );
-        double startFreq = 800000;
-        ROUTER_COMPUTATION_TIME = new HashMap<>();
+        double startTime   = TimeUnit.MILLISECONDS.toMicros( 2 );
+        double startFreq   = 800000;
+        double startEnergy = 2;
+        router_time_energy = new HashMap<>();
         for (Long frequency : getFrequencies()) {
             long time = (long) ((startFreq / frequency) * startTime);
-            ROUTER_COMPUTATION_TIME.put( frequency, new Time( time, TimeUnit.MICROSECONDS ) );
+            double energy = (startFreq / frequency) * startEnergy;
+            router_time_energy.put( frequency, new Pair<>( new Time( time, TimeUnit.MILLISECONDS ), energy ) );
         }
     }
     
@@ -72,8 +75,6 @@ public class EnergyCPU extends CPU
     private void setEnergyModel( int cores )
     {
         setEnergyModel( new QueryEnergyModel( cores ) );
-        //setEnergyModel( new CoefficientEnergyModel( cores ) );
-        //setEnergyModel( new NormalizedEnergyModel( cores ) );
         //setEnergyModel( new ParameterEnergyModel( cores ) );
     }
     

@@ -309,8 +309,8 @@ public abstract class CPU extends Device<QueryInfo,Long>
         return coresMap.values();
     }
     
-    public double getCPUcores() {
-        return _cores;
+    public int getCPUcores() {
+        return (int) _cores;
     }
     
     public Long getCurrentCoreId() {
