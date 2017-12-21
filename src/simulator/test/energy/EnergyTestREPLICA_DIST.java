@@ -894,7 +894,7 @@ public class EnergyTestREPLICA_DIST
                 //cpu.setModel( p_model.cloneModel() );
                 
                 // Create PESOS controller.
-                if (type == Type.PESOS && PESOS_CONTROLLER) {
+                if (type == Type.PESOS && PESOS_CONTROLLER && controller == null) {
                     controller = new PESOScontroller( timeBudget * 1000, mode, cpus, NODES, cpu.getCPUcores() );
                 }
                 
