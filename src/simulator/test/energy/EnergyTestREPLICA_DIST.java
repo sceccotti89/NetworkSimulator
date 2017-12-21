@@ -1050,14 +1050,10 @@ public class EnergyTestREPLICA_DIST
     public static void plotTailLatency( Type type, Mode mode, long time_budget, String compressedReplicaMode, String extendedReplicaMode ) throws IOException
     {
         final int percentile = 95;
-        final long timeBudget = (time_budget == 0) ? 1000000 : (time_budget * 1000);
         final double interval = TimeUnit.MINUTES.toMicros( 5 );
         
         Plotter plotter = new Plotter( "DISTRIBUTED REPLICA Tail Latency " + percentile + "-th Percentile", 800, 600 );
         plotter.setAxisName( "Time (h)", percentile + "th-tile response time (ms)" );
-        double yRange = timeBudget + 200000d;
-        plotter.setRange( Axis.Y, 0, yRange );
-        plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
         plotter.setScaleY( 1000d );
         
         plotter.setRange( Axis.X, 0, TimeUnit.HOURS.toMicros( 24 ) );
@@ -1074,7 +1070,7 @@ public class EnergyTestREPLICA_DIST
         plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
         final String folder = "Results/Latency/DistributedReplica/";
-        List<Pair<Double,Double>> percentiles;
+        List<Pair<Double,Double>> percentiles = null;
         switch ( type ) {
             case PESOS :
                 percentiles = Utils.getPercentiles( percentile, interval,
@@ -1102,6 +1098,17 @@ public class EnergyTestREPLICA_DIST
                 break;
             default : break;
         }
+        
+        double maxValue = Double.NEGATIVE_INFINITY;
+        for (Pair<Double,Double> value : percentiles) {
+            if (value.getSecond() > maxValue) {
+                maxValue = value.getSecond();
+            }
+        }
+        double yRange = maxValue + 50000d;
+        plotter.setRange( Axis.Y, 0, yRange );
+        plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
+        
         plotter.setVisible( true );
     }
 }

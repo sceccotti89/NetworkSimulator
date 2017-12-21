@@ -860,9 +860,6 @@ public class EnergyTestMONO
         
         Plotter plotter = new Plotter( "DISTRIBUTED Tail Latency " + percentile + "-th Percentile", 800, 600 );
         plotter.setAxisName( "Time (h)", percentile + "th-tile response time (ms)" );
-        double yRange = time_budget + 200000d;
-        plotter.setRange( Axis.Y, 0, yRange );
-        plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
         plotter.setScaleY( 1000d );
         
         plotter.setRange( Axis.X, 0, TimeUnit.HOURS.toMicros( 24 ) );
@@ -879,7 +876,7 @@ public class EnergyTestMONO
         plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
         final String folder = "Results/Latency/Monolithic/";
-        List<Pair<Double,Double>> percentiles;
+        List<Pair<Double,Double>> percentiles = null;
         switch ( type ) {
             case PESOS :
                 percentiles = Utils.getPercentiles( percentile, interval,
@@ -913,6 +910,16 @@ public class EnergyTestMONO
                 break;
             default : break;
         }
+        
+        double maxValue = Double.NEGATIVE_INFINITY;
+        for (Pair<Double,Double> value : percentiles) {
+            if (value.getSecond() > maxValue) {
+                maxValue = value.getSecond();
+            }
+        }
+        double yRange = maxValue + 50000d;
+        plotter.setRange( Axis.Y, 0, yRange );
+        plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
         
         plotter.setVisible( true );
     }

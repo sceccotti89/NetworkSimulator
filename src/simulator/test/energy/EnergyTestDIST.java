@@ -488,7 +488,7 @@ public class EnergyTestDIST
         Utils.VERBOSE = false;
         PESOS_CONTROLLER = false;
         
-        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
@@ -497,7 +497,7 @@ public class EnergyTestDIST
         //testNetwork( Type.CONS, null, 0 );
         
         //testNetwork( Type.PEGASUS, null,  500 );
-        //testNetwork( Type.PEGASUS, null, 1000 );
+        testNetwork( Type.PEGASUS, null, 1000 );
         
         /* Controller OFF
         500ms => pochissimo sopra la tail latency
@@ -507,7 +507,7 @@ public class EnergyTestDIST
         CPU: 3, Energy: 515423.68479431875
         CPU: 4, Energy: 505098.75745063850
         
-        490ms => tail latency rispettata
+        490ms => tail latency rispettata, ma 5k joule in piu' su ogni nodo
         CPU: 0, Energy: 514987.66590927080
         CPU: 1, Energy: 522922.51765498940
         CPU: 2, Energy: 510727.52246600826
@@ -531,11 +531,11 @@ public class EnergyTestDIST
         CPU: 4, Energy: 510206.59131988365
         */
         
-        // PEGASUS 500ms
-        // 
+        // PEGASUS 500ms => Tail Latency: 860ms
+        // Total energy: 2895267.4490724485
         
-        // PEGASUS 1000ms
-        // 
+        // PEGASUS 1000ms => Tail Latency: 1430ms
+        // Total energy: 2349865.3544235174
     }
     
     private static CPUModel getModel( Type type, Mode mode, long timeBudget, int node )
@@ -562,6 +562,8 @@ public class EnergyTestDIST
     {
         final Time duration = new Time( 24, TimeUnit.HOURS );
         PEGASUS_CONTROLLER = (type == Type.PEGASUS);
+        
+        plotTailLatency( type, mode, timeBudget );
         
         //NetworkTopology net = new NetworkTopology( "Topology/Animation/Topology_distributed_multiCore.json" );
         NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_multiCore.json" );
@@ -687,14 +689,10 @@ public class EnergyTestDIST
     public static void plotTailLatency( Type type, Mode mode, long time_budget ) throws IOException
     {
         final int percentile = 95;
-        final long timeBudget = (time_budget == 0) ? 1000000 : (time_budget * 1000);
         final double interval = TimeUnit.MINUTES.toMicros( 5 );
         
         Plotter plotter = new Plotter( "DISTRIBUTED Tail Latency " + percentile + "-th Percentile", 800, 600 );
         plotter.setAxisName( "Time (h)", percentile + "th-tile response time (ms)" );
-        double yRange = timeBudget + 200000d;
-        plotter.setRange( Axis.Y, 0, yRange );
-        plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
         plotter.setScaleY( 1000d );
         
         plotter.setRange( Axis.X, 0, TimeUnit.HOURS.toMicros( 24 ) );
@@ -711,7 +709,7 @@ public class EnergyTestDIST
         plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
         final String folder = "Results/Latency/Distributed/";
-        List<Pair<Double,Double>> percentiles;
+        List<Pair<Double,Double>> percentiles = null;
         switch ( type ) {
             case PESOS :
                 percentiles = Utils.getPercentiles( percentile, interval,
@@ -739,6 +737,16 @@ public class EnergyTestDIST
                 break;
             default : break;
         }
+        
+        double maxValue = Double.NEGATIVE_INFINITY;
+        for (Pair<Double,Double> value : percentiles) {
+            if (value.getSecond() > maxValue) {
+                maxValue = value.getSecond();
+            }
+        }
+        double yRange = maxValue + 50000d;
+        plotter.setRange( Axis.Y, 0, yRange );
+        plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
         
         plotter.setVisible( true );
     }
