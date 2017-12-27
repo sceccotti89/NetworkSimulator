@@ -474,6 +474,7 @@ public class EnergyTestREPLICA_DIST
         private List<Double> meanArrivalQueries;
         private List<Double> meanCompletionTime;
         
+        private int timeSlots;
         private int[] allReplicas;
         private ReplicatedGraph graph;
         
@@ -498,7 +499,7 @@ public class EnergyTestREPLICA_DIST
         private static final double ALPHA = -0.01;
         private int latency_normalization;
         
-        //private static final Time WAKE_UP_TIME = new Time( 200, TimeUnit.SECONDS );
+        private static final Time WAKE_UP_TIME = new Time( 200, TimeUnit.SECONDS );
         
         
         
@@ -517,11 +518,10 @@ public class EnergyTestREPLICA_DIST
             loadMeanArrivalTime();
             loadQueryPerSlot();
             
+            timeSlots = meanCompletionTime.size();
+            
             if (estimatorType == SEASONAL_ESTIMATOR) {
-                final int size = meanCompletionTime.size();
-                createGraph( size );
-                // TODO per i test mettere questo EXIT.
-                //System.exit( 0 );
+                createGraph();
             } else {
                 arrivals = 0;
                 currentArrivals = new ArrayList<>( 2 );
@@ -588,20 +588,30 @@ public class EnergyTestREPLICA_DIST
                 destinations.get( i ).getDevice( EnergyCPU.class ).setState( time, State.RUNNING );
             }
             
-            if (slotIndex < allReplicas.length - 1) {
-                if (allReplicas[slotIndex + 1] < currentReplicas) {
-                    //System.out.println( "SLOT: " + slotIndex + ", SWITCH-ON PREVENTLY: " + (currentReplicas - allReplicas[slotIndex+1]) );
-                    // TODO Mettere questo tempo va in bug il sistema, il che sarebbe anche ovvio visto che gli metto un time maggiore rispetto a quello attuale
-                    //Time powerOn = time.clone().addTime( SwitchTimeSlotGenerator.TIME_SLOT ).subTime( WAKE_UP_TIME );
-                    // Turn-on the subsequent needed replicas.
-                    for (int i = allReplicas[slotIndex+1]; i < currentReplicas; i++) {
-                        destinations.get( i ).getDevice( EnergyCPU.class ).setState( time, State.RUNNING );
+            if (slotIndex < timeSlots - 1) {
+                if (estimatorType == SEASONAL_ESTIMATOR) {
+                    if (allReplicas[slotIndex + 1] > currentReplicas) {
+                        // Turn-on the subsequent needed replicas.
+                        Time powerOn = time.clone().addTime( SwitchTimeSlotGenerator.TIME_SLOT ).subTime( WAKE_UP_TIME );
+                        for (int i = currentReplicas; i < allReplicas[slotIndex+1]; i++) {
+                            destinations.get( i ).getDevice( EnergyCPU.class ).setState( powerOn, State.RUNNING );
+                        }
+                    } else {
+                        if (SWITCH_OFF_MACHINES) {
+                            for (int i = currentReplicas; i < REPLICAS_PER_NODE; i++) {
+                                destinations.get( i ).getDevice( EnergyCPU.class ).setState( time, State.POWER_OFF );
+                            }
+                        }
                     }
                 } else {
+                    // Turn-on the current needed replicas.
+                    for (int i = 0; i < currentReplicas; i++) {
+                        destinations.get( i ).getDevice( EnergyCPU.class ).setState( time, State.RUNNING );
+                    }
+                    
                     if (SWITCH_OFF_MACHINES) {
-                        //System.out.println( "SLOT: " + slotIndex + ", SWITCH-OFF: " + (REPLICAS_PER_NODE - currentReplicas) );
                         for (int i = currentReplicas; i < REPLICAS_PER_NODE; i++) {
-                            destinations.get( i ).getDevice( EnergyCPU.class ).setState( time, State.POWER_OFF);
+                            destinations.get( i ).getDevice( EnergyCPU.class ).setState( time, State.POWER_OFF );
                         }
                     }
                 }
@@ -621,9 +631,7 @@ public class EnergyTestREPLICA_DIST
             Packet p = e.getPacket();
             if (p.hasContent( Global.SWITCH_TIME_SLOT )) {
                 if (estimatorType == SEASONAL_ESTIMATOR) {
-                    //System.out.println( "REPLICAS: " + allReplicas[slotIndex+1] );
                     currentReplicas = allReplicas[++slotIndex];
-                    setNodesState( e.getTime() );
                 } else {
                     // Get the number of replicas using also the current informations.
                     if (slotIndex >= 0) {
@@ -636,6 +644,7 @@ public class EnergyTestREPLICA_DIST
                     
                     currentReplicas = getReplicas( ++slotIndex );
                 }
+                setNodesState( e.getTime() );
             }
             return _node.getTcalc();
         }
@@ -656,7 +665,7 @@ public class EnergyTestREPLICA_DIST
                 arrivalExtimation += (currentArrivals.get( 1 ) - currentArrivals.get( 0 ));
             }
             
-            double minWeight = 0;
+            double minWeight = Double.MAX_VALUE;
             int replicas = 0;
             for (int nodes = 1; nodes <= REPLICAS_PER_NODE; nodes++) {
                 double power   = getPowerCost( nodes );
@@ -669,17 +678,17 @@ public class EnergyTestREPLICA_DIST
                 }
             }
             
-            System.out.println( "SELECTED REPLICAS: " + replicas );
+            //System.out.println( "SELECTED REPLICAS: " + replicas );
             
             return replicas;
         }
         
-        private void createGraph( int size )
+        private void createGraph()
         {
-            graph = new ReplicatedGraph( size + 1, REPLICAS_PER_NODE );
+            graph = new ReplicatedGraph( timeSlots + 1, REPLICAS_PER_NODE );
             
             graph.addNode( 0 );
-            for (int i = 0; i < size; i++) {
+            for (int i = 0; i < timeSlots; i++) {
                 for (int nodes = 1; nodes <= REPLICAS_PER_NODE; nodes++) {
                     final int index = i * REPLICAS_PER_NODE + nodes;
                     graph.addNode( index );
@@ -694,14 +703,14 @@ public class EnergyTestREPLICA_DIST
                 }
             }
             // Last node.
-            final int index = size * REPLICAS_PER_NODE + 1;
+            final int index = timeSlots * REPLICAS_PER_NODE + 1;
             graph.addNode( index, 0 );
             for (int i = 1; i <= REPLICAS_PER_NODE; i++) {
                 graph.connectNodes( index - i, index );
             }
             
             //System.out.println( "Graph: \n" + graph.toString() );
-            allReplicas = new int[size];
+            allReplicas = new int[timeSlots];
             graph.computeMinimumPath( this, allReplicas );
         }
         
@@ -712,7 +721,7 @@ public class EnergyTestREPLICA_DIST
             
             double power   = getPowerCost( nodes );
             double latency = getLatencyCost( queries, arrivalExtimation, completionExtimation, nodes );
-            System.out.println( "POWER: " + power + ", LATENCY: " + latency );
+            //System.out.println( "POWER: " + power + ", LATENCY: " + latency );
             double weight  = LAMBDA * power + (1 - LAMBDA) * latency;
             
             return weight;
@@ -734,10 +743,10 @@ public class EnergyTestREPLICA_DIST
         
         private double getLatencyCost( double queuedQueries, double newQueries, double meanCompletiontime, double nodes )
         {
-            System.out.println( "QUERIES: " + queuedQueries + ", NEW_QUERIES: " + newQueries + ", MEAN_COMPLETION_TIME: " + meanCompletiontime + ", NODES: " + nodes );
+            //System.out.println( "QUERIES: " + queuedQueries + ", NEW_QUERIES: " + newQueries + ", MEAN_COMPLETION_TIME: " + meanCompletiontime + ", NODES: " + nodes );
             final double Tk = (((queuedQueries + newQueries) * meanCompletiontime) / nodes) / Utils.MILLION;
             final double Ts = SwitchTimeSlotGenerator.TIME_SLOT.getTimeMicros() / Utils.MILLION;
-            System.out.println( "Tk: " + Tk + ", Ts: " + Ts + ", DIFFERENCE: " + (Tk - Ts) );
+            //System.out.println( "Tk: " + Tk + ", Ts: " + Ts + ", DIFFERENCE: " + (Tk - Ts) );
             switch (latency_normalization) {
                 case( 1 ) : return 1 - Math.exp( ALPHA * Tk );
                 case( 2 ) : return (Tk <= Ts) ? 0 : 1;
@@ -779,27 +788,49 @@ public class EnergyTestREPLICA_DIST
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
-        //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
+        testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
-        testNetwork( Type.PERF, null, 0 );
+        //testNetwork( Type.PERF, null, 0 );
         //testNetwork( Type.CONS, null, 0 );
         
         //testNetwork( Type.PEGASUS, null,  500 );
         //testNetwork( Type.PEGASUS, null, 1000 );
         
+        // LongTerm 0.25
         // SWITCH_OFF_MACHINES = false
         // PESOS TC 500ms               Tail Latency
         //  553689.6905329922        Poco sopra il limite
         
+        // PESOS TC 1000ms
+        // 405368.53451968230            Rispettata
+        
         // PERF
-        // 1021819.338136006             Rispettato
+        // 1021819.3381360060            Rispettata
         
         // SWITCH_OFF_MACHINES = true
         // PESOS TC 500ms               Tail Latency
-        //  499257.7207767839 (2%)   Poco sopra il limite
+        //  499246.1200218487 (2%)   Poco sopra il limite
+        
+        // PESOS TC 1000ms
+        //  351860.6609959681            Rispettata
+        
+        // PESOS EC 500ms
+        //  433472.85688373254       Molto oltre il limite
+        
+        // PESOS EC 1000ms
+        //  339268.5018519679            Rispettata
         
         // PERF
-        //  967387.3381360096            Rispettato
+        //  968143.3381360122            Rispettata
+        
+        // ShortTerm 0.25
+        // SWITCH_OFF_MACHINES = false
+        // PESOS TC 500ms               Tail Latency
+        //  551700.9117319246
+        
+        // SWITCH_OFF_MACHINES = true
+        // PESOS TC 500ms               Tail Latency
+        //  499536.94197572203        Poco sopra il limite
     }
     
     private static CPUModel getModel( Type type, Mode mode, long timeBudget, int node )

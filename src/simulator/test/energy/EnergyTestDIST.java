@@ -493,11 +493,11 @@ public class EnergyTestDIST
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
-        //testNetwork( Type.PERF, null, 0 );
+        testNetwork( Type.PERF, null, 0 );
         //testNetwork( Type.CONS, null, 0 );
         
         //testNetwork( Type.PEGASUS, null,  500 );
-        testNetwork( Type.PEGASUS, null, 1000 );
+        //testNetwork( Type.PEGASUS, null, 1000 );
         
         /* Controller OFF
         500ms => pochissimo sopra la tail latency
@@ -563,7 +563,7 @@ public class EnergyTestDIST
         final Time duration = new Time( 24, TimeUnit.HOURS );
         PEGASUS_CONTROLLER = (type == Type.PEGASUS);
         
-        plotTailLatency( type, mode, timeBudget );
+        //plotTailLatency( type, mode, timeBudget );
         
         //NetworkTopology net = new NetworkTopology( "Topology/Animation/Topology_distributed_multiCore.json" );
         NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_multiCore.json" );

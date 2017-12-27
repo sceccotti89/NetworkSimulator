@@ -230,6 +230,16 @@ public class PlotsPanel implements MouseListener, FocusListener
             } );
             menu.add( remove );
             
+            JMenuItem hide = new JMenuItem( "Hide" );
+            hide.addActionListener( new ActionListener() {
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    // TODO nascondere dal plot
+                    
+                }
+            } );
+            menu.add( hide );
+            
             menu.show( e.getComponent(), e.getX(), e.getY() );
             box.requestFocusInWindow();
         }

@@ -239,7 +239,9 @@ public class Utils
         }
         
         if (outputFileName != null) {
-            PrintWriter writer = new PrintWriter( outputFileName, "UTF-8" );
+            File file = new File( outputFileName );
+            checkDirectory( file.getParent() );
+            PrintWriter writer = new PrintWriter( file, "UTF-8" );
             writer.print( results );
             writer.close();
         }

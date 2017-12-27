@@ -33,6 +33,7 @@ import simulator.test.energy.CPUModel.CONSmodel;
 import simulator.test.energy.CPUModel.LOAD_SENSITIVEmodel;
 import simulator.test.energy.CPUModel.MY_model;
 import simulator.test.energy.CPUModel.Mode;
+import simulator.test.energy.CPUModel.PEGASUSmodel;
 import simulator.test.energy.CPUModel.PERFmodel;
 import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
@@ -53,7 +54,7 @@ import simulator.utils.Utils;
 
 public class EnergyTestMONO
 {
-    private static final int CPU_CORES = 1;
+    private static final int CPU_CORES = 4;
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
     
     private static boolean CENTRALIZED_QUEUE;
@@ -356,7 +357,9 @@ public class EnergyTestMONO
             } else {
                 CPUModel model = (CPUModel) cpu.getModel();
                 QueryInfo query = model.getQuery( p.getContent( Global.QUERY_ID ) );
-                query.setDistributedId( p.getContent( Global.QUERY_DISTR_ID ) );
+                if (p.hasContent( Global.QUERY_DISTR_ID )) {
+                    query.setDistributedId( p.getContent( Global.QUERY_DISTR_ID ) );
+                }
                 //System.out.println( "RECEIVED QUERY: " + p.getContent( Global.QUERY_ID ) );
                 query.setEvent( e );
                 query.setArrivalTime( e.getTime() );
@@ -416,41 +419,6 @@ public class EnergyTestMONO
     
     
     
-    protected static double testSelectCore( CPU cpu ) throws Exception
-    {
-        double start = System.nanoTime();
-        
-        long id = -1;
-        double utilization = Integer.MAX_VALUE;
-        long tiedSelection = Long.MAX_VALUE;
-        boolean tieSituation = false;
-        for (Core core : cpu.getCores()) {
-            double coreUtilization = 0;
-            if (coreUtilization < utilization) {
-                id = core.getId();
-                utilization = coreUtilization;
-                tiedSelection = core.tieSelected;
-                tieSituation = false;
-            } else if (coreUtilization == utilization) {
-                if (core.tieSelected < tiedSelection) {
-                    id = core.getId();
-                    utilization = coreUtilization;
-                    tiedSelection = core.tieSelected;
-                }
-                tieSituation = true;
-            }
-        }
-        
-        if (tieSituation) {
-            cpu.getCore( id ).tieSelected++;
-        }
-        
-        double end = System.nanoTime();
-        double elapsed = (end - start)/1000000d;
-        System.out.println( "ELAPSED_TIME: " + elapsed + "ms" );
-        return elapsed;
-    }
-    
     //public static int executed;
     public static void main( String[] args ) throws Exception
     {
@@ -461,34 +429,28 @@ public class EnergyTestMONO
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
         }
         
-        /*CPU cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( Type.PEGASUS ) );
-        double totalTime = 0; 
-        double N = 10;
-        for (int i = 0; i < N; i++) {
-            totalTime += testSelectCore( cpu );
-        }
-        System.out.println( "Elapsed: " + (totalTime / N) );*/
+        testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
+        //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
+        //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
-        CPUModel model = null;
+        //testMultiCore( Type.PERF, null, 0 );
+        //testMultiCore( Type.CONS, null, 0 );
         
-        model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
-        //model = loadModel( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
-        //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
-        //model = loadModel( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
+        //testMultiCore( Type.PEGASUS, null,  500 );
+        //testMultiCore( Type.PEGASUS, null, 1000 );
         
-        //model = loadModel( Type.LOAD_SENSITIVE, Mode.TIME_CONSERVATIVE,  500 );
-        //model = loadModel( Type.LOAD_SENSITIVE, Mode.TIME_CONSERVATIVE, 1000 );
-        //model = loadModel( Type.LOAD_SENSITIVE, Mode.ENERGY_CONSERVATIVE,  500 );
-        //model = loadModel( Type.LOAD_SENSITIVE, Mode.ENERGY_CONSERVATIVE, 1000 );
         
-        //model = loadModel( Type.MY_MODEL, Mode.TIME_CONSERVATIVE,  500 );
-        //model = loadModel( Type.MY_MODEL, Mode.TIME_CONSERVATIVE, 1000 );
+        //testSingleCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //testSingleCore( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
+        //testSingleCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
+        //testSingleCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
-        //model = loadModel( Type.PERF );
-        //model = loadModel( Type.CONS );
+        //testSingleCore( Type.PERF, null, 0 );
+        //testSingleCore( Type.CONS, null, 0 );
         
-        //testMultiCore( model );
-        testSingleCore( model );
+        //testSingleCore( Type.PEGASUS, null,  500 );
+        //testSingleCore( Type.PEGASUS, null, 1000 );
         
         //while (true) {
             //System.out.println( "SEED: " + ClientGenerator.SEED );
@@ -500,9 +462,12 @@ public class EnergyTestMONO
         //}
         
         //System.out.println( "EXEC: " + executed + ", SEED: " + ClientGenerator.SEED );
+        
+        //plotTailLatency( Type.CONS, null, 0 );
+        //plotTailLatency( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500 );
     }
     
-    protected static CPUModel loadModel( Type type, Mode mode, long timeBudget ) throws Exception
+    /*protected static CPUModel loadModel( Type type, Mode mode, long timeBudget ) throws Exception
     {
         CPUModel model = null;
         switch ( type ) {
@@ -523,6 +488,29 @@ public class EnergyTestMONO
             case CONS : model = new CONSmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
             default   : break;
         }
+        model.loadModel();
+        return model;
+    }*/
+    
+    private static CPUModel getModel( Type type, Mode mode, long timeBudget )
+    {
+        CPUModel model = null;
+        final String directory = "Models/Monolithic/PESOS/MaxScore/";
+        switch ( type ) {
+            case PESOS          : model = new PESOSmodel( timeBudget, mode, directory ); break;
+            case LOAD_SENSITIVE : model = new LOAD_SENSITIVEmodel( timeBudget, mode, directory ); break;
+            case MY_MODEL       : model = new MY_model( timeBudget, mode, directory ); break;
+            case PERF           : model = new PERFmodel( directory ); break;
+            case CONS           : model = new CONSmodel( directory ); break;
+            case PEGASUS        : model = new PEGASUSmodel( timeBudget, directory ); break;
+            default             : break;
+        }
+        return model;
+    }
+    
+    private static CPUModel loadModel( Type type, Mode mode, long timeBudget ) throws Exception
+    {
+        CPUModel model = getModel( type, mode, timeBudget );
         model.loadModel();
         return model;
     }
@@ -603,7 +591,7 @@ public class EnergyTestMONO
         an.start();
     }
     
-    public static void testMultiCore( CPUModel model ) throws Exception
+    public static void testMultiCore( Type type, Mode mode, long timeBudget ) throws Exception
     {
         /*
                    1000Mb,0ms
@@ -613,8 +601,10 @@ public class EnergyTestMONO
         
         final Time duration = new Time( 24, TimeUnit.HOURS );
         
-        CPU cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( model.getType() ) );
+        CPU cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( type ) );
         cpu.setCentralizedQueue( CENTRALIZED_QUEUE );
+        
+        CPUModel model = loadModel( type, mode, timeBudget );
         cpu.setModel( model );
         
         String modelType = model.getModelType( true );
@@ -670,7 +660,7 @@ public class EnergyTestMONO
         System.out.println( "QUERIES: " + cpu.getExecutedQueries() );
         
         if (Global.showGUI) {
-            plotTailLatency( model.getType(), model.getMode(), model.getTimeBudget() );
+            plotTailLatency( type, mode, timeBudget );
         }
         
         // PARAMETERS                         0.03 0.03 0.01 (NOW: 0.01 0.06 0.01)
@@ -742,7 +732,7 @@ public class EnergyTestMONO
         // 
     }
     
-    public static void testSingleCore( CPUModel model ) throws Exception
+    public static void testSingleCore( Type type, Mode mode, long timeBudget ) throws Exception
     {
         /*
         Links have 0ms of latency and "infinite" bandwith (1Gb/s) since they act as "cpu cores".
@@ -769,6 +759,7 @@ public class EnergyTestMONO
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
+        CPUModel model = loadModel( type, mode, timeBudget );
         String modelType = model.getModelType( true );
         
         EventGenerator anyGen = new AnycastGenerator( duration );
@@ -834,7 +825,7 @@ public class EnergyTestMONO
         System.out.println( "QUERIES: " + totalQueries );
         
         if (Global.showGUI) {
-            plotTailLatency( model.getType(), model.getMode(), model.getTimeBudget() );
+            plotTailLatency( type, mode, timeBudget );
         }
     }
     
@@ -851,11 +842,11 @@ public class EnergyTestMONO
         }
     }
     
-    public static void plotTailLatency( Type type, Mode mode, Time timeBudget ) throws IOException
+    public static void plotTailLatency( Type type, Mode mode, long timeBudget ) throws IOException
     {
         final int percentile = 95;
         final double interval = TimeUnit.MINUTES.toMicros( 5 );
-        final long time_budget = (timeBudget == null) ? 1000000 : timeBudget.getTimeMicros();
+        final long time_budget = (timeBudget == 0) ? 1000000 : (timeBudget * 1000);
         final long plotTimeBudget = time_budget / 1000;
         
         Plotter plotter = new Plotter( "DISTRIBUTED Tail Latency " + percentile + "-th Percentile", 800, 600 );
