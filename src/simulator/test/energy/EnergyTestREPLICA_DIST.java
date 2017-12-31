@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import org.newdawn.slick.util.ResourceLoader;
-
 import simulator.core.Agent;
 import simulator.core.Simulator;
 import simulator.events.Event;
@@ -52,6 +50,7 @@ import simulator.utils.Sampler.Sampling;
 import simulator.utils.SizeUnit;
 import simulator.utils.Time;
 import simulator.utils.Utils;
+import simulator.utils.resources.ResourceLoader;
 
 public class EnergyTestREPLICA_DIST
 {
