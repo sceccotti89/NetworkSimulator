@@ -339,6 +339,7 @@ public class PlotEditDialog extends JDialog implements ActionListener
             public void actionPerformed( ActionEvent e ) {
                 ColorEditDialog dialog = new ColorEditDialog( DIALOG, frame, plotClone );
                 dialog.setVisible( true );
+                drawPointType( pointTypeButton );
                 drawColorOnButton( buttonColor );
                 drawLineOnButton( buttonLine );
             }

@@ -59,7 +59,7 @@ public class EnergyTestREPLICA_DIST
     
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
     
-    private static boolean PESOS_CONTROLLER = true;
+    private static final boolean PESOS_CONTROLLER = true;
     private static boolean PEGASUS_CONTROLLER = false;
     private static boolean SWITCH_OFF_MACHINES = false;
     
@@ -777,7 +777,6 @@ public class EnergyTestREPLICA_DIST
     public static void main( String[] args ) throws Exception
     {
         Utils.VERBOSE = false;
-        PESOS_CONTROLLER    = false;
         SWITCH_OFF_MACHINES = true;
         
         if (System.getProperty( "showGUI" ) != null) {

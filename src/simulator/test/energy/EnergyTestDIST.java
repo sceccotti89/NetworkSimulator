@@ -487,11 +487,10 @@ public class EnergyTestDIST
         }
         
         Utils.VERBOSE = false;
-        PESOS_CONTROLLER = false;
+        PESOS_CONTROLLER = true;
         
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
-        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
-        // TODO lanciare i test di questi 2 casi
+        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
@@ -501,9 +500,19 @@ public class EnergyTestDIST
         //testNetwork( Type.PEGASUS, null,  500 );
         //testNetwork( Type.PEGASUS, null, 1000 );
         
-        // 10 minuti per eseguire una simulazione
+        plotAllTailLatencies();
+        
+        // 8-10 minuti per eseguire una simulazione
         
         /* Controller OFF
+        PERF => OK
+        CPU: 0, Energy: 949243.3381358528
+        CPU: 1, Energy: 949107.5945604891
+        CPU: 2, Energy: 949155.5243643803
+        CPU: 3, Energy: 948982.9453512894
+        CPU: 4, Energy: 949357.5777634114
+        Total energy: 4745846.9801754225
+        
         TC 500ms => 20-30ms sopra la tail latency
         CPU: 0, Energy: 510184.2929497879
         CPU: 1, Energy: 509707.85023065493
@@ -512,31 +521,71 @@ public class EnergyTestDIST
         CPU: 4, Energy: 510197.6374146212
         Total energy: 2549937.463131297
         
-        TC 1000ms => 
+        TC 1000ms => OK
+        CPU: 0, Energy: 384470.70227312145
+        CPU: 1, Energy: 384731.71597194264
+        CPU: 2, Energy: 384519.74819639046
+        CPU: 3, Energy: 384556.76308674546
+        CPU: 4, Energy: 384712.1209200574
+        Total energy: 1922991.0504482575
         
+        EC 500ms => parecchio sopra la deadline
+        CPU: 0, Energy: 469210.70260559034
+        CPU: 1, Energy: 468853.37089560163
+        CPU: 2, Energy: 469104.04240905715
+        CPU: 3, Energy: 468757.047474284
+        CPU: 4, Energy: 469296.2684509489
+        Total energy: 2345221.431835482
         
-        490ms => tail latency rispettata, ma 5k joule in piu' su ogni nodo
-        CPU: 0, Energy: 514987.66590927080
-        CPU: 1, Energy: 522922.51765498940
-        CPU: 2, Energy: 510727.52246600826
-        CPU: 3, Energy: 520718.18692186824
-        CPU: 4, Energy: 510331.94529571820
+        EC 1000ms => parecchi ms sopra la tail latency
+        CPU: 0, Energy: 371588.06139913626
+        CPU: 1, Energy: 371696.9350436037
+        CPU: 2, Energy: 371527.8401791376
+        CPU: 3, Energy: 371147.52768754255
+        CPU: 4, Energy: 371884.0190950832
+        Total energy: 1857844.3834045033
+        
+        TC 490ms => tail latency rispettata, ma 5k joule in piu' su ogni nodo
+        CPU: 0, Energy: 514987.6659092708
+        CPU: 1, Energy: 515154.3613742034
+        CPU: 2, Energy: 515691.7793198843
+        CPU: 3, Energy: 514937.73596503126
+        CPU: 4, Energy: 515687.20076390397
+        Total energy: 2576458.743332294
         */
         
         /* Controller ON
-        500ms
-        CPU: 0, Energy: 509779.17505582990
-        CPU: 1, Energy: 516857.99737529930
-        CPU: 2, Energy: 505372.26596979290
-        CPU: 3, Energy: 515128.59815541330
-        CPU: 4, Energy: 504986.23915390630
+        TC 500ms => la tail latency si e' alzata di 5-10ms
+        CPU: 0, Energy: 509873.32594367524
+        CPU: 1, Energy: 508868.001314809
+        CPU: 2, Energy: 509162.85787324124
+        CPU: 3, Energy: 509184.602073197
+        CPU: 4, Energy: 509500.2892159311
+        Total energy: 2546589.0764208534
         
-        490ms
-        CPU: 0, Energy: 514688.90826270124
-        CPU: 1, Energy: 522372.51843498480
-        CPU: 2, Energy: 510648.55334194500
-        CPU: 3, Energy: 520457.69276704575
-        CPU: 4, Energy: 510206.59131988365
+        TC 1000ms => solo in alcuni punti la tail latency non e' propriamente rispettata
+        CPU: 0, Energy: 383401.8552626626
+        CPU: 1, Energy: 383323.5548974724
+        CPU: 2, Energy: 382883.4202697008
+        CPU: 3, Energy: 383010.99161361734
+        CPU: 4, Energy: 383242.33759798435
+        Total energy: 1915862.1596414375
+        
+        EC 500ms => sopra di almeno 100ms come nella versione monolitica
+        CPU: 0, Energy: 468549.7497455145
+        CPU: 1, Energy: 467665.7360456883
+        CPU: 2, Energy: 467786.5920438947
+        CPU: 3, Energy: 467607.18458381266
+        CPU: 4, Energy: 468042.7709368644
+        Total energy: 2339652.0333557744
+        
+        EC 1000ms => tra ora 8 e 14 la latenza amedia e' di 1200ms
+        CPU: 0, Energy: 371007.1009083964
+        CPU: 1, Energy: 370767.64468610403
+        CPU: 2, Energy: 370572.9467644084
+        CPU: 3, Energy: 370151.2899807247
+        CPU: 4, Energy: 370801.45567673794
+        Total energy: 1853300.4380163713
         */
         
         /* PEGASUS 500ms => Tail Latency: 860ms
@@ -545,9 +594,9 @@ public class EnergyTestDIST
         CPU: 2, Energy: 578788.3536451985
         CPU: 3, Energy: 579167.1967478242
         CPU: 4, Energy: 578856.3524171093
-        Total energy: 2895267.4490724485*/
+        Total energy: 2895267.4490724485
         
-        /* PEGASUS 1000ms => Tail Latency: 1430ms
+        PEGASUS 1000ms => Tail Latency: 1450ms
         CPU: 0, Energy: 472749.45282551256
         CPU: 1, Energy: 469068.84039751306
         CPU: 2, Energy: 468940.36854324414
@@ -785,7 +834,7 @@ public class EnergyTestDIST
         plotter.addPlot( folder + "PESOS_TC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (t = 500 ms)" );
         plotter.addPlot( folder + "PESOS_EC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS EC (t = 500 ms)" );
         plotter.addPlot( folder + "PESOS_TC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (t = 1000 ms)" );
-        plotter.addPlot( folder + "PESOS_TC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (t = 1000 ms)" );
+        plotter.addPlot( folder + "PESOS_EC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS EC (t = 1000 ms)" );
         plotter.addPlot( folder + "PEGASUS_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PEGASUS (t = 500 ms)" );
         plotter.addPlot( folder + "PEGASUS_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PEGASUS (t = 1000 ms)" );
         
@@ -798,9 +847,9 @@ public class EnergyTestDIST
         plotter.addPlot( tl_500ms, Color.BLACK, Line.DASHED, "Tail latency (" + 500 + "ms)" );
         plotter.addPlot( tl_1000ms, Color.BLACK, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
-        double yRange = 1400000d;
+        double yRange = 1600000d;
         plotter.setRange( Axis.Y, 0, yRange );
-        plotter.setTicks( Axis.Y, 13, 2 );
+        plotter.setTicks( Axis.Y, 15, 2 );
         
         plotter.setVisible( true );
     }

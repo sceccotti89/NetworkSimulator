@@ -1043,7 +1043,9 @@ public class Plotter extends WindowAdapter implements ActionListener
             }
             
             if (!_legend.isSelected()) {
-                //_legend.draw( this, g );
+                if (!creatingImage) {
+                    _legend.draw( this, g );
+                }
                 return;
             }
             
@@ -1082,6 +1084,8 @@ public class Plotter extends WindowAdapter implements ActionListener
                     plot.drawPoint( g, x + LEGEND_LINE_LENGTH/2, p.y + box.getHeight()/2 );
                     
                     if (creatingImage) {
+                        g.setColor( (theme == Theme.BLACK) ? Color.WHITE : Color.BLACK );
+                        g.setFont( box.getFont() );
                         int height = (int) g.getFontMetrics().getStringBounds( box.getText(), g ).getHeight();
                         g.drawString( box.getText(), p.x, p.y + height );
                     }
