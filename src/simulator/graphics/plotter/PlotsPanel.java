@@ -137,8 +137,10 @@ public class PlotsPanel implements MouseListener, FocusListener
         int y = startY;
         for (Plot plot : plots) {
             JCheckBox box = plot.box;
-            box.setLocation( box.getX(), y );
-            y = (int) box.getBounds().getMaxY();
+            if (plot.visible) {
+                box.setLocation( box.getX(), y );
+                y = (int) box.getBounds().getMaxY();
+            }
         }
         
         if (plots.size() == 0) {
@@ -234,8 +236,8 @@ public class PlotsPanel implements MouseListener, FocusListener
             hide.addActionListener( new ActionListener() {
                 @Override
                 public void actionPerformed( ActionEvent e ) {
-                    // TODO nascondere dal plot
-                    
+                    plotter.hidePlot( index );
+                    updatePosition( plotter.getPlots() );
                 }
             } );
             menu.add( hide );

@@ -392,8 +392,8 @@ public class Plotter extends WindowAdapter implements ActionListener
     /**
      * Create an image specifying only the title.
      * 
-     * @param fileName     name of the file
-     * @param directory    name of the directory
+     * @param fileName     name of the file.
+     * @param directory    name of the directory.
     */
     public void createImage( String fileName, String directory ) throws IOException
     {
@@ -402,6 +402,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             String extension = fileName.substring( index + 1 );
             createImage( fileName.substring( 0, index ), extension, directory );
         } else {
+            // By default the extension is png.
             createImage( fileName, "png", directory );
         }
     }
@@ -409,9 +410,9 @@ public class Plotter extends WindowAdapter implements ActionListener
     /**
      * Create an image specifying the title and its extension.
      * 
-     * @param fileName         name of the file
-     * @param fileExtension    extension of the file
-     * @param directory        name of the directory
+     * @param fileName         name of the file.
+     * @param fileExtension    extension of the file.
+     * @param directory        name of the directory.
     */
     public void createImage( String fileName, String fileExtension, String directory ) throws IOException
     {
@@ -423,7 +424,7 @@ public class Plotter extends WindowAdapter implements ActionListener
         creatingImage = true;
         plotter.paintComponent( g );
         creatingImage = false;
-        File outputfile = new File( directory + "\\" + fileName + "." + fileExtension );
+        File outputfile = new File( directory + "/" + fileName + "." + fileExtension );
         if (ImageIO.write( image, fileExtension, outputfile )) {
             System.out.println( "Image \"" + fileName + "." + fileExtension + "\" saved in \"" + directory + "\"." );
         }
@@ -522,6 +523,8 @@ public class Plotter extends WindowAdapter implements ActionListener
         protected Stroke stroke;
         protected JCheckBox box;
         
+        protected boolean visible = true;
+        
         protected int realWidth;
         
         public static final int WIDTH = 8;
@@ -570,6 +573,10 @@ public class Plotter extends WindowAdapter implements ActionListener
             } else { // Dashed.
                 stroke = new BasicStroke( lineWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{ 20f, 10f }, 0 );
             }
+        }
+        
+        public void setVisible( boolean flag ) {
+            visible = flag;
         }
         
         public void drawPoint( Graphics2D g, int x, int y )
@@ -689,6 +696,12 @@ public class Plotter extends WindowAdapter implements ActionListener
             remove( plot.box );
         }
         
+        protected void hidePlot( int index )
+        {
+            Plot plot = _plots.get( index );
+            plot.setVisible( false );
+        }
+        
         protected List<Plot> getPlots() {
             return _plots;
         }
@@ -734,12 +747,14 @@ public class Plotter extends WindowAdapter implements ActionListener
             final float spaces = lines * 2 - 1;
             if (axe == Axis.Y) {
                 final float dashLength = xLength / spaces;
-                Stroke stroke = new BasicStroke( 1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{ dashLength, dashLength }, 0 );
+                Stroke stroke = new BasicStroke( 1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
+                                                 0, new float[]{ dashLength, dashLength }, 0 );
                 g.setStroke( stroke );
                 g.drawLine( p.x, (int) p.getY(), (int) (p.x + xLength), (int) p.getY() );
             } else {
                 final float dashLength = yLength / spaces;
-                Stroke stroke = new BasicStroke( 1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{ dashLength, dashLength }, 0 );
+                Stroke stroke = new BasicStroke( 1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
+                                                 0, new float[]{ dashLength, dashLength }, 0 );
                 g.setStroke( stroke );
                 g.drawLine( p.x, (int) p.getY(), p.x, (int) (p.y - yLength) );
             }
@@ -1028,7 +1043,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             }
             
             if (!_legend.isSelected()) {
-                _legend.draw( this, g );
+                //_legend.draw( this, g );
                 return;
             }
             
@@ -1040,22 +1055,37 @@ public class Plotter extends WindowAdapter implements ActionListener
             }
             _legend.setWidth( maxWidth );
             
+            int Y = -1;
             // Draw the legend.
             for (Plot plot : _plots) {
                 JCheckBox box = plot.box;
-                box.setForeground( (theme == Theme.BLACK) ? Color.WHITE : Color.BLACK );
-                box.setBounds( _legend.getStartXPlot(), box.getY(), maxWidth - LEGEND_LINE_LENGTH, box.getHeight() );
-                
-                // Draw the associated line and point.
-                Point p = box.getLocation();
-                final int x = p.x + box.getWidth();
-                g.setColor( plot.color );
-                g.setStroke( plot.stroke );
-                if (plot.line != Line.NOTHING) {
-                    g.drawLine( x, p.y + box.getHeight()/2 - 1,
-                                x + LEGEND_LINE_LENGTH, p.y + box.getHeight()/2 - 1 );
+                if (!plot.visible) {
+                    box.setVisible( false );
+                } else {
+                    box.setForeground( (theme == Theme.BLACK) ? Color.WHITE : Color.BLACK );
+                    
+                    if (Y == -1) {
+                        Y = box.getY();
+                    }
+                    box.setBounds( _legend.getStartXPlot(), Y, maxWidth - LEGEND_LINE_LENGTH, box.getHeight() );
+                    Y += box.getHeight();
+                    
+                    // Draw the associated line and point.
+                    Point p = box.getLocation();
+                    final int x = p.x + box.getWidth();
+                    g.setColor( plot.color );
+                    g.setStroke( plot.stroke );
+                    if (plot.line != Line.NOTHING) {
+                        g.drawLine( x, p.y + box.getHeight()/2 - 1,
+                                    x + LEGEND_LINE_LENGTH, p.y + box.getHeight()/2 - 1 );
+                    }
+                    plot.drawPoint( g, x + LEGEND_LINE_LENGTH/2, p.y + box.getHeight()/2 );
+                    
+                    if (creatingImage) {
+                        int height = (int) g.getFontMetrics().getStringBounds( box.getText(), g ).getHeight();
+                        g.drawString( box.getText(), p.x, p.y + height );
+                    }
                 }
-                plot.drawPoint( g, x + LEGEND_LINE_LENGTH/2, p.y + box.getHeight()/2 );
             }
             
             _legend.draw( this, g );

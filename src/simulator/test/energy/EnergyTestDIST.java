@@ -27,6 +27,7 @@ import simulator.events.impl.ResponseEvent;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
 import simulator.graphics.plotter.Plotter.Line;
+import simulator.graphics.plotter.Plotter.Theme;
 import simulator.network.NetworkAgent;
 import simulator.network.NetworkLayer;
 import simulator.test.energy.CPU.Core;
@@ -489,23 +490,30 @@ public class EnergyTestDIST
         PESOS_CONTROLLER = false;
         
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
-        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
+        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
+        // TODO lanciare i test di questi 2 casi
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
-        testNetwork( Type.PERF, null, 0 );
+        //testNetwork( Type.PERF, null, 0 );
         //testNetwork( Type.CONS, null, 0 );
         
         //testNetwork( Type.PEGASUS, null,  500 );
         //testNetwork( Type.PEGASUS, null, 1000 );
         
+        // 10 minuti per eseguire una simulazione
+        
         /* Controller OFF
-        500ms => pochissimo sopra la tail latency
-        CPU: 0, Energy: 510184.29294978790
-        CPU: 1, Energy: 517436.83143501723
-        CPU: 2, Energy: 505464.09523287165
-        CPU: 3, Energy: 515423.68479431875
-        CPU: 4, Energy: 505098.75745063850
+        TC 500ms => 20-30ms sopra la tail latency
+        CPU: 0, Energy: 510184.2929497879
+        CPU: 1, Energy: 509707.85023065493
+        CPU: 2, Energy: 509915.05096734874
+        CPU: 3, Energy: 509932.63156888395
+        CPU: 4, Energy: 510197.6374146212
+        Total energy: 2549937.463131297
+        
+        TC 1000ms => 
+        
         
         490ms => tail latency rispettata, ma 5k joule in piu' su ogni nodo
         CPU: 0, Energy: 514987.66590927080
@@ -531,11 +539,21 @@ public class EnergyTestDIST
         CPU: 4, Energy: 510206.59131988365
         */
         
-        // PEGASUS 500ms => Tail Latency: 860ms
-        // Total energy: 2895267.4490724485
+        /* PEGASUS 500ms => Tail Latency: 860ms
+        CPU: 0, Energy: 579700.1623426491
+        CPU: 1, Energy: 578755.3839196678
+        CPU: 2, Energy: 578788.3536451985
+        CPU: 3, Energy: 579167.1967478242
+        CPU: 4, Energy: 578856.3524171093
+        Total energy: 2895267.4490724485*/
         
-        // PEGASUS 1000ms => Tail Latency: 1430ms
-        // Total energy: 2349865.3544235174
+        /* PEGASUS 1000ms => Tail Latency: 1430ms
+        CPU: 0, Energy: 472749.45282551256
+        CPU: 1, Energy: 469068.84039751306
+        CPU: 2, Energy: 468940.36854324414
+        CPU: 3, Energy: 469628.30455108505
+        CPU: 4, Energy: 469478.3881061629
+        Total energy: 2349865.3544235174*/
     }
     
     private static CPUModel getModel( Type type, Mode mode, long timeBudget, int node )
@@ -747,6 +765,42 @@ public class EnergyTestDIST
         double yRange = maxValue + 50000d;
         plotter.setRange( Axis.Y, 0, yRange );
         plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
+        
+        plotter.setVisible( true );
+    }
+    
+    public static void plotAllTailLatencies() throws IOException
+    {
+        Plotter plotter = new Plotter( "DISTRIBUTED Tail Latency 95-th Percentile", 800, 600 );
+        plotter.setAxisName( "Time (h)", "95th-tile response time (ms)" );
+        plotter.setScaleY( 1000d );
+        
+        plotter.setTheme( Theme.WHITE );
+        
+        plotter.setRange( Axis.X, 0, TimeUnit.HOURS.toMicros( 24 ) );
+        plotter.setTicks( Axis.X, 23, 2 );
+        plotter.setScaleX( TimeUnit.HOURS.toMicros( 1 ) );
+        
+        final String folder = "Results/Latency/Distributed/";
+        plotter.addPlot( folder + "PESOS_TC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (t = 500 ms)" );
+        plotter.addPlot( folder + "PESOS_EC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS EC (t = 500 ms)" );
+        plotter.addPlot( folder + "PESOS_TC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (t = 1000 ms)" );
+        plotter.addPlot( folder + "PESOS_TC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (t = 1000 ms)" );
+        plotter.addPlot( folder + "PEGASUS_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PEGASUS (t = 500 ms)" );
+        plotter.addPlot( folder + "PEGASUS_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PEGASUS (t = 1000 ms)" );
+        
+        List<Pair<Double, Double>> tl_500ms  = new ArrayList<>( 2 );
+        List<Pair<Double, Double>> tl_1000ms = new ArrayList<>( 2 );
+        for(int i = 0; i <= 1; i++) {
+            tl_500ms.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), 500000d ) );
+            tl_1000ms.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), 1000000d ) );
+        }
+        plotter.addPlot( tl_500ms, Color.BLACK, Line.DASHED, "Tail latency (" + 500 + "ms)" );
+        plotter.addPlot( tl_1000ms, Color.BLACK, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
+        
+        double yRange = 1400000d;
+        plotter.setRange( Axis.Y, 0, yRange );
+        plotter.setTicks( Axis.Y, 13, 2 );
         
         plotter.setVisible( true );
     }

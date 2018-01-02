@@ -254,10 +254,7 @@ public class PESOScontroller
         }
         
         @Override
-        public void build( String inputFile ) {
-            // TODO Auto-generated method stub
-            
-        }
+        public void build( String inputFile ) {}
 
         public void addQuery( Time time, long coreID, PesosQuery query ) {
             coresMap.get( coreID ).addQuery( time, query );
@@ -396,7 +393,6 @@ public class PESOScontroller
         
         public void predictServiceTime( PESOSmodel model )
         {
-            // TODO testare questa soluzione ora che ho sistemato i postings: testare per tutti e 4 i casi.
             int ppcRMSE = model.getRMSE( _terms );
             _serviceTime = model.predictServiceTimeAtMaxFrequency( _terms, _postings + ppcRMSE );
             //System.out.println( "QUERY: " + _id + ", PREDICTED: " + _serviceTime + ", REAL: " + model.getQuery( _id ).getTime( 3500000 )  );
