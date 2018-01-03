@@ -24,7 +24,7 @@ public abstract class EnergyModel
      * 
      * @param _cores    number of cpu cores.
     */
-    public EnergyModel( double _cores ) {
+    public EnergyModel( int _cores ) {
         cores = _cores;
     }
     
@@ -136,7 +136,7 @@ public abstract class EnergyModel
     
     public static class QueryEnergyModel extends EnergyModel
     {
-        public QueryEnergyModel( double nCores ) {
+        public QueryEnergyModel( int nCores ) {
             super( nCores );
         }
         
@@ -164,7 +164,7 @@ public abstract class EnergyModel
     
     /*public static class NormalizedEnergyModel extends EnergyModel
     {
-        public NormalizedEnergyModel( double nCores ) {
+        public NormalizedEnergyModel( int nCores ) {
             super( nCores );
         }
         
@@ -195,7 +195,7 @@ public abstract class EnergyModel
         private static final double[] COEFF = new double[]{ 1.29223297d, 0.94764905d };
         //private static final double Pind = 0.1d;
         
-        public CoefficientEnergyModel( double nCores ) {
+        public CoefficientEnergyModel( int nCores ) {
             super( nCores );
         }
         
@@ -233,7 +233,7 @@ public abstract class EnergyModel
         private static final double GAMMA = 0.01d;
         private static final double OMEGA = 4d;
         
-        public ParameterEnergyModel( double nCores ) {
+        public ParameterEnergyModel( int nCores ) {
             super( nCores );
         }
         

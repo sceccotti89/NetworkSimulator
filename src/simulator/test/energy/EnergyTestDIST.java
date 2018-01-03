@@ -489,7 +489,7 @@ public class EnergyTestDIST
         Utils.VERBOSE = false;
         PESOS_CONTROLLER = true;
         
-        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
@@ -500,7 +500,7 @@ public class EnergyTestDIST
         //testNetwork( Type.PEGASUS, null,  500 );
         //testNetwork( Type.PEGASUS, null, 1000 );
         
-        plotAllTailLatencies();
+        //plotAllTailLatencies();
         
         // 8-10 minuti per eseguire una simulazione
         
@@ -659,6 +659,7 @@ public class EnergyTestDIST
         if (Global.showGUI) {
             plotter = new Plotter( "DISTRIBUTED VERSION - " + model.getModelType( false ), 800, 600 );
         }
+        controller = null;
         Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         for (int i = 0; i < NODES; i++) {
             CPU cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( model.getType() ) );
@@ -725,15 +726,6 @@ public class EnergyTestDIST
         an.setTargetFrameRate( 90 );
         an.setForceExit( false );
         an.start();*/
-        
-        // PERF
-        // Total energy: 4749979.250899715
-        
-        // PESOS TC 500ms
-        // Total energy: 2599029.532406005
-        
-        // PEGASUS 500ms
-        // Total energy: 2894209.2631946327
         
         if (Global.showGUI) {
             plotTailLatency( type, mode, timeBudget );

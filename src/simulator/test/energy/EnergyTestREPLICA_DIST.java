@@ -9,7 +9,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -59,12 +62,19 @@ public class EnergyTestREPLICA_DIST
     
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
     
-    private static final boolean PESOS_CONTROLLER = true;
+    private static boolean PESOS_CONTROLLER = false;
     private static boolean PEGASUS_CONTROLLER = false;
     private static boolean SWITCH_OFF_MACHINES = false;
     
     private static List<CPU> cpus = new ArrayList<>( NODES );
+    
     private static PESOScontroller controller;
+    
+    private static int arrivalEstimator;
+    private static int latencyNormalization;
+    private static double lambda;
+    
+    private static Map<String,Double> testResults;
     
     
     
@@ -492,10 +502,10 @@ public class EnergyTestREPLICA_DIST
         private static final double Pon      = 84;
         
         // The Lambda value used to balance the equation (lower for latency, higher for power).
-        private static final double LAMBDA = 0.25;
+        private final double LAMBDA;
         
         // Parameters used to normalize the latency.
-        private static final double ALPHA = -0.01;
+        private static double ALPHA = -0.01;
         private int latency_normalization;
         
         private static final Time WAKE_UP_TIME = new Time( 200, TimeUnit.SECONDS );
@@ -503,7 +513,7 @@ public class EnergyTestREPLICA_DIST
         
         
         public SwitchAgent( long id, int estimatorType, int latencyNormalization,
-                            EventGenerator evGenerator ) throws IOException
+                            double lambda, EventGenerator evGenerator ) throws IOException
         {
             super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( evGenerator );
@@ -511,6 +521,7 @@ public class EnergyTestREPLICA_DIST
             
             destinations = evGenerator.getDestinations();
             
+            LAMBDA = lambda;
             this.estimatorType = estimatorType;
             this.latency_normalization = latencyNormalization;
             
@@ -777,58 +788,50 @@ public class EnergyTestREPLICA_DIST
     public static void main( String[] args ) throws Exception
     {
         Utils.VERBOSE = false;
-        SWITCH_OFF_MACHINES = true;
         
+        System.setProperty( "showGUI", "false" );
         if (System.getProperty( "showGUI" ) != null) {
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
         }
         
-        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        testResults = new HashMap<>();
+        
+        SWITCH_OFF_MACHINES  = true;
+        
+        arrivalEstimator     = SwitchAgent.SEASONAL_ESTIMATOR;
+        latencyNormalization = 1;
+        lambda               = 0.25;
+        
+        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
-        testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
+        //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
+        
+        /*arrivalEstimator = SwitchAgent.SEASONAL_ESTIMATOR;
+        for (latencyNormalization = 1; latencyNormalization <= 3; latencyNormalization++) {
+            for (int iLambda = 1; iLambda <= 3; iLambda++) {
+                lambda = 0.25 * iLambda;
+                testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 500 );
+            }
+        }
+        
+        arrivalEstimator = SwitchAgent.SEASONAL_ESTIMATOR_WITH_DRIFT;
+        for (latencyNormalization = 1; latencyNormalization <= 3; latencyNormalization++) {
+            for (int iLambda = 1; iLambda <= 3; iLambda++) {
+                lambda = 0.25 * iLambda;
+                testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 500 );
+            }
+        }*/
+        
+        for (Entry<String,Double> entry : testResults.entrySet()) {
+            Utils.LOGGER.info( entry.getKey() + ", " + entry.getValue() );
+        }
         
         //testNetwork( Type.PERF, null, 0 );
         //testNetwork( Type.CONS, null, 0 );
         
         //testNetwork( Type.PEGASUS, null,  500 );
         //testNetwork( Type.PEGASUS, null, 1000 );
-        
-        // LongTerm 0.25
-        // SWITCH_OFF_MACHINES = false
-        // PESOS TC 500ms               Tail Latency
-        //  553689.6905329922        Poco sopra il limite
-        
-        // PESOS TC 1000ms
-        // 405368.53451968230            Rispettata
-        
-        // PERF
-        // 1021819.3381360060            Rispettata
-        
-        // SWITCH_OFF_MACHINES = true
-        // PESOS TC 500ms               Tail Latency
-        //  499246.1200218487 (2%)   Poco sopra il limite
-        
-        // PESOS TC 1000ms
-        //  351860.6609959681            Rispettata
-        
-        // PESOS EC 500ms
-        //  433472.85688373254       Molto oltre il limite
-        
-        // PESOS EC 1000ms
-        //  339268.5018519679            Rispettata
-        
-        // PERF
-        //  968143.3381360122            Rispettata
-        
-        // ShortTerm 0.25
-        // SWITCH_OFF_MACHINES = false
-        // PESOS TC 500ms               Tail Latency
-        //  551700.9117319246
-        
-        // SWITCH_OFF_MACHINES = true
-        // PESOS TC 500ms               Tail Latency
-        //  499536.94197572203        Poco sopra il limite
     }
     
     private static CPUModel getModel( Type type, Mode mode, long timeBudget, int node )
@@ -856,11 +859,6 @@ public class EnergyTestREPLICA_DIST
         final Time duration = new Time( 24, TimeUnit.HOURS );
         PEGASUS_CONTROLLER = (type == Type.PEGASUS);
         
-        //NetworkTopology net = new NetworkTopology( "Topology/Animation/Topology_distributed_multiCore.json" );
-        //NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_replica_multiCore.json" );
-        //net.setTrackingEvent( "Results/distributed_replica_multi_core.txt" );
-        //System.out.println( net.toString() );
-        
         NetworkTopology net = new NetworkTopology();
         Simulator sim = new Simulator( net );
         
@@ -881,18 +879,17 @@ public class EnergyTestREPLICA_DIST
             plotter = new Plotter( "", 800, 600 );
         }
         
+        controller = null;
+        cpus.clear();
+        
         String compressedReplicaMode = null;
         String extendedReplicaMode   = null;
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
-        final int latencyNormalization = 2;
         for (int i = 0; i < NODES; i++) {
             // Create the switch associated to the REPLICA nodes.
             EventGenerator switchGen = new SwitchGenerator( duration, PACKET, PACKET );
             final long switchId = 2 + i * REPLICAS_PER_NODE + i;
-            SwitchAgent switchNode = new SwitchAgent( switchId,
-                                                      SwitchAgent.SEASONAL_ESTIMATOR,
-                                                      latencyNormalization,
-                                                      switchGen );
+            SwitchAgent switchNode = new SwitchAgent( switchId, arrivalEstimator, latencyNormalization, lambda, switchGen );
             net.addNode( switchId, "switch_" + (i+1), 0 );
             // From broker (1) to switch.
             net.addLink( 1, switchId, 1000, 0, NetworkLink.BIDIRECTIONAL );
@@ -920,12 +917,6 @@ public class EnergyTestREPLICA_DIST
                 
                 // Add the model to the corresponding CPU.
                 cpu.setModel( p_model );
-                //cpu.setModel( p_model.cloneModel() );
-                
-                // Create PESOS controller.
-                if (type == Type.PESOS && PESOS_CONTROLLER && controller == null) {
-                    controller = new PESOScontroller( timeBudget * 1000, mode, cpus, NODES, cpu.getCPUcores() );
-                }
                 
                 EventGenerator sink = new MulticoreGenerator( duration );
                 final long id = i * (REPLICAS_PER_NODE + 1) + 3 + j;
@@ -937,7 +928,6 @@ public class EnergyTestREPLICA_DIST
                 net.addAgent( agentCore );
                 
                 agentCore.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/Distributed_Replica_" + modelType + "_" + compressedReplicaMode + "_Node" + nodeId + "_Energy.log", Sampling.CUMULATIVE ) );
-                //agentCore.addSampler( Global.TAIL_LATENCY_SAMPLING, new Sampler( null, "Log/Distributed_Replica_" + modelType + "_" + compressedReplicaMode + "_Node" + nodeId + "_Tail_Latency.log", null ) );
                 agentCore.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
                 
                 if (type == Type.CONS) {
@@ -951,7 +941,12 @@ public class EnergyTestREPLICA_DIST
                 }
                 
                 switchGen.connect( agentCore );
-                if (PESOS_CONTROLLER) {
+                // Create PESOS controller.
+                if (type == Type.PESOS && PESOS_CONTROLLER && controller == null) {
+                    if (controller == null) {
+                        controller = new PESOScontroller( timeBudget * 1000, mode, cpus, NODES, cpu.getCPUcores() );
+                    }
+                    // Connect the agent.
                     controller.connect( agentCore );
                 }
             }
@@ -975,7 +970,6 @@ public class EnergyTestREPLICA_DIST
         }
         
         sim.start( duration, false );
-        //sim.start( new Time( 53100, TimeUnit.MICROSECONDS ), false );
         sim.close();
         
         double totalEnergy = 0;
@@ -984,11 +978,11 @@ public class EnergyTestREPLICA_DIST
             double energy = cpu.getAgent().getResultSampled( Global.ENERGY_SAMPLING );
             double energyIdle = cpu.getAgent().getResultSampled( Global.IDLE_ENERGY_SAMPLING );
             totalEnergy += energy;
-            System.out.println( extendedReplicaMode + " " + model.getModelType( false ) +
-                                " - CPU (" + (i/REPLICAS_PER_NODE + 1) + "-" + (i%REPLICAS_PER_NODE) + ") => Energy: " + energy +
-                                ", Idle: " + energyIdle + ", Queries: " + cpu.getExecutedQueries() );
+            Utils.LOGGER.info( extendedReplicaMode + " " + model.getModelType( false ) +
+                               " - CPU (" + (i/REPLICAS_PER_NODE + 1) + "-" + (i%REPLICAS_PER_NODE) + ") => Energy: " + energy +
+                               ", Idle: " + energyIdle + ", Queries: " + cpu.getExecutedQueries() );
         }
-        System.out.println( extendedReplicaMode + " " + model.getModelType( false ) + " - Total energy: " + totalEnergy );
+        Utils.LOGGER.info( extendedReplicaMode + " " + model.getModelType( false ) + " - Total energy: " + totalEnergy );
         
         // Show the animation.
         if (Global.showGUI) {
@@ -1002,33 +996,8 @@ public class EnergyTestREPLICA_DIST
             plotTailLatency( type, mode, timeBudget, compressedReplicaMode, extendedReplicaMode );
         }
         
-        // TODO questi valori sono stati presi senza spegnere le macchine
-        // LongTerm, L2
-        
-        // Lambda = 0.25
-        // Total energy: 1104638.7760717103 (PERF)
-        // Total energy:  678575.5409967459 (PESOS TC 500ms)
-        // Total energy:  (PESOS TC 1000ms)
-        
-        // Round-Robin
-        // Total energy:  673676.8520004768 (PESOS TC 500ms)
-        
-        // Lambda = 0.5 (stesso numero di server di 0.25)
-        
-        // Lambda = 0.75
-        // Total energy: 1063473.7565396855 (PERF)
-        // Total energy:  694987.4373546678 (PESOS TC 500ms)
-        
-        // ShortTerm, L2
-        
-        // Lambda = 0.25
-        // Total energy: 1063473.7565400046 (PERF)
-        // Total energy:  (PESOS TC 500ms)
-        
-        // Lambda = 0.5
-        
-        // Lambda = 0.75
-        // Total energy:  (PESOS TC 500ms)
+        String result = modelType + "_" + compressedReplicaMode + "_" + (SWITCH_OFF_MACHINES ? "off" : "on");
+        testResults.put( result, totalEnergy );
     }
     
     private static Class<? extends Core> getCoreClass( Type type )

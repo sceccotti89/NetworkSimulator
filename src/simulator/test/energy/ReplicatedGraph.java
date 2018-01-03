@@ -9,6 +9,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 
 import simulator.test.energy.EnergyTestREPLICA_DIST.SwitchAgent;
+import simulator.utils.Utils;
 
 public class ReplicatedGraph
 {
@@ -75,13 +76,13 @@ public class ReplicatedGraph
             final int slotIndex  = getSlotIndex( index );
             final double queries = node.getQueries();
             //node.setQueries( node.getQueries() + agent.incomingQueries( slotIndex ) );
-            System.out.println( "ESTRATTO: " + index + ", QUERY: " + node.getQueries() + ", WEIGHT: " + node.getWeight() );
+            //System.out.println( "ESTRATTO: " + index + ", QUERY: " + node.getQueries() + ", WEIGHT: " + node.getWeight() );
             for (Node n : node.getNeightbours()) {
                 final int nodes = getReplicas( n.getIndex() );
                 // Last "link" has the number of remaining queries.
                 double weight = (slotIndex == replicas.length) ?
                                 queries : node.getWeight() + agent.getWeight( queries, nodes, slotIndex );
-                System.out.println( "VICINO: " + n.getIndex() + ", DISTANZA: " + n.getWeight() + ", PESO_ATTUALE: " + weight );
+                //System.out.println( "VICINO: " + n.getIndex() + ", DISTANZA: " + n.getWeight() + ", PESO_ATTUALE: " + weight );
                 if (weight < n.getWeight()) {
                     n.setWeight( weight );
                     prev[n.getIndex()] = node;
@@ -96,13 +97,12 @@ public class ReplicatedGraph
             }
         }
         
-        // TODO rimuovere il path dopo i TEST
         Node currNode = nodes.get( nodes.size() - 1 );
         Node nextNode = null;
         int replicaIndex = replicas.length - 1;
-        String path = currNode.getIndex() + "]";
+        //String path = currNode.getIndex() + "]";
         while ((nextNode = prev[currNode.getIndex()]) != null) {
-            path = nextNode.getIndex() + "," + path;
+            //path = nextNode.getIndex() + "," + path;
             if (nextNode.getIndex() == 0) {
                 break;
             } else {
@@ -111,10 +111,10 @@ public class ReplicatedGraph
                 replicas[replicaIndex--] = getReplicas( nextNode.getIndex() );
             }
         }
-        path = "[" + path;
-        System.out.println( path );
+        //path = "[" + path;
+        //System.out.println( path );
         for (int i = 0; i < replicas.length; i++) {
-            System.out.println( replicas[i] );
+            Utils.LOGGER.info( replicas[i] );
         }
     }
     
