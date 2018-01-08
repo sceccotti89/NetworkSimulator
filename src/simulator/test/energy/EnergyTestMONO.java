@@ -430,9 +430,9 @@ public class EnergyTestMONO
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
         }
         
-        //plotAllTailLatencies();
+        plotAllTailLatencies();
         
-        testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
@@ -443,6 +443,10 @@ public class EnergyTestMONO
         //testMultiCore( Type.PEGASUS, null,  500 );
         //testMultiCore( Type.PEGASUS, null, 1000 );
         
+        //testMultiCore( Type.LOAD_SENSITIVE, Mode.TIME_CONSERVATIVE,  500 );
+        //testMultiCore( Type.LOAD_SENSITIVE, Mode.TIME_CONSERVATIVE, 1000 );
+        //testMultiCore( Type.LOAD_SENSITIVE, Mode.ENERGY_CONSERVATIVE,  500 );
+        //testMultiCore( Type.LOAD_SENSITIVE, Mode.ENERGY_CONSERVATIVE, 1000 );
         
         //testSingleCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testSingleCore( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
@@ -706,16 +710,24 @@ public class EnergyTestMONO
         // IDLE:        45471.40043715234
         
         // LOAD SENSITIVE TC 500ms
-        // TARGET: 
         //
-        // SIMULATOR:  
-        // IDLE:       
+        // SIMULATOR:  522928.76432903290
+        // IDLE:        49910.82706388565
         
         // LOAD SENSITIVE TC 1000ms
-        // TARGET: 
         //
-        // SIMULATOR:  
-        // IDLE:       
+        // SIMULATOR:  385200.17950385995
+        // IDLE:        40866.95151338680
+        
+        // LOAD SENSITIVE EC 500ms
+        //
+        // SIMULATOR:  471261.91815138236
+        // IDLE:        45452.58335607352
+        
+        // LOAD SENSITIVE EC 1000ms
+        //
+        // SIMULATOR:  369170.92012207880
+        // IDLE:        38593.38612278199
         
         // Con la tecnica nuova (quella di scegliere il core con la minor frequenza predittata)
         // OLD: 
@@ -869,6 +881,7 @@ public class EnergyTestMONO
         plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
         plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
+        final String tau = new String( ("\u03C4").getBytes(),"UTF-8" );
         final String folder = "Results/Latency/Monolithic/";
         List<Pair<Double,Double>> percentiles = null;
         switch ( type ) {
@@ -876,7 +889,7 @@ public class EnergyTestMONO
                 percentiles = Utils.getPercentiles( percentile, interval,
                                                     "Log/PESOS_" + mode + "_" + plotTimeBudget + "ms_Tail_Latency.log",
                                                     folder + "PESOS_" + mode + "_" + plotTimeBudget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
-                plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + plotTimeBudget + "ms)" );
+                plotter.addPlot( percentiles, "PESOS (" + mode + ", " + tau + "=" + plotTimeBudget + "ms)" );
                 break;
             case PERF :
                 percentiles = Utils.getPercentiles( percentile, interval,
@@ -900,7 +913,7 @@ public class EnergyTestMONO
                 percentiles = Utils.getPercentiles( percentile, interval,
                                                     "Log/MY_Model_" + mode + "_" + plotTimeBudget + "ms_Tail_Latency.log",
                                                     folder + "MY_Model_" + mode + "_" + plotTimeBudget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );                
-                plotter.addPlot( percentiles, "MY_Model (" + mode + ", t=" + plotTimeBudget + "ms)" );
+                plotter.addPlot( percentiles, "MY_Model (" + mode + ", " + tau + "=" + plotTimeBudget + "ms)" );
                 break;
             default : break;
         }
@@ -930,13 +943,19 @@ public class EnergyTestMONO
         plotter.setTicks( Axis.X, 23, 2 );
         plotter.setScaleX( TimeUnit.HOURS.toMicros( 1 ) );
         
+        final String tau = new String( ("\u03C4").getBytes(),"UTF-8" );
         final String folder = "Results/Latency/Monolithic/";
-        plotter.addPlot( folder + "PERF_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "perf" );
+        /*plotter.addPlot( folder + "PERF_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "perf" );
         plotter.addPlot( folder + "CONS_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "cons" );
-        plotter.addPlot( folder + "PESOS_TC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (t = 500 ms)" );
-        plotter.addPlot( folder + "PESOS_EC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS EC (t = 500 ms)" );
-        plotter.addPlot( folder + "PESOS_TC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (t = 1000 ms)" );
-        plotter.addPlot( folder + "PESOS_EC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS EC (t = 1000 ms)" );
+        plotter.addPlot( folder + "PESOS_TC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (" + tau + " = 500 ms)" );
+        plotter.addPlot( folder + "PESOS_EC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS EC (" + tau + " = 500 ms)" );
+        plotter.addPlot( folder + "PESOS_TC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (" + tau + " = 1000 ms)" );
+        plotter.addPlot( folder + "PESOS_EC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS EC (" + tau + " = 1000 ms)" );*/
+        
+        plotter.addPlot( folder + "LOAD_SENSITIVE_TC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "LOAD SENSITIVE TC (" + tau + " = 500 ms)" );
+        plotter.addPlot( folder + "LOAD_SENSITIVE_EC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "LOAD SENSITIVE EC (" + tau + " = 500 ms)" );
+        plotter.addPlot( folder + "LOAD_SENSITIVE_TC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "LOAD SENSITIVE TC (" + tau + " = 1000 ms)" );
+        plotter.addPlot( folder + "LOAD_SENSITIVE_EC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "LOAD SENSITIVE EC (" + tau + " = 1000 ms)" );
         
         List<Pair<Double, Double>> tl_500ms  = new ArrayList<>( 2 );
         List<Pair<Double, Double>> tl_1000ms = new ArrayList<>( 2 );

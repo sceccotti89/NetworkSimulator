@@ -1067,6 +1067,7 @@ public class EnergyTestREPLICA_DIST
         plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
         plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
+        final String tau = new String( ("\u03C4").getBytes(),"UTF-8" );
         final String folder = "Results/Latency/DistributedReplica/";
         List<Pair<Double,Double>> percentiles = null;
         switch ( type ) {
@@ -1074,7 +1075,7 @@ public class EnergyTestREPLICA_DIST
                 percentiles = Utils.getPercentiles( percentile, interval,
                                                     "Log/Distributed_Replica_PESOS_" + mode + "_" + time_budget + "ms_" + compressedReplicaMode + "_Tail_Latency.log",
                                                     folder + "PESOS_" + mode + "_" + time_budget + "ms_" + compressedReplicaMode + "_Tail_Latency_" + percentile + "th_Percentile.txt" );
-                plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms, " + extendedReplicaMode + ")" );
+                plotter.addPlot( percentiles, "PESOS (" + mode + ", " + tau + "=" + time_budget + "ms, " + extendedReplicaMode + ")" );
                 break;
             case PERF :
                 percentiles = Utils.getPercentiles( percentile, interval,
@@ -1092,7 +1093,7 @@ public class EnergyTestREPLICA_DIST
                 percentiles = Utils.getPercentiles( percentile, interval,
                                                     "Log/Distributed_Replica_PEGASUS_" + time_budget + "ms_" + compressedReplicaMode + "_Tail_Latency.log",
                                                     folder + "PEGASUS_" + time_budget + "ms_" + compressedReplicaMode + "_Tail_Latency_" + percentile + "th_Percentile.txt" );
-                plotter.addPlot( percentiles, "PEGASUS (t=" + time_budget + "ms, " + extendedReplicaMode + ")" );
+                plotter.addPlot( percentiles, "PEGASUS (" + tau + "=" + time_budget + "ms, " + extendedReplicaMode + ")" );
                 break;
             default : break;
         }

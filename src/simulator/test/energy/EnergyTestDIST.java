@@ -489,9 +489,9 @@ public class EnergyTestDIST
         Utils.VERBOSE = false;
         PESOS_CONTROLLER = true;
         
-        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
-        //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
+        testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
         //testNetwork( Type.PERF, null, 0 );
@@ -767,6 +767,7 @@ public class EnergyTestDIST
         plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
         plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
+        final String tau = new String( ("\u03C4").getBytes(),"UTF-8" );
         final String folder = "Results/Latency/Distributed/";
         List<Pair<Double,Double>> percentiles = null;
         switch ( type ) {
@@ -774,7 +775,7 @@ public class EnergyTestDIST
                 percentiles = Utils.getPercentiles( percentile, interval,
                                                     "Log/Distributed_PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency.log",
                                                     folder + "PESOS_" + mode + "_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
-                plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
+                plotter.addPlot( percentiles, "PESOS (" + mode + ", " + tau + "=" + time_budget + "ms)" );
                 break;
             case PERF :
                 percentiles = Utils.getPercentiles( percentile, interval,
@@ -792,7 +793,7 @@ public class EnergyTestDIST
                 percentiles = Utils.getPercentiles( percentile, interval,
                                                     "Log/Distributed_PEGASUS_" + time_budget + "ms_Tail_Latency.log",
                                                     folder + "PEGASUS_" + time_budget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
-                plotter.addPlot( percentiles, "PEGASUS (t=" + time_budget + "ms)" );
+                plotter.addPlot( percentiles, "PEGASUS (" + tau + "=" + time_budget + "ms)" );
                 break;
             default : break;
         }
@@ -822,13 +823,14 @@ public class EnergyTestDIST
         plotter.setTicks( Axis.X, 23, 2 );
         plotter.setScaleX( TimeUnit.HOURS.toMicros( 1 ) );
         
+        final String tau = new String( ("\u03C4").getBytes(),"UTF-8" );
         final String folder = "Results/Latency/Distributed/";
-        plotter.addPlot( folder + "PESOS_TC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (t = 500 ms)" );
-        plotter.addPlot( folder + "PESOS_EC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS EC (t = 500 ms)" );
-        plotter.addPlot( folder + "PESOS_TC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (t = 1000 ms)" );
-        plotter.addPlot( folder + "PESOS_EC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS EC (t = 1000 ms)" );
-        plotter.addPlot( folder + "PEGASUS_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PEGASUS (t = 500 ms)" );
-        plotter.addPlot( folder + "PEGASUS_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PEGASUS (t = 1000 ms)" );
+        plotter.addPlot( folder + "PESOS_TC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (" + tau + " = 500 ms)" );
+        plotter.addPlot( folder + "PESOS_EC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS EC (" + tau + " = 500 ms)" );
+        plotter.addPlot( folder + "PESOS_TC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (" + tau + " = 1000 ms)" );
+        plotter.addPlot( folder + "PESOS_EC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS EC (" + tau + " = 1000 ms)" );
+        plotter.addPlot( folder + "PEGASUS_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PEGASUS (" + tau + " = 500 ms)" );
+        plotter.addPlot( folder + "PEGASUS_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PEGASUS (" + tau + " = 1000 ms)" );
         
         List<Pair<Double, Double>> tl_500ms  = new ArrayList<>( 2 );
         List<Pair<Double, Double>> tl_1000ms = new ArrayList<>( 2 );

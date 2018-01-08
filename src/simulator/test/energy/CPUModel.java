@@ -238,45 +238,6 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
     }
     
     /**
-     * Returns the "best" available core to assign the next task.</br>
-     * By default the core with the least number of queries in the queue is chosen.
-     * 
-     * @param time    time of evaluation.
-     * @param cpu     the associated cpu.
-     * @param q       the query to add.
-    */
-    /*public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
-    {
-        long id = -1;
-        double utilization = Integer.MAX_VALUE;
-        long tiedSelection = Long.MAX_VALUE;
-        boolean tieSituation = false;
-        for (Core core : cpu.getCores()) {
-            double coreUtilization = core.getUtilization( time );
-            if (coreUtilization < utilization) {
-                id = core.getId();
-                utilization = coreUtilization;
-                tiedSelection = core.tieSelected;
-                tieSituation = false;
-                // TODO per testare l'abbassamento di frequenze di PESOS dovrei commentare questa parte
-            } else if (coreUtilization == utilization) {
-                if (core.tieSelected < tiedSelection) {
-                    id = core.getId();
-                    utilization = coreUtilization;
-                    tiedSelection = core.tieSelected;
-                }
-                tieSituation = true;
-            }
-        }
-        
-        if (tieSituation) {
-            cpu.getCore( id ).tieSelected++;
-        }
-        
-        return cpu.lastSelectedCore = id;
-    }*/
-    
-    /**
      * Clones this model.
     */
     protected abstract CPUModel cloneModel();
@@ -430,76 +391,6 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         public int getRMSE( int terms ) {
             return regressors.get( "class." + terms + ".rmse" ).intValue();
         }
-        
-        // TODO Per PESOS utilizzare questo: vince (di molto) nei 1000ms ma perde (di poco) nei 500ms.
-        /*@Override
-        public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
-        {
-            // NOTE: This is a new core selection technique,
-            //       based on the frequency evaluation.
-            
-            long id = -1;
-            long minFrequency = Long.MAX_VALUE;
-            long tiedSelection = Long.MAX_VALUE;
-            boolean tieSituation = false;
-            for (Core core : cpu.getCores()) {
-                long frequency = core.getFrequency();
-                core.addQuery( q, false );
-                if (core.getFrequency() < minFrequency) {
-                    id = core.getId();
-                    minFrequency = core.getFrequency();
-                    tiedSelection = core.tieSelected;
-                    tieSituation = false;
-                } else if (core.getFrequency() == minFrequency) {
-                    if (core.tieSelected < tiedSelection) {
-                        id = core.getId();
-                        minFrequency = core.getFrequency();
-                        tiedSelection = core.tieSelected;
-                    }
-                    tieSituation = true;
-                }
-                core.removeQuery( time, core.getQueue().size() - 1, false );
-                core.setFrequency( frequency );
-            }
-            
-            if (tieSituation) {
-                cpu.getCore( id ).tieSelected++;
-            }
-            
-            return cpu.lastSelectedCore = id;
-        }*/
-        
-        // Alternative technique selecting the core with the earliest completion time.
-        /*@Override
-        public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
-        {
-            long id = -1;
-            long minExecutionTime = Long.MAX_VALUE;
-            long tiedSelection = Long.MAX_VALUE;
-            boolean tieSituation = false;
-            for (Core core : cpu.getCores()) {
-                long executionTime = ((PESOScore) core).getQueryExecutionTime( time );
-                if (executionTime < minExecutionTime) {
-                    id = core.getId();
-                    minExecutionTime = executionTime;
-                    tiedSelection = core.tieSelected;
-                    tieSituation = false;
-                } else if (executionTime == minExecutionTime) {
-                    if (core.tieSelected < tiedSelection) {
-                        id = core.getId();
-                        minExecutionTime = executionTime;
-                        tiedSelection = core.tieSelected;
-                    }
-                    tieSituation = true;
-                }
-            }
-            
-            if (tieSituation) {
-                cpu.getCore( id ).tieSelected++;
-            }
-            
-            return cpu.lastSelectedCore = id;
-        }*/
         
         @Override
         public String getModelType( boolean delimeters )
@@ -888,37 +779,6 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             return _device.getMaxFrequency(); 
         }*/
         
-        /*@Override
-        public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
-        {
-            long id = -1;
-            long minExecutionTime = Long.MAX_VALUE;
-            long tiedSelection    = Long.MAX_VALUE;
-            boolean tieSituation = false;
-            for (Core core : cpu.getCores()) {
-                long executionTime = ((MY_MODELcore) core).getQueryExecutionTime( time );
-                if (executionTime < minExecutionTime) {
-                    id = core.getId();
-                    minExecutionTime = executionTime;
-                    tiedSelection = core.tieSelected;
-                    tieSituation = false;
-                } else if (executionTime == minExecutionTime) {
-                    if (core.tieSelected < tiedSelection) {
-                        id = core.getId();
-                        minExecutionTime = executionTime;
-                        tiedSelection = core.tieSelected;
-                    }
-                    tieSituation = true;
-                }
-            }
-            
-            if (tieSituation) {
-                cpu.getCore( id ).tieSelected++;
-            }
-            
-            return cpu.lastSelectedCore = id;
-        }*/
-        
         @Override
         public Long eval( Time now, QueryInfo... queries )
         {
@@ -1121,75 +981,6 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             type.setMode( mode );
             return type;
         }
-        
-        /*@Override
-        public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
-        {
-            // NOTE: This is a new core selection technique,
-            //       based on the frequency evaluation.
-            
-            long id = -1;
-            long minFrequency = Long.MAX_VALUE;
-            long tiedSelection = Long.MAX_VALUE;
-            boolean tieSituation = false;
-            for (Core core : cpu.getCores()) {
-                long frequency = core.getFrequency();
-                core.addQuery( q, false );
-                if (core.getFrequency() < minFrequency) {
-                    id = core.getId();
-                    minFrequency = core.getFrequency();
-                    tiedSelection = core.tieSelected;
-                    tieSituation = false;
-                } else if (core.getFrequency() == minFrequency) {
-                    if (core.tieSelected < tiedSelection) {
-                        id = core.getId();
-                        minFrequency = core.getFrequency();
-                        tiedSelection = core.tieSelected;
-                    }
-                    tieSituation = true;
-                }
-                core.removeQuery( core.getQueue().size() - 1 );
-                core.setFrequency( frequency );
-            }
-            
-            if (tieSituation) {
-                cpu.getCore( id ).tieSelected++;
-            }
-            
-            return cpu.lastSelectedCore = id;
-        }*/
-        
-        // TODO Miglior soluzione per LOAD SENSITIVE
-        /*@Override
-        public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
-        {
-            long id = -1;
-            long minExecutionTime = Long.MAX_VALUE;
-            long tiedSelection    = Long.MAX_VALUE;
-            boolean tieSituation = false;
-            for (Core core : cpu.getCores()) {
-                long executionTime = ((LOAD_SENSITIVEcore) core).getQueryExecutionTime( time );
-                if (executionTime < minExecutionTime) {
-                    id = core.getId();
-                    minExecutionTime = executionTime;
-                    tiedSelection = core.tieSelected;
-                    tieSituation = false;
-                } else if (executionTime == minExecutionTime) {
-                    if (core.tieSelected < tiedSelection) {
-                        id = core.getId();
-                        minExecutionTime = executionTime;
-                        tiedSelection = core.tieSelected;
-                    }
-                    tieSituation = true;
-                }
-            }
-            
-            if (tieSituation) {
-                cpu.getCore( id ).tieSelected++;
-            }
-            
-            return cpu.lastSelectedCore = id;
-        }*/
         
         @Override
         public Long eval( Time now, QueryInfo... queries )
