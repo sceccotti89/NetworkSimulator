@@ -70,6 +70,10 @@ public class EnergyCPU extends CPU
         setMinPower(  2d );
         
         setEnergyModel( cores );
+        
+        //setScheduler( new FirstLeastLoaded() );
+        //setScheduler( new MinFrequency() );
+        //setScheduler( new EarliestCompletionTime() );
     }
     
     private void setEnergyModel( int cores )
@@ -181,8 +185,9 @@ public class EnergyCPU extends CPU
             final Time routering_delay = ROUTER_COMPUTATION_TIME.get( core.getFrequency() );
             core.delayTask( time, ROUTER_COMPUTATION_TIME );
             long selectedCore = ((CPUModel) _model).selectCore( time.clone().addTime( delay ), this, query );*/
-            long selectedCore = ((CPUModel) _model).selectCore( time, this, query );
-            return selectedCore;
+            //long selectedCore = ((CPUModel) _model).selectCore( time, this, query );
+            lastSelectedCore = _scheduler.schedule( time, getCores(), query );
+            return lastSelectedCore;
         }
     }
     

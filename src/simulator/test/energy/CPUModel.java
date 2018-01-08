@@ -14,11 +14,8 @@ import java.util.concurrent.TimeUnit;
 
 import simulator.core.Model;
 import simulator.events.Event;
-import simulator.test.energy.CPU.Core;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.EnergyCPU.CONScore;
-import simulator.test.energy.EnergyCPU.LOAD_SENSITIVEcore;
-import simulator.test.energy.EnergyCPU.MY_MODELcore;
 import simulator.utils.Pair;
 import simulator.utils.Time;
 import simulator.utils.Utils;
@@ -242,13 +239,13 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
     
     /**
      * Returns the "best" available core to assign the next task.</br>
-     * By default the core with the minor number of queries in the queue is chosen.
+     * By default the core with the least number of queries in the queue is chosen.
      * 
      * @param time    time of evaluation.
      * @param cpu     the associated cpu.
      * @param q       the query to add.
     */
-    public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
+    /*public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
     {
         long id = -1;
         double utilization = Integer.MAX_VALUE;
@@ -277,7 +274,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         }
         
         return cpu.lastSelectedCore = id;
-    }
+    }*/
     
     /**
      * Clones this model.
@@ -891,7 +888,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             return _device.getMaxFrequency(); 
         }*/
         
-        @Override
+        /*@Override
         public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
         {
             long id = -1;
@@ -920,7 +917,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             }
             
             return cpu.lastSelectedCore = id;
-        }
+        }*/
         
         @Override
         public Long eval( Time now, QueryInfo... queries )
@@ -1108,7 +1105,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
                                                                  REGRESSORS_TIME_CONSERVATIVE );
         }
         
-        public LOAD_SENSITIVEmodel( long time_budget, Mode mode, String dir, String... files ){
+        public LOAD_SENSITIVEmodel( long time_budget, Mode mode, String dir, String... files ) {
             this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, dir, files );
         }
         
@@ -1163,7 +1160,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         }*/
         
         // TODO Miglior soluzione per LOAD SENSITIVE
-        @Override
+        /*@Override
         public long selectCore( Time time, EnergyCPU cpu, QueryInfo q )
         {
             long id = -1;
@@ -1192,7 +1189,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             }
             
             return cpu.lastSelectedCore = id;
-        }
+        }*/
         
         @Override
         public Long eval( Time now, QueryInfo... queries )

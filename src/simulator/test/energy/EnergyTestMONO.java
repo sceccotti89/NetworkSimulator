@@ -430,9 +430,9 @@ public class EnergyTestMONO
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
         }
         
-        plotAllTailLatencies();
+        //plotAllTailLatencies();
         
-        //testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );

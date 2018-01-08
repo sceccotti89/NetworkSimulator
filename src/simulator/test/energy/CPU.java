@@ -34,6 +34,8 @@ public abstract class CPU extends Device<QueryInfo,Long>
     protected long lastSelectedCore = -1;
     protected QueryInfo lastQuery;
     
+    protected Scheduler<Iterable<Core>,Long,QueryInfo> _scheduler;
+    
     protected boolean centralizedQueue = false;
     protected Map<Long,List<QueryInfo>> coreQueue;
     protected LinkedList<QueryReference> queries;
@@ -54,12 +56,15 @@ public abstract class CPU extends Device<QueryInfo,Long>
             coresMap.put( i, coreClass.getConstructor( CPU.class, long.class, long.class )
                                       .newInstance( this, i, getMaxFrequency() ) );
         }
+        
+        setScheduler( new TieLeastLoaded() );
     }
     
     public CPU( String name, List<Long> frequencies )
     {
         super( name, frequencies );
         setFrequency( getMaxFrequency() );
+        setScheduler( new TieLeastLoaded() );
     }
     
     @Override
@@ -89,6 +94,10 @@ public abstract class CPU extends Device<QueryInfo,Long>
     
     public void setEnergyModel( EnergyModel model ) {
         energyModel = model;
+    }
+    
+    public void setScheduler( Scheduler<Iterable<Core>,Long,QueryInfo> scheduler ) {
+        _scheduler = scheduler;
     }
     
     public double getPower() {
