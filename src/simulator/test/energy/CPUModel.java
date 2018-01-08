@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -146,7 +147,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         loadEffectiveTimeEnergy();
     }
     
-    public abstract String getModelType( boolean delimeters );
+    public abstract String getModelType( boolean delimeters ) throws UnsupportedEncodingException;
     
     public Type getType() {
         return type;
@@ -393,12 +394,13 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         }
         
         @Override
-        public String getModelType( boolean delimeters )
+        public String getModelType( boolean delimeters ) throws UnsupportedEncodingException
         {
             if (delimeters) {
                 return "PESOS_" + getMode() + "_" + getTimeBudget().getTimeMillis() + "ms";
             } else {
-                return "PESOS (" + getMode() + ",t=" + getTimeBudget().getTimeMillis() + "ms)";
+                final String tau = new String( ("\u03C4").getBytes(),"UTF-8" );
+                return "PESOS (" + getMode() + "," + tau + "=" + getTimeBudget().getTimeMillis() + "ms)";
             }
         }
 
@@ -611,12 +613,13 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         }
         
         @Override
-        public String getModelType( boolean delimeters )
+        public String getModelType( boolean delimeters ) throws UnsupportedEncodingException
         {
             if (delimeters) {
                 return "PEGASUS_" + getTimeBudget().getTimeMillis() + "ms";
             } else {
-                return "PEGASUS (t = " + getTimeBudget().getTimeMillis() + "ms)";
+                final String tau = new String( ("\u03C4").getBytes(),"UTF-8" );
+                return "PEGASUS (" + tau + " = " + getTimeBudget().getTimeMillis() + "ms)";
             }
         }
         
@@ -922,12 +925,13 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         }
         
         @Override
-        public String getModelType( boolean delimeters )
+        public String getModelType( boolean delimeters ) throws UnsupportedEncodingException
         {
             if (delimeters) {
                 return "MY_Model_" + getMode() + "_" + getTimeBudget().getTimeMillis() + "ms";
             } else {
-                return "MY_Model (" + getMode() + ", t = " + getTimeBudget().getTimeMillis() + "ms)";
+                final String tau = new String( ("\u03C4").getBytes(),"UTF-8" );
+                return "MY_Model (" + getMode() + ", " + tau + " = " + getTimeBudget().getTimeMillis() + "ms)";
             }
         }
         
@@ -1053,12 +1057,13 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         }
         
         @Override
-        public String getModelType( boolean delimeters )
+        public String getModelType( boolean delimeters ) throws UnsupportedEncodingException
         {
             if (delimeters) {
                 return "LOAD_SENSITIVE_" + getMode() + "_" + getTimeBudget().getTimeMillis() + "ms";
             } else {
-                return "LOAD_SENSITIVE (" + getMode() + ", t = " + getTimeBudget().getTimeMillis() + "ms)";
+                final String tau = new String( ("\u03C4").getBytes(),"UTF-8" );
+                return "LOAD_SENSITIVE (" + getMode() + ", " + tau + " = " + getTimeBudget().getTimeMillis() + "ms)";
             }
         }
     
