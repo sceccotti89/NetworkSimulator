@@ -649,6 +649,8 @@ public class Plotter extends WindowAdapter implements ActionListener
             description.addMouseMotionListener( this );
             add( description );
             
+            addMouseMotionListener( this );
+            
             addMouseListener( new MouseListener() {
                 @Override
                 public void mouseClicked( MouseEvent e ) {
@@ -659,14 +661,17 @@ public class Plotter extends WindowAdapter implements ActionListener
                 @Override
                 public void mouseExited( MouseEvent e ) {}
                 @Override
-                public void mouseReleased( MouseEvent e ) {}
+                public void mouseReleased( MouseEvent e ) {
+                    _legend.checkReleased( e );
+                }
                 @Override
                 public void mousePressed( MouseEvent e ) {
                     PLOTTER.requestFocusInWindow();
+                    _legend.checkPressed( e );
                 }
             } );
             
-            _legend = new PlotsPanel( this, (int) width );
+            _legend = new PlotsPanel( this, (int) width, (int) height );
         }
         
         public void addPlot( List<Pair<Double,Double>> points,
@@ -1057,7 +1062,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             }
             _legend.setWidth( maxWidth );
             
-            int Y = -1;
+            int Y = _legend.getStartYPlot();
             // Draw the legend.
             for (Plot plot : _plots) {
                 JCheckBox box = plot.box;
@@ -1066,9 +1071,6 @@ public class Plotter extends WindowAdapter implements ActionListener
                 } else {
                     box.setForeground( (theme == Theme.BLACK) ? Color.WHITE : Color.BLACK );
                     
-                    if (Y == -1) {
-                        Y = box.getY();
-                    }
                     box.setBounds( _legend.getStartXPlot(), Y, maxWidth - LEGEND_LINE_LENGTH, box.getHeight() );
                     Y += box.getHeight();
                     
@@ -1231,8 +1233,10 @@ public class Plotter extends WindowAdapter implements ActionListener
         }
 
         @Override
-        public void mouseMoved( MouseEvent event ) {
+        public void mouseMoved( MouseEvent event )
+        {
             mouse = event.getPoint();
+            _legend.checkMoved( event );
         }
 
         @Override
@@ -1244,6 +1248,7 @@ public class Plotter extends WindowAdapter implements ActionListener
         @Override
         public void componentResized( ComponentEvent e ) {
             _legend.setXPosition( getWidth() );
+            //TODO _legend.setYPosition( getHeight() );
         }
     }
 }

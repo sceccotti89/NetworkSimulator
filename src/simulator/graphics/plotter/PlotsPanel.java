@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -41,28 +42,34 @@ public class PlotsPanel implements MouseListener, FocusListener
     private Rectangle target;
     private Polygon targetOpen;
     private Polygon targetClose;
-    private int x;
-    private int startY = PAD + POLY_SIZE + 2;
+    private int x, y;
+    private int width, height;
     
     private Dimension size;
-    private Color background;
+    private static final Color BACKGROUND = new Color( 200, 200, 220 );
     
-    private static final String TEXT = "Plots";
+    private Point startPosition;
+    private boolean plotPressed = false;
+    
+    private static final String TEXT = "PLOTS";
     
     private static final int W_PLOT_OFFSET = 30;
+    private static final int H_PLOT_OFFSET = 5;
     
     private static final int OFFSET = 30, PAD = 5;
     private static final int POLY_SIZE = 20;
     
     
     
-    public PlotsPanel( GraphicPlotter plotter, int width )
+    public PlotsPanel( GraphicPlotter plotter, int width, int height )
     {
         this.plotter = plotter;
         font = new Font( "sans-serif", Font.PLAIN, 12 );
         selected = false;
-        background = new Color( 200, 200, 220 );
         this.x = width/* - RIGHT_DISTANCE*/;
+        this.y = PAD;
+        this.width = width;
+        this.height = height;
         size = new Dimension( 300, getHeight() );
         
         int[] xPoly = { x + PAD + 3, x + PAD + 9, x + PAD + 15 };
@@ -80,20 +87,41 @@ public class PlotsPanel implements MouseListener, FocusListener
         return x + W_PLOT_OFFSET;
     }
     
+    public int getStartYPlot() {
+        return y + POLY_SIZE + 2;
+    }
+    
     public void setXPosition( int width )
     {
+        this.width = width;
         int x = width - size.width - W_PLOT_OFFSET/* - RIGHT_DISTANCE*/;
-        int offset = x - this.x;
-        this.x = x;
+        updateXPosition( x );
+    }
+    
+    private void updateXPosition( int newX )
+    {
+        int offset = newX - this.x;
+        this.x = newX;
         target.translate( offset, 0 );
         targetOpen.translate( offset, 0 );
         targetClose.translate( offset, 0 );
     }
     
+    private void updateYPosition( int newY )
+    {
+        int offset = newY - y;
+        y = newY;
+        target.translate( 0, offset );
+        targetOpen.translate( 0, offset );
+        targetClose.translate( 0, offset );
+    }
+    
     public void setWidth( int width )
     {
-        size.width = width + W_PLOT_OFFSET;
-        setXPosition( plotter.getWidth() );
+        if (size.width != width + W_PLOT_OFFSET) {
+            size.width = width + W_PLOT_OFFSET;
+            setXPosition( plotter.getWidth() );
+        }
     }
     
     public boolean isSelected() {
@@ -106,7 +134,7 @@ public class PlotsPanel implements MouseListener, FocusListener
     
     public JCheckBox addPlot( GraphicPlotter plotter, String title )
     {
-        int y = startY;
+        int y = this.y + POLY_SIZE + 2;
         for (Plot plot : plotter.getPlots()) {
             JCheckBox box = plot.box;
             y = (int) box.getBounds().getMaxY();
@@ -132,9 +160,53 @@ public class PlotsPanel implements MouseListener, FocusListener
         }
     }
     
+    public void checkPressed( MouseEvent e )
+    {
+        if (!target.contains( e.getPoint() )) {
+            Rectangle area = new Rectangle( x + PAD, y, size.width, getHeight() );
+            plotPressed = area.contains( e.getPoint() );
+            startPosition = e.getPoint();
+            //System.out.println( "PREMUTO: " + plotPressed );
+        }
+    }
+    
+    public void checkMoved( MouseEvent e )
+    {
+        //System.out.println( "MOSSO: " + plotPressed );
+        if (plotPressed) {
+            //System.out.println( "MOSSO!!" );
+            int newX = x + (int) (e.getX() - startPosition.getX());
+            newX = Math.min( newX, width - size.width - W_PLOT_OFFSET/* - RIGHT_DISTANCE*/ );
+            newX = Math.max( newX, W_PLOT_OFFSET );
+            updateXPosition( newX );
+            
+            int newY = y + (int) (e.getY() - startPosition.getY());
+            newY = Math.min( newY, height - size.height - H_PLOT_OFFSET );
+            newY = Math.max( newY, H_PLOT_OFFSET );
+            updateYPosition( newY );
+        }
+    }
+    
+    public void checkReleased( MouseEvent e )
+    {
+        if (plotPressed) {
+            //System.out.println( "RILASCIATO: " + e.getX() );
+            int newX = x + (int) (e.getX() - startPosition.getX());
+            newX = Math.min( newX, width - size.width - W_PLOT_OFFSET/* - RIGHT_DISTANCE*/ );
+            newX = Math.max( newX, W_PLOT_OFFSET );
+            updateXPosition( newX );
+            
+            int newY = y + (int) (e.getY() - startPosition.getY());
+            newY = Math.min( newY, height - size.height - H_PLOT_OFFSET );
+            newY = Math.max( newY, H_PLOT_OFFSET );
+            updateYPosition( newY );
+            plotPressed = false;
+        }
+    }
+    
     private void updatePosition( List<Plot> plots )
     {
-        int y = startY;
+        int y = this.y + POLY_SIZE + 2;
         for (Plot plot : plots) {
             JCheckBox box = plot.box;
             if (plot.visible) {
@@ -273,13 +345,11 @@ public class PlotsPanel implements MouseListener, FocusListener
     public void draw( GraphicPlotter plotter, Graphics2D g )
     {
         final int xArea = x + PAD;
-        final int yArea = PAD;
         
-        g.setColor( background );
-        g.fillRect( xArea, yArea, size.width, getHeight() );
+        g.setColor( BACKGROUND );
+        g.fillRect( xArea, y, size.width, getHeight() );
         
         g.setStroke( new BasicStroke( 1f ) );
-        int h = POLY_SIZE;
         if (selected) {
             g.setColor( Color.GREEN );
             g.fill( targetOpen );
@@ -287,7 +357,7 @@ public class PlotsPanel implements MouseListener, FocusListener
             g.draw( targetOpen );
             g.setColor( Color.BLACK );
             g.setColor( Color.LIGHT_GRAY );
-            g.drawRect( xArea, yArea, size.width, size.height );
+            g.drawRect( xArea, y, size.width, size.height );
         } else {
             g.setColor( Color.RED );
             g.fill( targetClose );
@@ -296,15 +366,13 @@ public class PlotsPanel implements MouseListener, FocusListener
             g.setColor( Color.LIGHT_GRAY );
         }
         
-        g.drawRect( xArea, yArea, size.width, getHeight() );
+        g.drawRect( xArea, y, size.width, getHeight() );
         
         g.setFont( font );
         FontRenderContext frc = g.getFontRenderContext();
         LineMetrics lm = font.getLineMetrics( TEXT, frc );
-        float height = lm.getAscent() + lm.getDescent();
-        float x = OFFSET;
-        float y = (h + height) / 2 - lm.getDescent();
+        float height = lm.getHeight();
         g.setColor( Color.BLACK );
-        g.drawString( TEXT, this.x + x, PAD + y );
+        g.drawString( TEXT, this.x + OFFSET, y + (getHeight() / 2) + (height / 2) );
     }
 }
