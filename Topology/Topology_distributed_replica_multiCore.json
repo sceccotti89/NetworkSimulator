@@ -19,21 +19,21 @@
         {"id":16, "name":"node5_2", "delay":0, "xPos":400, "yPos":430, "color":"#FFD700"}
     ],
     "links": [
-        {"fromId": 0, "destId": 1, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
-        {"fromId": 1, "destId": 2, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
-        {"fromId": 2, "destId": 3, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
-        {"fromId": 2, "destId": 4, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
-        {"fromId": 1, "destId": 5, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
-        {"fromId": 5, "destId": 6, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
-        {"fromId": 5, "destId": 7, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
-        {"fromId": 1, "destId": 8, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
-        {"fromId": 8, "destId": 9, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
-        {"fromId": 8, "destId":10, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
-        {"fromId": 1, "destId":11, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
-        {"fromId":11, "destId":12, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
-        {"fromId":11, "destId":13, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
-        {"fromId": 1, "destId":14, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
-        {"fromId":14, "destId":15, "bandwith":1000.0, "delay":0, "linkType":"duplex"},
-        {"fromId":14, "destId":16, "bandwith":1000.0, "delay":0, "linkType":"duplex"}
+        {"fromId": 0, "destId": 1, "bandwidth":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId": 1, "destId": 2, "bandwidth":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId": 2, "destId": 3, "bandwidth":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId": 2, "destId": 4, "bandwidth":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId": 1, "destId": 5, "bandwidth":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId": 5, "destId": 6, "bandwidth":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId": 5, "destId": 7, "bandwidth":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId": 1, "destId": 8, "bandwidth":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId": 8, "destId": 9, "bandwidth":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId": 8, "destId":10, "bandwidth":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId": 1, "destId":11, "bandwidth":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId":11, "destId":12, "bandwidth":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId":11, "destId":13, "bandwidth":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId": 1, "destId":14, "bandwidth":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId":14, "destId":15, "bandwidth":1000.0, "delay":0, "linkType":"duplex"},
+        {"fromId":14, "destId":16, "bandwidth":1000.0, "delay":0, "linkType":"duplex"}
  	]
 }

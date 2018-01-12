@@ -8,10 +8,10 @@
         {"id":5, "name":"server2", "delay":5,  "xPos":40, "yPos":0}
     ],
     "links": [
-        {"fromId":0, "destId":2, "bandwith":70.0,  "delay":5, "linkType":"duplex"},
-        {"fromId":1, "destId":2, "bandwith":70.0,  "delay":5, "linkType":"duplex"},
-        {"fromId":2, "destId":3, "bandwith":50.0,  "delay":3, "linkType":"duplex"},
-        {"fromId":3, "destId":4, "bandwith":100.0, "delay":2, "linkType":"duplex"},
-        {"fromId":3, "destId":5, "bandwith":80.0,  "delay":3, "linkType":"duplex"}
+        {"fromId":0, "destId":2, "bandwidth":70.0,  "delay":5, "linkType":"duplex"},
+        {"fromId":1, "destId":2, "bandwidth":70.0,  "delay":5, "linkType":"duplex"},
+        {"fromId":2, "destId":3, "bandwidth":50.0,  "delay":3, "linkType":"duplex"},
+        {"fromId":3, "destId":4, "bandwidth":100.0, "delay":2, "linkType":"duplex"},
+        {"fromId":3, "destId":5, "bandwidth":80.0,  "delay":3, "linkType":"duplex"}
  	]
 }

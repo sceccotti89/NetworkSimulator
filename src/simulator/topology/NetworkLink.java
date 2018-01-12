@@ -21,7 +21,7 @@ public class NetworkLink
     private final long _sourceId;
     private final long _destId;
     
-    private final Size<Double> _bandwith;
+    private final Size<Double> _bandwidth;
     private final long _delay;
     
     private double errorLink = 0;
@@ -39,7 +39,7 @@ public class NetworkLink
     public static final String UNIDIRECTIONAL = "simplex", BIDIRECTIONAL = "duplex";
     
     public static final String FROM_ID = "fromId", DEST_ID = "destId";
-    public static final String BANDWITH = "bandwith", DELAY = "delay";
+    public static final String BANDWIDTH = "bandwidth", DELAY = "delay";
     public static final String LINK_TYPE = "linkType";
     
     
@@ -57,7 +57,7 @@ public class NetworkLink
         _sourceId = sourceId;
         _destId = destId;
         
-        _bandwith = new Size<Double>( bandwith, SizeUnit.MEGABIT );
+        _bandwidth = new Size<Double>( bandwith, SizeUnit.MEGABIT );
         _delay = new Time( delay, TimeUnit.MILLISECONDS ).getTimeMicros();
         
         _linkType = linkType;
@@ -71,8 +71,8 @@ public class NetworkLink
         return _destId;
     }
     
-    public double getBandwith() {
-        return _bandwith.getSize();
+    public double getBandwidth() {
+        return _bandwidth.getSize();
     }
     
     public String linkType() {
@@ -82,7 +82,7 @@ public class NetworkLink
     public long getTtrasm( long size )
     {
         // Ttrasm = size/bandwith
-        double Ttrasm = size / _bandwith.getBits();
+        double Ttrasm = size / _bandwidth.getBits();
         return Utils.getTimeInMicroseconds( Ttrasm, TimeUnit.SECONDS );
     }
     
@@ -115,7 +115,7 @@ public class NetworkLink
      * boundary nodes.
     */
     public NetworkLink reverse() {
-        return new NetworkLink( _destId, _sourceId, _bandwith.getSize(), _delay/1000L, _linkType );
+        return new NetworkLink( _destId, _sourceId, _bandwidth.getSize(), _delay/1000L, _linkType );
     }
     
     public void setActive( boolean flag ) {
@@ -137,7 +137,7 @@ public class NetworkLink
     {
         StringBuilder buffer = new StringBuilder( 128 );
         buffer.append( "Source: " + _sourceId + ", Dest: " + _destId +
-                       ", Bandwith: " + _bandwith.getSize() + " Mb/s, " +
+                       ", Bandwith: " + _bandwidth.getSize() + " Mb/s, " +
                        "Delay: " + _delay + "ns, Type: " + _linkType + "\n" );
         return buffer.toString();
     }

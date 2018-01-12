@@ -124,16 +124,16 @@ public class NetworkTopology
         JSONArray links = settings.getJSONArray( "links" );
         length = links.length();
         for (int i = 0; i < length; i++) {
-            JSONObject link = links.getJSONObject( i );
-            long fromId     = link.getLong( NetworkLink.FROM_ID );
-            long destId     = link.getLong( NetworkLink.DEST_ID );
-            double bandwith = link.getDouble( NetworkLink.BANDWITH );
-            long delay      = link.getLong( NetworkLink.DELAY );
-            String linkType = (link.has( NetworkLink.LINK_TYPE )) ?
-                                    link.getString( NetworkLink.LINK_TYPE ) :
-                                    NetworkLink.UNIDIRECTIONAL;
+            JSONObject link  = links.getJSONObject( i );
+            long fromId      = link.getLong( NetworkLink.FROM_ID );
+            long destId      = link.getLong( NetworkLink.DEST_ID );
+            double bandwidth = link.getDouble( NetworkLink.BANDWIDTH );
+            long delay       = link.getLong( NetworkLink.DELAY );
+            String linkType  = (link.has( NetworkLink.LINK_TYPE )) ?
+                                     link.getString( NetworkLink.LINK_TYPE ) :
+                                     NetworkLink.UNIDIRECTIONAL;
             
-            NetworkLink _link = new NetworkLink( fromId, destId, bandwith, delay, linkType );
+            NetworkLink _link = new NetworkLink( fromId, destId, bandwidth, delay, linkType );
             addLink( _link );
             
             if(linkType.equals( NetworkLink.BIDIRECTIONAL )) {

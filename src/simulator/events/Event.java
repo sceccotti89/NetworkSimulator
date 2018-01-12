@@ -270,7 +270,7 @@ public abstract class Event implements Comparable<Event>
                 // If they are of the same type compare their ID.
                 if (this.getClass().equals( o.getClass() ))
                     return getId().compareTo( o.getId() );
-                // Give priority to the out-going events.
+                // Give priority to the incoming events.
                 if (this instanceof ResponseEvent) return 1;
                 else return -1;
             }

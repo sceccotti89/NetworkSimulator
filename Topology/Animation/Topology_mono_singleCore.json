@@ -8,10 +8,10 @@
         {"id":5, "name":"server4", "delay":0, "xPos":400, "yPos":360, "color":"#FFD700"}
     ],
     "links": [
-        {"fromId":0, "destId":1, "bandwith":100.0, "delay":4, "linkType":"duplex"},
-        {"fromId":1, "destId":2, "bandwith":100.0, "delay":4, "linkType":"duplex"},
-        {"fromId":1, "destId":3, "bandwith":100.0, "delay":4, "linkType":"duplex"},
-        {"fromId":1, "destId":4, "bandwith":100.0, "delay":4, "linkType":"duplex"},
-        {"fromId":1, "destId":5, "bandwith":100.0, "delay":4, "linkType":"duplex"}
+        {"fromId":0, "destId":1, "bandwidth":100.0, "delay":4, "linkType":"duplex"},
+        {"fromId":1, "destId":2, "bandwidth":100.0, "delay":4, "linkType":"duplex"},
+        {"fromId":1, "destId":3, "bandwidth":100.0, "delay":4, "linkType":"duplex"},
+        {"fromId":1, "destId":4, "bandwidth":100.0, "delay":4, "linkType":"duplex"},
+        {"fromId":1, "destId":5, "bandwidth":100.0, "delay":4, "linkType":"duplex"}
  	]
 }

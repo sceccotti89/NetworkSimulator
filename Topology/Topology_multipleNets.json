@@ -6,7 +6,7 @@
             {"id":1, "name":"server", "delay":0, "xPos":10, "yPos":0}
         ],
         "links": [
-            {"fromId":0, "destId":1, "bandwith":1000.0, "delay":0, "linkType":"duplex"}
+            {"fromId":0, "destId":1, "bandwidth":1000.0, "delay":0, "linkType":"duplex"}
      	]},
      	{"parallel_execution" : true,
         "nodes": [
@@ -14,8 +14,8 @@
             {"id":3, "name":"server2", "delay":0, "xPos":10, "yPos":0}
         ],
         "links": [
-            {"fromId":1, "destId":2, "bandwith":1000.0, "delay":0, "linkType":"duplex"}
-            {"fromId":2, "destId":3, "bandwith":1000.0, "delay":0, "linkType":"duplex"}
+            {"fromId":1, "destId":2, "bandwidth":1000.0, "delay":0, "linkType":"duplex"}
+            {"fromId":2, "destId":3, "bandwidth":1000.0, "delay":0, "linkType":"duplex"}
      	]}
  	]
 }

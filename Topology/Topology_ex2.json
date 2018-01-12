@@ -5,7 +5,7 @@
         {"id":2, "name":"server", "delay":5,  "xPos":20, "yPos":0}
     ],
     "links": [
-        {"fromId":0, "destId":1, "bandwith":70.0, "delay":5},
-        {"fromId":1, "destId":2, "bandwith":50.0, "delay":3}
+        {"fromId":0, "destId":1, "bandwidth":70.0, "delay":5},
+        {"fromId":1, "destId":2, "bandwidth":50.0, "delay":3}
  	]
 }

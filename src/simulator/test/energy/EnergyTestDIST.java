@@ -489,9 +489,9 @@ public class EnergyTestDIST
         Utils.VERBOSE = false;
         PESOS_CONTROLLER = true;
         
-        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
-        testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
+        //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
         //testNetwork( Type.PERF, null, 0 );

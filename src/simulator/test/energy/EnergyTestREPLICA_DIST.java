@@ -498,7 +498,7 @@ public class EnergyTestREPLICA_DIST
         private List<Integer> currentArrivals;
         
         // Watt dissipated by the associated CPU.
-        private static final double Pstandby =  2;
+        private static final double Pstandby = 0.9;
         private static final double Pon      = 84;
         
         // The Lambda value used to balance the equation (lower for latency, higher for power).
@@ -799,8 +799,8 @@ public class EnergyTestREPLICA_DIST
         SWITCH_OFF_MACHINES  = true;
         
         arrivalEstimator     = SwitchAgent.SEASONAL_ESTIMATOR;
-        latencyNormalization = 1;
-        lambda               = 0.25;
+        latencyNormalization = 2;
+        lambda               = 0.5;
         
         testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );

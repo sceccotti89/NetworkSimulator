@@ -143,7 +143,7 @@ public class AnimationNetwork extends AppGameContainer
             JSONObject link  = links.getJSONObject( i );
             long fromId      = link.getLong( NetworkLink.FROM_ID );
             long destId      = link.getLong( NetworkLink.DEST_ID );
-            double bandwidth = link.getDouble( NetworkLink.BANDWITH );
+            double bandwidth = link.getDouble( NetworkLink.BANDWIDTH );
             long delay       = link.getLong( NetworkLink.DELAY );
             String linkType  = (link.has( NetworkLink.LINK_TYPE )) ?
                                  link.getString( NetworkLink.LINK_TYPE ) :
