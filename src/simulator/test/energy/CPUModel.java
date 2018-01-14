@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -399,7 +400,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             if (delimeters) {
                 return "PESOS_" + getMode() + "_" + getTimeBudget().getTimeMillis() + "ms";
             } else {
-                final String tau = new String( ("\u03C4").getBytes(),"UTF-8" );
+                final String tau = new String( ("\u03C4").getBytes(), Charset.defaultCharset() );
                 return "PESOS (" + getMode() + "," + tau + "=" + getTimeBudget().getTimeMillis() + "ms)";
             }
         }
@@ -618,7 +619,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             if (delimeters) {
                 return "PEGASUS_" + getTimeBudget().getTimeMillis() + "ms";
             } else {
-                final String tau = new String( ("\u03C4").getBytes(),"UTF-8" );
+                final String tau = new String( ("\u03C4").getBytes(), Charset.defaultCharset() );
                 return "PEGASUS (" + tau + " = " + getTimeBudget().getTimeMillis() + "ms)";
             }
         }
@@ -930,7 +931,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             if (delimeters) {
                 return "MY_Model_" + getMode() + "_" + getTimeBudget().getTimeMillis() + "ms";
             } else {
-                final String tau = new String( ("\u03C4").getBytes(),"UTF-8" );
+                final String tau = new String( ("\u03C4").getBytes(), Charset.defaultCharset() );
                 return "MY_Model (" + getMode() + ", " + tau + " = " + getTimeBudget().getTimeMillis() + "ms)";
             }
         }
@@ -1062,7 +1063,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             if (delimeters) {
                 return "LOAD_SENSITIVE_" + getMode() + "_" + getTimeBudget().getTimeMillis() + "ms";
             } else {
-                final String tau = new String( ("\u03C4").getBytes(),"UTF-8" );
+                final String tau = new String( ("\u03C4").getBytes(), Charset.defaultCharset() );
                 return "LOAD_SENSITIVE (" + getMode() + ", " + tau + " = " + getTimeBudget().getTimeMillis() + "ms)";
             }
         }

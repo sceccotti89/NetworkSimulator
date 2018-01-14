@@ -1049,7 +1049,7 @@ public class Plotter extends WindowAdapter implements ActionListener
             
             if (!_legend.isSelected()) {
                 if (!creatingImage) {
-                    _legend.draw( this, g );
+                    _legend.draw( this, false, g );
                 }
                 return;
             }
@@ -1094,7 +1094,7 @@ public class Plotter extends WindowAdapter implements ActionListener
                 }
             }
             
-            _legend.draw( this, g );
+            _legend.draw( this, creatingImage, g );
         }
         
         /**

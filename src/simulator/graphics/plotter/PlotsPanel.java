@@ -342,28 +342,30 @@ public class PlotsPanel implements MouseListener, FocusListener
         box.setBackground( new Color( 100, 100, 100, 120 ) );
     }
 
-    public void draw( GraphicPlotter plotter, Graphics2D g )
+    public void draw( GraphicPlotter plotter, boolean drawingImage, Graphics2D g )
     {
         final int xArea = x + PAD;
         
         g.setColor( BACKGROUND );
         g.fillRect( xArea, y, size.width, getHeight() );
         
-        g.setStroke( new BasicStroke( 1f ) );
-        if (selected) {
-            g.setColor( Color.GREEN );
-            g.fill( targetOpen );
-            g.setColor( Color.BLACK );
-            g.draw( targetOpen );
-            g.setColor( Color.BLACK );
-            g.setColor( Color.LIGHT_GRAY );
-            g.drawRect( xArea, y, size.width, size.height );
-        } else {
-            g.setColor( Color.RED );
-            g.fill( targetClose );
-            g.setColor( Color.BLACK );
-            g.draw( targetClose );
-            g.setColor( Color.LIGHT_GRAY );
+        if (!drawingImage) {
+            g.setStroke( new BasicStroke( 1f ) );
+            if (selected) {
+                g.setColor( Color.GREEN );
+                g.fill( targetOpen );
+                g.setColor( Color.BLACK );
+                g.draw( targetOpen );
+                g.setColor( Color.BLACK );
+                g.setColor( Color.LIGHT_GRAY );
+                g.drawRect( xArea, y, size.width, size.height );
+            } else {
+                g.setColor( Color.RED );
+                g.fill( targetClose );
+                g.setColor( Color.BLACK );
+                g.draw( targetClose );
+                g.setColor( Color.LIGHT_GRAY );
+            }
         }
         
         g.drawRect( xArea, y, size.width, getHeight() );

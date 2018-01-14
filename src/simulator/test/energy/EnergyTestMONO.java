@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -431,8 +432,6 @@ public class EnergyTestMONO
         }
         
         //plotAllTailLatencies();
-        //MONO:    485156
-        //REPLICA: 479276 (L2, 0.25) => ~1% meno
         
         testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
@@ -678,58 +677,58 @@ public class EnergyTestMONO
         // PESOS TC 500ms
         // TARGET: 601670
         // 
-        // SIMULATOR:  510183.06404994790
-        // IDLE:        48653.39354192962
+        // SIMULATOR:  510183.06404994790   485156.96834763570
+        // IDLE:        48653.39354192962    52114.13001267967
         
         // PESOS TC 1000ms
         // TARGET: 443730
         //
-        // SIMULATOR:  384469.73002268150
-        // IDLE:        39627.18491384348
+        // SIMULATOR:  384469.73002268150   335314.37879086110
+        // IDLE:        39627.18491384348    43417.46056927062
         
         // PESOS EC 500ms
         // TARGET: 531100
         //
-        // SIMULATOR:  469209.54237407040
-        // IDLE:        44385.01033179365
+        // SIMULATOR:  469209.54237407040   424810.38630302980
+        // IDLE:        44385.01033179365    48112.03748451058
         
         // PESOS EC 1000ms
         // TARGET: 412060
         //
-        // SIMULATOR:  371587.08914869634
-        // IDLE:        37802.37742955076
+        // SIMULATOR:  371587.08914869634   313337.00192401380
+        // IDLE:        37802.37742955076    41791.57716194774
         
         // PERF
         // TARGET: 790400
         //
-        // SIMULATOR:  949242.00703909280
-        // IDLE:        61336.88540427402
+        // SIMULATOR:  949242.00703909280   897201.59320118650
+        // IDLE:        61336.88540427402    63826.00992965478
         
         // CONS
         // TARGET: 575000
         // 
-        // SIMULATOR:  457310.72095110260
-        // IDLE:        45471.40043715234
+        // SIMULATOR:  457310.72095110260   427869.14204760820
+        // IDLE:        45471.40043715234    48975.01785268270
         
         // LOAD SENSITIVE TC 500ms
         //
-        // SIMULATOR:  522928.76432903290
-        // IDLE:        49910.82706388565
+        // SIMULATOR:  522928.76432903290   503433.08469227190
+        // IDLE:        49910.82706388565    53349.83093337707
         
         // LOAD SENSITIVE TC 1000ms
         //
-        // SIMULATOR:  385200.17950385995
-        // IDLE:        40866.95151338680
+        // SIMULATOR:  385200.17950385995   344281.54686447536
+        // IDLE:        40866.95151338680    44477.40041954298
         
         // LOAD SENSITIVE EC 500ms
         //
-        // SIMULATOR:  471261.91815138236
-        // IDLE:        45452.58335607352
+        // SIMULATOR:  471261.91815138236   434603.95075559407
+        // IDLE:        45452.58335607352    49110.51398668331
         
         // LOAD SENSITIVE EC 1000ms
         //
-        // SIMULATOR:  369170.92012207880
-        // IDLE:        38593.38612278199
+        // SIMULATOR:  369170.92012207880   317559.73498789600
+        // IDLE:        38593.38612278199    42501.64531724715
         
         // Con la tecnica nuova (quella di scegliere il core con la minor frequenza predittata)
         // OLD: 
@@ -740,8 +739,6 @@ public class EnergyTestMONO
         // NEW: 
         
         // Nuova strategia (MY_MODEL): prendo il massimo tra il budget predittato da PESOS e da LOAD_SENSITIVE
-        // La Tail Latency e' rispettata.
-        //
         // 500ms:  
         // 1000ms: 
         
@@ -883,7 +880,7 @@ public class EnergyTestMONO
         plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
         plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
-        final String tau = new String( ("\u03C4").getBytes(),"UTF-8" );
+        final String tau = new String( ("\u03C4").getBytes(), Charset.defaultCharset() );
         final String folder = "Results/Latency/Monolithic/";
         List<Pair<Double,Double>> percentiles = null;
         switch ( type ) {
@@ -945,7 +942,7 @@ public class EnergyTestMONO
         plotter.setTicks( Axis.X, 23, 2 );
         plotter.setScaleX( TimeUnit.HOURS.toMicros( 1 ) );
         
-        final String tau = new String( ("\u03C4").getBytes(),"UTF-8" );
+        final String tau = new String( ("\u03C4").getBytes(), Charset.defaultCharset() );
         final String folder = "Results/Latency/Monolithic/";
         plotter.addPlot( folder + "PERF_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "perf" );
         plotter.addPlot( folder + "CONS_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "cons" );

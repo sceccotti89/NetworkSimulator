@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -487,9 +488,11 @@ public class EnergyTestDIST
         }
         
         Utils.VERBOSE = false;
-        PESOS_CONTROLLER = true;
+        PESOS_CONTROLLER = false;
         
-        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  460 );
+        
+        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
@@ -500,109 +503,100 @@ public class EnergyTestDIST
         //testNetwork( Type.PEGASUS, null,  500 );
         //testNetwork( Type.PEGASUS, null, 1000 );
         
-        //plotAllTailLatencies();
-        
-        // 8-10 minuti per eseguire una simulazione
+        plotAllTailLatencies();
         
         /* Controller OFF
-        PERF => OK
-        CPU: 0, Energy: 949243.3381358528
-        CPU: 1, Energy: 949107.5945604891
-        CPU: 2, Energy: 949155.5243643803
-        CPU: 3, Energy: 948982.9453512894
-        CPU: 4, Energy: 949357.5777634114
-        Total energy: 4745846.9801754225
-        
-        TC 500ms => 20-30ms sopra la tail latency
-        CPU: 0, Energy: 510184.2929497879
-        CPU: 1, Energy: 509707.85023065493
-        CPU: 2, Energy: 509915.05096734874
-        CPU: 3, Energy: 509932.63156888395
-        CPU: 4, Energy: 510197.6374146212
-        Total energy: 2549937.463131297
+        TC 500ms => la media e' sui 520ms
+        CPU: 0, Energy: 485156.9683476357
+        CPU: 1, Energy: 485306.37542963086
+        CPU: 2, Energy: 485044.31808468426
+        CPU: 3, Energy: 485156.90541508485
+        CPU: 4, Energy: 485026.81435042724
+        Total energy: 2425691.381627463
         
         TC 1000ms => OK
-        CPU: 0, Energy: 384470.70227312145
-        CPU: 1, Energy: 384731.71597194264
-        CPU: 2, Energy: 384519.74819639046
-        CPU: 3, Energy: 384556.76308674546
-        CPU: 4, Energy: 384712.1209200574
-        Total energy: 1922991.0504482575
+        CPU: 0, Energy: 335314.3787908611
+        CPU: 1, Energy: 335432.45579142787
+        CPU: 2, Energy: 335261.4115148076
+        CPU: 3, Energy: 335086.53894646006
+        CPU: 4, Energy: 335253.1603996233
+        Total energy: 1676347.94544318
         
-        EC 500ms => parecchio sopra la deadline
-        CPU: 0, Energy: 469210.70260559034
-        CPU: 1, Energy: 468853.37089560163
-        CPU: 2, Energy: 469104.04240905715
-        CPU: 3, Energy: 468757.047474284
-        CPU: 4, Energy: 469296.2684509489
-        Total energy: 2345221.431835482
+        EC 500ms => sui 600ms
+        CPU: 0, Energy: 424810.3863030298
+        CPU: 1, Energy: 424710.5008494121
+        CPU: 2, Energy: 425177.1714847767
+        CPU: 3, Energy: 424648.6508295073
+        CPU: 4, Energy: 424661.59224872314
+        Total energy: 2124008.301715449
         
-        EC 1000ms => parecchi ms sopra la tail latency
-        CPU: 0, Energy: 371588.06139913626
-        CPU: 1, Energy: 371696.9350436037
-        CPU: 2, Energy: 371527.8401791376
-        CPU: 3, Energy: 371147.52768754255
-        CPU: 4, Energy: 371884.0190950832
-        Total energy: 1857844.3834045033
+        EC 1000ms => nel mezzo e' un bel po' sopra il limite
+        CPU: 0, Energy: 313337.0019240138
+        CPU: 1, Energy: 313545.36216034216
+        CPU: 2, Energy: 313281.0123812318
+        CPU: 3, Energy: 313319.5431785417
+        CPU: 4, Energy: 313397.9372790672
+        Total energy: 1566880.8569231967
         
-        TC 490ms => tail latency rispettata, ma 5k joule in piu' su ogni nodo
-        CPU: 0, Energy: 514987.6659092708
-        CPU: 1, Energy: 515154.3613742034
-        CPU: 2, Energy: 515691.7793198843
-        CPU: 3, Energy: 514937.73596503126
-        CPU: 4, Energy: 515687.20076390397
-        Total energy: 2576458.743332294
+        TC 460ms => OK ma con 25k joule in piu'
+        CPU: 0, Energy: 511340.8438447132
+        CPU: 1, Energy: 511571.4702555674
+        CPU: 2, Energy: 511680.5970214596
+        CPU: 3, Energy: 511224.86169035634
+        CPU: 4, Energy: 511258.79470279923
+        Total energy: 2557076.567514896
         */
         
         /* Controller ON
-        TC 500ms => la tail latency si e' alzata di 5-10ms
-        CPU: 0, Energy: 509873.32594367524
-        CPU: 1, Energy: 508868.001314809
-        CPU: 2, Energy: 509162.85787324124
-        CPU: 3, Energy: 509184.602073197
-        CPU: 4, Energy: 509500.2892159311
-        Total energy: 2546589.0764208534
+        TC 500ms => 
+        CPU: 0, Energy: 484744.5060127968
+        CPU: 1, Energy: 484420.2070746079
+        CPU: 2, Energy: 484221.43041150353
+        CPU: 3, Energy: 484339.2099647163
+        CPU: 4, Energy: 484214.328497092
+        Total energy: 2421939.681960717
         
-        TC 1000ms => solo in alcuni punti la tail latency non e' propriamente rispettata
-        CPU: 0, Energy: 383401.8552626626
-        CPU: 1, Energy: 383323.5548974724
-        CPU: 2, Energy: 382883.4202697008
-        CPU: 3, Energy: 383010.99161361734
-        CPU: 4, Energy: 383242.33759798435
-        Total energy: 1915862.1596414375
+        TC 1000ms => 
+        CPU: 0, Energy: 333546.72700928035
+        CPU: 1, Energy: 333144.66511793603
+        CPU: 2, Energy: 332721.82890947635
+        CPU: 3, Energy: 332845.35303684213
+        CPU: 4, Energy: 332859.5337288804
+        Total energy: 1665118.107802415
         
-        EC 500ms => sopra di almeno 100ms come nella versione monolitica
-        CPU: 0, Energy: 468549.7497455145
-        CPU: 1, Energy: 467665.7360456883
-        CPU: 2, Energy: 467786.5920438947
-        CPU: 3, Energy: 467607.18458381266
-        CPU: 4, Energy: 468042.7709368644
-        Total energy: 2339652.0333557744
+        EC 500ms => 
+        CPU: 0, Energy: 424136.4386735377
+        CPU: 1, Energy: 423546.4276530429
+        CPU: 2, Energy: 423870.0316887982
+        CPU: 3, Energy: 423521.5876178576
+        CPU: 4, Energy: 423436.9558334334
+        Total energy: 2118511.4414666696
         
-        EC 1000ms => tra ora 8 e 14 la latenza amedia e' di 1200ms
-        CPU: 0, Energy: 371007.1009083964
-        CPU: 1, Energy: 370767.64468610403
-        CPU: 2, Energy: 370572.9467644084
-        CPU: 3, Energy: 370151.2899807247
-        CPU: 4, Energy: 370801.45567673794
-        Total energy: 1853300.4380163713
+        EC 1000ms => 
+        CPU: 0, Energy: 311815.50147943187
+        CPU: 1, Energy: 311545.3483404661
+        CPU: 2, Energy: 311208.100351807
+        CPU: 3, Energy: 311499.0018636706
+        CPU: 4, Energy: 311260.20633548003
+        Total energy: 1557328.1583708555
         */
         
-        /* PEGASUS 500ms => Tail Latency: 860ms
-        CPU: 0, Energy: 579700.1623426491
-        CPU: 1, Energy: 578755.3839196678
-        CPU: 2, Energy: 578788.3536451985
-        CPU: 3, Energy: 579167.1967478242
-        CPU: 4, Energy: 578856.3524171093
-        Total energy: 2895267.4490724485
+        /* PEGASUS 500ms => 
+        CPU: 0, Energy: 540355.9623780187
+        CPU: 1, Energy: 539850.7631773875
+        CPU: 2, Energy: 539862.333974473
+        CPU: 3, Energy: 539842.3483088542
+        CPU: 4, Energy: 539857.6332990641
+        Total energy: 2699769.0411377978
         
-        PEGASUS 1000ms => Tail Latency: 1450ms
-        CPU: 0, Energy: 472749.45282551256
-        CPU: 1, Energy: 469068.84039751306
-        CPU: 2, Energy: 468940.36854324414
-        CPU: 3, Energy: 469628.30455108505
-        CPU: 4, Energy: 469478.3881061629
-        Total energy: 2349865.3544235174*/
+        PEGASUS 1000ms => 
+        CPU: 0, Energy: 408846.85569414747
+        CPU: 1, Energy: 406874.4290483996
+        CPU: 2, Energy: 406866.09088027966
+        CPU: 3, Energy: 407411.43016288884
+        CPU: 4, Energy: 407363.09394176153
+        Total energy: 2037361.8997274772
+        */
     }
     
     private static CPUModel getModel( Type type, Mode mode, long timeBudget, int node )
@@ -767,7 +761,7 @@ public class EnergyTestDIST
         plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
         plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
-        final String tau = new String( ("\u03C4").getBytes(),"UTF-8" );
+        final String tau = new String( ("\u03C4").getBytes(),Charset.defaultCharset() );
         final String folder = "Results/Latency/Distributed/";
         List<Pair<Double,Double>> percentiles = null;
         switch ( type ) {
@@ -823,7 +817,7 @@ public class EnergyTestDIST
         plotter.setTicks( Axis.X, 23, 2 );
         plotter.setScaleX( TimeUnit.HOURS.toMicros( 1 ) );
         
-        final String tau = new String( ("\u03C4").getBytes(),"UTF-8" );
+        final String tau = new String( ("\u03C4").getBytes(),Charset.defaultCharset() );
         final String folder = "Results/Latency/Distributed/";
         plotter.addPlot( folder + "PESOS_TC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (" + tau + " = 500 ms)" );
         plotter.addPlot( folder + "PESOS_EC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS EC (" + tau + " = 500 ms)" );

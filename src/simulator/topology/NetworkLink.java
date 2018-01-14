@@ -137,7 +137,7 @@ public class NetworkLink
     {
         StringBuilder buffer = new StringBuilder( 128 );
         buffer.append( "Source: " + _sourceId + ", Dest: " + _destId +
-                       ", Bandwith: " + _bandwidth.getSize() + " Mb/s, " +
+                       ", Bandwidth: " + _bandwidth.getSize() + " Mb/s, " +
                        "Delay: " + _delay + "ns, Type: " + _linkType + "\n" );
         return buffer.toString();
     }

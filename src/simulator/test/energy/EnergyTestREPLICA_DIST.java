@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -1067,7 +1068,7 @@ public class EnergyTestREPLICA_DIST
         plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
         plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
-        final String tau = new String( ("\u03C4").getBytes(),"UTF-8" );
+        final String tau = new String( ("\u03C4").getBytes(), Charset.defaultCharset() );
         final String folder = "Results/Latency/DistributedReplica/";
         List<Pair<Double,Double>> percentiles = null;
         switch ( type ) {
