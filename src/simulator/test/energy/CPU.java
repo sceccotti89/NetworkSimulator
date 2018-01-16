@@ -265,7 +265,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
             List<QueryInfo> queue = coreQueue.get( coreId );
             queue.add( ref.getQuery() );
             
-            System.out.println( "QUERY: " + ref.getQuery().getId() + ", ASSEGNATA A: " + coreId + ", FREQ: " + frequencies[(int) coreId] );
+            //System.out.println( "QUERY: " + ref.getQuery().getId() + ", ASSEGNATA A: " + coreId + ", FREQ: " + frequencies[(int) coreId] );
             
             if (tieSituation) {
                 getCore( coreId ).tieSelected++;

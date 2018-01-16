@@ -49,6 +49,10 @@ public class EnergyCPU extends CPU
             double energy = (startFreq / frequency) * startEnergy;
             router_time_energy.put( frequency, new Pair<>( new Time( time, TimeUnit.MILLISECONDS ), energy ) );
         }
+        
+        //setScheduler( new FirstLeastLoaded() );
+        //setScheduler( new MinFrequency() );
+        setScheduler( new EarliestCompletionTime() );
     }
     
     public EnergyCPU( String machine, int cores, int contexts,
@@ -348,15 +352,25 @@ public class EnergyCPU extends CPU
                 } else {
                     if (hasMoreQueries()) {
                         cpu.computeTime( getFirstQueryInQueue(), this );
-                    }/* else {
+                    } else {
                         startJobStealing( time );
-                    }*/
+                    }
                 }
                 
                 return true;
             } else {
                 return false;
             }
+        }
+        
+        @Override
+        public QueryInfo removeLastQueryInQueue( Time time, boolean updateFrequency )
+        {
+            QueryInfo q = super.removeLastQueryInQueue( time, updateFrequency );
+            PESOSmodel model = (PESOSmodel) cpu.getModel();
+            final int postings = q.getPostings() + model.getRMSE( q.getTerms() );
+            queryExecutionTime -= model.predictServiceTimeAtMaxFrequency( q.getTerms(), postings );
+            return q;
         }
         
         public void setBaseTimeBudget( Time time, long timeBudget )
