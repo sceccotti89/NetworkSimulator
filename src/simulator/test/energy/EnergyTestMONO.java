@@ -68,10 +68,8 @@ public class EnergyTestMONO
         //private static final String QUERY_TRACE = "Models/test_arrivals.txt";
         private static final int NUM_QUERIES = 10000;
         // Random generator seed.
-        //private static final int SEED = 50000;
-        public static int SEED = 50000;
-        //private static final Random RANDOM = new Random( SEED );
-        private Random RANDOM;
+        private static final int SEED = 50000;
+        private static final Random RANDOM = new Random( SEED );
         
         private BufferedReader queryReader;
         private boolean closed = false;
@@ -90,8 +88,6 @@ public class EnergyTestMONO
             queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
             model = new ClientModel( "Models/Monolithic/PESOS/MaxScore/time_energy.txt" );
             model.loadModel();
-            
-            RANDOM = new Random( SEED );
         }
         
         @Override
@@ -421,11 +417,10 @@ public class EnergyTestMONO
     
     
     
-    //public static int executed;
     public static void main( String[] args ) throws Exception
     {
         Utils.VERBOSE = false;
-        CENTRALIZED_QUEUE = false;
+        CENTRALIZED_QUEUE = true;
         
         if (System.getProperty( "showGUI" ) != null) {
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
@@ -460,45 +455,9 @@ public class EnergyTestMONO
         //testSingleCore( Type.PEGASUS, null,  500 );
         //testSingleCore( Type.PEGASUS, null, 1000 );
         
-        //while (true) {
-            //System.out.println( "SEED: " + ClientGenerator.SEED );
-            //testMultiCore( model );
-            //testSingleCore( model );
-            //testAnimationNetwork( model );
-            //if (executed != 5) break;
-            //ClientGenerator.SEED++;
-        //}
-        
-        //System.out.println( "EXEC: " + executed + ", SEED: " + ClientGenerator.SEED );
-        
-        //plotTailLatency( Type.CONS, null, 0 );
-        //plotTailLatency( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500 );
+        //System.out.println( "MAX: " + EarliestCompletionTime.maxTime ); //  2.853.484
+        //System.out.println( "MAX: " + LowestFrequency.maxTime );        //359.403.054
     }
-    
-    /*protected static CPUModel loadModel( Type type, Mode mode, long timeBudget ) throws Exception
-    {
-        CPUModel model = null;
-        switch ( type ) {
-            case PESOS          : model = new PESOSmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" ); break;
-            case LOAD_SENSITIVE : model = new LOAD_SENSITIVEmodel( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" ); break;
-            case MY_MODEL       : model = new MY_model( timeBudget, mode, "Models/Monolithic/PESOS/MaxScore/" ); break;
-            default             : break;
-        }
-        model.loadModel();
-        return model;
-    }
-    
-    protected static CPUModel loadModel( Type type ) throws Exception
-    {
-        CPUModel model = null;
-        switch ( type ) {
-            case PERF : model = new PERFmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
-            case CONS : model = new CONSmodel( "Models/Monolithic/PESOS/MaxScore/" ); break;
-            default   : break;
-        }
-        model.loadModel();
-        return model;
-    }*/
     
     private static CPUModel getModel( Type type, Mode mode, long timeBudget )
     {
@@ -676,9 +635,11 @@ public class EnergyTestMONO
         //
         // PESOS TC 500ms
         // TARGET: 601670
+        //
+        // SINGOLA CODA:                                                  480244.10906339437 (-1.0%)             473755.1155283387 (-2.3%)
         // 
         // SENZA JOB STEALING
-        // SIMULATOR:  510183.06404994790   485156.96834763570            477180.32891471950 (MIF_FREQ: -1.6%)   475601.21643993420 (EARLIEST: -1.9%)   479972.29974080145 (CENTRAL QUEUE => -1.0%)
+        // SIMULATOR:  510183.06404994790   485156.96834763570            477180.32891471950 (LOW_FREQ: -1.6%)   475601.21643993420 (EARLIEST: -1.9%)
         // IDLE:        48653.39354192962    52114.13001267967
         //
         // CON JOB STEALING
@@ -734,20 +695,9 @@ public class EnergyTestMONO
         // SIMULATOR:  369170.92012207880   317559.73498789600
         // IDLE:        38593.38612278199    42501.64531724715
         
-        // Con la tecnica nuova (quella di scegliere il core con la minor frequenza predittata)
-        // OLD: 
-        // NEW: 
-        
-        // Con il JOB STEALING
-        // OLD: 
-        // NEW: 
-        
         // Nuova strategia (MY_MODEL): prendo il massimo tra il budget predittato da PESOS e da LOAD_SENSITIVE
         // 500ms:  
         // 1000ms: 
-        
-        // PESOS SINGOLA CODA
-        // 
     }
     
     public static void testSingleCore( Type type, Mode mode, long timeBudget ) throws Exception
@@ -789,7 +739,6 @@ public class EnergyTestMONO
         Plotter plotter = new Plotter( "MONOLITHIC SINGLE_CORE - " + model.getModelType( false ), 800, 600 );
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         for (int i = 0; i < CPU_CORES; i++) {
-            //CPU cpu = new EnergyCPU( "Intel i7-4770K", 4, 1, "Models/cpu_frequencies.txt" );
             CPU cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( model.getType() ) );
             cpu.setModel( model.clone() );
             cpus.add( cpu );

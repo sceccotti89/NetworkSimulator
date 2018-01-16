@@ -83,11 +83,15 @@ class TieLeastLoaded implements Scheduler<Iterable<Core>,Long,QueryInfo>
     }
 }
 
-class MinFrequency implements Scheduler<Iterable<Core>,Long,QueryInfo>
+class LowestFrequency implements Scheduler<Iterable<Core>,Long,QueryInfo>
 {
+    public static long maxTime = 0;
+    
     @Override
     public Long schedule( Time time, Iterable<Core> cores, QueryInfo q )
     {
+        long start = System.nanoTime();
+        
         Core core = null;
         long minFrequency = Long.MAX_VALUE;
         long tiedSelection = Long.MAX_VALUE;
@@ -116,15 +120,25 @@ class MinFrequency implements Scheduler<Iterable<Core>,Long,QueryInfo>
             core.tieSelected++;
         }
         
+        long end = System.nanoTime();
+        long elapsed = end - start;
+        if (elapsed > maxTime) {
+            maxTime = elapsed;
+        }
+        
         return core.getId();
     }
 }
 
 class EarliestCompletionTime implements Scheduler<Iterable<Core>,Long,QueryInfo>
 {
+    public static long maxTime = 0;
+    
     @Override
     public Long schedule( Time time, Iterable<Core> cores, QueryInfo q )
     {
+        long start = System.nanoTime();
+        
         Core core = null;
         long minExecutionTime = Long.MAX_VALUE;
         long tiedSelection = Long.MAX_VALUE;
@@ -148,6 +162,12 @@ class EarliestCompletionTime implements Scheduler<Iterable<Core>,Long,QueryInfo>
         
         if (tieSituation) {
             core.tieSelected++;
+        }
+        
+        long end = System.nanoTime();
+        long elapsed = end - start;
+        if (elapsed > maxTime) {
+            maxTime = elapsed;
         }
         
         return core.getId();

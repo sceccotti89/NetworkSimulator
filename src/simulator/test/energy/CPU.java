@@ -19,6 +19,7 @@ import org.json.JSONObject;
 import simulator.core.Device;
 import simulator.events.Event;
 import simulator.test.energy.CPU.Core.State;
+import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.utils.Time;
 import simulator.utils.Utils;
@@ -39,6 +40,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
     protected boolean centralizedQueue = false;
     protected Map<Long,List<QueryInfo>> coreQueue;
     protected LinkedList<QueryReference> queries;
+    protected Map<Long,Long> completionTime;
     
     protected double minPower;
     protected double maxPower;
@@ -188,6 +190,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
         if (centralized) {
             coreQueue = new HashMap<>();
             queries = new LinkedList<>();
+            completionTime = new HashMap<Long,Long>();
         }
     }
     
@@ -229,6 +232,14 @@ public abstract class CPU extends Device<QueryInfo,Long>
             List<QueryInfo> queue = core.getQueue();
             coreQueue.put( core.getId(), queue );
             currentQueries[(int) core.getId()] = queue.size();
+            
+            long timeToComplete = 0;
+            for (QueryInfo q : queue) {
+                PESOSmodel model = (PESOSmodel) _model;
+                final int postings = q.getPostings() + model.getRMSE( q.getTerms() );
+                timeToComplete += model.predictServiceTimeAtMaxFrequency( q.getTerms(), postings );
+            }
+            completionTime.put( core.getId(), timeToComplete );
         }
         
         // TODO Per adesso assegna le query in base al miglior core.
@@ -236,7 +247,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
         //System.out.println( "QUERIES: " + queries.size() );
         for (int i = queries.size() - 1; i >= 0; i--) {
             QueryReference ref = queries.get( i );
-            long minFrequency = Long.MAX_VALUE;
+            long minTarget = Long.MAX_VALUE;
             long coreId = -1;
             long tiedSelection = Long.MAX_VALUE;
             boolean tieSituation = false;
@@ -245,14 +256,15 @@ public abstract class CPU extends Device<QueryInfo,Long>
                 List<QueryInfo> queue = coreQueue.get( core.getId() );
                 queue.add( ref.getQuery() );
                 long frequency = _model.eval( time, queue.toArray( new QueryInfo[0] ) );
-                if (frequency < minFrequency) {
-                    minFrequency = frequency;
+                if (frequency < minTarget) {
+                    minTarget = frequency;
                     coreId = core.getId();
                     tiedSelection = core.tieSelected;
-                } else if (minFrequency == frequency) {
+                    tieSituation = false;
+                } else if (minTarget == frequency) {
                     if (core.tieSelected < tiedSelection) {
                         coreId = core.getId();
-                        minFrequency = frequency;
+                        minTarget = frequency;
                         tiedSelection = core.tieSelected;
                     }
                     tieSituation = true;
@@ -260,31 +272,51 @@ public abstract class CPU extends Device<QueryInfo,Long>
                 queue.remove( queue.size() - 1 );
             }
             
-            ref.coreId = coreId;
-            frequencies[(int) coreId] = minFrequency;
-            List<QueryInfo> queue = coreQueue.get( coreId );
-            queue.add( ref.getQuery() );
-            
-            //System.out.println( "QUERY: " + ref.getQuery().getId() + ", ASSEGNATA A: " + coreId + ", FREQ: " + frequencies[(int) coreId] );
+            /*for (Core core : getCores()) {
+                Long executionTime = completionTime.get( core.getId() );
+                if (executionTime == null) {
+                    executionTime = 0L;
+                }
+                if (executionTime < minTarget) {
+                    coreId = core.getId();
+                    minTarget = executionTime;
+                    tiedSelection = core.tieSelected;
+                    tieSituation = false;
+                } else if (executionTime == minTarget) {
+                    if (core.tieSelected < tiedSelection) {
+                        coreId = core.getId();
+                        minTarget = executionTime;
+                        tiedSelection = core.tieSelected;
+                    }
+                    tieSituation = true;
+                }
+            }*/
             
             if (tieSituation) {
                 getCore( coreId ).tieSelected++;
             }
+            
+            ref.coreId = coreId;
+            frequencies[(int) coreId] = minTarget;
+            
+            List<QueryInfo> queue = coreQueue.get( coreId );
+            queue.add( ref.getQuery() );
+            //frequencies[(int) coreId] = _model.eval( time, coreQueue.get( coreId ).toArray( new QueryInfo[0] ) );
         }
         
         for (Core core : getCores()) {
             int queries = currentQueries[(int) core.getId()];
-            // Remove the added queries.
+            // Removes the added queries.
             for (int i = coreQueue.get( core.getId() ).size() - queries; i > 0; i--) {
                 core.removeQuery( time, queries, false );
             }
             
-            // Set the new frequency.
+            // Sets the new frequency.
             long frequency = frequencies[(int) core.getId()];
             if (queries == 0) {
                 core.setFrequency( frequency );
                 if (currentCore != -1 && core.getId() != currentCore) {
-                    // Add and execute immediately the next available query (if any).
+                    // Adds and execute immediately the next available query (if any).
                     core.addQuery( getNextQuery( time, core.getId() ), true );
                 }
             } else {

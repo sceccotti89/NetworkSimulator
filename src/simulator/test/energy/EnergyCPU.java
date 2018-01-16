@@ -50,14 +50,13 @@ public class EnergyCPU extends CPU
             router_time_energy.put( frequency, new Pair<>( new Time( time, TimeUnit.MILLISECONDS ), energy ) );
         }
         
-        //setScheduler( new FirstLeastLoaded() );
-        //setScheduler( new MinFrequency() );
-        setScheduler( new EarliestCompletionTime() );
+        setScheduler();
     }
     
     public EnergyCPU( String machine, int cores, int contexts,
                       String frequencies_file ) throws IOException {
         this( machine, cores, contexts, readFrequencies( frequencies_file ) );
+        setScheduler();
     }
     
     public EnergyCPU( String machine, int cores, int contexts,
@@ -75,8 +74,13 @@ public class EnergyCPU extends CPU
         
         setEnergyModel( cores );
         
+        setScheduler();
+    }
+    
+    private void setScheduler()
+    {
         //setScheduler( new FirstLeastLoaded() );
-        //setScheduler( new MinFrequency() );
+        setScheduler( new LowestFrequency() );
         //setScheduler( new EarliestCompletionTime() );
     }
     
