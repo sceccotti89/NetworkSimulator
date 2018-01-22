@@ -69,7 +69,7 @@ public class EnergyTestMONO
         private static final int NUM_QUERIES = 10000;
         // Random generator seed.
         private static final int SEED = 50000;
-        private static final Random RANDOM = new Random( SEED );
+        private final Random RANDOM = new Random( SEED );
         
         private BufferedReader queryReader;
         private boolean closed = false;
@@ -636,14 +636,14 @@ public class EnergyTestMONO
         // PESOS TC 500ms
         // TARGET: 601670
         //
-        // SINGOLA CODA:                                                  480244.10906339437 (-1.0%)             473755.1155283387 (-2.3%)
+        // SINGOLA CODA:                    487504.0935159825 (+0.48)%    480244.10906339437 (-1.0%)             474019.72825102240 (-2.3%)
         // 
         // SENZA JOB STEALING
         // SIMULATOR:  510183.06404994790   485156.96834763570            477180.32891471950 (LOW_FREQ: -1.6%)   475601.21643993420 (EARLIEST: -1.9%)
         // IDLE:        48653.39354192962    52114.13001267967
         //
         // CON JOB STEALING
-        //                                  482909.43254749617 (-0.04%)   471950.86828483164 (-2.7%)             471373.63392729964 (-2.8%)
+        //                                  482909.43254749617 (-0.46%)   471950.86828483164 (-2.7%)             471373.63392729964 (-2.8%)
         
         // PESOS TC 1000ms
         // TARGET: 443730

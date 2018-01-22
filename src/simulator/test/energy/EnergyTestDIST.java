@@ -76,7 +76,7 @@ public class EnergyTestDIST
         private static final int NUM_QUERIES = 10000;
         // Random generator seed.
         private static final int SEED = 50000;
-        private static final Random RANDOM = new Random( SEED );
+        private final Random RANDOM = new Random( SEED );
         
         private BufferedReader queryReader;
         private boolean closed = false;
@@ -501,9 +501,9 @@ public class EnergyTestDIST
         //testNetwork( Type.CONS, null, 0 );
         
         //testNetwork( Type.PEGASUS, null,  500 );
-        //testNetwork( Type.PEGASUS, null, 1000 );
+        testNetwork( Type.PEGASUS, null, 1000 );
         
-        plotAllTailLatencies();
+        //plotAllTailLatencies();
         
         /* Controller OFF
         TC 500ms => la media e' sui 520ms

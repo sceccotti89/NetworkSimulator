@@ -230,6 +230,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
         for (Core core : getCores()) {
             frequencies[(int) core.getId()] = core.getFrequency();
             List<QueryInfo> queue = core.getQueue();
+            // Queue can be empty or containing just one query: the one in execution by the core.
             coreQueue.put( core.getId(), queue );
             currentQueries[(int) core.getId()] = queue.size();
             
@@ -252,7 +253,26 @@ public abstract class CPU extends Device<QueryInfo,Long>
             long tiedSelection = Long.MAX_VALUE;
             boolean tieSituation = false;
             
+            // TLL technique.
             for (Core core : getCores()) {
+                long coreUtilization = (long) core.getUtilization( time );
+                if (coreUtilization < minTarget) {
+                    minTarget = coreUtilization;
+                    coreId = core.getId();
+                    tiedSelection = core.tieSelected;
+                    tieSituation = false;
+                } else if (coreUtilization == minTarget) {
+                    if (core.tieSelected < tiedSelection) {
+                        coreId = core.getId();
+                        minTarget = coreUtilization;
+                        tiedSelection = core.tieSelected;
+                    }
+                    tieSituation = true;
+                }
+            }
+            
+            // LF technique.
+            /*for (Core core : getCores()) {
                 List<QueryInfo> queue = coreQueue.get( core.getId() );
                 queue.add( ref.getQuery() );
                 long frequency = _model.eval( time, queue.toArray( new QueryInfo[0] ) );
@@ -261,7 +281,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
                     coreId = core.getId();
                     tiedSelection = core.tieSelected;
                     tieSituation = false;
-                } else if (minTarget == frequency) {
+                } else if (frequency == minTarget) {
                     if (core.tieSelected < tiedSelection) {
                         coreId = core.getId();
                         minTarget = frequency;
@@ -271,12 +291,11 @@ public abstract class CPU extends Device<QueryInfo,Long>
                 }
                 queue.remove( queue.size() - 1 );
             }
+            frequencies[(int) coreId] = minTarget;*/
             
+            // ECT technique.
             /*for (Core core : getCores()) {
-                Long executionTime = completionTime.get( core.getId() );
-                if (executionTime == null) {
-                    executionTime = 0L;
-                }
+                long executionTime = completionTime.get( core.getId() );
                 if (executionTime < minTarget) {
                     coreId = core.getId();
                     minTarget = executionTime;
@@ -290,33 +309,37 @@ public abstract class CPU extends Device<QueryInfo,Long>
                     }
                     tieSituation = true;
                 }
-            }*/
+            }
+            
+            QueryInfo q = ref.getQuery();
+            PESOSmodel model = (PESOSmodel) _model;
+            final int postings = q.getPostings() + model.getRMSE( q.getTerms() );
+            minTarget += model.predictServiceTimeAtMaxFrequency( q.getTerms(), postings );
+            completionTime.put( coreId, minTarget );*/
             
             if (tieSituation) {
                 getCore( coreId ).tieSelected++;
             }
             
             ref.coreId = coreId;
-            frequencies[(int) coreId] = minTarget;
-            
             List<QueryInfo> queue = coreQueue.get( coreId );
             queue.add( ref.getQuery() );
-            //frequencies[(int) coreId] = _model.eval( time, coreQueue.get( coreId ).toArray( new QueryInfo[0] ) );
+            frequencies[(int) coreId] = _model.eval( time, coreQueue.get( coreId ).toArray( new QueryInfo[0] ) );
         }
         
         for (Core core : getCores()) {
             int queries = currentQueries[(int) core.getId()];
-            // Removes the added queries.
+            // Remove the added queries.
             for (int i = coreQueue.get( core.getId() ).size() - queries; i > 0; i--) {
                 core.removeQuery( time, queries, false );
             }
             
-            // Sets the new frequency.
+            // Set the new frequency.
             long frequency = frequencies[(int) core.getId()];
             if (queries == 0) {
                 core.setFrequency( frequency );
                 if (currentCore != -1 && core.getId() != currentCore) {
-                    // Adds and execute immediately the next available query (if any).
+                    // Add and execute immediately the next available query (if any).
                     core.addQuery( getNextQuery( time, core.getId() ), true );
                 }
             } else {

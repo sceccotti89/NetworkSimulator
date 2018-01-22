@@ -10,7 +10,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -88,7 +88,7 @@ public class EnergyTestREPLICA_DIST
         private static final int NUM_QUERIES = 10000;
         // Random generator seed.
         private static final int SEED = 50000;
-        private static final Random RANDOM = new Random( SEED );
+        private final Random RANDOM = new Random( SEED );
         
         private BufferedReader queryReader;
         private boolean closed = false;
@@ -795,20 +795,20 @@ public class EnergyTestREPLICA_DIST
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
         }
         
-        testResults = new HashMap<>();
+        testResults = new LinkedHashMap<>();
         
         SWITCH_OFF_MACHINES  = true;
         
-        arrivalEstimator     = SwitchAgent.SEASONAL_ESTIMATOR;
+        /*arrivalEstimator     = SwitchAgent.SEASONAL_ESTIMATOR;
         latencyNormalization = 2;
-        lambda               = 0.5;
+        lambda               = 0.5;*/
         
-        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
-        /*arrivalEstimator = SwitchAgent.SEASONAL_ESTIMATOR;
+        arrivalEstimator = SwitchAgent.SEASONAL_ESTIMATOR;
         for (latencyNormalization = 1; latencyNormalization <= 3; latencyNormalization++) {
             for (int iLambda = 1; iLambda <= 3; iLambda++) {
                 lambda = 0.25 * iLambda;
@@ -816,7 +816,7 @@ public class EnergyTestREPLICA_DIST
             }
         }
         
-        arrivalEstimator = SwitchAgent.SEASONAL_ESTIMATOR_WITH_DRIFT;
+        /*arrivalEstimator = SwitchAgent.SEASONAL_ESTIMATOR_WITH_DRIFT;
         for (latencyNormalization = 1; latencyNormalization <= 3; latencyNormalization++) {
             for (int iLambda = 1; iLambda <= 3; iLambda++) {
                 lambda = 0.25 * iLambda;
