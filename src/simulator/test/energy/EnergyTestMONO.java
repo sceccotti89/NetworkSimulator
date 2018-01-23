@@ -9,9 +9,11 @@ import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import simulator.core.Agent;
@@ -59,7 +61,10 @@ public class EnergyTestMONO
     private static final int CPU_CORES = 4;
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
     
-    private static boolean CENTRALIZED_QUEUE;
+    //private static boolean CENTRALIZED_QUEUE;
+    
+    private static CPU cpu;
+    private static Map<String,String> testResults;
     
     
     private static class ClientGenerator extends EventGenerator
@@ -420,15 +425,41 @@ public class EnergyTestMONO
     public static void main( String[] args ) throws Exception
     {
         Utils.VERBOSE = false;
-        CENTRALIZED_QUEUE = true;
+        //CENTRALIZED_QUEUE = true;
         
+        System.setProperty( "showGUI", "false" );
         if (System.getProperty( "showGUI" ) != null) {
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
         }
         
+        testResults = new LinkedHashMap<>();
+        
         //plotAllTailLatencies();
         
-        testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        // TODO mancano anche quelli a singola coda, perche' lo scheduler non influisce
+        // TODO ESEGUIRE I TEST SENZA IL JOB STEALING
+        
+        // con JOB STEALING
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, true, new LowestFrequency() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, true, new EarliestCompletionTime() );
+        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, false, new LowestFrequency() );
+        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, false, new EarliestCompletionTime() );
+        
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, true, new LowestFrequency() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, true, new EarliestCompletionTime() );
+        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, false, new LowestFrequency() );
+        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, false, new EarliestCompletionTime() );
+        
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, true, new LowestFrequency() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, true, new EarliestCompletionTime() );
+        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, false, new LowestFrequency() );
+        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, false, new EarliestCompletionTime() );
+        
+        for (Entry<String,String> entry : testResults.entrySet()) {
+            Utils.LOGGER.info( entry.getKey() + ", " + entry.getValue() );
+        }
+        
+        //testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
@@ -457,6 +488,25 @@ public class EnergyTestMONO
         
         //System.out.println( "MAX: " + EarliestCompletionTime.maxTime ); //  2.853.484
         //System.out.println( "MAX: " + LowestFrequency.maxTime );        //359.403.054
+    }
+    
+    public static void testPESOS( Type type, Mode mode, long timeBudget, double target, boolean centralized_queue, Scheduler<Iterable<Core>, Long, QueryInfo> scheduler ) throws Exception
+    {
+        cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( type ) );
+        cpu.setScheduler( scheduler );
+        cpu.setCentralizedQueue( centralized_queue );
+        double energy = testMultiCore( type, mode, timeBudget );
+        String name = scheduler.getClass().getName();
+        String[] subNames = name.split( "\\." );
+        name = subNames[subNames.length-1];
+        String gain;
+        if (energy < target) {
+            gain = "-" + (1d - energy / target);
+        } else {
+            gain = "+" + ((1d - energy / target) * 100d);
+        }
+        String model = getModel( type, mode, timeBudget ).getModelType( false ) + "_" + centralized_queue + "_" + name;
+        testResults.put( model, energy + " => " + gain );
     }
     
     private static CPUModel getModel( Type type, Mode mode, long timeBudget )
@@ -558,7 +608,7 @@ public class EnergyTestMONO
         an.start();
     }
     
-    public static void testMultiCore( Type type, Mode mode, long timeBudget ) throws Exception
+    public static double testMultiCore( Type type, Mode mode, long timeBudget ) throws Exception
     {
         /*
                    1000Mb,0ms
@@ -568,8 +618,8 @@ public class EnergyTestMONO
         
         final Time duration = new Time( 24, TimeUnit.HOURS );
         
-        CPU cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( type ) );
-        cpu.setCentralizedQueue( CENTRALIZED_QUEUE );
+        //cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( type ) );
+        //cpu.setCentralizedQueue( CENTRALIZED_QUEUE );
         
         CPUModel model = loadModel( type, mode, timeBudget );
         cpu.setModel( model );
@@ -621,7 +671,8 @@ public class EnergyTestMONO
         sim.start( duration, false );
         sim.close();
         
-        System.out.println( model.getModelType( false ) + " - Total energy:      " + server.getResultSampled( Global.ENERGY_SAMPLING ) + "J" );
+        double totalEnergy = server.getResultSampled( Global.ENERGY_SAMPLING );
+        System.out.println( model.getModelType( false ) + " - Total energy:      " + totalEnergy + "J" );
         System.out.println( model.getModelType( false ) + " - Total Idle energy: " + server.getResultSampled( Global.IDLE_ENERGY_SAMPLING ) + "J" );
         
         System.out.println( "QUERIES: " + cpu.getExecutedQueries() );
@@ -629,6 +680,8 @@ public class EnergyTestMONO
         if (Global.showGUI) {
             plotTailLatency( type, mode, timeBudget );
         }
+        
+        return totalEnergy;
         
         // PARAMETERS                         0.03 0.03 0.01 (NOW: 0.01 0.06 0.01)
         //                QUERY_FILE            PARAMETER
