@@ -85,6 +85,40 @@ class TieLeastLoaded implements Scheduler<Iterable<Core>,Long,QueryInfo>
 
 class LowestFrequency implements Scheduler<Iterable<Core>,Long,QueryInfo>
 {
+    @Override
+    public Long schedule( Time time, Iterable<Core> cores, QueryInfo q )
+    {
+        Core core = null;
+        long minFrequency = Long.MAX_VALUE;
+        long tiedSelection = Long.MAX_VALUE;
+        boolean tieSituation = false;
+        for (Core c : cores) {
+            long frequency = c.getFrequency();
+            if (frequency < minFrequency) {
+                core = c;
+                minFrequency = frequency;
+                tiedSelection = c.tieSelected;
+                tieSituation = false;
+            } else if (frequency == minFrequency) {
+                if (c.tieSelected < tiedSelection) {
+                    core = c;
+                    minFrequency = frequency;
+                    tiedSelection = c.tieSelected;
+                }
+                tieSituation = true;
+            }
+        }
+        
+        if (tieSituation) {
+            core.tieSelected++;
+        }
+        
+        return core.getId();
+    }
+}
+
+class LowestPredictedFrequency implements Scheduler<Iterable<Core>,Long,QueryInfo>
+{
     public static long maxTime = 0;
     
     @Override
@@ -144,7 +178,7 @@ class EarliestCompletionTime implements Scheduler<Iterable<Core>,Long,QueryInfo>
         long tiedSelection = Long.MAX_VALUE;
         boolean tieSituation = false;
         for (Core c : cores) {
-            long executionTime = ((PESOScore) c).getQueryExecutionTime( time );
+            long executionTime = ((PESOScore) c).getTotalQueryExecutionTime( time );
             if (executionTime < minExecutionTime) {
                 core = c;
                 minExecutionTime = executionTime;

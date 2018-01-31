@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import simulator.core.Agent;
 import simulator.core.Model;
 import simulator.core.Task;
 import simulator.test.energy.CPUModel.CONSmodel;
@@ -20,6 +21,7 @@ import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.CPUModel.Type;
 import simulator.test.energy.EnergyModel.QueryEnergyModel;
+import simulator.test.energy.EnergyTestMONO.TimeSlotGenerator;
 import simulator.utils.Pair;
 import simulator.utils.Time;
 import simulator.utils.Utils;
@@ -69,8 +71,8 @@ public class EnergyCPU extends CPU
         
         coresMap = new HashMap<>( (int) _cores );
         
-        setMaxPower( 84d );
-        setMinPower(  2d );
+        setMaxPower( 84.0d );
+        setMinPower(  1.3d );
         
         setEnergyModel( cores );
         
@@ -79,9 +81,11 @@ public class EnergyCPU extends CPU
     
     private void setScheduler()
     {
+        //setScheduler( new TieLeastLoaded() );
         //setScheduler( new FirstLeastLoaded() );
-        setScheduler( new LowestFrequency() );
-        //setScheduler( new EarliestCompletionTime() );
+        //setScheduler( new LowestFrequency() );
+        //setScheduler( new LowestPredictedFrequency() );
+        setScheduler( new EarliestCompletionTime() );
     }
     
     private void setEnergyModel( int cores )
@@ -129,15 +133,15 @@ public class EnergyCPU extends CPU
         for (long i = 0; i < _cores; i++) {
             switch (cpuModel.getType()) {
                 case PESOS :
-                    PESOScore core = new PESOScore( this, i, getMaxFrequency() );
+                    PESOScore core = new PESOScore( this, i, getMinFrequency() );
                     core.setBaseTimeBudget( getTime(), cpuModel.getTimeBudget().getTimeMicros() );
                     coresMap.put( i, core );
                     break;
-                case PERF           : coresMap.put( i, new PERFcore( this, i, getMaxFrequency() ) ); break;
-                case CONS           : coresMap.put( i, new CONScore( this, i, getMaxFrequency() ) ); break;
-                case LOAD_SENSITIVE : coresMap.put( i, new LOAD_SENSITIVEcore( this, i, getMaxFrequency() ) ); break;
-                case MY_MODEL       : coresMap.put( i, new MY_MODELcore( this, i, getMaxFrequency() ) ); break;
-                case PEGASUS        : coresMap.put( i, new PEGASUScore( this, i, getMaxFrequency() ) ); break;
+                case PERF           : coresMap.put( i, new PERFcore( this, i, getMinFrequency() ) ); break;
+                case CONS           : coresMap.put( i, new CONScore( this, i, getMinFrequency() ) ); break;
+                case LOAD_SENSITIVE : coresMap.put( i, new LOAD_SENSITIVEcore( this, i, getMinFrequency() ) ); break;
+                case MY_MODEL       : coresMap.put( i, new MY_MODELcore( this, i, getMinFrequency() ) ); break;
+                case PEGASUS        : coresMap.put( i, new PEGASUScore( this, i, getMinFrequency() ) ); break;
             }
         }
         
@@ -161,6 +165,11 @@ public class EnergyCPU extends CPU
         }
     }
     
+    /**
+     * Removes a query from the centralized query.
+     * 
+     * @param q    the query to remove.
+    */
     private void removeQuery( QueryInfo q )
     {
         for (int i = 0; i < queries.size(); i++) {
@@ -172,9 +181,37 @@ public class EnergyCPU extends CPU
         }
     }
     
+    /*private static final Time FIRST  = new Time(  0, TimeUnit.HOURS );
+    private static final Time SECOND = new Time(  2, TimeUnit.HOURS );
+    private static final Time THIRD  = new Time(  5, TimeUnit.HOURS );
+    private static final Time FOURTH = new Time( 21, TimeUnit.HOURS );
+    private static final Time FIFTH  = new Time( 23, TimeUnit.HOURS );*/
+    
     @Override
     public long selectCore( Time time, QueryInfo query )
     {
+        /*if (time.compareTo( FIRST ) >= 0 && time.compareTo( SECOND ) <= 0) {
+            for (Core core : getCores()) {
+                ((PESOScore) core).setTimeBudget( time, new Time( 480, TimeUnit.MILLISECONDS ).getTimeMicros(), null );
+            }
+        } else if (time.compareTo( SECOND ) >= 0 && time.compareTo( THIRD ) <= 0) {
+            for (Core core : getCores()) {
+                ((PESOScore) core).setTimeBudget( time, new Time( 450, TimeUnit.MILLISECONDS ).getTimeMicros(), null );
+            }
+        } else if (time.compareTo( THIRD ) >= 0 && time.compareTo( FOURTH ) <= 0) {
+            for (Core core : getCores()) {
+                ((PESOScore) core).setTimeBudget( time, new Time( 420, TimeUnit.MILLISECONDS ).getTimeMicros(), null );
+            }
+        } else if (time.compareTo( FOURTH ) >= 0 && time.compareTo( FIFTH ) <= 0) {
+            for (Core core : getCores()) {
+                ((PESOScore) core).setTimeBudget( time, new Time( 450, TimeUnit.MILLISECONDS ).getTimeMicros(), null );
+            }
+        } else {
+            for (Core core : getCores()) {
+                ((PESOScore) core).setTimeBudget( time, new Time( 480, TimeUnit.MILLISECONDS ).getTimeMicros(), null );
+            }
+        }*/
+        
         if (centralizedQueue) {
             //System.out.println( "AGGIUNTA QUERY: " + query.getId() );
             QueryReference toAssign = new QueryReference( -1, query );
@@ -183,7 +220,8 @@ public class EnergyCPU extends CPU
             //System.out.println( "TIME: " + time + ", AGGIUNTA QUERY AL CORE: " + toAssign.getCoreId() + ", PROSSIMA: " + getCore( toAssign.getCoreId() ).getFirstQueryInQueue() );
             return lastSelectedCore = toAssign.getCoreId();
         } else {
-            getAgent().addSampledValue( Global.QUERY_PER_TIME_SLOT, time, time, 1 );
+            Agent agent = getAgent();
+            agent.addSampledValue( Global.QUERY_PER_TIME_SLOT, time, time, 1 );
             /*System.out.println( "SELECTING CORE AT: " + time + ", MY_TIME: " + getTime() );
             for (Core core : getCores()) {
                 System.out.println( "CORE: " + core.getId() + ", TIME: " + core.getTime() );
@@ -195,6 +233,16 @@ public class EnergyCPU extends CPU
             long selectedCore = ((CPUModel) _model).selectCore( time.clone().addTime( delay ), this, query );*/
             //long selectedCore = ((CPUModel) _model).selectCore( time, this, query );
             lastSelectedCore = _scheduler.schedule( time, getCores(), query );
+            /*double queries = 1;
+            for (Core core : getCores()) {
+                List<QueryInfo> queue = core.getQueue();
+                queries += queue.size();
+            }
+            agent.addSampledValue( Global.QUEUE_SIZE, time, time, queries / _cores );*/
+            /*if (lastSelectedCore == 0) {
+                List<QueryInfo> queue = getCore( 0 ).getQueue();
+                agent.addSampledValue( Global.QUEUE_SIZE, time, time, queue.size() + 1 );
+            }*/
             return lastSelectedCore;
         }
     }
@@ -202,9 +250,32 @@ public class EnergyCPU extends CPU
     @Override
     public void evalCONSparameters( Time time )
     {
-        //System.out.println( "Evaluating at: " + time );
-        computeIdleEnergy( time );
-        evalCONSfrequency( time );
+        CPUModel model = (CPUModel) getModel();
+        if (model.getType() == Type.CONS) {
+            //System.out.println( "Evaluating at: " + time );
+            computeIdleEnergy( time );
+            evalCONSfrequency( time );
+        } else {
+            // PESOS
+            double utilization = 0;
+            for (Core core : getCores()) {
+                PESOScore c = (PESOScore) core;
+                double serviceRate = c.getServiceRate();
+                double arrivalRate = c.getArrivalRate();
+                
+                if (serviceRate == 0) {
+                    if (arrivalRate == 0) {
+                        utilization = 0.0;
+                    } else {
+                        utilization = 1.0;
+                    }
+                } else {
+                    utilization = arrivalRate / serviceRate; //ro=lamda/mu
+                }
+                c.reset();
+            }
+            getAgent().addSampledValue( Global.QUEUE_SIZE, time, time, utilization / getCPUcores() );
+        }
     }
     
     /**
@@ -291,6 +362,10 @@ public class EnergyCPU extends CPU
         private long baseTimeBudget;
         private long timeBudget;
         
+        private double receivedQueries;
+        private double processedQueries;
+        private double cumulativeTime;
+        
         private long queryExecutionTime = 0;
         
         private static final long QUEUE_CHECK = TimeUnit.SECONDS.toMicros( 1 );
@@ -307,6 +382,7 @@ public class EnergyCPU extends CPU
                 if (q != null) {
                     q.setCoreId( coreId );
                     queryQueue.add( q );
+                    receivedQueries++;
                     // Here has the meaning of executing the query.
                     if (updateFrequency) {
                         cpu.computeTime( q, this );
@@ -317,6 +393,7 @@ public class EnergyCPU extends CPU
                 queryQueue.add( q );
                 long frequency = cpu.evalFrequency( q.getArrivalTime(), this );
                 if (updateFrequency) {
+                    receivedQueries++;
                     PESOSmodel model = (PESOSmodel) cpu.getModel();
                     final int postings = q.getPostings() + model.getRMSE( q.getTerms() );
                     queryExecutionTime += model.predictServiceTimeAtMaxFrequency( q.getTerms(), postings );
@@ -332,6 +409,9 @@ public class EnergyCPU extends CPU
         public boolean checkQueryCompletion( Time time )
         {
             if (currentTask != null && currentTask.isComplete( time )) {
+                processedQueries++;
+                cumulativeTime += currentTask.getCompletionTime()/1000;
+                
                 //System.out.println( "TIME: " + time + ", CORE: " + getId() + ", COMPLETATA QUERY: " + currentTask );
                 PESOSmodel model = (PESOSmodel) cpu.getModel();
                 final int postings = currentTask.getPostings() + model.getRMSE( currentTask.getTerms() );
@@ -352,12 +432,21 @@ public class EnergyCPU extends CPU
                     if (currentTask != null) {
                         addQuery( currentTask, false );
                         cpu.computeTime( currentTask, this );
+                    } else {
+                        setFrequency( cpu.getMinFrequency() );
                     }
                 } else {
                     if (hasMoreQueries()) {
                         cpu.computeTime( getFirstQueryInQueue(), this );
                     } else {
-                        startJobStealing( time );
+                        QueryInfo q = startJobStealing( time );
+                        if (q != null) {
+                            addQuery( q, true );
+                            cpu.computeTime( q, this );
+                        } else {
+                            setFrequency( cpu.getMinFrequency() );
+                        }
+                        //setFrequency( cpu.getMinFrequency() );
                     }
                 }
                 
@@ -385,18 +474,30 @@ public class EnergyCPU extends CPU
         
         public void setTimeBudget( Time time, long timeBudget, Long queryID )
         {
-            this.timeBudget = timeBudget;
-            //System.out.println( "CORE: " + getId() + ", NUOVO TIME BUDGET: " + timeBudget );
-            if (queryID != null && currentTask != null && currentTask.getId() == queryID) {
-                PESOSmodel model = (PESOSmodel) cpu.getModel();
-                model.setTimeBudget( timeBudget );
-                long frequency = cpu.evalFrequency( currentTask.getStartTime(), this );
-                //long frequency = cpu.evalFrequency( t, this );
-                setFrequency( time, frequency );
+            if (this.timeBudget != timeBudget) {
+                System.out.println( time + ": OLD: " + this.timeBudget + ", NEW: " + timeBudget );
+                this.timeBudget = timeBudget;
+                //System.out.println( "CORE: " + getId() + ", NUOVO TIME BUDGET: " + timeBudget );
+                if (queryID != null && currentTask != null && currentTask.getId() == queryID) {
+                    PESOSmodel model = (PESOSmodel) cpu.getModel();
+                    model.setTimeBudget( timeBudget );
+                    long frequency = cpu.evalFrequency( currentTask.getStartTime(), this );
+                    //long frequency = cpu.evalFrequency( t, this );
+                    setFrequency( time, frequency );
+                }
+                
+                /*PESOSmodel model = (PESOSmodel) cpu.getModel();
+                if (model != null) {
+                    model.setTimeBudget( timeBudget );
+                    if (hasMoreQueries()) {
+                        long frequency = cpu.evalFrequency( time, this );
+                        setFrequency( time, frequency );
+                    }
+                }*/
             }
         }
         
-        public long getQueryExecutionTime( Time time )
+        public long getTotalQueryExecutionTime( Time time )
         {
             if (currentTask != null && currentTask.getEndTime().compareTo( time ) <= 0) {
                 PESOSmodel model = (PESOSmodel) cpu.getModel();
@@ -406,6 +507,33 @@ public class EnergyCPU extends CPU
             }
             
             return queryExecutionTime;
+        }
+        
+        public double getArrivalRate() {
+            return receivedQueries / TimeSlotGenerator.PERIOD.getTimeMillis(); //in ms!
+        }
+        
+        public double getServiceRate()
+        {
+            double serviceRate;
+            if (cumulativeTime == 0) {
+                if (processedQueries != 0) {
+                    serviceRate = Double.MAX_VALUE;
+                } else {
+                    serviceRate = 0;
+                }
+            } else {
+                serviceRate = processedQueries / cumulativeTime; //in ms!
+            }
+            
+            return serviceRate;
+        }
+        
+        public void reset()
+        {
+            receivedQueries = 0;
+            processedQueries = 0;
+            cumulativeTime = 0;
         }
         
         @Override

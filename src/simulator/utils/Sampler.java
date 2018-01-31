@@ -10,8 +10,8 @@ import java.util.List;
 
 public class Sampler
 {
-    private List<Pair<Double,Double>> values;
-    private List<Long> elements;
+    private final List<Pair<Double,Double>> values;
+    private final List<Long> elements;
     private double interval = 0;
     private double totalResult = 0;
     private String logFile;
@@ -282,5 +282,15 @@ public class Sampler
     
     public String getLogFile() {
         return logFile;
+    }
+    
+    /**
+     * Resets the sampler.
+    */
+    public void reset()
+    {
+        values.clear();
+        elements.clear();
+        totalResult = 0;
     }
 }

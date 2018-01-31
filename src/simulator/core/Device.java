@@ -79,8 +79,8 @@ public abstract class Device<I,O>
         //Collections.sort( _frequencies = frequencies );
         
         _frequencies = frequencies;
-        // By default the frequency is setted as the maximum one.
-        _frequency = getMaxFrequency();
+        // By default the frequency is setted at minimum.
+        _frequency = getMinFrequency();
     }
     
     /**

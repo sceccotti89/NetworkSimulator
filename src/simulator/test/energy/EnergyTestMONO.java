@@ -12,8 +12,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import simulator.core.Agent;
@@ -311,6 +311,23 @@ public class EnergyTestMONO
         }
     }
     
+    public static class TimeSlotGenerator extends CBRGenerator
+    {
+        public static final Time PERIOD = new Time( 1, TimeUnit.SECONDS );
+        
+        public TimeSlotGenerator( Time duration ) {
+            super( Time.ZERO, duration, PERIOD, PACKET, PACKET );
+        }
+        
+        @Override
+        public Packet makePacket( Event e, long destination )
+        {
+            Packet packet = getRequestPacket();
+            packet.addContent( Global.CONS_CONTROL, "" );
+            return packet;
+        }
+    }
+    
     private static class ServerConsGenerator extends CBRGenerator
     {
         public static final Time PERIOD = new Time( CONSmodel.PERIOD, TimeUnit.MILLISECONDS );
@@ -427,7 +444,7 @@ public class EnergyTestMONO
         Utils.VERBOSE = false;
         //CENTRALIZED_QUEUE = true;
         
-        System.setProperty( "showGUI", "false" );
+        //System.setProperty( "showGUI", "false" );
         if (System.getProperty( "showGUI" ) != null) {
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
         }
@@ -436,30 +453,38 @@ public class EnergyTestMONO
         
         //plotAllTailLatencies();
         
-        // TODO mancano anche quelli a singola coda, perche' lo scheduler non influisce
-        // TODO ESEGUIRE I TEST SENZA IL JOB STEALING
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, true, new LowestFrequency() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, false, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, false, new LowestFrequency() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, false, new EarliestCompletionTime() );
         
-        // con JOB STEALING
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, true, new TieLeastLoaded() );
         //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, true, new LowestFrequency() );
         //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, true, new EarliestCompletionTime() );
-        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, false, new LowestFrequency() );
-        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, false, new EarliestCompletionTime() );
         
         //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, true, new LowestFrequency() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, false, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, false, new LowestFrequency() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, false, new EarliestCompletionTime() );
+        
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, true, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, true, new LowestFrequency() );
         //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, true, new EarliestCompletionTime() );
-        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, false, new LowestFrequency() );
-        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, false, new EarliestCompletionTime() );
         
         //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, true, new LowestFrequency() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, false, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, false, new LowestFrequency() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, false, new EarliestCompletionTime() );
+        
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, true, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, true, new LowestFrequency() );
         //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, true, new EarliestCompletionTime() );
-        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, false, new LowestFrequency() );
-        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, false, new EarliestCompletionTime() );
         
         for (Entry<String,String> entry : testResults.entrySet()) {
             Utils.LOGGER.info( entry.getKey() + ", " + entry.getValue() );
         }
         
-        //testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
@@ -500,7 +525,7 @@ public class EnergyTestMONO
         String[] subNames = name.split( "\\." );
         name = subNames[subNames.length-1];
         String gain;
-        if (energy < target) {
+        if (energy <= target) {
             gain = "-" + (1d - energy / target);
         } else {
             gain = "+" + ((1d - energy / target) * 100d);
@@ -618,7 +643,7 @@ public class EnergyTestMONO
         
         final Time duration = new Time( 24, TimeUnit.HOURS );
         
-        //cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( type ) );
+        cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( type ) );
         //cpu.setCentralizedQueue( CENTRALIZED_QUEUE );
         
         CPUModel model = loadModel( type, mode, timeBudget );
@@ -644,12 +669,22 @@ public class EnergyTestMONO
             evtGen.connect( server );
             server.addEventGenerator( evtGen );
         }
+        
+        if (model.getType() == Type.PESOS) {
+            EventGenerator evtGen = new TimeSlotGenerator( duration );
+            evtGen.connect( server );
+            server.addEventGenerator( evtGen );
+        }
+        
         server.setParallelTransmission( false ).addDevice( cpu );
         net.addAgent( server );
         
         server.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/" + modelType + "_Energy.log", Sampling.CUMULATIVE ) );
         server.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
         server.addSampler( Global.TAIL_LATENCY_SAMPLING, new Sampler( null, "Log/" + modelType + "_Tail_Latency.log", null ) );
+        
+        // TODO solo per testare la dimensione massima delle code.
+        server.addSampler( Global.QUEUE_SIZE, new Sampler( new Time( 15, TimeUnit.MINUTES ), "Results/QueueSize_" + model.getModelType( false ) + ".log", Sampling.AVERAGE ) );
         if (model.getType() == Type.PERF) {
             server.addSampler( Global.MEAN_COMPLETION_TIME, new Sampler( meanSamplingTime, "Log/MeanCompletionTime.log", Sampling.AVERAGE ) );
             server.addSampler( Global.QUERY_PER_TIME_SLOT, new Sampler( meanSamplingTime, "Log/QueryPerTimeSlot.log", Sampling.CUMULATIVE ) );
@@ -939,7 +974,7 @@ public class EnergyTestMONO
     public static void plotAllTailLatencies() throws IOException
     {
         Plotter plotter = new Plotter( "DISTRIBUTED Tail Latency 95-th Percentile", 800, 600 );
-        plotter.setAxisName( "Time (h)", "95th-tile response time (ms)" );
+        plotter.setAxisName( "Time (h)", "95th-tile Response Time (ms)" );
         plotter.setScaleY( 1000d );
         
         plotter.setTheme( Theme.WHITE );

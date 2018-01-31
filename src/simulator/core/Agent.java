@@ -124,6 +124,15 @@ public abstract class Agent extends NetworkAgent
         samplings.put( samplerId, sampler );
     }
     
+    /**
+     * Returns the requested sampler.
+     * 
+     * @param sampler    the sampler identifier.
+    */
+    public Sampler getSampler( String sampler ) {
+        return samplings.get( sampler );
+    }
+
     public void setEventScheduler( EventScheduler evtScheduler )
     {
         _evtScheduler = evtScheduler;
@@ -231,6 +240,7 @@ public abstract class Agent extends NetworkAgent
     public boolean isParallelTransmission() {
         return _parallelTransmission;
     }
+    
     
     /**
      * Adds a new value to the specified sampler with the corresponding time intervals.</br>

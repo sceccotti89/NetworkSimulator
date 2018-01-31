@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +75,8 @@ public class EnergyTestREPLICA_DIST
     private static int arrivalEstimator;
     private static int latencyNormalization;
     private static double lambda;
+    
+    private static boolean REPLICA_SWITCH = false;
     
     private static Map<String,Double> testResults;
     
@@ -273,11 +276,11 @@ public class EnergyTestREPLICA_DIST
     
     
     
-    private static class ServerConsGenerator extends CBRGenerator
+    private static class TimeSlotGenerator extends CBRGenerator
     {
-        public static final Time PERIOD = new Time( CONSmodel.PERIOD, TimeUnit.MILLISECONDS );
+        public static final Time PERIOD = new Time( 1, TimeUnit.SECONDS );
         
-        public ServerConsGenerator( Time duration ) {
+        public TimeSlotGenerator( Time duration ) {
             super( Time.ZERO, duration, PERIOD, PACKET, PACKET );
         }
         
@@ -285,7 +288,7 @@ public class EnergyTestREPLICA_DIST
         public Packet makePacket( Event e, long destination )
         {
             Packet packet = getRequestPacket();
-            packet.addContent( Global.CONS_CONTROL, "" );
+            packet.addContent( Global.SWITCH_TIME_SLOT, "" );
             return packet;
         }
     }
@@ -335,7 +338,7 @@ public class EnergyTestREPLICA_DIST
                 //core.setTimeBudget( e.getTime(), message.getTimeBudget(), message.getQueryID() );
             }
             
-            if (p.hasContent( Global.CONS_CONTROL )) {
+            if (p.hasContent( Global.SWITCH_TIME_SLOT )) {
                 cpu.evalCONSparameters( e.getTime() );
             } else {
                 QueryInfo query = model.getQuery( p.getContent( Global.QUERY_ID ) );
@@ -391,8 +394,23 @@ public class EnergyTestREPLICA_DIST
         }
         
         @Override
-        public double getNodeUtilization( Time time ) {
-            return getDevice( EnergyCPU.class ).getUtilization( time );
+        public double getNodeUtilization( Time time )
+        {
+            EnergyCPU cpu = getDevice( EnergyCPU.class );
+            /*double utilization = Double.MAX_VALUE;
+            for (Core core : cpu.getCores()) {
+                // In case of nodes with the same lowest frequency, the size of the queue
+                // determines who is the node with the lower number of queries.
+                /*double frequency = core.getFrequency() + core.getQueue().size();
+                if (frequency < utilization) {
+                    utilization = frequency;
+                }*/
+                /*utilization = Math.min( utilization,
+                                        ((PESOScore) core).getTotalQueryExecutionTime( time )
+                              );
+            }
+            return utilization;*/
+            return cpu.getUtilization( time );
         }
         
         @Override
@@ -426,18 +444,30 @@ public class EnergyTestREPLICA_DIST
     private static class SwitchGenerator extends EventGenerator
     {
         private int nextReplica = -1;
+        private Map<Long,Long> tieSelected;
         
-        public SwitchGenerator( Time duration, Packet reqPacket, Packet resPacket )
+        
+        public SwitchGenerator( Time duration )
         {
-            super( duration, Time.ZERO, reqPacket, resPacket );
+            super( duration, Time.ZERO, PACKET, PACKET );
             setDelayedResponse( true );
             setMaximumFlyingPackets( 1 );
+            
+            tieSelected = new HashMap<>();
+        }
+        
+        @Override
+        public EventGenerator connect( Agent to )
+        {
+            tieSelected.put( to.getId(), 0L );
+            return super.connect( to );
         }
         
         @Override
         public Packet makePacket( Event e, long destination )
         {
             if (e instanceof RequestEvent) {
+                // Response message from a replica node.
                 return super.makePacket( e, destination );
             } else {
                 // New request from client: clone the packet.
@@ -450,36 +480,62 @@ public class EnergyTestREPLICA_DIST
         {
             // Bounded Round-Robin.
             SwitchAgent switchAgent = (SwitchAgent) getAgent();
-            //System.out.println( "REPLICAS: " + switchAgent.getCurrentReplicas() );
-            nextReplica = (nextReplica + 1) % switchAgent.getCurrentReplicas();
-            return nextReplica;
+            int maxReplicas = switchAgent.getCurrentReplicas();
+            //System.out.println( "REPLICAS: " + maxReplicas );
+            //nextReplica = (nextReplica + 1) % maxReplicas;
             
-            // Min utilization.
-            /*int selectedIndex = -1;
+            /*if (maxReplicas == 2) {
+                Agent dest = _destinations.get( 0 );
+                CPU cpu = dest.getDevice( EnergyCPU.class );
+                for (Core core : cpu.getCores()) {
+                    System.out.println( "F: " + core.getFrequency() + ", Q: " + core.getQueue().size() );
+                }
+                System.exit( 0 );
+            }*/
+            
+            // Minimum utilization.
+            nextReplica = -1;
             double minUtilization = Double.MAX_VALUE;
-            for (int index = 0; index < _destinations.size(); index++) {
+            long tiedSelection = Long.MAX_VALUE;
+            Agent selected = null;
+            boolean tieSituation = false;
+            //String value = "";
+            for (int index = 0; index < maxReplicas; index++) {
                 Agent dest = _destinations.get( index );
                 double utilization = dest.getNodeUtilization( time );
+                //value += "NODE: " + (index) + ": " + utilization + ", ";
                 if (utilization < minUtilization) {
-                    selectedIndex = index;
+                    nextReplica = index;
                     minUtilization = utilization;
+                    tieSituation = false;
+                } else if (utilization == minUtilization) {
+                    if (tieSelected.get( dest.getId() ) < tiedSelection) {
+                        nextReplica = index;
+                        minUtilization = utilization;
+                        tiedSelection = tieSelected.get( dest.getId() );
+                        selected = dest;
+                    }
+                    tieSituation = true;
                 }
             }
-            return selectedIndex;*/
             
-            // Round-Robin.
-            //nextReplica = (nextReplica + 1) % _destinations.size();
-            //return nextReplica;
+            if (tieSituation) {
+                tieSelected.put( selected.getId(), tiedSelection + 1 );
+            }
+            
+            //System.out.println( value );
+            
+            return nextReplica;
         }
     }
     
     public static class SwitchAgent extends Agent implements EventHandler
     {
-        private List<Agent> destinations;
+        protected List<Agent> destinations;
         
         private int queries;
         
-        private int currentReplicas;
+        protected int currentReplicas = 1;
         
         private List<Double> meanArrivalQueries;
         private List<Double> meanCompletionTime;
@@ -509,7 +565,7 @@ public class EnergyTestREPLICA_DIST
         private static double ALPHA = -0.01;
         private int latency_normalization;
         
-        private static final Time WAKE_UP_TIME = new Time( 200, TimeUnit.SECONDS );
+        //private static final Time WAKE_UP_TIME = new Time( 200, TimeUnit.SECONDS );
         
         
         
@@ -533,6 +589,7 @@ public class EnergyTestREPLICA_DIST
             
             if (estimatorType == SEASONAL_ESTIMATOR) {
                 createGraph();
+                //System.exit( 0 );
             } else {
                 arrivals = 0;
                 currentArrivals = new ArrayList<>( 2 );
@@ -592,9 +649,9 @@ public class EnergyTestREPLICA_DIST
          * 
          * @param time    time of evaluation.
         */
-        private void setNodesState( Time time )
+        protected void setNodesState( Time time )
         {
-            // Turn-on the sleeped nodes.
+            /*// Turn-on the sleeping nodes.
             for (int i = 0; i < currentReplicas; i++) {
                 destinations.get( i ).getDevice( EnergyCPU.class ).setState( time, State.RUNNING );
             }
@@ -603,8 +660,8 @@ public class EnergyTestREPLICA_DIST
                 if (estimatorType == SEASONAL_ESTIMATOR) {
                     if (allReplicas[slotIndex + 1] > currentReplicas) {
                         // Turn-on the subsequent needed replicas.
-                        Time powerOn = time.clone().addTime( SwitchTimeSlotGenerator.TIME_SLOT ).subTime( WAKE_UP_TIME );
-                        for (int i = currentReplicas; i < allReplicas[slotIndex+1]; i++) {
+                        Time powerOn = time.clone().addTime( SwitchTimeSlotGenerator.TIME_SLOT )/*.subTime( WAKE_UP_TIME )*/;
+                        /*for (int i = currentReplicas; i < allReplicas[slotIndex+1]; i++) {
                             destinations.get( i ).getDevice( EnergyCPU.class ).setState( powerOn, State.RUNNING );
                         }
                     } else {
@@ -632,6 +689,17 @@ public class EnergyTestREPLICA_DIST
                     for (int i = currentReplicas; i < REPLICAS_PER_NODE; i++) {
                         destinations.get( i ).getDevice( EnergyCPU.class ).setState( time, State.POWER_OFF );
                     }
+                }
+            }*/
+            
+            // Turn-on the current needed replicas.
+            for (int i = 0; i < currentReplicas; i++) {
+                destinations.get( i ).getDevice( EnergyCPU.class ).setState( time, State.RUNNING );
+            }
+            
+            if (SWITCH_OFF_MACHINES) {
+                for (int i = currentReplicas; i < REPLICAS_PER_NODE; i++) {
+                    destinations.get( i ).getDevice( EnergyCPU.class ).setState( time, State.POWER_OFF );
                 }
             }
         }
@@ -780,6 +848,70 @@ public class EnergyTestREPLICA_DIST
         }
     }
     
+    private static class ReplicaSwitch extends SwitchAgent implements EventHandler
+    {
+        private double targetConsumption;
+        private static final double TARGET_INCREMENT = 0.002;
+        
+        private double targetRo;
+        private int index = -1;
+        private List<Double> nodeUtilization;
+        
+        
+        
+        public ReplicaSwitch( long id, double targetRo, double targetConsumption,
+                              String model, EventGenerator generator ) throws Exception
+        {
+            super( id, 1, 1, 0.25, generator );
+            addEventHandler( this );
+            
+            this.targetRo = targetRo;
+            
+            nodeUtilization = new ArrayList<>();
+            InputStream loader = ResourceLoader.getResourceAsStream( "Results/QueueSize_" + model + ".log" );
+            BufferedReader reader = new BufferedReader( new InputStreamReader( loader ) );
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                double ro = Double.parseDouble( line.split( " " )[1] );
+                nodeUtilization.add( ro );
+            }
+        }
+        
+        @Override
+        public Time handle( Event e, EventType type )
+        {
+            Packet p = e.getPacket();
+            if (p.hasContent( Global.SWITCH_TIME_SLOT )) {
+                if (index == nodeUtilization.size() - 1) {
+                    double energy = getResultSampled( Global.ENERGY_SAMPLING );
+                    if (energy > targetConsumption) {
+                        // Increment the target utilization factor.
+                        targetRo += TARGET_INCREMENT;
+                        //Sampler samper = getSampler( Global.ENERGY_SAMPLING );
+                        //samper.reset();
+                    }
+                }
+                index = (index + 1) % nodeUtilization.size();
+                if (nodeUtilization.get( index ) >= targetRo) {
+                    // Increase the number of replicas.
+                    currentReplicas = 2;
+                } else {
+                    // Reduce the number of replicas.
+                    //currentReplicas = Math.max( currentReplicas - 1, 1 );
+                    currentReplicas = 1;
+                }
+                System.out.println( "RO: " + nodeUtilization.get( index ) + ", TARGET: " + targetRo + ", REPLICAS: " + currentReplicas );
+                setNodesState( e.getTime() );
+            }
+            
+            return getNode().getTcalc();
+        }
+        
+        public String getMode( boolean compressed ) {
+            return "T=" + targetRo;
+        }
+    }
+    
     
     
     
@@ -789,8 +921,9 @@ public class EnergyTestREPLICA_DIST
     public static void main( String[] args ) throws Exception
     {
         Utils.VERBOSE = false;
+        REPLICA_SWITCH = true;
         
-        System.setProperty( "showGUI", "false" );
+        //System.setProperty( "showGUI", "false" );
         if (System.getProperty( "showGUI" ) != null) {
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
         }
@@ -799,27 +932,37 @@ public class EnergyTestREPLICA_DIST
         
         SWITCH_OFF_MACHINES  = true;
         
-        /*arrivalEstimator     = SwitchAgent.SEASONAL_ESTIMATOR;
+        arrivalEstimator     = SwitchAgent.SEASONAL_ESTIMATOR;
         latencyNormalization = 2;
-        lambda               = 0.5;*/
+        lambda               = 0.5;
         
-        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        // 0.24 PESOS TC 500ms
+        
+        // 0.27 PESOS EC 100ms
+        
+        // 485156
+        // 471354 (0.159) => 2.8%
+        
+        // 313337
+        // 252640 (0.25) => -19.3%
+        
+        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
-        arrivalEstimator = SwitchAgent.SEASONAL_ESTIMATOR;
+        /*arrivalEstimator = SwitchAgent.SEASONAL_ESTIMATOR;
         for (latencyNormalization = 1; latencyNormalization <= 3; latencyNormalization++) {
-            for (int iLambda = 1; iLambda <= 3; iLambda++) {
-                lambda = 0.25 * iLambda;
+            for (int i = 1; i <= 3; i++) {
+                lambda = 0.25d * i;
                 testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 500 );
             }
-        }
+        }*/
         
         /*arrivalEstimator = SwitchAgent.SEASONAL_ESTIMATOR_WITH_DRIFT;
         for (latencyNormalization = 1; latencyNormalization <= 3; latencyNormalization++) {
-            for (int iLambda = 1; iLambda <= 3; iLambda++) {
-                lambda = 0.25 * iLambda;
+            for (int i = 1; i <= 3; i++) {
+                lambda = 0.25d * i;
                 testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 500 );
             }
         }*/
@@ -866,12 +1009,12 @@ public class EnergyTestREPLICA_DIST
         // Create client.
         EventGenerator generator = new ClientGenerator( PACKET, PACKET );
         Agent client = new ClientAgent( 0, generator );
-        net.addNode( 0, "client", 0 );
+        net.addNode( 0, "Client", 0 );
         net.addAgent( client );
         
         // Create query broker.
         EventGenerator brokerGen = new BrokerGenerator( duration );
-        net.addNode( 1, "broker", 0 );
+        net.addNode( 1, "Broker", 0 );
         
         CPUModel model = getModel( type, mode, timeBudget, 1 );
         final String modelType = model.getModelType( true );
@@ -887,11 +1030,19 @@ public class EnergyTestREPLICA_DIST
         String extendedReplicaMode   = null;
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         for (int i = 0; i < NODES; i++) {
+            CPUModel p_model = loadModel( type, mode, timeBudget, i+1 );
+            p_model.loadModel();
+            
             // Create the switch associated to the REPLICA nodes.
-            EventGenerator switchGen = new SwitchGenerator( duration, PACKET, PACKET );
+            EventGenerator switchGen = new SwitchGenerator( duration );
             final long switchId = 2 + i * REPLICAS_PER_NODE + i;
-            SwitchAgent switchNode = new SwitchAgent( switchId, arrivalEstimator, latencyNormalization, lambda, switchGen );
-            net.addNode( switchId, "switch_" + (i+1), 0 );
+            SwitchAgent switchNode;
+            if (REPLICA_SWITCH) {
+                switchNode = new ReplicaSwitch( switchId, 0.177, 313337, model.getModelType( false ), switchGen );
+            } else {
+                switchNode = new SwitchAgent( switchId, arrivalEstimator, latencyNormalization, lambda, switchGen );
+            }
+            net.addNode( switchId, "Switch_" + (i+1), 0 );
             // From broker (1) to switch.
             net.addLink( 1, switchId, 1000, 0, NetworkLink.BIDIRECTIONAL );
             net.addAgent( switchNode );
@@ -907,9 +1058,6 @@ public class EnergyTestREPLICA_DIST
             EventGenerator timeSlotGenerator = new SwitchTimeSlotGenerator( duration );
             switchNode.addEventGenerator( timeSlotGenerator );
             timeSlotGenerator.connect( switchNode );
-            
-            CPUModel p_model = loadModel( type, mode, timeBudget, i+1 );
-            p_model.loadModel();
             
             for (int j = 0; j < REPLICAS_PER_NODE; j++) {
                 final long nodeId = (i * REPLICAS_PER_NODE + j + 1);
@@ -932,7 +1080,7 @@ public class EnergyTestREPLICA_DIST
                 agentCore.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
                 
                 if (type == Type.CONS) {
-                    EventGenerator evtGen = new ServerConsGenerator( duration );
+                    EventGenerator evtGen = new TimeSlotGenerator( duration );
                     evtGen.connect( agentCore );
                     agentCore.addEventGenerator( evtGen );
                 }

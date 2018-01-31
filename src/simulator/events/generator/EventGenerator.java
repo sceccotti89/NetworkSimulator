@@ -381,7 +381,8 @@ public abstract class EventGenerator
                         event = sendRequest( dummyResEvent );
                     }
                 } else {
-                    // Received a request message from this node, just forward it to the next nodes.
+                    // Received a request message from this node,
+                    // just forward it to the next nodes.
                     if (e.getSource().getId() == _forwardFrom) {
                         if (_session.canSend()) {
                             dummyResEvent.setTime( _time );

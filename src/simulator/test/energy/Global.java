@@ -17,6 +17,7 @@ public class Global
     public static final String TAIL_LATENCY_SAMPLING = "TailLatency";
     public static final String MEAN_COMPLETION_TIME  = "MeanCompletionTime";
     public static final String QUERY_PER_TIME_SLOT   = "QueryPerTimeSlot";
+    public static final String QUEUE_SIZE            = "QueueSize";
     
     public static boolean showGUI = true;
 }

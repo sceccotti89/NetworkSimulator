@@ -52,11 +52,11 @@ public abstract class CPU extends Device<QueryInfo,Long>
     {
         super( cpuSpec );
         coresMap = new HashMap<>( (int) _cores );
-        setFrequency( getMaxFrequency() );
+        setFrequency( getMinFrequency() );
         
         for (long i = 0; i < _cores; i++) {
             coresMap.put( i, coreClass.getConstructor( CPU.class, long.class, long.class )
-                                      .newInstance( this, i, getMaxFrequency() ) );
+                                      .newInstance( this, i, getMinFrequency() ) );
         }
         
         setScheduler( new TieLeastLoaded() );
@@ -65,7 +65,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
     public CPU( String name, List<Long> frequencies )
     {
         super( name, frequencies );
-        setFrequency( getMaxFrequency() );
+        setFrequency( getMinFrequency() );
         setScheduler( new TieLeastLoaded() );
     }
     
@@ -253,8 +253,10 @@ public abstract class CPU extends Device<QueryInfo,Long>
             long tiedSelection = Long.MAX_VALUE;
             boolean tieSituation = false;
             
+            //_scheduler.schedule( time, getCores(), ref.getQuery() );
+            
             // TLL technique.
-            for (Core core : getCores()) {
+            /*for (Core core : getCores()) {
                 long coreUtilization = (long) core.getUtilization( time );
                 if (coreUtilization < minTarget) {
                     minTarget = coreUtilization;
@@ -269,7 +271,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
                     }
                     tieSituation = true;
                 }
-            }
+            }*/
             
             // LF technique.
             /*for (Core core : getCores()) {
@@ -294,7 +296,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
             frequencies[(int) coreId] = minTarget;*/
             
             // ECT technique.
-            /*for (Core core : getCores()) {
+            for (Core core : getCores()) {
                 long executionTime = completionTime.get( core.getId() );
                 if (executionTime < minTarget) {
                     coreId = core.getId();
@@ -315,7 +317,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
             PESOSmodel model = (PESOSmodel) _model;
             final int postings = q.getPostings() + model.getRMSE( q.getTerms() );
             minTarget += model.predictServiceTimeAtMaxFrequency( q.getTerms(), postings );
-            completionTime.put( coreId, minTarget );*/
+            completionTime.put( coreId, minTarget );
             
             if (tieSituation) {
                 getCore( coreId ).tieSelected++;
@@ -328,6 +330,14 @@ public abstract class CPU extends Device<QueryInfo,Long>
         }
         
         for (Core core : getCores()) {
+            /*long frequency;
+            List<QueryInfo> queue = coreQueue.get( core.getId() );
+            if (queue.isEmpty()) {
+                frequency = frequencies[(int) core.getId()];
+            } else {
+                frequency = _model.eval( time, queue.toArray( new QueryInfo[0] ) );
+            }*/
+            
             int queries = currentQueries[(int) core.getId()];
             // Remove the added queries.
             for (int i = coreQueue.get( core.getId() ).size() - queries; i > 0; i--) {
@@ -707,8 +717,13 @@ public abstract class CPU extends Device<QueryInfo,Long>
         
         /**
          * Starts the job stealing phase.
+         * 
+         * @param time    time when the operation starts.
+         * 
+         * @return the query stolen by another queue,
+         *         {@code null} otherwise.
         */
-        protected void startJobStealing( Time time )
+        protected QueryInfo startJobStealing( Time time )
         {
             // Get the query from the core with the highest frequency.
             long coreSelected = -1;
@@ -729,9 +744,10 @@ public abstract class CPU extends Device<QueryInfo,Long>
                 Core core = cpu.getCore( coreSelected );
                 QueryInfo last = core.removeLastQueryInQueue( time, true );
                 last.setCoreId( getId() );
-                addQuery( last, true );
-                cpu.computeTime( last, this );
+                return last;
             }
+            
+            return null;
         }
         
         public void updateEventTime( QueryInfo query, Time time )
