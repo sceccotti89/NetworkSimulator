@@ -120,7 +120,7 @@ public class Sampler
     }
     
     /**
-     * Adds a new value to the specified sampler with the corresponding time intervals.</br>
+     * Adds a new value with the corresponding time intervals.
      * If the starting time is earlier than the ending time,
      * the given value is "distributed" in multiple buckets along the entire interval;
      * if the sampler interval is less or equal than 0 it goes in a single separate bucket,
@@ -135,7 +135,7 @@ public class Sampler
     }
 
     /**
-     * Adds a new value to the specified sampler with the corresponding time intervals.</br>
+     * Adds a new value with the corresponding time intervals.
      * If the starting time is earlier than the ending time, the given value is "distributed" in multiple buckets along the entire interval;
      * if the sampler interval is less or equal than 0 it goes in a single separate bucket,
      * whose insertion is driven only by the ending time.</br>

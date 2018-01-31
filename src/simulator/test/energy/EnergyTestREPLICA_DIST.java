@@ -883,7 +883,7 @@ public class EnergyTestREPLICA_DIST
             Packet p = e.getPacket();
             if (p.hasContent( Global.SWITCH_TIME_SLOT )) {
                 if (index == nodeUtilization.size() - 1) {
-                    double energy = getResultSampled( Global.ENERGY_SAMPLING );
+                    double energy = getSampler( Global.ENERGY_SAMPLING ).getTotalResult();
                     if (energy > targetConsumption) {
                         // Increment the target utilization factor.
                         targetRo += TARGET_INCREMENT;
@@ -1086,7 +1086,7 @@ public class EnergyTestREPLICA_DIST
                 }
                 
                 if (Global.showGUI) {
-                    plotter.addPlot( agentCore.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + nodeId );
+                    plotter.addPlot( agentCore.getSampler( Global.ENERGY_SAMPLING ).getValues(), "Node " + nodeId );
                 }
                 
                 switchGen.connect( agentCore );
@@ -1124,8 +1124,8 @@ public class EnergyTestREPLICA_DIST
         double totalEnergy = 0;
         for (int i = 0; i < NODES * REPLICAS_PER_NODE; i++) {
             CPU cpu = cpus.get( i );
-            double energy = cpu.getAgent().getResultSampled( Global.ENERGY_SAMPLING );
-            double energyIdle = cpu.getAgent().getResultSampled( Global.IDLE_ENERGY_SAMPLING );
+            double energy = cpu.getAgent().getSampler( Global.ENERGY_SAMPLING ).getTotalResult();
+            double energyIdle = cpu.getAgent().getSampler( Global.IDLE_ENERGY_SAMPLING ).getTotalResult();
             totalEnergy += energy;
             Utils.LOGGER.info( extendedReplicaMode + " " + model.getModelType( false ) +
                                " - CPU (" + (i/REPLICAS_PER_NODE + 1) + "-" + (i%REPLICAS_PER_NODE) + ") => Energy: " + energy +

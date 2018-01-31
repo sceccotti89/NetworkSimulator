@@ -597,7 +597,7 @@ public class EnergyTestMONO
             
             switchAgent.getEventGenerator( 0 ).connect( node );
             
-            plotter.addPlot( node.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + i + " " + model.getModelType( true ) );
+            plotter.addPlot( node.getSampler( Global.ENERGY_SAMPLING ).getValues(), "Node " + i + " " + model.getModelType( true ) );
         }
         
         plotter.setAxisName( "Time (h)", "Energy (J)" );
@@ -615,9 +615,9 @@ public class EnergyTestMONO
         int totalQueries = 0;
         for (int i = 0; i < CPU_CORES; i++) {
             EnergyCPU cpu = cpus.get( i );
-            double energy = cpu.getAgent().getResultSampled( Global.ENERGY_SAMPLING );
+            double energy = cpu.getAgent().getSampler( Global.ENERGY_SAMPLING ).getTotalResult();
             totalEnergy += energy;
-            totalIdleEnergy += cpu.getAgent().getResultSampled( Global.IDLE_ENERGY_SAMPLING );
+            totalIdleEnergy += cpu.getAgent().getSampler( Global.IDLE_ENERGY_SAMPLING ).getTotalResult();
             System.out.println( "CPU " + i + ", Energy consumed: " + energy + "J" );
             totalQueries += cpu.getExecutedQueries();
         }
@@ -694,7 +694,7 @@ public class EnergyTestMONO
         
         if (Global.showGUI) {
             Plotter plotter = new Plotter( "MONOLITHIC MULTI_CORE - " + model.getModelType( false ), 800, 600 );
-            plotter.addPlot( server.getSampledValues( Global.ENERGY_SAMPLING ), model.getModelType( false ) );
+            plotter.addPlot( server.getSampler( Global.ENERGY_SAMPLING ).getValues(), model.getModelType( false ) );
             plotter.setAxisName( "Time (h)", "Energy (J)" );
             plotter.setTicks( Axis.Y, 10 );
             plotter.setTicks( Axis.X, 23, 2 );
@@ -706,9 +706,9 @@ public class EnergyTestMONO
         sim.start( duration, false );
         sim.close();
         
-        double totalEnergy = server.getResultSampled( Global.ENERGY_SAMPLING );
+        double totalEnergy = server.getSampler( Global.ENERGY_SAMPLING ).getTotalResult();
         System.out.println( model.getModelType( false ) + " - Total energy:      " + totalEnergy + "J" );
-        System.out.println( model.getModelType( false ) + " - Total Idle energy: " + server.getResultSampled( Global.IDLE_ENERGY_SAMPLING ) + "J" );
+        System.out.println( model.getModelType( false ) + " - Total Idle energy: " + server.getSampler( Global.IDLE_ENERGY_SAMPLING ).getTotalResult() + "J" );
         
         System.out.println( "QUERIES: " + cpu.getExecutedQueries() );
         
@@ -850,7 +850,7 @@ public class EnergyTestMONO
             }
             
             if (Global.showGUI) {
-                plotter.addPlot( node.getSampledValues( Global.ENERGY_SAMPLING ), "Core " + (i+1) );
+                plotter.addPlot( node.getSampler( Global.ENERGY_SAMPLING ).getValues(), "Core " + (i+1) );
             }
         }
         
@@ -869,9 +869,9 @@ public class EnergyTestMONO
         int totalQueries = 0;
         for (int i = 0; i < CPU_CORES; i++) {
             CPU cpu = cpus.get( i );
-            double energy = cpu.getAgent().getResultSampled( Global.ENERGY_SAMPLING );
+            double energy = cpu.getAgent().getSampler( Global.ENERGY_SAMPLING ).getTotalResult();
             totalEnergy += energy;
-            totalIdleEnergy += cpu.getAgent().getResultSampled( Global.IDLE_ENERGY_SAMPLING );
+            totalIdleEnergy += cpu.getAgent().getSampler( Global.IDLE_ENERGY_SAMPLING ).getTotalResult();
             System.out.println( "CPU " + (i+1) + ", Energy consumed: " + energy + "J" );
             totalQueries += cpu.getExecutedQueries();
         }

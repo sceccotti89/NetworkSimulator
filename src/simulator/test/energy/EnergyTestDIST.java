@@ -683,7 +683,7 @@ public class EnergyTestDIST
             }
             
             if (Global.showGUI) {
-                plotter.addPlot( node.getSampledValues( Global.ENERGY_SAMPLING ), "Node " + (i+1) );
+                plotter.addPlot( node.getSampler( Global.ENERGY_SAMPLING ).getValues(), "Node " + (i+1) );
             }
             brokerGen.connect( node );
             
@@ -708,7 +708,7 @@ public class EnergyTestDIST
         double totalEnergy = 0;
         for (int i = 0; i < NODES; i++) {
             CPU cpu = cpus.get( i );
-            double energy = cpu.getAgent().getResultSampled( Global.ENERGY_SAMPLING );
+            double energy = cpu.getAgent().getSampler( Global.ENERGY_SAMPLING ).getTotalResult();
             totalEnergy += energy;
             System.out.println( "CPU: " + i + ", Energy: " + energy );
         }

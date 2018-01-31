@@ -597,17 +597,17 @@ public abstract class CPU extends Device<QueryInfo,Long>
             Time startTime   = currentTask.getStartTime();
             Time endTime     = currentTask.getEndTime();
             Time tailLatency = endTime.clone().subTime( currentTask.getArrivalTime() );
-            cpu.getAgent().addSampledValue( Global.TAIL_LATENCY_SAMPLING, endTime,
-                                            endTime, tailLatency.getTimeMicros() );
+            cpu.getAgent().getSampler( Global.TAIL_LATENCY_SAMPLING )
+                          .addSampledValue( endTime, endTime, tailLatency.getTimeMicros() );
             
             // Add the static power consumed for the query.
             double energy = currentTask.getEnergyConsumption() +
                             EnergyModel.getStaticPower( currentTask.getCompletionTime() );
-            cpu.getAgent().addSampledValue( Global.ENERGY_SAMPLING, startTime,
-                                            endTime, energy );
+            cpu.getAgent().getSampler( Global.ENERGY_SAMPLING )
+                          .addSampledValue( startTime, endTime, energy );
             
-            cpu.getAgent().addSampledValue( Global.MEAN_COMPLETION_TIME, endTime,
-                                            endTime, tailLatency.getTimeMicros() );
+            cpu.getAgent().getSampler( Global.MEAN_COMPLETION_TIME )
+                          .addSampledValue( endTime, endTime, tailLatency.getTimeMicros() );
             
             EnergyCPU.writeResult( currentTask.getFrequency(), currentTask.getLastEnergy() );
             
@@ -632,8 +632,10 @@ public abstract class CPU extends Device<QueryInfo,Long>
                 }
             }
             
-            cpu.getAgent().addSampledValue( Global.ENERGY_SAMPLING, startTime, time, idleEnergy );
-            cpu.getAgent().addSampledValue( Global.IDLE_ENERGY_SAMPLING, startTime, time, idleEnergy );
+            cpu.getAgent().getSampler( Global.ENERGY_SAMPLING )
+                          .addSampledValue( startTime, time, idleEnergy );
+            cpu.getAgent().getSampler( Global.IDLE_ENERGY_SAMPLING )
+                          .addSampledValue( startTime, time, idleEnergy );
         }
         
         protected void setFrequency( long frequency ) {

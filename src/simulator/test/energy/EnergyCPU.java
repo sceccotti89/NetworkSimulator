@@ -221,7 +221,7 @@ public class EnergyCPU extends CPU
             return lastSelectedCore = toAssign.getCoreId();
         } else {
             Agent agent = getAgent();
-            agent.addSampledValue( Global.QUERY_PER_TIME_SLOT, time, time, 1 );
+            agent.getSampler( Global.QUERY_PER_TIME_SLOT ).addSampledValue( time, time, 1 );
             /*System.out.println( "SELECTING CORE AT: " + time + ", MY_TIME: " + getTime() );
             for (Core core : getCores()) {
                 System.out.println( "CORE: " + core.getId() + ", TIME: " + core.getTime() );
@@ -274,7 +274,8 @@ public class EnergyCPU extends CPU
                 }
                 c.reset();
             }
-            getAgent().addSampledValue( Global.QUEUE_SIZE, time, time, utilization / getCPUcores() );
+            getAgent().getSampler( Global.QUEUE_SIZE )
+                      .addSampledValue( time, time, utilization / getCPUcores() );
         }
     }
     
