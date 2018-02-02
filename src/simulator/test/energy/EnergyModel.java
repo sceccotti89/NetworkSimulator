@@ -1,6 +1,9 @@
 
 package simulator.test.energy;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import simulator.utils.Time;
 import simulator.utils.Utils;
 
@@ -228,7 +231,6 @@ public abstract class EnergyModel
     
     public static class CoefficientEnergyModel extends EnergyModel
     {
-        // TODO utilizzare questi coefficienti per ricalcolare i consumi.
         //      POWER           STDEV
         //16.8328547627930 1.30708580525330
         //14.4307527066090 1.09306474374930
@@ -246,8 +248,28 @@ public abstract class EnergyModel
         // 1.8851772840657 0.26837253660984
         // 1.3195298857676 0.09557728878342
         
-        public CoefficientEnergyModel( int nCores ) {
+        private final Map<Long,Double> coefficients;
+        
+        public CoefficientEnergyModel( int nCores )
+        {
             super( nCores );
+            
+            coefficients = new HashMap<>( 15 );
+            coefficients.put(  800000L,  1.3195298857676 );
+            coefficients.put( 1000000L,  1.8851772840657 );
+            coefficients.put( 1200000L,  3.0244325748922 );
+            coefficients.put( 1400000L,  3.4359313987644 );
+            coefficients.put( 1600000L,  4.1396654003963 );
+            coefficients.put( 1800000L,  5.0965153747523 );
+            coefficients.put( 2000000L,  6.2681729257489 );
+            coefficients.put( 2100000L,  6.6835769518592 );
+            coefficients.put( 2300000L,  7.5992422893111 );
+            coefficients.put( 2500000L,  9.3216932801026 );
+            coefficients.put( 2700000L, 10.3568317041610 );
+            coefficients.put( 2900000L, 11.5258791992070 );
+            coefficients.put( 3100000L, 12.6906984252240 );
+            coefficients.put( 3300000L, 14.4307527066090 );
+            coefficients.put( 3500000L, 16.8328547627930 );
         }
         
         @Override
@@ -258,7 +280,8 @@ public abstract class EnergyModel
         @Override
         public double computeEnergy( double energy, long frequency, double interval, boolean idle )
         {
-            return energy;
+            double power = coefficients.get( frequency );
+            return power * (interval / Utils.MILLION);
         }
         
         @Override
