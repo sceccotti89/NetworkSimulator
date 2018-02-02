@@ -226,6 +226,52 @@ public abstract class EnergyModel
         }
     }*/
     
+    public static class CoefficientEnergyModel extends EnergyModel
+    {
+        // TODO utilizzare questi coefficienti per ricalcolare i consumi.
+        //      POWER           STDEV
+        //16.8328547627930 1.30708580525330
+        //14.4307527066090 1.09306474374930
+        //12.6906984252240 0.95205071240478
+        //11.5258791992070 0.88724265255830
+        //10.3568317041610 0.78945596138226
+        // 9.3216932801026 0.71063648095951
+        // 7.5992422893111 0.59356681957165
+        // 6.6835769518592 0.57524509807136
+        // 6.2681729257489 0.52485317733415
+        // 5.0965153747523 0.54660581478755
+        // 4.1396654003963 0.46959844570467
+        // 3.4359313987644 0.42770606537103
+        // 3.0244325748922 0.34973582054577
+        // 1.8851772840657 0.26837253660984
+        // 1.3195298857676 0.09557728878342
+        
+        public CoefficientEnergyModel( int nCores ) {
+            super( nCores );
+        }
+        
+        @Override
+        public double computeEnergy( double energy, long frequency, Time interval, boolean idle ) {
+            return computeEnergy( energy, frequency, interval.getTimeMicros(), idle );
+        }
+        
+        @Override
+        public double computeEnergy( double energy, long frequency, double interval, boolean idle )
+        {
+            return energy;
+        }
+        
+        @Override
+        public double getIdleEnergy( long frequency, Time interval ) {
+            return getIdleEnergy( frequency, interval.getTimeMicros() );
+        }
+        
+        @Override
+        public double getIdleEnergy( long frequency, long interval ) {
+            return getStaticPower( interval );
+        }
+    }
+    
     public static class ParameterEnergyModel extends EnergyModel
     {
         private static final double ALPHA = 0.01d;

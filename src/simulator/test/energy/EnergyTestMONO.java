@@ -539,7 +539,7 @@ public class EnergyTestMONO
     private static CPUModel getModel( Type type, Mode mode, long timeBudget )
     {
         CPUModel model = null;
-        final String directory = "Models/Monolithic/PESOS/MaxScore/";
+        final String directory = "Models/Distributed/Node_1/PESOS/MaxScore/";
         switch ( type ) {
             case PESOS          : model = new PESOSmodel( timeBudget, mode, directory ); break;
             case LOAD_SENSITIVE : model = new LOAD_SENSITIVEmodel( timeBudget, mode, directory ); break;
