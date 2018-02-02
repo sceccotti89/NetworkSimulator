@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -851,18 +852,20 @@ public class EnergyTestREPLICA_DIST
     private static class ReplicaSwitch extends SwitchAgent implements EventHandler
     {
         private double targetConsumption;
-        private static final double TARGET_INCREMENT = 0.002;
         
         private double targetRo;
         private int index = -1;
         private List<Double> nodeUtilization;
+        
+        private static int orderedIndex = -1;
+        private List<Double> orderedNodeUtilization;
         
         
         
         public ReplicaSwitch( long id, double targetRo, double targetConsumption,
                               String model, EventGenerator generator ) throws Exception
         {
-            super( id, 1, 1, 0.25, generator );
+            super( id, 1, 1, 0.25, generator ); // Dummy parameters.
             addEventHandler( this );
             
             this.targetRo = targetRo;
@@ -875,6 +878,12 @@ public class EnergyTestREPLICA_DIST
                 double ro = Double.parseDouble( line.split( " " )[1] );
                 nodeUtilization.add( ro );
             }
+            
+            orderedNodeUtilization = new ArrayList<>( nodeUtilization );
+            Collections.sort( orderedNodeUtilization );
+            
+            orderedIndex = (orderedIndex + 1) % nodeUtilization.size();
+            this.targetRo = orderedNodeUtilization.get( orderedIndex );
         }
         
         @Override
@@ -886,7 +895,7 @@ public class EnergyTestREPLICA_DIST
                     double energy = getSampler( Global.ENERGY_SAMPLING ).getTotalResult();
                     if (energy > targetConsumption) {
                         // Increment the target utilization factor.
-                        targetRo += TARGET_INCREMENT;
+                        //targetRo += TARGET_INCREMENT;
                         //Sampler samper = getSampler( Global.ENERGY_SAMPLING );
                         //samper.reset();
                     }
@@ -936,15 +945,11 @@ public class EnergyTestREPLICA_DIST
         latencyNormalization = 2;
         lambda               = 0.5;
         
-        // 0.24 PESOS TC 500ms
-        
-        // 0.27 PESOS EC 100ms
-        
         // 485156
-        // 471354 (0.159) => 2.8%
+        // 471354 (0.159) =>  -2.8%
         
         // 313337
-        // 252640 (0.25) => -19.3%
+        // 252640 (0.250) => -19.3%
         
         testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
@@ -952,8 +957,8 @@ public class EnergyTestREPLICA_DIST
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
         /*arrivalEstimator = SwitchAgent.SEASONAL_ESTIMATOR;
-        for (latencyNormalization = 1; latencyNormalization <= 3; latencyNormalization++) {
-            for (int i = 1; i <= 3; i++) {
+        for (int i = 1; i <= 3; i++) {
+            for (latencyNormalization = 1; latencyNormalization <= 3; latencyNormalization++) {
                 lambda = 0.25d * i;
                 testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 500 );
             }

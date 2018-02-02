@@ -466,6 +466,19 @@ public abstract class CPU extends Device<QueryInfo,Long>
     }
     
     /**
+     * Enables or disables the job stealing technique.
+     * 
+     * @param enable    {@code true} to enable the job stealing,
+     *                  {@code false} otherwise.
+    */
+    public void enableJobStealing( boolean enable )
+    {
+        for (Core core : getCores()) {
+            core.enableJobStealing( enable );
+        }
+    }
+    
+    /**
      * Checks if the last executed query, on each core, have been completely executed.
      * 
      * @param time    time to check the completness of the query
@@ -552,6 +565,11 @@ public abstract class CPU extends Device<QueryInfo,Long>
         // Number of times this core has been selected in a tied situation.
         protected long tieSelected = 0;
         protected State state;
+        protected boolean enableJB = false;
+        
+        protected double receivedQueries;
+        protected double processedQueries;
+        protected double cumulativeTime;
         
         // Possible states of the CPU core.
         public enum State {
@@ -581,6 +599,10 @@ public abstract class CPU extends Device<QueryInfo,Long>
         {
             setTime( time );
             this.state = state;
+        }
+        
+        public void enableJobStealing( boolean enable ) {
+            enableJB = enable;
         }
         
         public boolean isWorking( Time time ) {
@@ -722,7 +744,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
          * 
          * @param time    time when the operation starts.
          * 
-         * @return the query stolen by another queue,
+         * @return the query stolen from another queue,
          *         {@code null} otherwise.
         */
         protected QueryInfo startJobStealing( Time time )

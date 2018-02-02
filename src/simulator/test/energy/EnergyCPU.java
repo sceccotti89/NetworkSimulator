@@ -363,10 +363,6 @@ public class EnergyCPU extends CPU
         private long baseTimeBudget;
         private long timeBudget;
         
-        private double receivedQueries;
-        private double processedQueries;
-        private double cumulativeTime;
-        
         private long queryExecutionTime = 0;
         
         private static final long QUEUE_CHECK = TimeUnit.SECONDS.toMicros( 1 );
@@ -440,14 +436,13 @@ public class EnergyCPU extends CPU
                     if (hasMoreQueries()) {
                         cpu.computeTime( getFirstQueryInQueue(), this );
                     } else {
-                        QueryInfo q = startJobStealing( time );
+                        QueryInfo q = (enableJB) ? startJobStealing( time ) : null;
                         if (q != null) {
                             addQuery( q, true );
                             cpu.computeTime( q, this );
                         } else {
                             setFrequency( cpu.getMinFrequency() );
                         }
-                        //setFrequency( cpu.getMinFrequency() );
                     }
                 }
                 
@@ -464,6 +459,7 @@ public class EnergyCPU extends CPU
             PESOSmodel model = (PESOSmodel) cpu.getModel();
             final int postings = q.getPostings() + model.getRMSE( q.getTerms() );
             queryExecutionTime -= model.predictServiceTimeAtMaxFrequency( q.getTerms(), postings );
+            receivedQueries--;
             return q;
         }
         

@@ -62,6 +62,7 @@ public class EnergyTestMONO
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
     
     //private static boolean CENTRALIZED_QUEUE;
+    private static boolean JOB_STEALING;
     
     private static CPU cpu;
     private static Map<String,String> testResults;
@@ -443,6 +444,7 @@ public class EnergyTestMONO
     {
         Utils.VERBOSE = false;
         //CENTRALIZED_QUEUE = true;
+        JOB_STEALING = true;
         
         //System.setProperty( "showGUI", "false" );
         if (System.getProperty( "showGUI" ) != null) {
@@ -645,13 +647,13 @@ public class EnergyTestMONO
         
         cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( type ) );
         //cpu.setCentralizedQueue( CENTRALIZED_QUEUE );
+        cpu.enableJobStealing( JOB_STEALING );
         
         CPUModel model = loadModel( type, mode, timeBudget );
         cpu.setModel( model );
         
         String modelType = model.getModelType( true );
         final Time samplingTime = new Time( 5, TimeUnit.MINUTES );
-        final Time meanSamplingTime = new Time( 15, TimeUnit.MINUTES );
         
         NetworkTopology net = new NetworkTopology( "Topology/Topology_mono_multiCore.json" );
         System.out.println( net.toString() );
@@ -683,8 +685,8 @@ public class EnergyTestMONO
         server.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
         server.addSampler( Global.TAIL_LATENCY_SAMPLING, new Sampler( null, "Log/" + modelType + "_Tail_Latency.log", null ) );
         
-        // TODO solo per testare la dimensione massima delle code.
-        server.addSampler( Global.QUEUE_SIZE, new Sampler( new Time( 15, TimeUnit.MINUTES ), "Results/QueueSize_" + model.getModelType( false ) + ".log", Sampling.AVERAGE ) );
+        final Time meanSamplingTime = new Time( 15, TimeUnit.MINUTES );
+        server.addSampler( Global.QUEUE_SIZE, new Sampler( meanSamplingTime, "Results/QueueSize_" + model.getModelType( false ) + ".log", Sampling.AVERAGE ) );
         if (model.getType() == Type.PERF) {
             server.addSampler( Global.MEAN_COMPLETION_TIME, new Sampler( meanSamplingTime, "Log/MeanCompletionTime.log", Sampling.AVERAGE ) );
             server.addSampler( Global.QUERY_PER_TIME_SLOT, new Sampler( meanSamplingTime, "Log/QueryPerTimeSlot.log", Sampling.CUMULATIVE ) );
