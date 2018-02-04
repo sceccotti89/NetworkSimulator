@@ -768,8 +768,11 @@ public class Plotter extends WindowAdapter implements ActionListener
         private String stringValue( double val, boolean round )
         {
             String value = String.format( "%.12f", val );
-            if (value.contains( "," )) {
+            if (value.contains( "," ) || value.contains( "." )) {
                 int index = value.indexOf( ',' );
+                if (index == -1) {
+                    index = value.indexOf( '.' );
+                }
                 if (round) {
                     // Return the integer part of the number
                     // only if the first 5 numbers of the mantissa are all 0.
@@ -784,7 +787,7 @@ public class Plotter extends WindowAdapter implements ActionListener
                         return value.substring( 0, index );
                     }
                 }
-                value = value.substring( 0, Math.min( value.indexOf( ',' ) + 3, value.length() ) );
+                value = value.substring( 0, Math.min( index + 3, value.length() ) );
             }
             
             return value;

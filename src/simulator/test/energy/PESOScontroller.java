@@ -242,7 +242,7 @@ public class PESOScontroller
         {
             super( "", "Models/cpu_frequencies.txt" );
             
-            PESOSmodel model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + ((index+1)/2) + "/PESOS/MaxScore/" );
+            PESOSmodel model = new PESOSmodel( timeBudget, mode, "Models/Shards/Node_" + ((index+1)/2) + "/" );
             model.setDevice( this );
             model.loadModel();
             

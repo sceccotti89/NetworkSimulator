@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import simulator.core.Agent;
 import simulator.core.Device;
 import simulator.events.Event;
 import simulator.test.energy.CPU.Core.State;
@@ -48,6 +49,14 @@ public abstract class CPU extends Device<QueryInfo,Long>
     
     
     
+    /*public CPU( String cpuSpec ) throws Exception
+    {
+        super( cpuSpec );
+        coresMap = new HashMap<>( (int) _cores );
+        setFrequency( getMinFrequency() );
+        setScheduler( new TieLeastLoaded() );
+    }*/
+    
     public CPU( String cpuSpec, Class<? extends Core> coreClass ) throws Exception
     {
         super( cpuSpec );
@@ -56,7 +65,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
         
         for (long i = 0; i < _cores; i++) {
             coresMap.put( i, coreClass.getConstructor( CPU.class, long.class, long.class )
-                                      .newInstance( this, i, getMinFrequency() ) );
+                                      .newInstance( this, i, getMaxFrequency() ) );
         }
         
         setScheduler( new TieLeastLoaded() );
@@ -124,7 +133,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
         for (Core core : getCores()) {
             if (core.isWorking( time )) {
                 activeCores++;
-                power -= EnergyModel.getCoreStaticPower();
+                //power -= EnergyModel.getCoreStaticPower();
             }
         }
         
@@ -132,16 +141,27 @@ public abstract class CPU extends Device<QueryInfo,Long>
             return;
         }
         
-        power /= activeCores * EnergyModel.getAlpha();
-        double targetFrequency = Math.pow( power, 1/EnergyModel.getBeta() ) * Utils.MILLION;
+        double corePower = power / activeCores;
         // Find the highest frequency less than the target.
         List<Long> frequencies = getFrequencies();
+        for (int i = frequencies.size() - 1; i >= 0; i--) {
+            long frequency = frequencies.get( i );
+            double energy = energyModel.computeEnergy( 0, frequency, Utils.MILLION, false );
+            if (energy <= corePower) {
+                setFrequency( time, frequency );
+                break;
+            }
+        }
+        
+        /*power /= activeCores * EnergyModel.getAlpha();
+        double targetFrequency = Math.pow( power, 1/EnergyModel.getBeta() ) * Utils.MILLION;
+        // Find the highest frequency less than the target.
         for (int i = frequencies.size() - 1; i >= 0; i--) {
             if (frequencies.get( i ) <= targetFrequency) {
                 setFrequency( time, frequencies.get( i ) );
                 break;
             }
-        }
+        }*/
     }
     
     public void setMaxPower( double power ) {
@@ -223,6 +243,9 @@ public abstract class CPU extends Device<QueryInfo,Long>
     */
     public abstract long selectCore( Time time, QueryInfo query );
     
+    /**
+     * 
+    */
     protected void analyzeFrequency( Time time, long currentCore )
     {
         int[] currentQueries = new int[(int) _cores];
@@ -253,71 +276,73 @@ public abstract class CPU extends Device<QueryInfo,Long>
             long tiedSelection = Long.MAX_VALUE;
             boolean tieSituation = false;
             
-            //_scheduler.schedule( time, getCores(), ref.getQuery() );
-            
             // TLL technique.
-            /*for (Core core : getCores()) {
-                long coreUtilization = (long) core.getUtilization( time );
-                if (coreUtilization < minTarget) {
-                    minTarget = coreUtilization;
-                    coreId = core.getId();
-                    tiedSelection = core.tieSelected;
-                    tieSituation = false;
-                } else if (coreUtilization == minTarget) {
-                    if (core.tieSelected < tiedSelection) {
-                        coreId = core.getId();
+            if (_scheduler instanceof TieLeastLoaded) {
+                for (Core core : getCores()) {
+                    long coreUtilization = (long) core.getUtilization( time );
+                    if (coreUtilization < minTarget) {
                         minTarget = coreUtilization;
-                        tiedSelection = core.tieSelected;
-                    }
-                    tieSituation = true;
-                }
-            }*/
-            
-            // LF technique.
-            /*for (Core core : getCores()) {
-                List<QueryInfo> queue = coreQueue.get( core.getId() );
-                queue.add( ref.getQuery() );
-                long frequency = _model.eval( time, queue.toArray( new QueryInfo[0] ) );
-                if (frequency < minTarget) {
-                    minTarget = frequency;
-                    coreId = core.getId();
-                    tiedSelection = core.tieSelected;
-                    tieSituation = false;
-                } else if (frequency == minTarget) {
-                    if (core.tieSelected < tiedSelection) {
                         coreId = core.getId();
-                        minTarget = frequency;
                         tiedSelection = core.tieSelected;
+                        tieSituation = false;
+                    } else if (coreUtilization == minTarget) {
+                        if (core.tieSelected < tiedSelection) {
+                            coreId = core.getId();
+                            minTarget = coreUtilization;
+                            tiedSelection = core.tieSelected;
+                        }
+                        tieSituation = true;
                     }
-                    tieSituation = true;
                 }
-                queue.remove( queue.size() - 1 );
-            }
-            frequencies[(int) coreId] = minTarget;*/
-            
-            // ECT technique.
-            for (Core core : getCores()) {
-                long executionTime = completionTime.get( core.getId() );
-                if (executionTime < minTarget) {
-                    coreId = core.getId();
-                    minTarget = executionTime;
-                    tiedSelection = core.tieSelected;
-                    tieSituation = false;
-                } else if (executionTime == minTarget) {
-                    if (core.tieSelected < tiedSelection) {
+            } else if (_scheduler instanceof LowestPredictedFrequency) {
+                // LPF technique.
+                for (Core core : getCores()) {
+                    List<QueryInfo> queue = coreQueue.get( core.getId() );
+                    queue.add( ref.getQuery() );
+                    long frequency = _model.eval( time, queue.toArray( new QueryInfo[0] ) );
+                    if (frequency < minTarget) {
+                        minTarget = frequency;
+                        coreId = core.getId();
+                        tiedSelection = core.tieSelected;
+                        tieSituation = false;
+                    } else if (frequency == minTarget) {
+                        if (core.tieSelected < tiedSelection) {
+                            coreId = core.getId();
+                            minTarget = frequency;
+                            tiedSelection = core.tieSelected;
+                        }
+                        tieSituation = true;
+                    }
+                    queue.remove( queue.size() - 1 );
+                }
+                //frequencies[(int) coreId] = minTarget;
+            } else if (_scheduler instanceof EarliestCompletionTime) {
+                // ECT technique.
+                for (Core core : getCores()) {
+                    long executionTime = completionTime.get( core.getId() );
+                    if (executionTime < minTarget) {
                         coreId = core.getId();
                         minTarget = executionTime;
                         tiedSelection = core.tieSelected;
+                        tieSituation = false;
+                    } else if (executionTime == minTarget) {
+                        if (core.tieSelected < tiedSelection) {
+                            coreId = core.getId();
+                            minTarget = executionTime;
+                            tiedSelection = core.tieSelected;
+                        }
+                        tieSituation = true;
                     }
-                    tieSituation = true;
                 }
+                
+                QueryInfo q = ref.getQuery();
+                PESOSmodel model = (PESOSmodel) _model;
+                final int postings = q.getPostings() + model.getRMSE( q.getTerms() );
+                minTarget += model.predictServiceTimeAtMaxFrequency( q.getTerms(), postings );
+                completionTime.put( coreId, minTarget );
             }
             
-            QueryInfo q = ref.getQuery();
-            PESOSmodel model = (PESOSmodel) _model;
-            final int postings = q.getPostings() + model.getRMSE( q.getTerms() );
-            minTarget += model.predictServiceTimeAtMaxFrequency( q.getTerms(), postings );
-            completionTime.put( coreId, minTarget );
+            
             
             if (tieSituation) {
                 getCore( coreId ).tieSelected++;
@@ -565,7 +590,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
         // Number of times this core has been selected in a tied situation.
         protected long tieSelected = 0;
         protected State state;
-        protected boolean enableJB = false;
+        protected boolean enableJS = false;
         
         protected double receivedQueries;
         protected double processedQueries;
@@ -602,7 +627,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
         }
         
         public void enableJobStealing( boolean enable ) {
-            enableJB = enable;
+            enableJS = enable;
         }
         
         public boolean isWorking( Time time ) {
@@ -619,17 +644,24 @@ public abstract class CPU extends Device<QueryInfo,Long>
             Time startTime   = currentTask.getStartTime();
             Time endTime     = currentTask.getEndTime();
             Time tailLatency = endTime.clone().subTime( currentTask.getArrivalTime() );
-            cpu.getAgent().getSampler( Global.TAIL_LATENCY_SAMPLING )
-                          .addSampledValue( endTime, endTime, tailLatency.getTimeMicros() );
+            Agent agent = cpu.getAgent();
+            if (agent.getSampler( Global.TAIL_LATENCY_SAMPLING ) != null) {
+                agent.getSampler( Global.TAIL_LATENCY_SAMPLING )
+                     .addSampledValue( endTime, endTime, tailLatency.getTimeMicros() );
+            }
             
             // Add the static power consumed for the query.
             double energy = currentTask.getEnergyConsumption() +
                             EnergyModel.getStaticPower( currentTask.getCompletionTime() );
-            cpu.getAgent().getSampler( Global.ENERGY_SAMPLING )
-                          .addSampledValue( startTime, endTime, energy );
+            if (agent.getSampler( Global.ENERGY_SAMPLING ) != null) {
+                agent.getSampler( Global.ENERGY_SAMPLING )
+                     .addSampledValue( startTime, endTime, energy );
+            }
             
-            cpu.getAgent().getSampler( Global.MEAN_COMPLETION_TIME )
-                          .addSampledValue( endTime, endTime, tailLatency.getTimeMicros() );
+            if (agent.getSampler( Global.MEAN_COMPLETION_TIME ) != null) {
+                agent.getSampler( Global.MEAN_COMPLETION_TIME )
+                     .addSampledValue( endTime, endTime, tailLatency.getTimeMicros() );
+            }
             
             EnergyCPU.writeResult( currentTask.getFrequency(), currentTask.getLastEnergy() );
             

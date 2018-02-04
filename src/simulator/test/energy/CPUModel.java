@@ -217,17 +217,19 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             long queryID = (long) Double.parseDouble( values[0] );
             QueryInfo query = queries.get( queryID );
             int index = 0;
-            for (int i = 1; i < values.length; i+=2) {
+            //for (int i = 1; i < values.length; i+=2) {
+            for (int i = 1; i < values.length; i++) {
                 double qTime  = Double.parseDouble( values[i] ); // in ms.
-                double energy = Double.parseDouble( values[i+1] );
+                /*double energy = Double.parseDouble( values[i+1] );
                 //double watt = energy / (qTime / 1000);
                 double Ps = (EnergyModel.getStaticPower() / 1000) * qTime;
                 if (energy <= Ps) {
                     System.out.println( "ID: " + queryID + ", FREQ: " + (i/2) + ", J: " + energy + ", Ps: " + Ps );
                 }
-                energy -= Ps;
+                energy -= Ps;*/
                 long time = Utils.getTimeInMicroseconds( qTime, TimeUnit.MILLISECONDS );
-                query.setTimeAndEnergy( FREQUENCIES[index++], time, energy );
+                //query.setTimeAndEnergy( FREQUENCIES[index++], time, energy );
+                query.setTimeAndEnergy( FREQUENCIES[index++], time, 0 );
             }
         }
         
@@ -400,7 +402,8 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             if (delimeters) {
                 return "PESOS_" + getMode() + "_" + getTimeBudget().getTimeMillis() + "ms";
             } else {
-                final String tau = new String( ("\u03C4").getBytes(), Charset.defaultCharset() );
+                //final String tau = new String( ("\u03C4").getBytes(), Charset.defaultCharset() );
+                final String tau = "t";
                 return "PESOS (" + getMode() + "," + tau + "=" + getTimeBudget().getTimeMillis() + "ms)";
             }
         }

@@ -5,14 +5,10 @@ import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -52,7 +48,6 @@ import simulator.utils.Sampler.Sampling;
 import simulator.utils.SizeUnit;
 import simulator.utils.Time;
 import simulator.utils.Utils;
-import simulator.utils.resources.ResourceLoader;
 
 public class EnergyTestDIST
 {
@@ -406,7 +401,7 @@ public class EnergyTestDIST
     
     
     
-    protected static void createDistributedIndex() throws Exception
+    /*protected static void createDistributedIndex() throws Exception
     {
         final String dir = "Models/Monolithic/PESOS/MaxScore/";
         final double MIN_RANGE = 0;
@@ -477,136 +472,51 @@ public class EnergyTestDIST
             
             queryRange.clear();
         }
-    }
+    }*/
     
     public static void main( String[] args ) throws Exception
     {
         //createDistributedIndex();
         
+        //System.setProperty( "showGUI", "false" );
         if (System.getProperty( "showGUI" ) != null) {
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
         }
         
         Utils.VERBOSE = false;
-        PESOS_CONTROLLER = false;
+        PESOS_CONTROLLER = true;
         
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  460 );
         
-        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
-        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
-        //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
-        //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
+        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
+        testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
+        testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
         //testNetwork( Type.PERF, null, 0 );
         //testNetwork( Type.CONS, null, 0 );
         
-        testNetwork( Type.PEGASUS, null,  500 );
+        //testNetwork( Type.PEGASUS, null,  500 );
         //testNetwork( Type.PEGASUS, null, 1000 );
         
+        //plotTailLatency( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
+        //plotTailLatency( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
+        //plotTailLatency( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
+        //plotTailLatency( Type.PERF, null, 0 );
+        
         //plotAllTailLatencies();
-        
-        /* Controller OFF
-        TC 500ms => la media e' sui 520ms
-        CPU: 0, Energy: 485156.9683476357
-        CPU: 1, Energy: 485306.37542963086
-        CPU: 2, Energy: 485044.31808468426
-        CPU: 3, Energy: 485156.90541508485
-        CPU: 4, Energy: 485026.81435042724
-        Total energy: 2425691.381627463
-        
-        TC 1000ms => OK
-        CPU: 0, Energy: 335314.3787908611
-        CPU: 1, Energy: 335432.45579142787
-        CPU: 2, Energy: 335261.4115148076
-        CPU: 3, Energy: 335086.53894646006
-        CPU: 4, Energy: 335253.1603996233
-        Total energy: 1676347.94544318
-        
-        EC 500ms => sui 600ms
-        CPU: 0, Energy: 424810.3863030298
-        CPU: 1, Energy: 424710.5008494121
-        CPU: 2, Energy: 425177.1714847767
-        CPU: 3, Energy: 424648.6508295073
-        CPU: 4, Energy: 424661.59224872314
-        Total energy: 2124008.301715449
-        
-        EC 1000ms => nel mezzo e' un bel po' sopra il limite
-        CPU: 0, Energy: 313337.0019240138
-        CPU: 1, Energy: 313545.36216034216
-        CPU: 2, Energy: 313281.0123812318
-        CPU: 3, Energy: 313319.5431785417
-        CPU: 4, Energy: 313397.9372790672
-        Total energy: 1566880.8569231967
-        
-        TC 460ms => OK ma con 25k joule in piu'
-        CPU: 0, Energy: 511340.8438447132
-        CPU: 1, Energy: 511571.4702555674
-        CPU: 2, Energy: 511680.5970214596
-        CPU: 3, Energy: 511224.86169035634
-        CPU: 4, Energy: 511258.79470279923
-        Total energy: 2557076.567514896
-        */
-        
-        /* Controller ON
-        TC 500ms => 
-        CPU: 0, Energy: 484744.5060127968
-        CPU: 1, Energy: 484420.2070746079
-        CPU: 2, Energy: 484221.43041150353
-        CPU: 3, Energy: 484339.2099647163
-        CPU: 4, Energy: 484214.328497092
-        Total energy: 2421939.681960717
-        
-        TC 1000ms => 
-        CPU: 0, Energy: 333546.72700928035
-        CPU: 1, Energy: 333144.66511793603
-        CPU: 2, Energy: 332721.82890947635
-        CPU: 3, Energy: 332845.35303684213
-        CPU: 4, Energy: 332859.5337288804
-        Total energy: 1665118.107802415
-        
-        EC 500ms => 
-        CPU: 0, Energy: 424136.4386735377
-        CPU: 1, Energy: 423546.4276530429
-        CPU: 2, Energy: 423870.0316887982
-        CPU: 3, Energy: 423521.5876178576
-        CPU: 4, Energy: 423436.9558334334
-        Total energy: 2118511.4414666696
-        
-        EC 1000ms => 
-        CPU: 0, Energy: 311815.50147943187
-        CPU: 1, Energy: 311545.3483404661
-        CPU: 2, Energy: 311208.100351807
-        CPU: 3, Energy: 311499.0018636706
-        CPU: 4, Energy: 311260.20633548003
-        Total energy: 1557328.1583708555
-        */
-        
-        /* PEGASUS 500ms => 
-        CPU: 0, Energy: 540355.9623780187
-        CPU: 1, Energy: 539850.7631773875
-        CPU: 2, Energy: 539862.333974473
-        CPU: 3, Energy: 539842.3483088542
-        CPU: 4, Energy: 539857.6332990641
-        Total energy: 2699769.0411377978
-        
-        PEGASUS 1000ms => 
-        CPU: 0, Energy: 408846.85569414747
-        CPU: 1, Energy: 406874.4290483996
-        CPU: 2, Energy: 406866.09088027966
-        CPU: 3, Energy: 407411.43016288884
-        CPU: 4, Energy: 407363.09394176153
-        Total energy: 2037361.8997274772
-        */
     }
     
     private static CPUModel getModel( Type type, Mode mode, long timeBudget, int node )
     {
+        String directory = "Models/Shards/";
         CPUModel model = null;
         switch ( type ) {
-            case PESOS  : model = new PESOSmodel( timeBudget, mode, "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
-            case PERF   : model = new PERFmodel( "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
-            case CONS   : model = new CONSmodel( "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
-            case PEGASUS: model = new PEGASUSmodel( timeBudget, "Models/Distributed/Node_" + node + "/PESOS/MaxScore/" ); break;
+            case PESOS  : model = new PESOSmodel( timeBudget, mode, directory + "Node_" + node + "/" ); break;
+            case PERF   : model = new PERFmodel( directory + "Node_" + node + "/" ); break;
+            case CONS   : model = new CONSmodel( directory + "Node_" + node + "/" ); break;
+            case PEGASUS: model = new PEGASUSmodel( timeBudget, directory + "Node_" + node + "/" ); break;
             default     : break;
         }
         return model;
@@ -629,7 +539,7 @@ public class EnergyTestDIST
         //NetworkTopology net = new NetworkTopology( "Topology/Animation/Topology_distributed_multiCore.json" );
         NetworkTopology net = new NetworkTopology( "Topology/Topology_distributed_multiCore.json" );
         //net.setTrackingEvent( "Results/distr_multi_core.txt" );
-        System.out.println( net.toString() );
+        //System.out.println( net.toString() );
         
         CPUModel model = getModel( type, mode, timeBudget, 1 );
         String modelType = model.getModelType( true );
@@ -656,7 +566,7 @@ public class EnergyTestDIST
         controller = null;
         Time samplingTime = new Time( 5, TimeUnit.MINUTES );
         for (int i = 0; i < NODES; i++) {
-            CPU cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( model.getType() ) );
+            CPU cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( type ) );
             cpus.add( cpu );
             
             // Add the model to the corresponding cpu.

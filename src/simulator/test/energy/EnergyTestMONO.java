@@ -61,8 +61,8 @@ public class EnergyTestMONO
     private static final int CPU_CORES = 4;
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
     
-    //private static boolean CENTRALIZED_QUEUE;
-    private static boolean JOB_STEALING;
+    //private static boolean CENTRALIZED_QUEUE = false;
+    private static boolean JOB_STEALING = false;
     
     private static CPU cpu;
     private static Map<String,String> testResults;
@@ -444,7 +444,7 @@ public class EnergyTestMONO
     {
         Utils.VERBOSE = false;
         //CENTRALIZED_QUEUE = true;
-        JOB_STEALING = true;
+        //JOB_STEALING = true;
         
         //System.setProperty( "showGUI", "false" );
         if (System.getProperty( "showGUI" ) != null) {
@@ -453,40 +453,44 @@ public class EnergyTestMONO
         
         testResults = new LinkedHashMap<>();
         
-        //plotAllTailLatencies();
+        plotAllTailLatencies();
         
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, true, new LowestFrequency() );
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, false, new TieLeastLoaded() );
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, false, new LowestFrequency() );
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, false, new EarliestCompletionTime() );
+        /*testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, false, new TieLeastLoaded() );
+        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, false, new LowestPredictedFrequency() );
+        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, false, new EarliestCompletionTime() );
         
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, true, new TieLeastLoaded() );
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, true, new LowestFrequency() );
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 424810, true, new EarliestCompletionTime() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, true, new LowestFrequency() );
+        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, false, new TieLeastLoaded() );
+        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, false, new LowestPredictedFrequency() );
+        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, false, new EarliestCompletionTime() );
         
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, true, new LowestFrequency() );
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, false, new TieLeastLoaded() );
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, false, new LowestFrequency() );
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, false, new EarliestCompletionTime() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, true, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, true, new LowestPredictedFrequency() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, true, new EarliestCompletionTime() );
         
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, true, new TieLeastLoaded() );
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, true, new LowestFrequency() );
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 313337, true, new EarliestCompletionTime() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, true, new LowestPredictedFrequency() );
+        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, false, new TieLeastLoaded() );
+        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, false, new LowestPredictedFrequency() );
+        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, false, new EarliestCompletionTime() );
         
-        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, true, new LowestFrequency() );
-        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, false, new TieLeastLoaded() );
-        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, false, new LowestFrequency() );
-        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, false, new EarliestCompletionTime() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, true, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, true, new LowestPredictedFrequency() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, true, new EarliestCompletionTime() );
         
-        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, true, new TieLeastLoaded() );
-        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, true, new LowestFrequency() );
-        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 335314, true, new EarliestCompletionTime() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, true, new LowestPredictedFrequency() );
+        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, false, new TieLeastLoaded() );
+        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, false, new LowestPredictedFrequency() );
+        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, false, new EarliestCompletionTime() );
+        
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, true, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, true, new LowestPredictedFrequency() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, true, new EarliestCompletionTime() );*/
         
         for (Entry<String,String> entry : testResults.entrySet()) {
             Utils.LOGGER.info( entry.getKey() + ", " + entry.getValue() );
         }
         
-        testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
@@ -522,10 +526,10 @@ public class EnergyTestMONO
         cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( type ) );
         cpu.setScheduler( scheduler );
         cpu.setCentralizedQueue( centralized_queue );
+        cpu.enableJobStealing( JOB_STEALING );
         double energy = testMultiCore( type, mode, timeBudget );
-        String name = scheduler.getClass().getName();
-        String[] subNames = name.split( "\\." );
-        name = subNames[subNames.length-1];
+        String[] subNames = scheduler.getClass().getName().split( "\\." );
+        String name = subNames[subNames.length-1];
         String gain;
         if (energy <= target) {
             gain = "-" + (1d - energy / target);
@@ -539,7 +543,7 @@ public class EnergyTestMONO
     private static CPUModel getModel( Type type, Mode mode, long timeBudget )
     {
         CPUModel model = null;
-        final String directory = "Models/Distributed/Node_1/PESOS/MaxScore/";
+        final String directory = "Models/Shards/Node_1/";
         switch ( type ) {
             case PESOS          : model = new PESOSmodel( timeBudget, mode, directory ); break;
             case LOAD_SENSITIVE : model = new LOAD_SENSITIVEmodel( timeBudget, mode, directory ); break;
@@ -645,9 +649,11 @@ public class EnergyTestMONO
         
         final Time duration = new Time( 24, TimeUnit.HOURS );
         
-        cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( type ) );
-        //cpu.setCentralizedQueue( CENTRALIZED_QUEUE );
-        cpu.enableJobStealing( JOB_STEALING );
+        if (cpu == null) {
+            cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( type ) );
+            //cpu.setCentralizedQueue( CENTRALIZED_QUEUE );
+            cpu.enableJobStealing( JOB_STEALING );
+        }
         
         CPUModel model = loadModel( type, mode, timeBudget );
         cpu.setModel( model );

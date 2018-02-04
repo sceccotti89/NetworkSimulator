@@ -20,7 +20,6 @@ import simulator.test.energy.CPUModel.MY_model;
 import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.CPUModel.Type;
-import simulator.test.energy.EnergyModel.QueryEnergyModel;
 import simulator.test.energy.EnergyTestMONO.TimeSlotGenerator;
 import simulator.utils.Pair;
 import simulator.utils.Time;
@@ -36,6 +35,24 @@ public class EnergyCPU extends CPU
     
     
     
+    
+    /*public EnergyCPU( String specFile ) throws Exception
+    {
+        super( specFile );
+        setEnergyModel( getCPUcores() );
+        
+        double startTime   = TimeUnit.MILLISECONDS.toMicros( 2 );
+        double startFreq   = 800000;
+        double startEnergy = 2;
+        router_time_energy = new HashMap<>();
+        for (Long frequency : getFrequencies()) {
+            long time = (long) ((startFreq / frequency) * startTime);
+            double energy = (startFreq / frequency) * startEnergy;
+            router_time_energy.put( frequency, new Pair<>( new Time( time, TimeUnit.MILLISECONDS ), energy ) );
+        }
+        
+        setScheduler();
+    }*/
     
     public EnergyCPU( String specFile, Class<? extends Core> coreClass ) throws Exception
     {
@@ -81,16 +98,17 @@ public class EnergyCPU extends CPU
     
     private void setScheduler()
     {
-        //setScheduler( new TieLeastLoaded() );
+        //setScheduler( new TieLeastLoaded() ); // Default scheduler.
         //setScheduler( new FirstLeastLoaded() );
         //setScheduler( new LowestFrequency() );
-        //setScheduler( new LowestPredictedFrequency() );
-        setScheduler( new EarliestCompletionTime() );
+        setScheduler( new LowestPredictedFrequency() );
+        //setScheduler( new EarliestCompletionTime() );
     }
     
     private void setEnergyModel( int cores )
     {
-        setEnergyModel( new QueryEnergyModel( cores ) );
+        //setEnergyModel( new QueryEnergyModel( cores ) );
+        setEnergyModel( new CoefficientEnergyModel( cores ) );
         //setEnergyModel( new ParameterEnergyModel( cores ) );
     }
     
@@ -130,20 +148,26 @@ public class EnergyCPU extends CPU
             e.printStackTrace();
         }
         
-        for (long i = 0; i < _cores; i++) {
-            switch (cpuModel.getType()) {
-                case PESOS :
-                    PESOScore core = new PESOScore( this, i, getMinFrequency() );
-                    core.setBaseTimeBudget( getTime(), cpuModel.getTimeBudget().getTimeMicros() );
-                    coresMap.put( i, core );
-                    break;
-                case PERF           : coresMap.put( i, new PERFcore( this, i, getMinFrequency() ) ); break;
-                case CONS           : coresMap.put( i, new CONScore( this, i, getMinFrequency() ) ); break;
-                case LOAD_SENSITIVE : coresMap.put( i, new LOAD_SENSITIVEcore( this, i, getMinFrequency() ) ); break;
-                case MY_MODEL       : coresMap.put( i, new MY_MODELcore( this, i, getMinFrequency() ) ); break;
-                case PEGASUS        : coresMap.put( i, new PEGASUScore( this, i, getMinFrequency() ) ); break;
+        if (cpuModel.getType() == Type.PESOS) {
+            for (Core core : getCores()) {
+                ((PESOScore) core).setBaseTimeBudget( getTime(), cpuModel.getTimeBudget().getTimeMicros() );
             }
         }
+        
+        /*for (long i = 0; i < _cores; i++) {
+            switch (cpuModel.getType()) {
+                case PESOS :
+                    PESOScore core = new PESOScore( this, i, cpuModel.getTimeBudget().getTimeMicros(), getMinFrequency() );
+                    //core.setBaseTimeBudget( getTime(), cpuModel.getTimeBudget().getTimeMicros() );
+                    coresMap.put( i, core );
+                    break;
+                case PERF           : coresMap.put( i, new PERFcore( this, i, getMaxFrequency() ) ); break;
+                case CONS           : coresMap.put( i, new CONScore( this, i, getMaxFrequency() ) ); break;
+                case LOAD_SENSITIVE : coresMap.put( i, new LOAD_SENSITIVEcore( this, i, getMinFrequency() ) ); break;
+                case MY_MODEL       : coresMap.put( i, new MY_MODELcore( this, i, getMinFrequency() ) ); break;
+                case PEGASUS        : coresMap.put( i, new PEGASUScore( this, i, getMaxFrequency() ) ); break;
+            }
+        }*/
         
         super.setModel( model );
         model.setDevice( this );
@@ -221,7 +245,9 @@ public class EnergyCPU extends CPU
             return lastSelectedCore = toAssign.getCoreId();
         } else {
             Agent agent = getAgent();
-            agent.getSampler( Global.QUERY_PER_TIME_SLOT ).addSampledValue( time, time, 1 );
+            if (agent.getSampler( Global.QUERY_PER_TIME_SLOT ) != null) { 
+                agent.getSampler( Global.QUERY_PER_TIME_SLOT ).addSampledValue( time, time, 1 );
+            }
             /*System.out.println( "SELECTING CORE AT: " + time + ", MY_TIME: " + getTime() );
             for (Core core : getCores()) {
                 System.out.println( "CORE: " + core.getId() + ", TIME: " + core.getTime() );
@@ -368,8 +394,10 @@ public class EnergyCPU extends CPU
         private static final long QUEUE_CHECK = TimeUnit.SECONDS.toMicros( 1 );
         
         
-        public PESOScore( CPU cpu, long coreId, long initFrequency ) {
+        public PESOScore( CPU cpu, long coreId, /*long timeBudget,*/ long initFrequency )
+        {
             super( cpu, coreId, initFrequency );
+            //setBaseTimeBudget( getTime(), timeBudget );
         }
         
         @Override
@@ -436,7 +464,7 @@ public class EnergyCPU extends CPU
                     if (hasMoreQueries()) {
                         cpu.computeTime( getFirstQueryInQueue(), this );
                     } else {
-                        QueryInfo q = (enableJB) ? startJobStealing( time ) : null;
+                        QueryInfo q = (enableJS) ? startJobStealing( time ) : null;
                         if (q != null) {
                             addQuery( q, true );
                             cpu.computeTime( q, this );
@@ -472,7 +500,7 @@ public class EnergyCPU extends CPU
         public void setTimeBudget( Time time, long timeBudget, Long queryID )
         {
             if (this.timeBudget != timeBudget) {
-                System.out.println( time + ": OLD: " + this.timeBudget + ", NEW: " + timeBudget );
+                //System.out.println( time + ": OLD: " + this.timeBudget + ", NEW: " + timeBudget );
                 this.timeBudget = timeBudget;
                 //System.out.println( "CORE: " + getId() + ", NUOVO TIME BUDGET: " + timeBudget );
                 if (queryID != null && currentTask != null && currentTask.getId() == queryID) {
