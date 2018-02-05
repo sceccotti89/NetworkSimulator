@@ -57,6 +57,17 @@ public abstract class EventGenerator
      * Creates a new event generator.
      * 
      * @param duration              lifetime of the generator.
+     * @param reqPacket             the request packet.
+     * @param resPacket             the response packet.
+    */
+    public EventGenerator( Time duration, Packet reqPacket, Packet resPacket ) {
+        this( duration, Time.ZERO, reqPacket, resPacket );
+    }
+    
+    /**
+     * Creates a new event generator.
+     * 
+     * @param duration              lifetime of the generator.
      * @param departureTime         time to wait before sending a packet.
      * @param reqPacket             the request packet.
      * @param resPacket             the response packet.
