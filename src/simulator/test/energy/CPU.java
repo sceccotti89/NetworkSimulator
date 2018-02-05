@@ -244,7 +244,10 @@ public abstract class CPU extends Device<QueryInfo,Long>
     public abstract long selectCore( Time time, QueryInfo query );
     
     /**
+     * Analyzes the best frequency when the centralized queue is used.
      * 
+     * @param time           time of evaluation
+     * @param currentCore    core which called this method
     */
     protected void analyzeFrequency( Time time, long currentCore )
     {
@@ -266,8 +269,6 @@ public abstract class CPU extends Device<QueryInfo,Long>
             completionTime.put( core.getId(), timeToComplete );
         }
         
-        // TODO Per adesso assegna le query in base al miglior core.
-        // TODO In futuro, forse, eseguire tutte le possibili combinazioni.
         //System.out.println( "QUERIES: " + queries.size() );
         for (int i = queries.size() - 1; i >= 0; i--) {
             QueryReference ref = queries.get( i );
@@ -276,7 +277,6 @@ public abstract class CPU extends Device<QueryInfo,Long>
             long tiedSelection = Long.MAX_VALUE;
             boolean tieSituation = false;
             
-            // TLL technique.
             if (_scheduler instanceof TieLeastLoaded) {
                 for (Core core : getCores()) {
                     long coreUtilization = (long) core.getUtilization( time );
@@ -295,7 +295,6 @@ public abstract class CPU extends Device<QueryInfo,Long>
                     }
                 }
             } else if (_scheduler instanceof LowestPredictedFrequency) {
-                // LPF technique.
                 for (Core core : getCores()) {
                     List<QueryInfo> queue = coreQueue.get( core.getId() );
                     queue.add( ref.getQuery() );
@@ -317,7 +316,6 @@ public abstract class CPU extends Device<QueryInfo,Long>
                 }
                 //frequencies[(int) coreId] = minTarget;
             } else if (_scheduler instanceof EarliestCompletionTime) {
-                // ECT technique.
                 for (Core core : getCores()) {
                     long executionTime = completionTime.get( core.getId() );
                     if (executionTime < minTarget) {
@@ -351,7 +349,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
             ref.coreId = coreId;
             List<QueryInfo> queue = coreQueue.get( coreId );
             queue.add( ref.getQuery() );
-            frequencies[(int) coreId] = _model.eval( time, coreQueue.get( coreId ).toArray( new QueryInfo[0] ) );
+            frequencies[(int) coreId] = _model.eval( time, queue.toArray( new QueryInfo[0] ) );
         }
         
         for (Core core : getCores()) {

@@ -98,10 +98,10 @@ public class EnergyCPU extends CPU
     
     private void setScheduler()
     {
-        //setScheduler( new TieLeastLoaded() ); // Default scheduler.
+        setScheduler( new TieLeastLoaded() ); // Default scheduler.
         //setScheduler( new FirstLeastLoaded() );
         //setScheduler( new LowestFrequency() );
-        setScheduler( new LowestPredictedFrequency() );
+        //setScheduler( new LowestPredictedFrequency() );
         //setScheduler( new EarliestCompletionTime() );
     }
     

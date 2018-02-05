@@ -933,14 +933,14 @@ public class EnergyTestREPLICA_DIST
     {
         Utils.VERBOSE = false;
         
-        //System.setProperty( "showGUI", "false" );
+        System.setProperty( "showGUI", "false" );
         if (System.getProperty( "showGUI" ) != null) {
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
         }
         
         testResults = new LinkedHashMap<>();
         
-        JOB_STEALING = true;
+        JOB_STEALING = false;
         SWITCH_OFF_MACHINES  = true;
         
         arrivalEstimator     = SwitchAgent.SEASONAL_ESTIMATOR;
@@ -952,27 +952,26 @@ public class EnergyTestREPLICA_DIST
         
         // 313337
         // 252640 (0.250) => -19.3%
-        // CON I NUOVI DATI SI RAGGIUNGE IL 18.6% PERO' ANDREBBE RITROVATO IL VALORE OTTIMO
         
-        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
-        testMySwitch( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 513329 ); //0.18 => -18.9%
+        //testMySwitch( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 513329 ); //0.18 => -18.9%
         
         /*arrivalEstimator = SwitchAgent.SEASONAL_ESTIMATOR;
         for (int i = 1; i <= 3; i++) {
+            lambda = 0.25d * i;
             for (latencyNormalization = 1; latencyNormalization <= 3; latencyNormalization++) {
-                lambda = 0.25d * i;
                 testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 500 );
             }
-        }*/
+        }
         
-        /*arrivalEstimator = SwitchAgent.SEASONAL_ESTIMATOR_WITH_DRIFT;
-        for (latencyNormalization = 1; latencyNormalization <= 3; latencyNormalization++) {
-            for (int i = 1; i <= 3; i++) {
-                lambda = 0.25d * i;
+        arrivalEstimator = SwitchAgent.SEASONAL_ESTIMATOR_WITH_DRIFT;
+        for (int i = 1; i <= 3; i++) {
+            lambda = 0.25d * i;
+            for (latencyNormalization = 1; latencyNormalization <= 3; latencyNormalization++) {
                 testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 500 );
             }
         }*/

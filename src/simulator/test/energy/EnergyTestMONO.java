@@ -61,7 +61,7 @@ public class EnergyTestMONO
     private static final int CPU_CORES = 4;
     private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
     
-    //private static boolean CENTRALIZED_QUEUE = false;
+    private static boolean CENTRALIZED_QUEUE = false;
     private static boolean JOB_STEALING = false;
     
     private static CPU cpu;
@@ -446,45 +446,46 @@ public class EnergyTestMONO
         //CENTRALIZED_QUEUE = true;
         //JOB_STEALING = true;
         
-        //System.setProperty( "showGUI", "false" );
+        System.setProperty( "showGUI", "false" );
         if (System.getProperty( "showGUI" ) != null) {
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
         }
         
         testResults = new LinkedHashMap<>();
         
-        plotAllTailLatencies();
+        //plotAllTailLatencies();
         
-        /*testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, false, new TieLeastLoaded() );
-        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, false, new LowestPredictedFrequency() );
-        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, false, new EarliestCompletionTime() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, false, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, false, new LowestPredictedFrequency() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, false, new EarliestCompletionTime() );
         
-        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, true, new LowestFrequency() );
-        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, false, new TieLeastLoaded() );
-        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, false, new LowestPredictedFrequency() );
-        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, false, new EarliestCompletionTime() );
+        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, true, new TieLeastLoaded() );
+        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, true, new LowestPredictedFrequency() );
+        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, true, new EarliestCompletionTime() );
         
-        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, true, new TieLeastLoaded() );
-        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, true, new LowestPredictedFrequency() );
-        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, true, new EarliestCompletionTime() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, false, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, false, new LowestPredictedFrequency() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, false, new EarliestCompletionTime() );
         
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, true, new LowestPredictedFrequency() );
-        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, false, new TieLeastLoaded() );
-        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, false, new LowestPredictedFrequency() );
-        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, false, new EarliestCompletionTime() );
+        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, true, new TieLeastLoaded() );
+        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, true, new LowestPredictedFrequency() );
+        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, true, new EarliestCompletionTime() );
         
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, true, new TieLeastLoaded() );
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, true, new LowestPredictedFrequency() );
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, true, new EarliestCompletionTime() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, false, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, false, new LowestPredictedFrequency() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, false, new EarliestCompletionTime() );
         
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, true, new LowestPredictedFrequency() );
-        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, false, new TieLeastLoaded() );
-        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, false, new LowestPredictedFrequency() );
-        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, false, new EarliestCompletionTime() );
+        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, true, new TieLeastLoaded() );
+        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, true, new LowestPredictedFrequency() );
+        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, true, new EarliestCompletionTime() );
         
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, true, new TieLeastLoaded() );
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, true, new LowestPredictedFrequency() );
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, true, new EarliestCompletionTime() );*/
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, false, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, false, new LowestPredictedFrequency() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, false, new EarliestCompletionTime() );
+        
+        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, true, new TieLeastLoaded() );
+        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, true, new LowestPredictedFrequency() );
+        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, true, new EarliestCompletionTime() );
         
         for (Entry<String,String> entry : testResults.entrySet()) {
             Utils.LOGGER.info( entry.getKey() + ", " + entry.getValue() );
@@ -532,10 +533,11 @@ public class EnergyTestMONO
         String name = subNames[subNames.length-1];
         String gain;
         if (energy <= target) {
-            gain = "-" + (1d - energy / target);
+            gain = "-" + ((1d - energy / target) * 100d) + "%";
         } else {
-            gain = "+" + ((1d - energy / target) * 100d);
+            gain = "+" + ((1d - energy / target) * -100d) + "%";
         }
+        gain = gain.substring( 0, Math.min( gain.length(), gain.indexOf( '.' ) + 2 ) );
         String model = getModel( type, mode, timeBudget ).getModelType( false ) + "_" + centralized_queue + "_" + name;
         testResults.put( model, energy + " => " + gain );
     }
@@ -544,6 +546,7 @@ public class EnergyTestMONO
     {
         CPUModel model = null;
         final String directory = "Models/Shards/Node_1/";
+        //final String directory = "Models/Monolithic/PESOS/MaxScore/";
         switch ( type ) {
             case PESOS          : model = new PESOSmodel( timeBudget, mode, directory ); break;
             case LOAD_SENSITIVE : model = new LOAD_SENSITIVEmodel( timeBudget, mode, directory ); break;
@@ -651,7 +654,7 @@ public class EnergyTestMONO
         
         if (cpu == null) {
             cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( type ) );
-            //cpu.setCentralizedQueue( CENTRALIZED_QUEUE );
+            cpu.setCentralizedQueue( CENTRALIZED_QUEUE );
             cpu.enableJobStealing( JOB_STEALING );
         }
         
