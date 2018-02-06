@@ -217,18 +217,17 @@ public class EnergyTestDIST
                     for (int index = 0; index < queries.size(); index++) {
                         QueryLatency query = queries.get( index );
                         if (query.id == queryDistrId) {
-                            Time endTime = e.getTime();
-                            Time completionTime = e.getTime().subTime( query.startTime );
-                            
                             if (++query.count == NODES) {
+                                Time endTime = e.getTime();
+                                Time completionTime = e.getTime().subTime( query.startTime );
                                 // Save on file and remove from list.
                                 writer.println( endTime + " " + completionTime );
                                 queries.remove( index );
+                                if (PEGASUS_CONTROLLER) {
+                                    pegasus.setCompletedQuery( endTime, completionTime );
+                                }
                             }
                             
-                            if (PEGASUS_CONTROLLER) {
-                                pegasus.setCompletedQuery( endTime, e.getSource().getId(), completionTime );
-                            }
                             break;
                         }
                     }
@@ -242,6 +241,7 @@ public class EnergyTestDIST
         public void shutdown() throws IOException
         {
             writer.close();
+            System.out.println( "QUERIES: " + queries.size() );
             queries.clear();
             super.shutdown();
         }
@@ -484,20 +484,23 @@ public class EnergyTestDIST
         }
         
         Utils.VERBOSE = false;
-        PESOS_CONTROLLER = true;
+        PESOS_CONTROLLER = false;
         
-        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  460 );
+        // Nuovo target.
+        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  420 ); // 420 => 3167832
         
         testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
-        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
-        testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
-        testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
+        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
+        //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
+        //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
         //testNetwork( Type.PERF, null, 0 );
         //testNetwork( Type.CONS, null, 0 );
         
         //testNetwork( Type.PEGASUS, null,  500 );
         //testNetwork( Type.PEGASUS, null, 1000 );
+        
+        //plotTailLatency( Type.PEGASUS, null,  500 );
         
         //plotTailLatency( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
@@ -671,7 +674,7 @@ public class EnergyTestDIST
         plotter.addPlot( tl_500ms, Color.YELLOW, Line.DASHED, "Tail latency (" + 500 + "ms)" );
         plotter.addPlot( tl_1000ms, Color.LIGHT_GRAY, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
-        final String tau = new String( ("\u03C4").getBytes(),Charset.defaultCharset() );
+        final String tau = new String( ("\u03C4").getBytes(), Charset.defaultCharset() );
         final String folder = "Results/Latency/Distributed/";
         List<Pair<Double,Double>> percentiles = null;
         switch ( type ) {
@@ -727,7 +730,7 @@ public class EnergyTestDIST
         plotter.setTicks( Axis.X, 23, 2 );
         plotter.setScaleX( TimeUnit.HOURS.toMicros( 1 ) );
         
-        final String tau = new String( ("\u03C4").getBytes(),Charset.defaultCharset() );
+        final String tau = new String( ("\u03C4").getBytes(), Charset.defaultCharset() );
         final String folder = "Results/Latency/Distributed/";
         plotter.addPlot( folder + "PESOS_TC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (" + tau + " = 500 ms)" );
         plotter.addPlot( folder + "PESOS_EC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS EC (" + tau + " = 500 ms)" );

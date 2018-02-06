@@ -466,6 +466,7 @@ public class Plotter extends WindowAdapter implements ActionListener
         public boolean YticksSettedByTheUser = false;
         public double xScale = 1d;
         public double yScale = 1d;
+        public int decimalUnits = 2;
         public Range _range = new Range();
     }
     
@@ -777,7 +778,7 @@ public class Plotter extends WindowAdapter implements ActionListener
                     // Return the integer part of the number
                     // only if the first 5 numbers of the mantissa are all 0.
                     boolean allZeros = true;
-                    for (int i = index+1; i < Math.min( 5, value.length() ); i++) {
+                    for (int i = index+1; i < Math.min( index+5, value.length() ); i++) {
                         if (value.charAt( i ) != '0') {
                             allZeros = false;
                             break;
@@ -787,7 +788,7 @@ public class Plotter extends WindowAdapter implements ActionListener
                         return value.substring( 0, index );
                     }
                 }
-                value = value.substring( 0, Math.min( index + 3, value.length() ) );
+                value = value.substring( 0, Math.min( index + 1 + settings.decimalUnits, value.length() ) );
             }
             
             return value;
@@ -1012,9 +1013,31 @@ public class Plotter extends WindowAdapter implements ActionListener
         {
             if (axe == Axis.X) {
                 String xTickValue = stringValue( scaleX( value ), true );
+                int index = xTickValue.length();
+                if (xTickValue.contains( "." )) {
+                    index = xTickValue.indexOf( '.' );
+                } else if (xTickValue.contains( "," )) {
+                    index = xTickValue.indexOf( ',' );
+                }
+                if (settings.decimalUnits == 0) {
+                    xTickValue = xTickValue.substring( 0, index - 1 );
+                } else {
+                    xTickValue = xTickValue.substring( 0, Math.min( xTickValue.length(), index + 1 + settings.decimalUnits ) );
+                }
                 g.drawString( xTickValue, x - getWidth( xTickValue, g )/2, y + getHeight( xTickValue, g ) );
             } else {
-                String yTickValue = stringValue( scaleY( value ), false );
+                String yTickValue = stringValue( scaleY( value ), true );
+                int index = yTickValue.length();
+                if (yTickValue.contains( "." )) {
+                    index = yTickValue.indexOf( '.' );
+                } else if (yTickValue.contains( "," )) {
+                    index = yTickValue.indexOf( ',' );
+                }
+                if (settings.decimalUnits == 0) {
+                    yTickValue = yTickValue.substring( 0, index );
+                } else {
+                    yTickValue = yTickValue.substring( 0, Math.min( yTickValue.length(), index + 1 + settings.decimalUnits ) );
+                }
                 g.drawString( yTickValue, x - getWidth( yTickValue, g ) - lengthTick, y + getHeight( yTickValue, g )/2 - 2f );
             }
         }

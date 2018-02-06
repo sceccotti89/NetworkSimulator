@@ -222,27 +222,22 @@ public class EnergyTestREPLICA_DIST
                     queries.add( new QueryLatency( queryDistrId, e.getTime() ) );
                 } else {
                     long queryDistrId = e.getPacket().getContent( Global.QUERY_DISTR_ID );
-                    QueryLatency query = null;
-                    int index;
-                    for (index = 0; index < queries.size(); index++) {
-                        QueryLatency ql = queries.get( index );
-                        if (ql.id == queryDistrId) {
-                            query = ql;
+                    for (int index = 0; index < queries.size(); index++) {
+                        QueryLatency query = queries.get( index );
+                        if (query.id == queryDistrId) {
+                            if (++query.count == NODES) {
+                                Time endTime = e.getTime();
+                                Time completionTime = e.getTime().subTime( query.startTime );
+                                // Save on file and remove from list.
+                                writer.println( endTime + " " + completionTime );
+                                queries.remove( index );
+                                if (PEGASUS_CONTROLLER) {
+                                    pegasus.setCompletedQuery( endTime, completionTime );
+                                }
+                            }
+                            
                             break;
                         }
-                    }
-                    
-                    Time endTime = e.getTime();
-                    Time completionTime = e.getTime().subTime( query.startTime );
-                    
-                    if (++query.count == NODES) {
-                        // Save on file and remove from list.
-                        writer.println( endTime + " " + completionTime );
-                        queries.remove( index );
-                    }
-                    
-                    if (PEGASUS_CONTROLLER) {
-                        pegasus.setCompletedQuery( endTime, e.getSource().getId(), completionTime );
                     }
                 }
             }

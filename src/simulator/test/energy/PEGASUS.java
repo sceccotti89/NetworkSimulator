@@ -31,7 +31,7 @@ public class PEGASUS
         queries = new LinkedList<>();
     }
     
-    public void setCompletedQuery( Time now, long nodeId, Time completionTime )
+    public void setCompletedQuery( Time now, Time completionTime )
     {
         // TODO leggendo l'articolo sembrerebbe che l'aggiornamento non sia immediato
         // TODO ma dipenda da diversi fattori. Loro lo hanno calcolato in 3 secondi.
@@ -72,7 +72,7 @@ public class PEGASUS
             for (CPU node : nodes) {
                 node.setPower( now, node.getMaxPower() );
             }
-            System.out.println( "SETTATO HOLDING TIME: " + now );
+            //System.out.println( "SETTATO HOLDING TIME: " + now );
             holdingTime = now.clone().addTime( HOLD_TIME );
             power_holding = true;
         } else if (instantaneous > 1.35d * target) {

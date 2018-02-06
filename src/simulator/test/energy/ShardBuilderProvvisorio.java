@@ -12,7 +12,49 @@ public class ShardBuilderProvvisorio
 {
     public static void main( String argv[] ) throws Exception
     {
-        final String folder = "Models/DistributedModels/";
+        //buildShard();
+        buildTimeEnergy();
+    }
+    
+    public static void buildTimeEnergy() throws Exception
+    {
+        final String file   = "/home/stefano/MaxScore_time_energy.txt";
+        InputStream loader = ResourceLoader.getResourceAsStream( file );
+        BufferedReader reader = new BufferedReader( new InputStreamReader( loader ) );
+        
+        final String output = "/home/stefano/MaxScore_time_energy2.txt";
+        PrintWriter writer = new PrintWriter( output, "UTF-8" );
+        
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            String[] values = line.split( " " );
+            writer.print( Long.parseLong( values[0] ) + " " );
+            for (int i = 1; i < values.length; i+=2) {
+                double time   = Double.parseDouble( values[i] );
+                double energy = Double.parseDouble( values[i+1] );
+                double Ps     = EnergyModel.getStaticPower() * (time / 1000);
+                if (energy < Ps) {
+                    System.out.println( "ENERGY: " + energy + ", Ps: " + Ps );
+                } else {
+                    energy = energy - Ps;
+                }
+                if (i < values.length - 2) {
+                    writer.print( time + " " + energy + " " );
+                } else {
+                    writer.print( time + " " + energy );
+                }
+            }
+            writer.println();
+            //writer.print( id + " " + time + " " + energy );
+        }
+        
+        writer.close();
+        reader.close();
+    }
+    
+    public static void buildShard() throws Exception
+    {
+        final String folder = "Models/Shards/";
         
         for (int i = 1; i <= 5; i++) {
             // Time.
@@ -28,7 +70,6 @@ public class ShardBuilderProvvisorio
                 String[] values = line.split( " " );
                 String val = Long.parseLong( values[0] ) + " ";
                 for (int j = 1; j <= 15; j++) {
-                    // TODO manca l'energia ad ogni frequenza
                     val += Double.parseDouble( values[16-j] );
                     if (j < 15) {
                         val += " ";
@@ -44,7 +85,7 @@ public class ShardBuilderProvvisorio
             // TODO cosi' se lo rimando non mi modifica i file.
             
             // Postings.
-            String pp = folder + "cw09a" + i + ".ef.pp";
+            /*String pp = folder + "cw09a" + i + ".ef.pp";
             loader = ResourceLoader.getResourceAsStream( pp );
             reader = new BufferedReader( new InputStreamReader( loader ) );
             
@@ -74,7 +115,7 @@ public class ShardBuilderProvvisorio
             predictions.close();
             regressors.close();
             regressorsNOrmse.close();
-            reader.close();
+            reader.close();*/
         }
     }
 }

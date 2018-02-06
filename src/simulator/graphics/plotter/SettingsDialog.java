@@ -57,6 +57,8 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
         boxPanel.add( createScalePanel( "X scale", getValue( settings.xScale ) ) );
         boxPanel.add( createScalePanel( "Y scale", getValue( settings.yScale ) ) );
         
+        boxPanel.add( createDecimalNumbersPanel( "Decimals", settings.decimalUnits + "" ) );
+        
         JPanel panel = new JPanel();
         panel.setLayout( new FlowLayout() );
         
@@ -148,13 +150,32 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
         return panel;
     }
     
+    private JPanel createDecimalNumbersPanel( String name, String value )
+    {
+        final int columns = 17;
+        JPanel panel = new JPanel();
+        JTextField fieldName = new JTextField( name, 8 );
+        fieldName.setEditable( false );
+        fieldName.setHorizontalAlignment( JTextField.CENTER );
+        fieldName.setBorder( null );
+        panel.add( fieldName );
+        JTextField field1 = new JTextField( columns );
+        field1.setToolTipText( "Number of decimal units" );
+        field1.setHorizontalAlignment( JTextField.CENTER );
+        field1.setText( value );
+        field1.addKeyListener( this );
+        panel.add( field1 );
+        fields.add( field1 );
+        
+        return panel;
+    }
+    
     private void showErrorDialog( String error ) {
         JOptionPane.showMessageDialog( this, error, "error", JOptionPane.ERROR_MESSAGE );
     }
     
     private void saveValues()
     {
-        // TODO prima di salvare i valori dovrei prima controllare la loro correttezza??
         // Save the inserted values.
         int index = 0;
         double value;
@@ -213,19 +234,24 @@ public class SettingsDialog extends JDialog implements ActionListener, KeyListen
                         if (value <= 0) { showErrorDialog( "Y scale cannot be less or equal then 0." ); return; }
                         settings.yScale = value;
                         break;
+                    case( 10 ):
+                        if (value < 0) { showErrorDialog( "Number of decimal units cannot be less then 0." ); return; }
+                        settings.decimalUnits = (int) value;
+                        break;
                 }
             } else {
                 switch (index) {
-                    case( 0 ): showErrorDialog( "X ticks value cannot be empty." ); return;
-                    case( 1 ): showErrorDialog( "X ticks interval cannot be empty." ); return;
-                    case( 2 ): showErrorDialog( "Y ticks value cannot be empty." ); return;
-                    case( 3 ): showErrorDialog( "Y ticks interval cannot be empty." ); return;
-                    case( 4 ): showErrorDialog( "Min X range cannot be empty." ); return;
-                    case( 5 ): showErrorDialog( "Max X range cannot be empty." ); return;
-                    case( 6 ): showErrorDialog( "Min Y range cannot be empty." ); return;
-                    case( 7 ): showErrorDialog( "Max Y range cannot be empty." ); return;
-                    case( 8 ): showErrorDialog( "X scale cannot be empty." ); return;
-                    case( 9 ): showErrorDialog( "Y scale cannot be empty." ); return;
+                    case( 0 ):  showErrorDialog( "X ticks value cannot be empty." ); return;
+                    case( 1 ):  showErrorDialog( "X ticks interval cannot be empty." ); return;
+                    case( 2 ):  showErrorDialog( "Y ticks value cannot be empty." ); return;
+                    case( 3 ):  showErrorDialog( "Y ticks interval cannot be empty." ); return;
+                    case( 4 ):  showErrorDialog( "Min X range cannot be empty." ); return;
+                    case( 5 ):  showErrorDialog( "Max X range cannot be empty." ); return;
+                    case( 6 ):  showErrorDialog( "Min Y range cannot be empty." ); return;
+                    case( 7 ):  showErrorDialog( "Max Y range cannot be empty." ); return;
+                    case( 8 ):  showErrorDialog( "X scale cannot be empty." ); return;
+                    case( 9 ):  showErrorDialog( "Y scale cannot be empty." ); return;
+                    case( 10 ): showErrorDialog( "Decimals cannot be empty." ); return;
                 }
             }
             

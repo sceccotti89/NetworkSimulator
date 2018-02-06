@@ -446,7 +446,7 @@ public class EnergyTestMONO
         //CENTRALIZED_QUEUE = true;
         //JOB_STEALING = true;
         
-        System.setProperty( "showGUI", "false" );
+        //System.setProperty( "showGUI", "false" );
         if (System.getProperty( "showGUI" ) != null) {
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
         }
@@ -455,7 +455,7 @@ public class EnergyTestMONO
         
         //plotAllTailLatencies();
         
-        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, false, new TieLeastLoaded() );
+        /*//testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, false, new TieLeastLoaded() );
         //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, false, new LowestPredictedFrequency() );
         //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, false, new EarliestCompletionTime() );
         
@@ -485,13 +485,13 @@ public class EnergyTestMONO
         
         testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, true, new TieLeastLoaded() );
         testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, true, new LowestPredictedFrequency() );
-        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, true, new EarliestCompletionTime() );
+        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, true, new EarliestCompletionTime() );*/
         
         for (Entry<String,String> entry : testResults.entrySet()) {
             Utils.LOGGER.info( entry.getKey() + ", " + entry.getValue() );
         }
         
-        //testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
@@ -545,7 +545,7 @@ public class EnergyTestMONO
     private static CPUModel getModel( Type type, Mode mode, long timeBudget )
     {
         CPUModel model = null;
-        final String directory = "Models/Shards/Node_1/";
+        final String directory = "Models/Shards/Node_5/";
         //final String directory = "Models/Monolithic/PESOS/MaxScore/";
         switch ( type ) {
             case PESOS          : model = new PESOSmodel( timeBudget, mode, directory ); break;
@@ -704,7 +704,7 @@ public class EnergyTestMONO
         client.getEventGenerator( 0 ).connect( server );
         
         if (Global.showGUI) {
-            Plotter plotter = new Plotter( "MONOLITHIC MULTI_CORE - " + model.getModelType( false ), 800, 600 );
+            Plotter plotter = new Plotter( "MONOLITHIC MULTI-CORE - " + model.getModelType( false ), 800, 600 );
             plotter.addPlot( server.getSampler( Global.ENERGY_SAMPLING ).getValues(), model.getModelType( false ) );
             plotter.setAxisName( "Time (h)", "Energy (J)" );
             plotter.setTicks( Axis.Y, 10 );
