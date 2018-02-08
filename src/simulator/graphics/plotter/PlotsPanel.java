@@ -349,32 +349,33 @@ public class PlotsPanel implements MouseListener, FocusListener
         g.setColor( BACKGROUND );
         g.fillRect( xArea, y, size.width, getHeight() );
         
-        if (!drawingImage) {
-            g.setStroke( new BasicStroke( 1f ) );
-            if (selected) {
+        g.setStroke( new BasicStroke( 1f ) );
+        if (selected) {
+            if (!drawingImage) {
                 g.setColor( Color.GREEN );
                 g.fill( targetOpen );
                 g.setColor( Color.BLACK );
                 g.draw( targetOpen );
-                g.setColor( Color.BLACK );
-                g.setColor( Color.LIGHT_GRAY );
-                g.drawRect( xArea, y, size.width, size.height );
-            } else {
+            }
+            g.setColor( Color.LIGHT_GRAY );
+            g.drawRect( xArea, y, size.width, size.height );
+        } else {
+            if (!drawingImage) {
                 g.setColor( Color.RED );
                 g.fill( targetClose );
                 g.setColor( Color.BLACK );
                 g.draw( targetClose );
-                g.setColor( Color.LIGHT_GRAY );
             }
+            g.setColor( Color.LIGHT_GRAY );
+            g.drawRect( xArea, y, size.width, getHeight() );
         }
-        
-        g.drawRect( xArea, y, size.width, getHeight() );
         
         g.setFont( font );
         FontRenderContext frc = g.getFontRenderContext();
         LineMetrics lm = font.getLineMetrics( TEXT, frc );
         float height = lm.getHeight();
         g.setColor( Color.BLACK );
-        g.drawString( TEXT, this.x + OFFSET, y + (getHeight() / 2) + (height / 2) );
+        int textX = (drawingImage) ? (this.x + 10) : this.x + OFFSET;
+        g.drawString( TEXT, textX, y + (getHeight() / 2) + (height / 2) );
     }
 }

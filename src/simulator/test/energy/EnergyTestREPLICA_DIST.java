@@ -69,6 +69,8 @@ public class EnergyTestREPLICA_DIST
     private static boolean PEGASUS_CONTROLLER = false;
     private static boolean SWITCH_OFF_MACHINES = false;
     
+    private static Scheduler<Iterable<Core>, Long, QueryInfo> _scheduler;
+    
     private static List<CPU> cpus = new ArrayList<>( NODES );
     
     private static PESOScontroller controller;
@@ -552,8 +554,8 @@ public class EnergyTestREPLICA_DIST
         private List<Integer> currentArrivals;
         
         // Watt dissipated by the associated CPU.
-        private static final double Pstandby = 0.9;
-        private static final double Pon      = 84;
+        private static final double Pstandby =  0.9;
+        private static final double Pon      = 63.7;
         
         // The Lambda value used to balance the equation (lower for latency, higher for power).
         private final double LAMBDA;
@@ -906,7 +908,7 @@ public class EnergyTestREPLICA_DIST
                     //currentReplicas = Math.max( currentReplicas - 1, 1 );
                     currentReplicas = 1;
                 }
-                System.out.println( "RO: " + nodeUtilization.get( index )/* + ", TARGET: " + targetRo*/ + ", REPLICAS: " + currentReplicas );
+                //System.out.println( "RO: " + nodeUtilization.get( index )/* + ", TARGET: " + targetRo*/ + ", REPLICAS: " + currentReplicas );
                 setNodesState( e.getTime() );
             }
             
@@ -935,25 +937,19 @@ public class EnergyTestREPLICA_DIST
         
         testResults = new LinkedHashMap<>();
         
-        JOB_STEALING = false;
-        SWITCH_OFF_MACHINES  = true;
-        
         arrivalEstimator     = SwitchAgent.SEASONAL_ESTIMATOR;
         latencyNormalization = 2;
         lambda               = 0.5;
         
-        // 485156
-        // 471354 (0.159) =>  -2.8%
-        
-        // 313337
-        // 252640 (0.250) => -19.3%
-        
-        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
-        //testMySwitch( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 513329 ); //0.18 => -18.9%
+        testMySwitch( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 570013, new EarliestCompletionTime() );
+        //testMySwitch( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 420947, new LowestPredictedFrequency() );
+        //testMySwitch( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 491949, new LowestPredictedFrequency() );
+        //testMySwitch( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 381325, new LowestPredictedFrequency() );
         
         /*arrivalEstimator = SwitchAgent.SEASONAL_ESTIMATOR;
         for (int i = 1; i <= 3; i++) {
@@ -982,9 +978,14 @@ public class EnergyTestREPLICA_DIST
         //testNetwork( Type.PEGASUS, null, 1000 );
     }
     
-    protected static void testMySwitch( Type type, Mode mode, long timeBudget, double targetEnergy ) throws Exception
+    protected static void testMySwitch( Type type, Mode mode, long timeBudget,
+                                        double targetEnergy, Scheduler<Iterable<Core>, Long, QueryInfo> scheduler ) throws Exception
     {
-        REPLICA_SWITCH = true;
+        REPLICA_SWITCH      = true;
+        JOB_STEALING        = true;
+        SWITCH_OFF_MACHINES = true;
+        
+        _scheduler = scheduler;
         
         ReplicaSwitch.targetConsumption = targetEnergy;
         
@@ -1004,9 +1005,9 @@ public class EnergyTestREPLICA_DIST
         double minEnergy = targetEnergy;
         for(int i = 0; i < nodeUtilization.size(); i++) {
             ReplicaSwitch.targetRo = nodeUtilization.get( i );
-            Utils.LOGGER.info( "TARGET_RO: " + nodeUtilization.get( i ) );
+            System.out.println( "TARGET_RO: " + nodeUtilization.get( i ) );
             double energy = testNetwork( type, mode, timeBudget );
-            Utils.LOGGER.info( "TARGET: " + targetEnergy + ", CURRENT: " + energy );
+            System.out.println( "MIN_TARGET: " + minEnergy + ", CURRENT: " + energy );
             if (energy >= minEnergy) {
                 break;
             } else {
@@ -1014,7 +1015,7 @@ public class EnergyTestREPLICA_DIST
             }
         }
         
-        Utils.LOGGER.info( "TARGET_RO: " + ReplicaSwitch.targetRo + " => " + minEnergy );
+        Utils.LOGGER.info( model.getModelType( false ) + ":: TARGET_RO: " + ReplicaSwitch.targetRo + " => " + minEnergy );
     }
     
     private static CPUModel getModel( Type type, Mode mode, long timeBudget, int node )
@@ -1103,6 +1104,9 @@ public class EnergyTestREPLICA_DIST
                 final long nodeId = (i * REPLICAS_PER_NODE + j + 1);
                 CPU cpu = new EnergyCPU( "Models/cpu_spec.json", getCoreClass( type ) );
                 cpu.enableJobStealing( JOB_STEALING );
+                if (_scheduler != null) {
+                    cpu.setScheduler( _scheduler );
+                }
                 cpus.add( cpu );
                 
                 // Add the model to the corresponding CPU.

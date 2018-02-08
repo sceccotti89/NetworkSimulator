@@ -65,6 +65,7 @@ public class EnergyTestMONO
     private static boolean JOB_STEALING = false;
     
     private static CPU cpu;
+    
     private static Map<String,String> testResults;
     
     
@@ -446,7 +447,7 @@ public class EnergyTestMONO
         //CENTRALIZED_QUEUE = true;
         //JOB_STEALING = true;
         
-        //System.setProperty( "showGUI", "false" );
+        System.setProperty( "showGUI", "false" );
         if (System.getProperty( "showGUI" ) != null) {
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
         }
@@ -455,46 +456,48 @@ public class EnergyTestMONO
         
         //plotAllTailLatencies();
         
-        /*//testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, false, new TieLeastLoaded() );
-        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, false, new LowestPredictedFrequency() );
-        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, false, new EarliestCompletionTime() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 570013, false, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 570013, false, new LowestPredictedFrequency() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 570013, false, new EarliestCompletionTime() );
         
-        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, true, new TieLeastLoaded() );
-        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, true, new LowestPredictedFrequency() );
-        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 703349, true, new EarliestCompletionTime() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 570013, true, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 570013, true, new LowestPredictedFrequency() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 500, 570013, true, new EarliestCompletionTime() );
         
-        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, false, new TieLeastLoaded() );
-        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, false, new LowestPredictedFrequency() );
-        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, false, new EarliestCompletionTime() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 420947, false, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 420947, false, new LowestPredictedFrequency() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 420947, false, new EarliestCompletionTime() );
         
-        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, true, new TieLeastLoaded() );
-        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, true, new LowestPredictedFrequency() );
-        testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 611943, true, new EarliestCompletionTime() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 420947, true, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 420947, true, new LowestPredictedFrequency() );
+        //testPESOS( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000, 420947, true, new EarliestCompletionTime() );
         
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, false, new TieLeastLoaded() );
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, false, new LowestPredictedFrequency() );
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, false, new EarliestCompletionTime() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 491949, false, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 491949, false, new LowestPredictedFrequency() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 491949, false, new EarliestCompletionTime() );
         
-        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, true, new TieLeastLoaded() );
-        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, true, new LowestPredictedFrequency() );
-        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 663031, true, new EarliestCompletionTime() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 491949, true, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 491949, true, new LowestPredictedFrequency() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 500, 491949, true, new EarliestCompletionTime() );
         
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, false, new TieLeastLoaded() );
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, false, new LowestPredictedFrequency() );
-        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, false, new EarliestCompletionTime() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 381325, false, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 381325, false, new LowestPredictedFrequency() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 381325, false, new EarliestCompletionTime() );
         
-        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, true, new TieLeastLoaded() );
-        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, true, new LowestPredictedFrequency() );
-        testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 590964, true, new EarliestCompletionTime() );*/
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 381325, true, new TieLeastLoaded() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 381325, true, new LowestPredictedFrequency() );
+        //testPESOS( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000, 381325, true, new EarliestCompletionTime() );
         
         for (Entry<String,String> entry : testResults.entrySet()) {
             Utils.LOGGER.info( entry.getKey() + ", " + entry.getValue() );
         }
         
-        testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
+        
+        plotAllTailLatencies();
         
         //testMultiCore( Type.PERF, null, 0 );
         //testMultiCore( Type.CONS, null, 0 );
@@ -727,6 +730,8 @@ public class EnergyTestMONO
             plotTailLatency( type, mode, timeBudget );
         }
         
+        cpu = null;
+        
         return totalEnergy;
         
         // PARAMETERS                         0.03 0.03 0.01 (NOW: 0.01 0.06 0.01)
@@ -915,7 +920,7 @@ public class EnergyTestMONO
         final long time_budget = (timeBudget == 0) ? 1000000 : (timeBudget * 1000);
         final long plotTimeBudget = time_budget / 1000;
         
-        Plotter plotter = new Plotter( "DISTRIBUTED Tail Latency " + percentile + "-th Percentile", 800, 600 );
+        Plotter plotter = new Plotter( "MONOLITHIC Tail Latency " + percentile + "-th Percentile", 800, 600 );
         plotter.setAxisName( "Time (h)", percentile + "th-tile response time (ms)" );
         plotter.setScaleY( 1000d );
         
@@ -984,7 +989,7 @@ public class EnergyTestMONO
     
     public static void plotAllTailLatencies() throws IOException
     {
-        Plotter plotter = new Plotter( "DISTRIBUTED Tail Latency 95-th Percentile", 800, 600 );
+        Plotter plotter = new Plotter( "MONOLITHIC Tail Latency 95-th Percentile", 800, 600 );
         plotter.setAxisName( "Time (h)", "95th-tile Response Time (ms)" );
         plotter.setScaleY( 1000d );
         

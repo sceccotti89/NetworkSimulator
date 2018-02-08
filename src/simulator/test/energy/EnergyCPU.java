@@ -435,7 +435,7 @@ public class EnergyCPU extends CPU
         {
             if (currentTask != null && currentTask.isComplete( time )) {
                 processedQueries++;
-                cumulativeTime += currentTask.getCompletionTime()/1000;
+                cumulativeTime += currentTask.getCompletionTime()/1000; // in ms.
                 
                 //System.out.println( "TIME: " + time + ", CORE: " + getId() + ", COMPLETATA QUERY: " + currentTask );
                 PESOSmodel model = (PESOSmodel) cpu.getModel();
@@ -929,10 +929,12 @@ public class EnergyCPU extends CPU
                         addQuery( currentTask, false );
                         cpu.setFrequencyOnPower( time );
                         cpu.computeTime( currentTask, this );
+                    } else {
+                        cpu.setFrequencyOnPower( time );
                     }
                 } else {
+                    cpu.setFrequencyOnPower( time );
                     if (hasMoreQueries()) {
-                        cpu.setFrequencyOnPower( getTime() );
                         cpu.computeTime( getFirstQueryInQueue(), this );
                     }
                 }

@@ -241,7 +241,6 @@ public class EnergyTestDIST
         public void shutdown() throws IOException
         {
             writer.close();
-            System.out.println( "QUERIES: " + queries.size() );
             queries.clear();
             super.shutdown();
         }
@@ -487,9 +486,9 @@ public class EnergyTestDIST
         PESOS_CONTROLLER = false;
         
         // Nuovo target.
-        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  420 ); // 420 => 3167832
+        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 425 ); // 425 => 3150561
         
-        testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testNetwork( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
@@ -498,7 +497,7 @@ public class EnergyTestDIST
         //testNetwork( Type.CONS, null, 0 );
         
         //testNetwork( Type.PEGASUS, null,  500 );
-        //testNetwork( Type.PEGASUS, null, 1000 );
+        testNetwork( Type.PEGASUS, null, 1000 );
         
         //plotTailLatency( Type.PEGASUS, null,  500 );
         

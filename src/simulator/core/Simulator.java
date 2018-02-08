@@ -137,7 +137,7 @@ public class Simulator implements AutoCloseable
         
         if (!parExe) {
             SimulatorExecution.startSimulation( _network );
-            _network.shutdown();
+            //_network.shutdown();
         } else {
             SimulatorExecution simExe = new SimulatorExecution( _network );
             simExes.add( simExe );
@@ -151,7 +151,7 @@ public class Simulator implements AutoCloseable
         for (SimulatorExecution exe : simExes) {
             try {
                 exe.join();
-                exe.getNetwork().shutdown();
+                //exe.getNetwork().shutdown();
             } catch ( InterruptedException e ) {
                 e.printStackTrace();
             }
@@ -179,7 +179,7 @@ public class Simulator implements AutoCloseable
         private static final void startSimulation( NetworkTopology net ) throws IOException
         {
             System.out.println( "Simulation start!" );
-            long currentTime = System.currentTimeMillis();
+            long startTime = System.currentTimeMillis();
             
             EventScheduler evtScheduler = net.getEventScheduler();
             for (Agent agent : net.getAgents()) {
@@ -191,7 +191,7 @@ public class Simulator implements AutoCloseable
             net.shutdown();
             
             // Calculates the time elapsed from the beginning of the simulation.
-            long elapsedTime = System.currentTimeMillis() - currentTime;
+            long elapsedTime = System.currentTimeMillis() - startTime;
             long hours   =  elapsedTime/3600000L;
             long minutes = (elapsedTime - hours*3600000L)/60000L;
             long seconds = (elapsedTime - hours*3600000L - minutes*60000L)/1000L;
@@ -199,8 +199,8 @@ public class Simulator implements AutoCloseable
             System.out.println( "Simulation completed in " + hours + "h:" + minutes + "m:" + seconds + "s:" + millis + "ms" );
         }
         
-        public NetworkTopology getNetwork() {
+        /*public NetworkTopology getNetwork() {
             return net;
-        }
+        }*/
     }
 }

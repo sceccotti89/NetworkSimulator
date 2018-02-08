@@ -33,9 +33,6 @@ public class PEGASUS
     
     public void setCompletedQuery( Time now, Time completionTime )
     {
-        // TODO leggendo l'articolo sembrerebbe che l'aggiornamento non sia immediato
-        // TODO ma dipenda da diversi fattori. Loro lo hanno calcolato in 3 secondi.
-        
         final Time lowerBound = now.clone().subTime( WINDOW );
         while (size > 0) {
             Pair<Time,Time> query = queries.get( 0 );
@@ -53,8 +50,12 @@ public class PEGASUS
                 size--;
             }
         }
-        queries.add( new Pair<>( now, completionTime ) );
         size++;
+        queries.add( new Pair<>( now, completionTime ) );
+        
+        final long instantaneous = completionTime.getTimeMicros();
+        average = average + ((instantaneous - average) / size);
+        //average = getAverage( lowerBound );
         
         if (power_holding) {
             if (now.compareTo( holdingTime ) > 0) {
@@ -64,8 +65,6 @@ public class PEGASUS
             }
         }
         
-        final long instantaneous = completionTime.getTimeMicros();
-        average = average + ((instantaneous - average) / size);
         //System.out.println( "INST: " + instantaneous + ", AVG: " + average + ", TARGET: " + target );
         if (average > target) {
             // Set max power, WAIT 5 minutes.
@@ -93,7 +92,7 @@ public class PEGASUS
         } else if (instantaneous < 0.60 * target) {
             // Lower power by 3%.
             for (CPU node : nodes) {
-                node.setPower( now, node.getPower() - node.getPower() * 0.03 );
+                node.setPower( now, node.getPower() - node.getPower() * 0.015 );
             }
             //System.out.println( "DIMINUISCI DEL 3%: " + now );
         } else if (instantaneous < 0.85 * target) {
@@ -103,5 +102,23 @@ public class PEGASUS
             }
             //System.out.println( "DIMINUISCI DELL'1%: " + now );
         }
+    }
+    
+    protected double getAverage( Time lowerBound )
+    {
+        double size = 0;
+        double completionTime = 0;
+        for (int i = queries.size() - 1; i >= 0; i--) {
+            Pair<Time,Time> query = queries.get( i );
+            Time time = query.getFirst();
+            if (time.compareTo( lowerBound ) >= 0) {
+                completionTime += query.getSecond().getTimeMicros();
+                size++;
+            } else {
+                queries.remove( i );
+            }
+        }
+        
+        return completionTime / size;
     }
 }

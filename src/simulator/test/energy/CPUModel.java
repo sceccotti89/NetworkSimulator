@@ -402,8 +402,8 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             if (delimeters) {
                 return "PESOS_" + getMode() + "_" + getTimeBudget().getTimeMillis() + "ms";
             } else {
-                //final String tau = new String( ("\u03C4").getBytes(), Charset.defaultCharset() );
-                final String tau = "t";
+                final String tau = new String( ("\u03C4").getBytes(), Charset.defaultCharset() );
+                //final String tau = "t";
                 return "PESOS (" + getMode() + "," + tau + "=" + getTimeBudget().getTimeMillis() + "ms)";
             }
         }
@@ -693,98 +693,6 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
             type.setMode( mode );
             return type;
         }
-        
-        /*@Override
-        public Long eval( Time now, QueryInfo... queries )
-        {
-            QueryInfo query = queries[0];
-            Time currentDeadline = query.getArrivalTime().addTime( timeBudget );
-            if (currentDeadline.compareTo( now ) <= 0) {
-                // Time to complete the query is already over.
-                return _device.getMaxFrequency();
-            }
-            
-            // Get the frequency to resolve the query in the remaining time budget.
-            int ppcRMSE = regressors.get( "class." + query.getTerms() + ".rmse" ).intValue();
-            long pcost = query.getPostings() + ppcRMSE;
-            Time budget = timeBudget.clone();
-            budget.subTime( now.clone().subTime( query.getArrivalTime() ) );
-            long target = getTargetFrequency( query.getTerms(), pcost, budget.getTimeMicros() );
-            
-            int maxCount = 1;
-            for (Long frequency : _device.getFrequencies()) {
-                if (frequency >= target) {
-                    // Evaluate the residual completion time at the current frequency of the first query.
-                    ppcRMSE = regressors.get( "class." + query.getTerms() + ".rmse" ).intValue();
-                    pcost = query.getPostings() + ppcRMSE;
-                    Time service = predictServiceTime( query.getTerms(), pcost, frequency );
-                    Time startTime = query.getStartTime();
-                    if (startTime.getTimeMicros() == 0) {
-                        startTime.setTime( now );
-                    }
-                    service.subTime( now.clone().subTime( startTime ) );
-                    Time endTime = now.clone().addTime( service );
-                    
-                    int count = 1;
-                    for (int i = 1; i < queries.length; i++) {
-                        QueryInfo q = queries[i];
-                        ppcRMSE = regressors.get( "class." + q.getTerms() + ".rmse" ).intValue();
-                        pcost   = q.getPostings() + ppcRMSE;
-                        service = predictServiceTime( q.getTerms(), pcost, frequency );
-                        Time timeBudget4q = (endTime.clone().subTime( q.getArrivalTime() )).addTime( service );
-                        if (timeBudget4q.compareTo( timeBudget ) <= 0) {
-                            count++;
-                        } else {
-                            break;
-                        }
-                        endTime.addTime( service );
-                    }
-                    
-                    if (count > maxCount) {
-                        maxCount = count;
-                        target = frequency;
-                    }
-                    
-                    if (count == queries.length) {
-                        break;
-                    }
-                }
-            }
-            
-            if (maxCount < queries.length) {
-                // Can't meet the time budget for all the queries: return the maximum frequency.
-                return _device.getMaxFrequency();
-            }
-            
-            return target;
-        }
-        
-        private Time predictServiceTime( int terms, long postings, long frequency )
-        {
-            String base  = frequency + "." + terms;
-            double alpha = regressors.get( base + ".alpha" );
-            double beta  = regressors.get( base + ".beta" );
-            double rmse  = regressors.get( base + ".rmse" );
-            long time = Utils.getTimeInMicroseconds( alpha * postings + beta + rmse, TimeUnit.MILLISECONDS );
-            return new Time( time, TimeUnit.MICROSECONDS );
-        }
-        
-        private long getTargetFrequency( int terms, long postings, double targetTime )
-        {
-            for (Long frequency : _device.getFrequencies()) {
-                final String base = frequency + "." + terms;
-                double alpha = regressors.get( base + ".alpha" );
-                double beta  = regressors.get( base + ".beta" );
-                double rmse  = regressors.get( base + ".rmse" );
-                
-                long extimatedTime = Utils.getTimeInMicroseconds( alpha * postings + beta + rmse, TimeUnit.MILLISECONDS );
-                if (extimatedTime <= targetTime) {
-                    return frequency;
-                }
-            }
-            
-            return _device.getMaxFrequency(); 
-        }*/
         
         @Override
         public Long eval( Time now, QueryInfo... queries )
