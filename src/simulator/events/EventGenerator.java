@@ -14,30 +14,37 @@ public class EventGenerator
 {
     protected Time _time;
     
-    private Time _duration;
-    private Agent _agent;
-    private Time    _departureTime;
+    private Time   _duration;
+    private Agent  _agent;
+    private Time   _departureTime;
     
-    private long _id;
+    private long   _id;
     
-    private int departureAssignment;
+    private int    _departureAssignment;
     
-    /** Decides whether the departure has to be added to the generated event. */
-    public static final int BEFORE_CREATION = 0, AFTER_CREATION = 1;
+    /** Decides whether the departure has to be added before the generation of the event. */
+    public static final int BEFORE_CREATION = 0;
+    /** Decides whether the departure has to be added after the generation of the event. */
+    public static final int AFTER_CREATION = 1;
     
     
     /**
-     * Creates a new event generator.
+     * Creates a new event generator, generating events at time 0.
      * 
      * @param duration         lifetime of the generator.
      * @param departureTime    time to wait before sending a packet.
-     * @param departureType    
+     * @param departureType    decides whether the departure time has to be added after
+     *                         or before the generation of the event, using either
+     *                         {@linkplain EventGenerator#BEFORE_CREATION} or
+     *                         {@linkplain EventGenerator#AFTER_CREATION}.
+     *                         In the latter case the events are generated starting from
+     *                         the specified starting time
+     *                         (see {@linkplain EventGenerator#startAt(Time)}).
     */
     public EventGenerator( Time duration, Time departureTime, int departureType )
     {
-        _time = new Time( 0, TimeUnit.MICROSECONDS );
-        
         _duration = duration;
+        startAt( new Time( 0, TimeUnit.MICROSECONDS ) );
         setDepartureTime( departureTime, departureType );
     }
     
@@ -68,7 +75,7 @@ public class EventGenerator
     
     public void setDepartureTime( Time time, int departureType )
     {
-        departureAssignment = departureType;
+        _departureAssignment = departureType;
         _departureTime = time;
     }
 
@@ -100,7 +107,7 @@ public class EventGenerator
         
         Event event = null;
         
-        if (departureAssignment == AFTER_CREATION) {
+        if (_departureAssignment == AFTER_CREATION) {
             event = createEvent();
         }
         
@@ -110,7 +117,7 @@ public class EventGenerator
         }
         _time.addTime( departureTime );
         
-        if (departureAssignment == BEFORE_CREATION) {
+        if (_departureAssignment == BEFORE_CREATION) {
             if (_time.compareTo( _duration ) > 0) {
                 return null; // No more events from this generator.
             }
