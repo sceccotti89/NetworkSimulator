@@ -74,7 +74,7 @@ public class EnergyTestDIST
         
         public ClientGenerator() throws IOException
         {
-            super( Time.INFINITE, Time.ZERO );
+            super( Time.INFINITE, Time.ZERO, EventGenerator.BEFORE_CREATION );
             
             // Open the associated file.
             queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
@@ -198,7 +198,7 @@ public class EnergyTestDIST
         }
         
         @Override
-        public void addEventOnQueue( Event e )
+        public void receivedMessage( Event e )
         {
             Packet p = e.getPacket();
             if (e.getSource().getId() == 0) {
@@ -297,7 +297,7 @@ public class EnergyTestDIST
         public static final Time PERIOD = new Time( CONSmodel.PERIOD, TimeUnit.MILLISECONDS );
         
         public ServerConsGenerator( Time duration ) {
-            super( duration, PERIOD );
+            super( duration, PERIOD, EventGenerator.AFTER_CREATION );
         }
         
         @Override
@@ -332,7 +332,7 @@ public class EnergyTestDIST
         }
         
         @Override
-        public void addEventOnQueue( Event e )
+        public void receivedMessage( Event e )
         {
             Packet p = e.getPacket();
             CPU cpu = getDevice( EnergyCPU.class );
@@ -347,7 +347,7 @@ public class EnergyTestDIST
             if (p.hasContent( Global.PEGASUS_CONTROLLER )) {
                 // Set a new CPU power cap.
                 PEGASUSmessage message = p.getContent( Global.PEGASUS_CONTROLLER );
-                if (message.isMaximum()) {
+                if (message.isMaximumPower()) {
                     cpu.setPower( e.getTime(), cpu.getMaxPower() );
                 } else {
                     double coefficient = message.getCoefficient();
@@ -555,10 +555,6 @@ public class EnergyTestDIST
                 plotter.addPlot( node.getSampler( Global.ENERGY_SAMPLING ).getValues(), "Node " + (i+1) );
             }
             broker.connect( node );
-            
-            //if (type == Type.PESOS && PESOS_CONTROLLER) {
-            //    controller.connect( node );
-            //}
         }
         
         if (Global.showGUI) {

@@ -220,7 +220,7 @@ public abstract class NetworkAgent
         return bufferSize;
     }
     
-    public void addEventOnQueue( Event event )
+    public void receivedMessage( Event event )
     {
         if (event instanceof TimeoutEvent) {
             TimeoutEvent timeout = (TimeoutEvent) event;

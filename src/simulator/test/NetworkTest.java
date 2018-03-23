@@ -26,7 +26,7 @@ public class NetworkTest
     private static class ClientGenerator extends EventGenerator
     {
         public ClientGenerator( Time duration ) {
-            super( duration, Time.ZERO );
+            super( duration, Time.ZERO, EventGenerator.BEFORE_CREATION );
         }
     }
     
@@ -34,7 +34,7 @@ public class NetworkTest
     {
         public MulticastGenerator( Time duration )
         {
-            super( duration, Time.ZERO );
+            super( duration, Time.ZERO, EventGenerator.BEFORE_CREATION );
         }
     }
     
@@ -136,7 +136,8 @@ public class NetworkTest
         Simulator sim = new Simulator( net );
         
         EventGenerator generator = new EventGenerator( new Time( 20, TimeUnit.SECONDS ),
-                                                       new Time( 5,  TimeUnit.SECONDS ) );
+                                                       new Time( 5,  TimeUnit.SECONDS ),
+                                                       EventGenerator.BEFORE_CREATION );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
@@ -163,7 +164,8 @@ public class NetworkTest
         Simulator sim = new Simulator( net );
         
         EventGenerator generator = new EventGenerator( new Time( 10, TimeUnit.SECONDS ),
-                                                       new Time( 5,  TimeUnit.SECONDS ) );
+                                                       new Time( 5,  TimeUnit.SECONDS ),
+                                                       EventGenerator.BEFORE_CREATION );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
@@ -191,12 +193,14 @@ public class NetworkTest
         Simulator sim = new Simulator( net );
         
         EventGenerator generator = new EventGenerator( new Time( 10, TimeUnit.SECONDS ),
-                                                       new Time( 5,  TimeUnit.SECONDS ) );
+                                                       new Time( 5,  TimeUnit.SECONDS ),
+                                                       EventGenerator.BEFORE_CREATION );
         Agent client1 = new ClientAgent( 0, generator );
         net.addAgent( client1 );
         
         EventGenerator generator2 = new EventGenerator( new Time( 5, TimeUnit.SECONDS ),
-                                                        new Time( 1, TimeUnit.SECONDS ) );
+                                                        new Time( 1, TimeUnit.SECONDS ),
+                                                        EventGenerator.BEFORE_CREATION );
         Agent client2 = new ClientAgent( 2, generator2 );
         net.addAgent( client2 );
         
@@ -226,12 +230,14 @@ public class NetworkTest
         Simulator sim = new Simulator( net );
         
         EventGenerator generator1 = new EventGenerator( new Time( 10, TimeUnit.SECONDS ),
-                                                        new Time( 5,  TimeUnit.SECONDS ) );
+                                                        new Time( 5,  TimeUnit.SECONDS ),
+                                                        EventGenerator.BEFORE_CREATION );
         Agent client1 = new ClientAgent( 0, generator1 );
         net.addAgent( client1 );
         
         EventGenerator generator2 = new EventGenerator( new Time( 5, TimeUnit.SECONDS ),
-                                                        new Time( 1, TimeUnit.SECONDS ) );
+                                                        new Time( 1, TimeUnit.SECONDS ),
+                                                        EventGenerator.BEFORE_CREATION );
         Agent client2 = new ClientAgent( 1, generator2 );
         net.addAgent( client2 );
         
@@ -262,12 +268,14 @@ public class NetworkTest
         Simulator sim = new Simulator( net );
         
         EventGenerator generator = new EventGenerator( new Time( 10, TimeUnit.SECONDS ),
-                                                       new Time( 5,  TimeUnit.SECONDS ) );
+                                                       new Time( 5,  TimeUnit.SECONDS ),
+                                                       EventGenerator.BEFORE_CREATION );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
         EventGenerator generator2 = new EventGenerator( new Time( 15, TimeUnit.SECONDS ),
-                                                        Time.ZERO );
+                                                        Time.ZERO,
+                                                        EventGenerator.BEFORE_CREATION );
         Agent server = new ResponseServerAgent( 2, generator2 );
         net.addAgent( server );
         
@@ -296,7 +304,8 @@ public class NetworkTest
         net.addAgent( client );
         
         EventGenerator generator2 = new EventGenerator( new Time( 15, TimeUnit.SECONDS ),
-                                                        Time.ZERO );
+                                                        Time.ZERO,
+                                                        EventGenerator.BEFORE_CREATION );
         Agent server = new ResponseServerAgent( 2, generator2 );
         net.addAgent( server );
         
@@ -333,7 +342,8 @@ public class NetworkTest
         net.addAgent( client );
         
         EventGenerator generator2 = new EventGenerator( new Time( 15, TimeUnit.SECONDS ),
-                                                        Time.ZERO );
+                                                        Time.ZERO,
+                                                        EventGenerator.BEFORE_CREATION );
         Agent server1 = new ResponseServerAgent( 2, generator2 );
         net.addAgent( server1 );
         
@@ -375,7 +385,7 @@ public class NetworkTest
         }
         
         @Override
-        public void addEventOnQueue( Event e ) {
+        public void receivedMessage( Event e ) {
             System.out.println( "[CLIENT] Ricevuto: " + e );
         }
         
@@ -399,7 +409,7 @@ public class NetworkTest
         public void notifyEvent( Event e ) {}
         
         @Override
-        public void addEventOnQueue( Event e )
+        public void receivedMessage( Event e )
         {
             System.out.println( "[SWITCH] RICEVUTO: " + e );
             if (e.getSource().getId() == 0) {
@@ -434,7 +444,7 @@ public class NetworkTest
         public void notifyEvent( Event e ) {}
         
         @Override
-        public void addEventOnQueue( Event e )
+        public void receivedMessage( Event e )
         {
             System.out.println( "[SERVER] RICEVUTO: " + e );
             Agent dest = getConnectedAgent( 1 );
@@ -446,11 +456,11 @@ public class NetworkTest
     public static void example8() throws IOException, SimulatorException
     {
         /*
-        In case of multicast node it sends the request to all the possible destinations,
+        The switch node sends the request to all the possible destinations,
         waits for all the answers and replay with just one message to the input node.
         
                                    / server1
-                        100Mb,2ms /  dynamic
+                        100Mb,2ms /    0ms
                 70Mb,5ms         /
         client ---------- switch
          10ms               7ms  \
@@ -464,7 +474,9 @@ public class NetworkTest
         
         Simulator sim = new Simulator( net );
         
-        EventGenerator generator = new EventGenerator( new Time( 2, TimeUnit.SECONDS ), new Time( 1, TimeUnit.SECONDS ) );
+        EventGenerator generator = new EventGenerator( new Time( 1, TimeUnit.SECONDS ),
+                                                       new Time( 1, TimeUnit.SECONDS ),
+                                                       EventGenerator.BEFORE_CREATION );
         Agent client = new ClientAgent2( 0, generator );
         net.addAgent( client );
         

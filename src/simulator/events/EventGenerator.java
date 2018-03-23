@@ -20,19 +20,25 @@ public class EventGenerator
     
     private long _id;
     
+    private int departureAssignment;
+    
+    /** Decides whether the departure has to be added to the generated event. */
+    public static final int BEFORE_CREATION = 0, AFTER_CREATION = 1;
+    
     
     /**
      * Creates a new event generator.
      * 
-     * @param duration              lifetime of the generator.
-     * @param departureTime         time to wait before sending a packet.
+     * @param duration         lifetime of the generator.
+     * @param departureTime    time to wait before sending a packet.
+     * @param departureType    
     */
-    public EventGenerator( Time duration, Time departureTime )
+    public EventGenerator( Time duration, Time departureTime, int departureType )
     {
         _time = new Time( 0, TimeUnit.MICROSECONDS );
         
-        _duration      = duration;
-        _departureTime = departureTime;
+        _duration = duration;
+        setDepartureTime( departureTime, departureType );
     }
     
     public long getId() {
@@ -48,8 +54,7 @@ public class EventGenerator
     }
     
     /**
-     * Sets the time when the generator starts at.</br>
-     * This method lets the generator to send events in any moment.
+     * Sets the time when the generator starts at.
      * 
      * @param time    starting time.
     */
@@ -61,7 +66,9 @@ public class EventGenerator
         return _time.clone();
     }
     
-    public void setDepartureTime( Time time ) {
+    public void setDepartureTime( Time time, int departureType )
+    {
+        departureAssignment = departureType;
         _departureTime = time;
     }
 
@@ -88,21 +95,27 @@ public class EventGenerator
     public final Event generate()
     {
         if (_time.compareTo( _duration ) > 0) {
-            return null;
+            return null; // No more events from this generator.
         }
         
-        Event event = createEvent();
+        Event event = null;
         
-        // FIXME ora come ora i generatori attivi perdono il tempo di invio del
-        // FIXME precedente evento, cioe' e' in ritardo di 1.
-        // FIXME al fine del simulatore cambia poco ma dovrei trovare un modo per sistemarlo.
+        if (departureAssignment == AFTER_CREATION) {
+            event = createEvent();
+        }
         
-        Time departureTime = computeDepartureTime( event );
+        Time departureTime = computeDepartureTime( null );
         if (departureTime == null) {
             return null; // No events from this generator.
         }
-        
         _time.addTime( departureTime );
+        
+        if (departureAssignment == BEFORE_CREATION) {
+            if (_time.compareTo( _duration ) > 0) {
+                return null; // No more events from this generator.
+            }
+            event = createEvent();
+        }
         
         return event;
     }

@@ -148,7 +148,7 @@ public class PEGASUS
             return coefficient;
         }
         
-        public boolean isMaximum() {
+        public boolean isMaximumPower() {
             return maximum;
         }
     }

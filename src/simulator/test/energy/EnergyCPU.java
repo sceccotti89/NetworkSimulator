@@ -21,7 +21,7 @@ import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
 import simulator.test.energy.CPUModel.TERRIERmodel;
 import simulator.test.energy.CPUModel.Type;
-import simulator.test.energy.EnergyTestREPLICA_DIST.TimeSlotGenerator;
+import simulator.test.energy.EnergyTestMONO.ServerConsGenerator;
 import simulator.utils.Pair;
 import simulator.utils.Time;
 import simulator.utils.Utils;
@@ -550,7 +550,7 @@ public class EnergyCPU extends CPU
         }
         
         public double getArrivalRate() {
-            return receivedQueries / TimeSlotGenerator.PERIOD.getTimeMillis(); //in ms!
+            return receivedQueries / ServerConsGenerator.PERIOD.getTimeMillis(); //in ms!
         }
         
         public double getServiceRate()
@@ -1116,7 +1116,7 @@ public class EnergyCPU extends CPU
         }
         
         public double getArrivalRate() {
-            return receivedQueries / TimeSlotGenerator.PERIOD.getTimeMillis(); //in ms!
+            return receivedQueries / ServerConsGenerator.PERIOD.getTimeMillis(); //in ms!
         }
         
         public double getServiceRate()

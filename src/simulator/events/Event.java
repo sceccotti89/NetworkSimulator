@@ -32,13 +32,12 @@ public abstract class Event implements Comparable<Event>
     // Message payload.
     protected Packet _packet;
     
-    //private long flowID      = -1;
     private long eventID     = -1;
-    //private long generatorID = -1;
     
     
     
-    public Event( Time time ) {
+    public Event( Time time )
+    {
         _time.setTime( time );
         setId();
     }
@@ -70,22 +69,6 @@ public abstract class Event implements Comparable<Event>
     public Long getId() {
         return eventID;
     }
-    
-    /*public void setFlowId( long id ) {
-        flowID = id;
-    }
-    
-    public long getFlowId() {
-        return flowID;
-    }
-    
-    public void setGeneratorID( long id ) {
-        generatorID = id;
-    }
-    
-    public long getGeneratorID() {
-        return generatorID;
-    }*/
     
     public void setTime( Time time ) {
         _time.setTime( time );
@@ -165,25 +148,21 @@ public abstract class Event implements Comparable<Event>
     
     private void executeDestination( EventScheduler evtScheduler, NetworkTopology net, NetworkNode node )
     {
+        // Compute the delay given by the time to process the incoming message.
+        long delay = (_source.getId() == _dest.getId()) ?
+                     0 : getTcalc( node, node.getAgent() ).getTimeMicros();
+        
         //System.out.println( "[" + _time + "] Reached destination node: " + node );
-        setArrivalTime( _time.clone() );
+        setArrivalTime( _time.clone().addTime( delay, TimeUnit.MICROSECONDS ) );
         _dest.setTime( _arrivalTime );
         
         if (this instanceof AgentEvent) {
             _dest.notifyEvent( this );
         } else {
-            _dest.addEventOnQueue( this );
+            _dest.receivedMessage( this );
             _time.addTime( getTcalc( node, _dest ) );
             _dest.removeEventFromQueue( 0 );
         }
-        
-        /*if (_source.getId() != _dest.getId()) {
-            // Prepare and schedule the response event.
-            evtScheduler.schedule( _dest.fireEvent( _time, this ) );
-        } else {
-            // Prepare a new self-event.
-            evtScheduler.schedule( _source.fireEvent( _time, null ) );
-        }*/
         
         evtScheduler.schedule( _dest.fireEvent() );
     }
@@ -208,7 +187,7 @@ public abstract class Event implements Comparable<Event>
                     //System.out.println( "[" + _time + "] Reached intermediate node: " + node );
                     delay = getTcalc( node, node.getAgent() ).getTimeMicros();
                     // Add event on queue only for nodes different from source.
-                    agent.addEventOnQueue( this );
+                    agent.receivedMessage( this );
                 }
                 
                 // Starting time is the current time + Tcalc of the node.
@@ -245,7 +224,7 @@ public abstract class Event implements Comparable<Event>
             _source.setTime( time );
         }
         
-        evtScheduler.schedule( _source.fireEvent(/* time, this */) );
+        evtScheduler.schedule( _source.fireEvent() );
     }
     
     private Time getTcalc( NetworkNode node, Agent agent )
@@ -284,7 +263,7 @@ public abstract class Event implements Comparable<Event>
 
     @Override
     public String toString() {
-        return "ID: " + eventID +// ", flow: " + flowID + ", generator: " + generatorID +
+        return "ID: " + eventID +
                ", From: {" + _source + "}, To: {" + _dest + "}" +
                ", Time: " + _time + "ns, arrival time: " + _arrivalTime + "ns";
     }

@@ -30,7 +30,7 @@ public class TestErrors
         
         public ClientGenerator() throws IOException
         {
-            super( Time.INFINITE, Time.ZERO );
+            super( Time.INFINITE, Time.ZERO, EventGenerator.BEFORE_CREATION );
             
             reader = new BufferedReader( new FileReader( TRACE ) );
         }
@@ -84,7 +84,7 @@ public class TestErrors
         }
         
         @Override
-        public void addEventOnQueue( Event e ) {
+        public void receivedMessage( Event e ) {
             System.out.println( e.getArrivalTime() + ": RICEVUTO EVENTO!" );
         }
         

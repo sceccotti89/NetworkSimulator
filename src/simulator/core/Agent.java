@@ -212,13 +212,13 @@ public abstract class Agent extends NetworkAgent
         return _evtGenerators.get( _evtGenerators.indexOf( generator ) );
     }
     
-    // TODO rinominarlo in receivedMessage. Renderlo pure astratto??
     /**
-     * Puts an input event into the queue.
+     * Called when an event is received by this agent.
      * 
      * @param e    the input event
     */
-    public void addEventOnQueue( Event e ) {
+    public void receivedMessage( Event e ) {
+        // TODO Renderlo astratto?
         _eventQueue.add( e );
     }
     

@@ -82,7 +82,7 @@ public class EnergyTestMONO
         
         public ClientGenerator() throws IOException
         {
-            super( Time.INFINITE, Time.ZERO );
+            super( Time.INFINITE, Time.ZERO, EventGenerator.BEFORE_CREATION );
             
             // Open the associated file.
             queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
@@ -188,7 +188,7 @@ public class EnergyTestMONO
         }
         
         @Override
-        public void addEventOnQueue( Event e )
+        public void receivedMessage( Event e )
         {
             long sourceId = e.getSource().getId();
             if (sourceId == 0) {
@@ -303,12 +303,12 @@ public class EnergyTestMONO
         public void notifyEvent( Event e ) {}
     }
     
-    private static class ServerConsGenerator extends EventGenerator
+    public static class ServerConsGenerator extends EventGenerator
     {
         public static final Time PERIOD = new Time( CONSmodel.PERIOD, TimeUnit.MILLISECONDS );
         
         public ServerConsGenerator( Time duration ) {
-            super( duration, PERIOD );
+            super( duration, PERIOD, EventGenerator.AFTER_CREATION );
         }
         
         @Override
@@ -345,7 +345,7 @@ public class EnergyTestMONO
         }
         
         @Override
-        public void addEventOnQueue( Event e )
+        public void receivedMessage( Event e )
         {
             Packet p = e.getPacket();
             CPU cpu = getDevice( EnergyCPU.class );
@@ -465,7 +465,7 @@ public class EnergyTestMONO
             Utils.LOGGER.info( entry.getKey() + ", " + entry.getValue() );
         }
         
-        //testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
+        testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testMultiCore( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
         //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
@@ -473,7 +473,7 @@ public class EnergyTestMONO
         //plotAllTailLatencies();
         
         //testMultiCore( Type.PERF, null, 0 );
-        testMultiCore( Type.CONS, null, 0 );
+        //testMultiCore( Type.CONS, null, 0 );
         
         //testMultiCore( Type.PEGASUS, null,  500 );
         //testMultiCore( Type.PEGASUS, null, 1000 );

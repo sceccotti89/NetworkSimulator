@@ -98,7 +98,7 @@ public class EnergyTestREPLICA_DIST
         
         public ClientGenerator() throws IOException
         {
-            super( Time.INFINITE, Time.ZERO );
+            super( Time.INFINITE, Time.ZERO, EventGenerator.BEFORE_CREATION );
             
             // Open the associated file.
             queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
@@ -209,7 +209,7 @@ public class EnergyTestREPLICA_DIST
         }
         
         @Override
-        public void addEventOnQueue( Event e )
+        public void receivedMessage( Event e )
         {
             Packet p = e.getPacket();
             if (e.getSource().getId() == 0) {
@@ -303,25 +303,6 @@ public class EnergyTestREPLICA_DIST
     
     
     
-    public static class TimeSlotGenerator extends EventGenerator
-    {
-        public static final Time PERIOD = new Time( 1, TimeUnit.SECONDS );
-        
-        public TimeSlotGenerator( Time duration ) {
-            super( duration, PERIOD );
-        }
-        
-        @Override
-        public Event createEvent()
-        {
-            Event e = super.createEvent();
-            Packet packet = new Packet( 1, SizeUnit.BIT );
-            packet.addContent( Global.CONS_CONTROL, "" );
-            e.setPacket( packet );
-            return e;
-        }
-    }
-    
     private static class MulticoreAgent extends Agent implements EventHandler
     {
         private long _versionId = 0;
@@ -343,7 +324,7 @@ public class EnergyTestREPLICA_DIST
         }
         
         @Override
-        public void addEventOnQueue( Event e )
+        public void receivedMessage( Event e )
         {
             Packet p = e.getPacket();
             CPU cpu = getDevice( EnergyCPU.class );
@@ -358,7 +339,7 @@ public class EnergyTestREPLICA_DIST
             if (p.hasContent( Global.PEGASUS_CONTROLLER )) {
                 // Set a new CPU power cap.
                 PEGASUSmessage message = p.getContent( Global.PEGASUS_CONTROLLER );
-                if (message.isMaximum()) {
+                if (message.isMaximumPower()) {
                     cpu.setPower( e.getTime(), cpu.getMaxPower() );
                 } else {
                     double coefficient = message.getCoefficient();
@@ -451,7 +432,7 @@ public class EnergyTestREPLICA_DIST
         public static final Time TIME_SLOT = new Time( 15, TimeUnit.MINUTES );
         
         public SwitchTimeSlotGenerator( Time duration ) {
-            super( duration.clone().subTime( TIME_SLOT ), TIME_SLOT );
+            super( duration.clone().subTime( TIME_SLOT ), TIME_SLOT, EventGenerator.AFTER_CREATION );
         }
         
         @Override
@@ -564,7 +545,7 @@ public class EnergyTestREPLICA_DIST
         }
         
         @Override
-        public void addEventOnQueue( Event e )
+        public void receivedMessage( Event e )
         {
             long sourceId = e.getSource().getId();
             if (sourceId != getId()) {
@@ -1122,23 +1103,9 @@ public class EnergyTestREPLICA_DIST
                 agentCore.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/Distributed_Replica_" + modelType + "_" + compressedReplicaMode + "_Node" + nodeId + "_Energy.log", Sampling.CUMULATIVE ) );
                 agentCore.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
                 
-                if (type == Type.CONS) {
-                    EventGenerator evtGen = new TimeSlotGenerator( duration );
-                    agentCore.addEventGenerator( evtGen );
-                }
-                
                 if (Global.showGUI) {
                     plotter.addPlot( agentCore.getSampler( Global.ENERGY_SAMPLING ).getValues(), "Node " + nodeId );
                 }
-                
-                // Create PESOS controller.
-                //if (type == Type.PESOS && PESOS_CONTROLLER && controller == null) {
-                //    if (controller == null) {
-                //        controller = new PESOScontroller( timeBudget * 1000, mode, cpus, NODES, cpu.getCPUcores() );
-                //    }
-                    // Connect the agent.
-                //    controller.connect( agentCore );
-                //}
             }
         }
         
