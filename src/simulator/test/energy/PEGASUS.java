@@ -1,16 +1,22 @@
 
 package simulator.test.energy;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import simulator.core.Agent;
+import simulator.events.Packet;
 import simulator.utils.Pair;
+import simulator.utils.SizeUnit;
 import simulator.utils.Time;
 
 public class PEGASUS
 {
-    private List<CPU> nodes;
+    private Agent node;
+    
+    private List<Agent> nodes;
     private List<Pair<Time,Time>> queries;
         
     private static final Time WINDOW = new Time( 30, TimeUnit.SECONDS );
@@ -24,11 +30,16 @@ public class PEGASUS
     
     private long target;
     
-    public PEGASUS( long target, List<CPU> nodes )
+    public PEGASUS( Agent node, long target )
     {
+        this.node = node;
         this.target = target;
-        this.nodes = nodes;
+        nodes = new ArrayList<>();
         queries = new LinkedList<>();
+    }
+    
+    public void connect( Agent destination ) {
+        nodes.add( destination );
     }
     
     public void setCompletedQuery( Time now, Time completionTime )
@@ -68,39 +79,39 @@ public class PEGASUS
         //System.out.println( "INST: " + instantaneous + ", AVG: " + average + ", TARGET: " + target );
         if (average > target) {
             // Set max power, WAIT 5 minutes.
-            for (CPU node : nodes) {
-                node.setPower( now, node.getMaxPower() );
-            }
+            sendMessage( true, 0 );
             //System.out.println( "SETTATO HOLDING TIME: " + now );
             holdingTime = now.clone().addTime( HOLD_TIME );
             power_holding = true;
         } else if (instantaneous > 1.35d * target) {
             // Set max power.
-            for (CPU node : nodes) {
-                node.setPower( now, node.getMaxPower() );
-            }
+            sendMessage( true, 0 );
             //System.out.println( "SETTATO MAX POWER: " + now );
         } else if (instantaneous > target) {
             // Increase power by 7%.
-            for (CPU node : nodes) {
-                node.setPower( now, node.getPower() + node.getPower() * 0.07 );
-            }
+            sendMessage( false, +0.07 );
             //System.out.println( "AUMENTA DEL 7%: " + now );
         } else if(instantaneous >= 0.85 * target && instantaneous <= target) {
             // Keep current power.
             //System.out.println( "INVARIATO: " + now );
         } else if (instantaneous < 0.60 * target) {
-            // Lower power by 3%.
-            for (CPU node : nodes) {
-                node.setPower( now, node.getPower() - node.getPower() * 0.015 );
-            }
+            // Lower power by 3% (TODO trovare il valore migliore [1.5% - 3%]).
+            sendMessage( false, -0.03 );
             //System.out.println( "DIMINUISCI DEL 3%: " + now );
         } else if (instantaneous < 0.85 * target) {
             // Lower power by 1%.
-            for (CPU node : nodes) {
-                node.setPower( now, node.getPower() - node.getPower() * 0.01 );
-            }
+            sendMessage( false, -0.01 );
             //System.out.println( "DIMINUISCI DELL'1%: " + now );
+        }
+    }
+    
+    private void sendMessage( boolean maximum, double coefficient )
+    {
+        PEGASUSmessage message = new PEGASUSmessage( maximum, coefficient );
+        Packet packet = new Packet( 20, SizeUnit.BYTE );
+        packet.addContent( Global.PEGASUS_CONTROLLER, message );
+        for (Agent destination : nodes) {
+            node.sendMessage( destination, packet, true );
         }
     }
     
@@ -120,5 +131,25 @@ public class PEGASUS
         }
         
         return completionTime / size;
+    }
+    
+    public static class PEGASUSmessage
+    {
+        private boolean maximum;
+        private double coefficient;
+        
+        public PEGASUSmessage( boolean max, double coefficient )
+        {
+            this.maximum = max;
+            this.coefficient = coefficient;
+        }
+        
+        public double getCoefficient() {
+            return coefficient;
+        }
+        
+        public boolean isMaximum() {
+            return maximum;
+        }
     }
 }

@@ -5,6 +5,7 @@
 package simulator.network.element;
 
 import simulator.core.Agent;
+import simulator.events.Event;
 import simulator.network.NetworkAgent;
 import simulator.network.NetworkLayer;
 import simulator.network.protocols.impl.RIP;
@@ -35,12 +36,12 @@ public class Switch extends Agent
         // TODO inoltrare il messaggio verso la direzione corretta
         //conn.send( (Header) message );
         return 0;
-    }
+    }*/
     
     @Override
-    public long notifyEvent( Event event ) {
-        return 0;
-    }*/
+    public void notifyEvent( Event event ) {
+        
+    }
 
     @Override
     public String toString() {

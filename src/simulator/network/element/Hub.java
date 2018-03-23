@@ -5,6 +5,7 @@
 package simulator.network.element;
 
 import simulator.core.Agent;
+import simulator.events.Event;
 import simulator.network.NetworkAgent;
 import simulator.network.NetworkLayer;
 import simulator.topology.NetworkNode;
@@ -24,12 +25,12 @@ public class Hub extends Agent
         // TODO Ricevuto un pacchetto in ingresso, lo invia in broadcast su tutte le altre porte.
         // TODO Per questo e' half-duplex.
         return 0;
-    }
+    }*/
     
     @Override
-    public long notifyEvent( Event event ) {
-        return 0;
-    }*/
+    public void notifyEvent( Event event ) {
+        
+    }
 
     @Override
     public String toString() {

@@ -53,6 +53,8 @@ public abstract class NetworkAgent
     // Type of channel: Simplex, Half-duplex or Full-duplex.
     protected int channelType;
     
+    private boolean _parallelTransmission = false;
+    
     protected boolean closed = false;
     
     // By default the buffer has a size of 4K bytes.
@@ -285,6 +287,26 @@ public abstract class NetworkAgent
         conn.freeBufferSpace( message.getSizeInBytes() );
         //receivedMessage( new Message( message.getBytes() ), conn );
     }
+    
+    /**
+     * Setting true this flag, makes the agent don't pay the transmission delay.
+     * 
+     * @param flag    
+    */
+    public void setParallelTransmission( boolean flag ) {
+        _parallelTransmission = flag;
+    }
+    
+    public boolean isParallelTransmission() {
+        return _parallelTransmission;
+    }
+    
+    /**
+     * Notify an incoming event. This method is called anytime a self-event is generated.
+     * 
+     * @param e    the generated event.
+    */
+    public abstract void notifyEvent( Event e );
     
     /**
      * Removes the given port from the available ones.

@@ -183,7 +183,7 @@ public class Simulator implements AutoCloseable
             
             EventScheduler evtScheduler = net.getEventScheduler();
             for (Agent agent : net.getAgents()) {
-                evtScheduler.schedule( agent.fireEvent( null, null ) );
+                evtScheduler.schedule( agent.fireEvent(/* null, null */) );
             }
             
             net.getEventScheduler().doAllEvents();

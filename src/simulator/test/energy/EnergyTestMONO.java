@@ -19,11 +19,9 @@ import java.util.concurrent.TimeUnit;
 import simulator.core.Agent;
 import simulator.core.Simulator;
 import simulator.events.Event;
+import simulator.events.EventGenerator;
 import simulator.events.EventHandler;
 import simulator.events.Packet;
-import simulator.events.generator.CBRGenerator;
-import simulator.events.generator.EventGenerator;
-import simulator.events.impl.RequestEvent;
 import simulator.events.impl.ResponseEvent;
 import simulator.graphics.AnimationNetwork;
 import simulator.graphics.plotter.Plotter;
@@ -41,6 +39,7 @@ import simulator.test.energy.CPUModel.PEGASUSmodel;
 import simulator.test.energy.CPUModel.PERFmodel;
 import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
+import simulator.test.energy.CPUModel.TERRIERmodel;
 import simulator.test.energy.CPUModel.Type;
 import simulator.test.energy.EnergyCPU.CONScore;
 import simulator.test.energy.EnergyCPU.LOAD_SENSITIVEcore;
@@ -48,6 +47,7 @@ import simulator.test.energy.EnergyCPU.MY_MODELcore;
 import simulator.test.energy.EnergyCPU.PEGASUScore;
 import simulator.test.energy.EnergyCPU.PERFcore;
 import simulator.test.energy.EnergyCPU.PESOScore;
+import simulator.test.energy.EnergyCPU.TERRIERcore;
 import simulator.topology.NetworkTopology;
 import simulator.utils.Pair;
 import simulator.utils.Sampler;
@@ -59,7 +59,6 @@ import simulator.utils.Utils;
 public class EnergyTestMONO
 {
     private static final int CPU_CORES = 4;
-    private static final Packet PACKET = new Packet( 20, SizeUnit.BYTE );
     
     private static boolean CENTRALIZED_QUEUE = false;
     private static boolean JOB_STEALING = false;
@@ -73,44 +72,20 @@ public class EnergyTestMONO
     {
         private static final String QUERY_TRACE = "Models/msn.day2.arrivals.txt";
         //private static final String QUERY_TRACE = "Models/test_arrivals.txt";
-        private static final int NUM_QUERIES = 10000;
-        // Random generator seed.
-        private static final int SEED = 50000;
-        private final Random RANDOM = new Random( SEED );
         
         private BufferedReader queryReader;
         private boolean closed = false;
         
         private long lastDeparture = 0;
-        private ClientModel model;
         
         
         
-        public ClientGenerator( Packet reqPacket, Packet resPacket ) throws IOException
+        public ClientGenerator() throws IOException
         {
-            super( Time.INFINITE, Time.ZERO, reqPacket, resPacket );
-            startAt( Time.ZERO );
+            super( Time.INFINITE, Time.ZERO );
             
             // Open the associated file.
             queryReader = new BufferedReader( new FileReader( QUERY_TRACE ) );
-            model = new ClientModel( "Models/Monolithic/PESOS/MaxScore/time_energy.txt" );
-            model.loadModel();
-        }
-        
-        @Override
-        public Packet makePacket( Event e, long destination )
-        {
-            Packet packet = getRequestPacket();
-            while (true) {
-                long queryID = RANDOM.nextInt( NUM_QUERIES ) + 1;
-                if (model.isQueryAvailable( queryID )) {
-                    packet.addContent( Global.QUERY_ID, queryID );
-                    //System.out.println( "New Query: " + queryID );
-                    break;
-                }
-            }
-            
-            return packet;
         }
         
         @Override
@@ -122,6 +97,7 @@ public class EnergyTestMONO
                     if ((queryLine = queryReader.readLine()) != null) {
                         long time = Long.parseLong( queryLine );
                         long timeDistance = time - lastDeparture;
+                        //getAgent().getSampler( "QPS" ).addSampledValue( time * 1000, time * 1000, 1 );
                         lastDeparture = time;
                         return new Time( timeDistance, TimeUnit.MILLISECONDS );
                     } else {
@@ -140,67 +116,128 @@ public class EnergyTestMONO
     
     private static class ClientAgent extends Agent
     {
-        public ClientAgent( long id, EventGenerator evGenerator )
+        private ClientModel model;
+        
+        private static final int NUM_QUERIES = 10000;
+        // Random generator seed.
+        private static final int SEED = 50000;
+        private final Random RANDOM = new Random( SEED );
+        
+        
+        
+        public ClientAgent( long id, EventGenerator evGenerator ) throws IOException
         {
             super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( evGenerator );
+            
+            //addSampler( "QPS", new Sampler( new Time( 5, TimeUnit.MINUTES ), "Results/QPS.txt", Sampling.CUMULATIVE ) );
+            model = new ClientModel( "Models/Monolithic/PESOS/MaxScore/time_energy.txt" );
+            model.loadModel();
+        }
+        
+        private Packet makePacket()
+        {
+            Packet packet = new Packet( 20, SizeUnit.BYTE );
+            while (true) {
+                long queryID = RANDOM.nextInt( NUM_QUERIES ) + 1;
+                if (model.isQueryAvailable( queryID )) {
+                    packet.addContent( Global.QUERY_ID, queryID );
+                    break;
+                }
+            }
+            
+            return packet;
+        }
+        
+        @Override
+        public void notifyEvent( Event e )
+        {
+            // Send the packet to the server.
+            Agent dest = getConnectedAgent( 1 );
+            sendMessage( dest, makePacket(), true );
         }
     }
     
     
     
     
-    private static class AnycastGenerator extends EventGenerator
+    private static class SwitchAgent extends Agent
     {
+        private PrintWriter writer;
+        private List<QueryLatency> queries;
+        
         private Map<Long,Long> tieSelection;
         
-        public AnycastGenerator( Time duration )
-        {
-            super( duration, Time.ZERO, PACKET, PACKET );
-            setDelayedResponse( true );
-            //setMaximumFlyingPackets( 1 );
+        private long queryDistrId = -1;
         
+        public SwitchAgent( long id, String model ) throws IOException
+        {
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
+            
             tieSelection = new HashMap<>();
+            
+            writer = new PrintWriter( "Log/" + model + "_Tail_Latency.log", "UTF-8" );
+            queries = new ArrayList<>( 1 << 10 );
         }
         
         @Override
-        public Packet makePacket( Event e, long destination )
+        public void connect( Agent destination )
         {
-            if (e instanceof RequestEvent) {
-                return super.makePacket( e, destination );
+            tieSelection.put( destination.getId(), 0L );
+            super.connect( destination );
+        }
+        
+        @Override
+        public void addEventOnQueue( Event e )
+        {
+            long sourceId = e.getSource().getId();
+            if (sourceId == 0) {
+                // From client.
+                queryDistrId = (queryDistrId + 1) % Long.MAX_VALUE;
+                e.getPacket().addContent( Global.QUERY_DISTR_ID, queryDistrId );
+                queries.add( new QueryLatency( queryDistrId, e.getTime() ) );
+                
+                Agent dest = selectDestination( e.getTime() );
+                sendMessage( dest, e.getPacket(), true );
             } else {
-                // New request from client: clone the packet.
-                return e.getPacket().clone();
+                // From server.
+                long queryDistrId = e.getPacket().getContent( Global.QUERY_DISTR_ID );
+                for (int index = 0; index < queries.size(); index++) {
+                    QueryLatency query = queries.get( index );
+                    if (query.id == queryDistrId) {
+                        Time endTime = e.getTime();
+                        Time completionTime = e.getTime().subTime( query.startTime );
+                        
+                        // Save on file and remove from list.
+                        writer.println( endTime + " " + completionTime );
+                        queries.remove( index );
+                        
+                        // Send the response to the user.
+                        sendMessage( getConnectedAgent( 0 ), e.getPacket(), true );
+                        break;
+                    }
+                }
             }
         }
         
-        @Override
-        public EventGenerator connect( Agent to )
-        {
-            tieSelection.put( to.getId(), 0L );
-            return super.connect( to );
-        }
-        
-        @Override
-        protected int selectDestination( Time time )
+        private Agent selectDestination( Time time )
         {
             // Select the next destination, based on the current utilization factor
             // and, if tie, on the least used.
-            int nextDestination = -1;
+            Agent nextDestination = null;
             double utilization = Double.MAX_VALUE;
             long tiedSelection = Long.MAX_VALUE;
             boolean tieSituation = false;
-            for (int i = 0; i < _destinations.size(); i++) {
-                Agent agent = _destinations.get( i );
+            for (Agent agent : getConnectedAgents()) {
                 double coreUtilization = agent.getNodeUtilization( time );
                 if (coreUtilization < utilization) {
-                    nextDestination = i;
+                    nextDestination = agent;
                     utilization = coreUtilization;
                     tiedSelection = tieSelection.get( agent.getId() );
                     tieSituation = false;
                 } else if (coreUtilization == utilization) {
                     if (tieSelection.get( agent.getId() ) < tiedSelection) {
-                        nextDestination = i;
+                        nextDestination = agent;
                         utilization = coreUtilization;
                         tiedSelection = tieSelection.get( agent.getId() );
                     }
@@ -209,66 +246,16 @@ public class EnergyTestMONO
             }
             
             if (tieSituation) {
-                long destinationId = _destinations.get( nextDestination ).getId();
-                long ties = tieSelection.get( destinationId );
-                tieSelection.put( destinationId, ties+1 );
+                long ties = tieSelection.get( nextDestination.getId() );
+                tieSelection.put( nextDestination.getId(), ties+1 );
             }
             
             return nextDestination;
         }
-    }
-    
-    private static class SwitchAgent extends Agent implements EventHandler
-    {
-        private PrintWriter writer;
-        private List<QueryLatency> queries;
-        
-        private long queryDistrId = -1;
-        
-        public SwitchAgent( long id, EventGenerator evGenerator, String model ) throws IOException
-        {
-            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
-            addEventGenerator( evGenerator );
-            addEventHandler( this );
-            
-            writer = new PrintWriter( "Log/" + model + "_Tail_Latency.log", "UTF-8" );
-            queries = new ArrayList<>( 1 << 10 );
-        }
-        
-        @Override
-        public Time handle( Event e, EventType type )
-        {
-            if (type == EventType.RECEIVED) {
-                long sourceId = e.getSource().getId();
-                //long queryId = e.getPacket().getContent( Global.QUERY_ID );
-                if (sourceId == 0) {
-                    //System.out.println( "RICEVUTO: " + p.getContents() );
-                    queryDistrId = (queryDistrId + 1) % Long.MAX_VALUE;
-                    e.getPacket().addContent( Global.QUERY_DISTR_ID, queryDistrId );
-                    queries.add( new QueryLatency( queryDistrId, e.getTime() ) );
-                } else {
-                    long queryDistrId = e.getPacket().getContent( Global.QUERY_DISTR_ID );
-                    for (int index = 0; index < queries.size(); index++) {
-                        QueryLatency query = queries.get( index );
-                        if (query.id == queryDistrId) {
-                            Time endTime = e.getTime();
-                            Time completionTime = e.getTime().subTime( query.startTime );
-                            
-                            // Save on file and remove from list.
-                            writer.println( endTime + " " + completionTime );
-                            queries.remove( index );
-                            break;
-                        }
-                    }
-                }
-            }
-            
-            return _node.getTcalc();
-        }
         
         private void computeIdleEnergy( Time time )
         {
-            for (Agent dest : getEventGenerator( 0 ).getDestinations()) {
+            for (Agent dest : getConnectedAgents()) {
                 CPU cpu = dest.getDevice( EnergyCPU.class );
                 cpu.computeIdleEnergy( time.clone() );
                 /*if (cpu != null) {
@@ -311,39 +298,27 @@ public class EnergyTestMONO
                 this.startTime = startTime;
             }
         }
-    }
-    
-    public static class TimeSlotGenerator extends CBRGenerator
-    {
-        public static final Time PERIOD = new Time( 1, TimeUnit.SECONDS );
-        
-        public TimeSlotGenerator( Time duration ) {
-            super( Time.ZERO, duration, PERIOD, PACKET, PACKET );
-        }
         
         @Override
-        public Packet makePacket( Event e, long destination )
-        {
-            Packet packet = getRequestPacket();
-            packet.addContent( Global.CONS_CONTROL, "" );
-            return packet;
-        }
+        public void notifyEvent( Event e ) {}
     }
     
-    private static class ServerConsGenerator extends CBRGenerator
+    private static class ServerConsGenerator extends EventGenerator
     {
         public static final Time PERIOD = new Time( CONSmodel.PERIOD, TimeUnit.MILLISECONDS );
         
         public ServerConsGenerator( Time duration ) {
-            super( Time.ZERO, duration, PERIOD, PACKET, PACKET );
+            super( duration, PERIOD );
         }
         
         @Override
-        public Packet makePacket( Event e, long destination )
+        protected Event createEvent()
         {
-            Packet packet = getRequestPacket();
+            Event e = super.createEvent();
+            Packet packet = new Packet( 1, SizeUnit.BIT );
             packet.addContent( Global.CONS_CONTROL, "" );
-            return packet;
+            e.setPacket( packet );
+            return e;
         }
     }
     
@@ -351,21 +326,22 @@ public class EnergyTestMONO
     
     
     
-    
-    private static class MulticoreGenerator extends EventGenerator
-    {
-        public MulticoreGenerator( Time duration ) {
-            super( duration, Time.ZERO, PACKET, PACKET );
-        }
-    }
     
     private static class MulticoreAgent extends Agent implements EventHandler
     {
-        public MulticoreAgent( long id, EventGenerator evtGenerator )
-        {
+        public MulticoreAgent( long id ) {
             super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
-            addEventGenerator( evtGenerator );
             addEventHandler( this );
+        }
+        
+        @Override
+        public void notifyEvent( Event e )
+        {
+            Packet p = e.getPacket();
+            if (p.hasContent( Global.CONS_CONTROL )) {
+                CPU cpu = getDevice( EnergyCPU.class );
+                cpu.evalCONSparameters( e.getTime() );
+            }
         }
         
         @Override
@@ -374,18 +350,20 @@ public class EnergyTestMONO
             Packet p = e.getPacket();
             CPU cpu = getDevice( EnergyCPU.class );
             
-            if (p.hasContent( Global.CONS_CONTROL )) {
-                cpu.evalCONSparameters( e.getTime() );
-            } else {
-                CPUModel model = (CPUModel) cpu.getModel();
-                QueryInfo query = model.getQuery( p.getContent( Global.QUERY_ID ) );
-                if (p.hasContent( Global.QUERY_DISTR_ID )) {
-                    query.setDistributedId( p.getContent( Global.QUERY_DISTR_ID ) );
-                }
-                //System.out.println( "RECEIVED QUERY: " + p.getContent( Global.QUERY_ID ) );
-                query.setEvent( e );
-                query.setArrivalTime( e.getTime() );
-                cpu.addQuery( cpu.selectCore( e.getTime(), query ), query );
+            CPUModel model = (CPUModel) cpu.getModel();
+            QueryInfo query = model.getQuery( p.getContent( Global.QUERY_ID ) );
+            if (p.hasContent( Global.QUERY_DISTR_ID )) {
+                query.setDistributedId( p.getContent( Global.QUERY_DISTR_ID ) );
+            }
+            query.setEvent( e );
+            query.setArrivalTime( e.getTime() );
+            long coreId = cpu.selectCore( e.getTime(), query );
+            cpu.addQuery( coreId, query );
+            
+            Time time = cpu.timeToCompute( null );
+            if (time != null) {
+                // Prepare the message to the client.
+                sendMessage( cpu.getCore( coreId ).getTime(), getConnectedAgent( 0 ), p, false );
             }
         }
         
@@ -393,26 +371,21 @@ public class EnergyTestMONO
         public Time handle( Event e, EventType type )
         {
             CPU cpu = getDevice( EnergyCPU.class );
-            Packet p = e.getPacket();
-            if (p.hasContent( Global.CONS_CONTROL )) {
-                return Time.ZERO;
-            } else {
-                if (e instanceof ResponseEvent) {
-                    if (type == EventType.GENERATED) {
-                        QueryInfo query = cpu.getLastQuery();
-                        p.addContent( Global.QUERY_DISTR_ID, query.getDistributedId() );
-                        query.setEvent( e );
-                    } else { // EventType.SENT event.
-                        // Set the time of the cpu as (at least) the time of the sending event.
-                        cpu.setTime( e.getTime() );
-                        //cpu.checkQueryCompletion( e.getTime() );
-                        for (Core core : cpu.getCores()) {
-                            core.checkQueryCompletion( e.getTime() );
+            if (e instanceof ResponseEvent) {
+                if (type == EventType.GENERATED) {
+                    QueryInfo query = cpu.getLastQuery();
+                    query.setEvent( e );
+                } else { // EventType.SENT event.
+                    // Set the time of the cpu as (at least) the time of the sending event.
+                    cpu.setTime( e.getTime() );
+                    for (Core core : cpu.getCores()) {
+                        if (core.checkQueryCompletion( e.getTime() ) && !core.getQueue().isEmpty()) {
+                            Packet msg = new Packet( 20, SizeUnit.BYTE );
+                            msg.addContent( Global.QUERY_DISTR_ID, core.getLastQueryInQueue().getDistributedId() );
+                            // Prepare the message for the current query.
+                            sendMessage( core.getTime(), getConnectedAgent( 0 ), msg, false );
                         }
                     }
-                } else {
-                    // Compute the time to complete the last received query.
-                    return cpu.timeToCompute( null );
                 }
             }
             
@@ -447,7 +420,7 @@ public class EnergyTestMONO
         //CENTRALIZED_QUEUE = true;
         //JOB_STEALING = true;
         
-        System.setProperty( "showGUI", "false" );
+        //System.setProperty( "showGUI", "false" );
         if (System.getProperty( "showGUI" ) != null) {
             Global.showGUI = System.getProperty( "showGUI" ).equalsIgnoreCase( "true" );
         }
@@ -497,10 +470,10 @@ public class EnergyTestMONO
         //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE,  500 );
         //testMultiCore( Type.PESOS, Mode.ENERGY_CONSERVATIVE, 1000 );
         
-        plotAllTailLatencies();
+        //plotAllTailLatencies();
         
         //testMultiCore( Type.PERF, null, 0 );
-        //testMultiCore( Type.CONS, null, 0 );
+        testMultiCore( Type.CONS, null, 0 );
         
         //testMultiCore( Type.PEGASUS, null,  500 );
         //testMultiCore( Type.PEGASUS, null, 1000 );
@@ -509,6 +482,11 @@ public class EnergyTestMONO
         //testMultiCore( Type.LOAD_SENSITIVE, Mode.TIME_CONSERVATIVE, 1000 );
         //testMultiCore( Type.LOAD_SENSITIVE, Mode.ENERGY_CONSERVATIVE,  500 );
         //testMultiCore( Type.LOAD_SENSITIVE, Mode.ENERGY_CONSERVATIVE, 1000 );
+        
+        //testMultiCore( Type.TERRIER, Mode.TIME_CONSERVATIVE,  500 );    // 794655
+        //testMultiCore( Type.TERRIER, Mode.TIME_CONSERVATIVE, 1000 );    // 731356
+        //testMultiCore( Type.TERRIER, Mode.ENERGY_CONSERVATIVE,  500 );  // 805553
+        //testMultiCore( Type.TERRIER, Mode.ENERGY_CONSERVATIVE, 1000 );  // 708361
         
         //testSingleCore( Type.PESOS, Mode.TIME_CONSERVATIVE,  500 );
         //testSingleCore( Type.PESOS, Mode.TIME_CONSERVATIVE, 1000 );
@@ -557,6 +535,7 @@ public class EnergyTestMONO
             case PERF           : model = new PERFmodel( directory ); break;
             case CONS           : model = new CONSmodel( directory ); break;
             case PEGASUS        : model = new PEGASUSmodel( timeBudget, directory ); break;
+            case TERRIER        : model = new TERRIERmodel( timeBudget, mode, directory ); break;
             default             : break;
         }
         return model;
@@ -577,18 +556,16 @@ public class EnergyTestMONO
         
         Simulator sim = new Simulator( net );
         
-        EventGenerator generator = new ClientGenerator( new Packet( 20, SizeUnit.MEGABYTE ),
-                                                        new Packet( 20, SizeUnit.MEGABYTE ) );
+        EventGenerator generator = new ClientGenerator();
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
         final String modelType = model.getModelType( true );
         
-        EventGenerator anyGen = new AnycastGenerator( Time.INFINITE );
-        Agent switchAgent = new SwitchAgent( 1, anyGen, modelType );
+        Agent switchAgent = new SwitchAgent( 1, modelType );
         net.addAgent( switchAgent );
         
-        client.getEventGenerator( 0 ).connect( switchAgent );
+        client.connect( switchAgent );
         
         List<EnergyCPU> cpus = new ArrayList<>( CPU_CORES );
         Plotter plotter = new Plotter( model.getModelType( false ), 800, 600 );
@@ -598,8 +575,7 @@ public class EnergyTestMONO
             cpu.setModel( model );
             cpus.add( cpu );
             
-            EventGenerator sink = new MulticoreGenerator( Time.INFINITE );
-            Agent node = new MulticoreAgent( 2 + i, sink );
+            Agent node = new MulticoreAgent( 2 + i );
             node.addDevice( cpu );
             net.addAgent( node );
             
@@ -607,7 +583,7 @@ public class EnergyTestMONO
             node.addSampler( Global.IDLE_ENERGY_SAMPLING, new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
             node.addSampler( Global.TAIL_LATENCY_SAMPLING, new Sampler( null, "Log/" + modelType + "_Tail_Latency.log", null ) );
             
-            switchAgent.getEventGenerator( 0 ).connect( node );
+            switchAgent.connect( node );
             
             plotter.addPlot( node.getSampler( Global.ENERGY_SAMPLING ).getValues(), "Node " + i + " " + model.getModelType( true ) );
         }
@@ -672,25 +648,18 @@ public class EnergyTestMONO
         
         Simulator sim = new Simulator( net );
         
-        EventGenerator generator = new ClientGenerator( PACKET, PACKET );
+        EventGenerator generator = new ClientGenerator();
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        EventGenerator sink = new MulticoreGenerator( Time.INFINITE );
-        Agent server = new MulticoreAgent( 1, sink );
+        Agent server = new MulticoreAgent( 1 );
         if (model.getType() == Type.CONS) {
             EventGenerator evtGen = new ServerConsGenerator( duration );
-            evtGen.connect( server );
             server.addEventGenerator( evtGen );
         }
         
-        if (model.getType() == Type.PESOS) {
-            EventGenerator evtGen = new TimeSlotGenerator( duration );
-            evtGen.connect( server );
-            server.addEventGenerator( evtGen );
-        }
-        
-        server.setParallelTransmission( false ).addDevice( cpu );
+        server.setParallelTransmission( false );
+        server.addDevice( cpu );
         net.addAgent( server );
         
         server.addSampler( Global.ENERGY_SAMPLING, new Sampler( samplingTime, "Log/" + modelType + "_Energy.log", Sampling.CUMULATIVE ) );
@@ -704,7 +673,8 @@ public class EnergyTestMONO
             server.addSampler( Global.QUERY_PER_TIME_SLOT, new Sampler( meanSamplingTime, "Log/QueryPerTimeSlot.log", Sampling.CUMULATIVE ) );
         }
         
-        client.getEventGenerator( 0 ).connect( server );
+        //client.getEventGenerator( 0 ).connect( server );
+        client.connect( server );
         
         if (Global.showGUI) {
             Plotter plotter = new Plotter( "MONOLITHIC MULTI-CORE - " + model.getModelType( false ), 800, 600 );
@@ -733,75 +703,6 @@ public class EnergyTestMONO
         cpu = null;
         
         return totalEnergy;
-        
-        // PARAMETERS                         0.03 0.03 0.01 (NOW: 0.01 0.06 0.01)
-        //                QUERY_FILE            PARAMETER
-        //
-        // PESOS TC 500ms
-        // TARGET: 601670
-        //
-        // SINGOLA CODA:                    487504.0935159825 (+0.48)%    480244.10906339437 (-1.0%)             474019.72825102240 (-2.3%)
-        // 
-        // SENZA JOB STEALING
-        // SIMULATOR:  510183.06404994790   485156.96834763570            477180.32891471950 (LOW_FREQ: -1.6%)   475601.21643993420 (EARLIEST: -1.9%)
-        // IDLE:        48653.39354192962    52114.13001267967
-        //
-        // CON JOB STEALING
-        //                                  482909.43254749617 (-0.46%)   471950.86828483164 (-2.7%)             471373.63392729964 (-2.8%)
-        
-        // PESOS TC 1000ms
-        // TARGET: 443730
-        //
-        // SIMULATOR:  384469.73002268150   335314.37879086110
-        // IDLE:        39627.18491384348    43417.46056927062
-        
-        // PESOS EC 500ms
-        // TARGET: 531100
-        //
-        // SIMULATOR:  469209.54237407040   424810.38630302980
-        // IDLE:        44385.01033179365    48112.03748451058
-        
-        // PESOS EC 1000ms
-        // TARGET: 412060
-        //
-        // SIMULATOR:  371587.08914869634   313337.00192401380
-        // IDLE:        37802.37742955076    41791.57716194774
-        
-        // PERF
-        // TARGET: 790400
-        //
-        // SIMULATOR:  949242.00703909280   897201.59320118650
-        // IDLE:        61336.88540427402    63826.00992965478
-        
-        // CONS
-        // TARGET: 575000
-        // 
-        // SIMULATOR:  457310.72095110260   427869.14204760820
-        // IDLE:        45471.40043715234    48975.01785268270
-        
-        // LOAD SENSITIVE TC 500ms
-        //
-        // SIMULATOR:  522928.76432903290   503433.08469227190
-        // IDLE:        49910.82706388565    53349.83093337707
-        
-        // LOAD SENSITIVE TC 1000ms
-        //
-        // SIMULATOR:  385200.17950385995   344281.54686447536
-        // IDLE:        40866.95151338680    44477.40041954298
-        
-        // LOAD SENSITIVE EC 500ms
-        //
-        // SIMULATOR:  471261.91815138236   434603.95075559407
-        // IDLE:        45452.58335607352    49110.51398668331
-        
-        // LOAD SENSITIVE EC 1000ms
-        //
-        // SIMULATOR:  369170.92012207880   317559.73498789600
-        // IDLE:        38593.38612278199    42501.64531724715
-        
-        // Nuova strategia (MY_MODEL): prendo il massimo tra il budget predittato da PESOS e da LOAD_SENSITIVE
-        // 500ms:  
-        // 1000ms: 
     }
     
     public static void testSingleCore( Type type, Mode mode, long timeBudget ) throws Exception
@@ -827,17 +728,16 @@ public class EnergyTestMONO
         
         Simulator sim = new Simulator( net );
         
-        EventGenerator generator = new ClientGenerator( PACKET, PACKET );
+        EventGenerator generator = new ClientGenerator();
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
         CPUModel model = loadModel( type, mode, timeBudget );
         String modelType = model.getModelType( true );
         
-        EventGenerator anyGen = new AnycastGenerator( duration );
-        Agent switchAgent = new SwitchAgent( 1, anyGen, modelType );
+        Agent switchAgent = new SwitchAgent( 1, modelType );
         net.addAgent( switchAgent );
-        client.getEventGenerator( 0 ).connect( switchAgent );
+        client.connect( switchAgent );
         
         List<CPU> cpus = new ArrayList<>( CPU_CORES );
         Plotter plotter = new Plotter( "MONOLITHIC SINGLE_CORE - " + model.getModelType( false ), 800, 600 );
@@ -847,8 +747,7 @@ public class EnergyTestMONO
             cpu.setModel( model.clone() );
             cpus.add( cpu );
             
-            EventGenerator sink = new MulticoreGenerator( duration );
-            Agent node = new MulticoreAgent( 2 + i, sink );
+            Agent node = new MulticoreAgent( 2 + i );
             node.addDevice( cpu );
             net.addAgent( node );
             
@@ -857,11 +756,8 @@ public class EnergyTestMONO
             node.addSampler( Global.IDLE_ENERGY_SAMPLING,
                              new Sampler( samplingTime, null, Sampling.CUMULATIVE ) );
             
-            anyGen.connect( node );
-            
             if (model.getType() == Type.CONS) {
                 EventGenerator evtGen = new ServerConsGenerator( duration );
-                evtGen.connect( node );
                 node.addEventGenerator( evtGen );
             }
             
@@ -909,6 +805,7 @@ public class EnergyTestMONO
             case LOAD_SENSITIVE : return LOAD_SENSITIVEcore.class;
             case MY_MODEL       : return MY_MODELcore.class;
             case PEGASUS        : return PEGASUScore.class;
+            case TERRIER        : return TERRIERcore.class;
             default             : return null;
         }
     }
@@ -971,6 +868,12 @@ public class EnergyTestMONO
                                                     folder + "MY_Model_" + mode + "_" + plotTimeBudget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );                
                 plotter.addPlot( percentiles, "MY_Model (" + mode + ", " + tau + "=" + plotTimeBudget + "ms)" );
                 break;
+            case TERRIER :
+                percentiles = Utils.getPercentiles( percentile, interval,
+                                                    "Log/TERRIER_" + mode + "_" + plotTimeBudget + "ms_Tail_Latency.log",
+                                                    folder + "TERRIER_" + mode + "_" + plotTimeBudget + "ms_Tail_Latency_" + percentile + "th_Percentile.txt" );
+                plotter.addPlot( percentiles, "TERRIER (" + mode + ", " + tau + "=" + plotTimeBudget + "ms)" );
+                break;
             default : break;
         }
         
@@ -1001,17 +904,17 @@ public class EnergyTestMONO
         
         final String tau = new String( ("\u03C4").getBytes(), Charset.defaultCharset() );
         final String folder = "Results/Latency/Monolithic/";
-        plotter.addPlot( folder + "PERF_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "perf" );
-        plotter.addPlot( folder + "CONS_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "cons" );
-        plotter.addPlot( folder + "PESOS_TC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (" + tau + " = 500 ms)" );
-        plotter.addPlot( folder + "PESOS_EC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS EC (" + tau + " = 500 ms)" );
+        //plotter.addPlot( folder + "PERF_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "perf" );
+        //plotter.addPlot( folder + "CONS_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "cons" );
+        //plotter.addPlot( folder + "PESOS_TC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (" + tau + " = 500 ms)" );
+        //plotter.addPlot( folder + "PESOS_EC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS EC (" + tau + " = 500 ms)" );
         plotter.addPlot( folder + "PESOS_TC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (" + tau + " = 1000 ms)" );
         plotter.addPlot( folder + "PESOS_EC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS EC (" + tau + " = 1000 ms)" );
         
         //plotter.addPlot( folder + "LOAD_SENSITIVE_TC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "LOAD SENSITIVE TC (" + tau + " = 500 ms)" );
         //plotter.addPlot( folder + "LOAD_SENSITIVE_EC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "LOAD SENSITIVE EC (" + tau + " = 500 ms)" );
-        //plotter.addPlot( folder + "LOAD_SENSITIVE_TC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "LOAD SENSITIVE TC (" + tau + " = 1000 ms)" );
-        //plotter.addPlot( folder + "LOAD_SENSITIVE_EC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "LOAD SENSITIVE EC (" + tau + " = 1000 ms)" );
+        plotter.addPlot( folder + "LOAD_SENSITIVE_TC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "LOAD SENSITIVE (TC, " + tau + " = 1000 ms)" );
+        plotter.addPlot( folder + "LOAD_SENSITIVE_EC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "LOAD SENSITIVE (EC, " + tau + " = 1000 ms)" );
         
         List<Pair<Double, Double>> tl_500ms  = new ArrayList<>( 2 );
         List<Pair<Double, Double>> tl_1000ms = new ArrayList<>( 2 );

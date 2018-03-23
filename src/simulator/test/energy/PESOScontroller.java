@@ -12,11 +12,12 @@ import java.util.TreeMap;
 import simulator.core.Agent;
 import simulator.core.Device;
 import simulator.core.Task;
+import simulator.events.Packet;
 import simulator.test.energy.CPUModel.Mode;
 import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
-import simulator.test.energy.EnergyCPU.PESOScore;
 import simulator.utils.Pair;
+import simulator.utils.SizeUnit;
 import simulator.utils.Time;
 
 public class PESOScontroller
@@ -25,8 +26,8 @@ public class PESOScontroller
     private final long timeBudget;
     private final Mode mode;
     
-    private List<CPU> cpus;
-    private static int cpu_cores;
+    //private List<CPU> cpus;
+    //private static int cpu_cores;
     
     //private static final double WARNING_DELAY  = 100000d;
     //private static final double CRITICAL_DELAY = 200000d;
@@ -38,14 +39,11 @@ public class PESOScontroller
 
 
 
-    public PESOScontroller( long timeBudget, Mode mode, List<CPU> cpus, int nodes, int cores )
+    public PESOScontroller( long timeBudget, Mode mode )
     {
-        cpuInfos = new HashMap<>( nodes );
+        cpuInfos = new HashMap<>();
         this.timeBudget = timeBudget;
         this.mode = mode;
-        
-        this.cpus = cpus;
-        cpu_cores = cores;
         
         openQueries = new TreeMap<>();
     }
@@ -53,7 +51,7 @@ public class PESOScontroller
     public void connect( Agent to )
     {
         final long index = to.getId() / 2 + to.getId() % 2;
-        try { cpuInfos.put( to.getId(), new CpuInfo( timeBudget, mode, to.getId(), index ) ); }
+        try { cpuInfos.put( to.getId(), new CpuInfo( timeBudget, mode, to, index ) ); }
         catch ( IOException e ) {}
     }
     
@@ -72,8 +70,6 @@ public class PESOScontroller
         }
         
         //System.out.println( "\nAGGIUNTA QUERY: " + queryID + " - CPU: " + nodeID + ", CORE: " + coreID );
-        
-        analyzeSystem( time );
     }
     
     public void completedQuery( Time time, long nodeID, long coreID )
@@ -89,11 +85,9 @@ public class PESOScontroller
         }
         
         cpu.completedQuery( time, coreID );
-        
-        analyzeSystem( time );
     }
     
-    private void analyzeSystem( Time time )
+    public void analyzeSystem( Agent agent, Time time )
     {
         // TODO potrei farlo in parallelo nel numero di nodi (se i core totali fossero troppi)!!!
         for (CpuInfo _cpu : cpuInfos.values()) {
@@ -101,8 +95,13 @@ public class PESOScontroller
                 long extraTime = evalTimeBudget( time.getTimeMicros(), _cpu, _core );
                 long budget = timeBudget + extraTime;
                 if (_core.hasMoreQueries() && _core.checkTimeBudget( budget )) {
-                    PESOScore core = (PESOScore) cpus.get( (int) _cpu.getId() - 2 ).getCore( _core.getCoreID() );
-                    core.setTimeBudget( time, budget, _core.getFirstQuery().getId() );
+                    //PESOScore core = (PESOScore) cpus.get( (int) _cpu.getId() - 2 ).getCore( _core.getCoreID() );
+                    //core.setTimeBudget( time, budget, _core.getFirstQuery().getId() );
+                    
+                    PESOSmessage message = new PESOSmessage( _core.getCoreID(), _core.getFirstQuery().getId(), budget );
+                    Packet packet = new Packet( 20, SizeUnit.BYTE );
+                    packet.addContent( Global.PESOS_TIME_BUDGET, message );
+                    agent.sendMessage( _cpu.getNode(), packet, false );
                 }
             }
         }
@@ -234,11 +233,11 @@ public class PESOScontroller
     
     private static class CpuInfo extends Device<Object,Object>
     {
-        private long _id;
+        private Agent _node;
         private Map<Long,CoreInfo> coresMap;
         
         
-        public CpuInfo( long timeBudget, Mode mode, long id, long index ) throws IOException
+        public CpuInfo( long timeBudget, Mode mode, Agent node, long index ) throws IOException
         {
             super( "", "Models/cpu_frequencies.txt" );
             
@@ -246,9 +245,10 @@ public class PESOScontroller
             model.setDevice( this );
             model.loadModel();
             
-            _id = id;
+            EnergyCPU cpu = node.getDevice( EnergyCPU.class );
+            _node = node;
             coresMap = new HashMap<>();
-            for (long i = 0; i < cpu_cores; i++) {
+            for (long i = 0; i < cpu.getCPUcores(); i++) {
                 coresMap.put( i, new CoreInfo( i, model ) );
             }
         }
@@ -273,7 +273,11 @@ public class PESOScontroller
         }
 
         public long getId() {
-            return _id;
+            return _node.getId();
+        }
+        
+        public Agent getNode() {
+            return _node;
         }
         
         @Override
@@ -443,6 +447,8 @@ public class PESOScontroller
         private long _queryID;
         private long _timeBudget;
         
+        private long _versionId;
+        
         public PESOSmessage( long coreID, long queryID, long timeBudget )
         {
             _coreID = coreID;
@@ -460,6 +466,14 @@ public class PESOScontroller
         
         public long getTimeBudget() {
             return _timeBudget;
+        }
+        
+        public void setVersionId( long id ) {
+            _versionId = id;
+        }
+        
+        public long getVersionId() {
+            return _versionId;
         }
     }
 }

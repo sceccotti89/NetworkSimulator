@@ -443,10 +443,11 @@ public abstract class CPU extends Device<QueryInfo,Long>
         
         // It's not the next query to compute: returns the maximum time (SIM_TIME - arrival).
         if (!core.isNextQuery( query )) {
-            Time time = _evtScheduler.getTimeDuration();
+            //Time time = _evtScheduler.getTimeDuration();
             query.setTimeToComplete( Time.ZERO, Time.ZERO );
             //System.out.println( "QUERY: " + query.getId() + ", CORE: " + core.getId() + ", TIME: INFINITO (NON E' LA PROSSIMA IMMEDIATA)" );
-            return time.subTime( query.getArrivalTime() );
+            //return time.subTime( query.getArrivalTime() );
+            return null;
         }
         
         long frequency = core.getFrequency();
@@ -600,15 +601,13 @@ public abstract class CPU extends Device<QueryInfo,Long>
             POWER_OFF
         };
         
-        // TODO implementare i context di ogni core della CPU (se proprio c'e' bisogno).
-        
         
         public Core( CPU cpu, long coreId, long initFrequency )
         {
             this.cpu = cpu;
             this.coreId = coreId;
             time = new Time( 0, TimeUnit.MICROSECONDS );
-            queryQueue = new ArrayList<>( 1024 );
+            queryQueue = new ArrayList<>( 128 );
             frequency = initFrequency;
             
             state = State.RUNNING;
@@ -843,7 +842,7 @@ public abstract class CPU extends Device<QueryInfo,Long>
          * Checks if the input query is the next one for this core.
         */
         public boolean isNextQuery( QueryInfo query ) {
-            return !queryQueue.isEmpty() && queryQueue.get( 0 ).equals( query );
+            return !queryQueue.isEmpty() && getFirstQueryInQueue().equals( query );
         }
         
         public QueryInfo getFirstQueryInQueue() {

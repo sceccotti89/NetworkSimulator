@@ -19,8 +19,9 @@ import simulator.test.energy.CPUModel.LOAD_SENSITIVEmodel;
 import simulator.test.energy.CPUModel.MY_model;
 import simulator.test.energy.CPUModel.PESOSmodel;
 import simulator.test.energy.CPUModel.QueryInfo;
+import simulator.test.energy.CPUModel.TERRIERmodel;
 import simulator.test.energy.CPUModel.Type;
-import simulator.test.energy.EnergyTestMONO.TimeSlotGenerator;
+import simulator.test.energy.EnergyTestREPLICA_DIST.TimeSlotGenerator;
 import simulator.utils.Pair;
 import simulator.utils.Time;
 import simulator.utils.Utils;
@@ -88,8 +89,8 @@ public class EnergyCPU extends CPU
         
         coresMap = new HashMap<>( (int) _cores );
         
-        setMaxPower( 84.0d );
-        setMinPower(  1.3d );
+        setMaxPower( 84.00d );
+        setMinPower(  1.67d );
         
         setEnergyModel( cores );
         
@@ -110,6 +111,7 @@ public class EnergyCPU extends CPU
         //setEnergyModel( new QueryEnergyModel( cores ) );
         setEnergyModel( new CoefficientEnergyModel( cores ) );
         //setEnergyModel( new ParameterEnergyModel( cores ) );
+        //setEnergyModel( new TerrierEnergyModel( this, cores ) );
     }
     
     @Override
@@ -139,6 +141,10 @@ public class EnergyCPU extends CPU
                 case PEGASUS :
                     timeBudget = cpuModel.getTimeBudget().getTimeMillis();
                     file = "PEGASUS_" + timeBudget;
+                    break;
+                case TERRIER :
+                    timeBudget = cpuModel.getTimeBudget().getTimeMillis();
+                    file = "TERRIER_" + timeBudget + "_" + cpuModel.getMode();
                     break;
             }
             Utils.checkDirectory( "Results/Coefficients" );
@@ -368,6 +374,15 @@ public class EnergyCPU extends CPU
         query.setEnergyConsumption( energy );
         
         core.addIdleEnergy( query.getStartTime(), true );
+        
+        if (((CPUModel) _model).getType() == Type.TERRIER) {
+            // Update the power consumption of all the cores.
+            for (Core c : getCores()) {
+                if (c.getId() != core.getId()) {
+                    ((TERRIERcore) c).setPowerConsumption( energy );
+                }
+            }
+        }
     }
     
     // TODO rimuovere dopo i test
@@ -942,6 +957,219 @@ public class EnergyCPU extends CPU
             } else {
                 return false;
             }
+        }
+    }
+    
+    public static class TERRIERcore extends Core
+    {
+        private long baseTimeBudget;
+        private long timeBudget;
+        
+        private long queryExecutionTime = 0;
+        
+        private static final long QUEUE_CHECK = TimeUnit.SECONDS.toMicros( 1 );
+        
+        
+        public TERRIERcore( CPU cpu, long coreId, long initFrequency ) {
+            super( cpu, coreId, initFrequency );
+        }
+        
+        @Override
+        public void addQuery( QueryInfo q, boolean updateFrequency )
+        {
+            if (cpu.centralizedQueue) {
+                if (q != null) {
+                    q.setCoreId( coreId );
+                    queryQueue.add( q );
+                    receivedQueries++;
+                    // Here has the meaning of executing the query.
+                    if (updateFrequency) {
+                        cpu.computeTime( q, this );
+                    }
+                }
+            } else {
+                q.setCoreId( coreId );
+                queryQueue.add( q );
+                long frequency = cpu.evalFrequency( q.getArrivalTime(), this );
+                if (updateFrequency) {
+                    receivedQueries++;
+                    TERRIERmodel model = (TERRIERmodel) cpu.getModel();
+                    final int postings = q.getPostings() + model.getRMSE( q.getTerms() );
+                    queryExecutionTime += model.predictServiceTimeAtMaxFrequency( q.getTerms(), postings );
+                    
+                    setFrequency( q.getArrivalTime(), frequency );
+                } else {
+                    this.frequency = frequency;
+                }
+            }
+        }
+        
+        private void setPowerConsumption( double energy )
+        {
+            if (currentTask != null) {
+                currentTask.updateTimeEnergy( time, getFrequency(), energy );
+            }
+        }
+        
+        @Override
+        public boolean checkQueryCompletion( Time time )
+        {
+            if (currentTask != null && currentTask.isComplete( time )) {
+                processedQueries++;
+                cumulativeTime += currentTask.getCompletionTime()/1000; // in ms.
+                
+                //System.out.println( "TIME: " + time + ", CORE: " + getId() + ", COMPLETATA QUERY: " + currentTask );
+                TERRIERmodel model = (TERRIERmodel) cpu.getModel();
+                final int postings = currentTask.getPostings() + model.getRMSE( currentTask.getTerms() );
+                queryExecutionTime -= model.predictServiceTimeAtMaxFrequency( currentTask.getTerms(), postings );
+                
+                if (timeBudget != baseTimeBudget) {
+                    timeBudget = baseTimeBudget;
+                    //PESOSmodel model = (PESOSmodel) cpu.getModel();
+                    model.setTimeBudget( timeBudget );
+                }
+                
+                addQueryOnSampling( time, true );
+                
+                if (cpu.centralizedQueue) {
+                    cpu.analyzeFrequency( time, getId() );
+                    currentTask = cpu.getNextQuery( time, getId() );
+                    //System.out.println( "PROSSIMA QUERY: " + currentTask );
+                    if (currentTask != null) {
+                        addQuery( currentTask, false );
+                        cpu.computeTime( currentTask, this );
+                    } else {
+                        setFrequency( cpu.getMinFrequency() );
+                    }
+                } else {
+                    if (hasMoreQueries()) {
+                        cpu.computeTime( getFirstQueryInQueue(), this );
+                    } else {
+                        QueryInfo q = (enableJS) ? startJobStealing( time ) : null;
+                        if (q != null) {
+                            addQuery( q, true );
+                            cpu.computeTime( q, this );
+                        } else {
+                            setFrequency( cpu.getMinFrequency() );
+                        }
+                    }
+                }
+                
+                return true;
+            } else {
+                return false;
+            }
+        }
+        
+        @Override
+        public QueryInfo removeLastQueryInQueue( Time time, boolean updateFrequency )
+        {
+            QueryInfo q = super.removeLastQueryInQueue( time, updateFrequency );
+            TERRIERmodel model = (TERRIERmodel) cpu.getModel();
+            final int postings = q.getPostings() + model.getRMSE( q.getTerms() );
+            queryExecutionTime -= model.predictServiceTimeAtMaxFrequency( q.getTerms(), postings );
+            receivedQueries--;
+            return q;
+        }
+        
+        public void setBaseTimeBudget( Time time, long timeBudget )
+        {
+            baseTimeBudget = timeBudget;
+            setTimeBudget( time, timeBudget, null );
+        }
+        
+        public void setTimeBudget( Time time, long timeBudget, Long queryID )
+        {
+            if (this.timeBudget != timeBudget) {
+                //System.out.println( time + ": OLD: " + this.timeBudget + ", NEW: " + timeBudget );
+                this.timeBudget = timeBudget;
+                //System.out.println( "CORE: " + getId() + ", NUOVO TIME BUDGET: " + timeBudget );
+                if (queryID != null && currentTask != null && currentTask.getId() == queryID) {
+                    TERRIERmodel model = (TERRIERmodel) cpu.getModel();
+                    model.setTimeBudget( timeBudget );
+                    long frequency = cpu.evalFrequency( currentTask.getStartTime(), this );
+                    //long frequency = cpu.evalFrequency( t, this );
+                    setFrequency( time, frequency );
+                }
+                
+                /*PESOSmodel model = (PESOSmodel) cpu.getModel();
+                if (model != null) {
+                    model.setTimeBudget( timeBudget );
+                    if (hasMoreQueries()) {
+                        long frequency = cpu.evalFrequency( time, this );
+                        setFrequency( time, frequency );
+                    }
+                }*/
+            }
+        }
+        
+        public long getTotalQueryExecutionTime( Time time )
+        {
+            if (currentTask != null && currentTask.getEndTime().compareTo( time ) <= 0) {
+                TERRIERmodel model = (TERRIERmodel) cpu.getModel();
+                final int postings = currentTask.getPostings() + model.getRMSE( currentTask.getTerms() );
+                long predictedTime = model.predictServiceTimeAtMaxFrequency( currentTask.getTerms(), postings );
+                return queryExecutionTime - predictedTime;
+            }
+            
+            return queryExecutionTime;
+        }
+        
+        public double getArrivalRate() {
+            return receivedQueries / TimeSlotGenerator.PERIOD.getTimeMillis(); //in ms!
+        }
+        
+        public double getServiceRate()
+        {
+            double serviceRate;
+            if (cumulativeTime == 0) {
+                if (processedQueries != 0) {
+                    serviceRate = Double.MAX_VALUE;
+                } else {
+                    serviceRate = 0;
+                }
+            } else {
+                serviceRate = processedQueries / cumulativeTime; //in ms!
+            }
+            
+            return serviceRate;
+        }
+        
+        public void reset()
+        {
+            receivedQueries = 0;
+            processedQueries = 0;
+            cumulativeTime = 0;
+        }
+        
+        @Override
+        public double getIdleEnergy()
+        {
+            double idleEnergy = 0;
+            if (idleTime > 0) {
+                if (idleTimeInterval + idleTime < QUEUE_CHECK) {
+                    idleEnergy = cpu.energyModel.getIdleEnergy( frequency, idleTime );
+                    idleTimeInterval += idleTime;
+                    writeResult( frequency, idleEnergy );
+                } else {
+                    // Set the minimum frequency if the time elapsed between two consecutive queries
+                    // is at least QUEUE_CHECK microseconds.
+                    long timeAtMaxFreq = QUEUE_CHECK - idleTimeInterval;
+                    idleEnergy = cpu.energyModel.getIdleEnergy( frequency, timeAtMaxFreq );
+                    writeResult( frequency, idleEnergy );
+                    
+                    frequency = cpu.getMinFrequency();
+                    double energy = cpu.energyModel.getIdleEnergy( frequency, idleTime - timeAtMaxFreq );
+                    idleEnergy += energy;
+                    writeResult( frequency, energy );
+                    
+                    idleTimeInterval = 0;
+                }
+                
+                idleTime = 0;
+            }
+            
+            return idleEnergy;
         }
     }
 }

@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -15,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import simulator.graphics.plotter.Plotter;
 import simulator.graphics.plotter.Plotter.Axis;
 import simulator.graphics.plotter.Plotter.Line;
+import simulator.graphics.plotter.Plotter.Theme;
 import simulator.test.energy.CPUModel.Mode;
 import simulator.utils.Pair;
 
@@ -132,28 +134,39 @@ public class ResultPlotting
         plotter.setVisible( true );
     }
     
-    public static void plotDistributedTailLatency( long time_budget, String mode, int nodes ) throws IOException
+    public static void plotDistributedTailLatency( long time_budget, String mode ) throws IOException
     {
-        Plotter plotter = new Plotter( "DISTRIBUTED Tail Latency " + PERCENTILE + "-th Percentile", 800, 600 );
-        plotter.setAxisName( "Time (h)", PERCENTILE + "th-tile response time (ms)" );
-        double yRange = time_budget * 1000d + 200000d;
-        plotter.setRange( Axis.Y, 0, yRange );
-        plotter.setTicks( Axis.Y, (int) (yRange / 100000) );
+        Plotter plotter = new Plotter( "DISTRIBUTED Tail Latency 95-th Percentile", 800, 600 );
+        plotter.setAxisName( "Time (h)", "95th-tile response time (ms)" );
         plotter.setScaleY( 1000d );
         
+        plotter.setTheme( Theme.WHITE );
+        
         plotter.setRange( Axis.X, 0, TimeUnit.HOURS.toMicros( 24 ) );
-        plotter.setTicks( Axis.X, 24, 2 );
-        plotter.setScaleX( 60d * 60d * 1000d * 1000d );
+        plotter.setTicks( Axis.X, 23, 2 );
+        plotter.setScaleX( TimeUnit.HOURS.toMicros( 1 ) );
         
-        List<Pair<Double, Double>> points = new ArrayList<>();
+        final String tau = new String( ("\u03C4").getBytes(), Charset.defaultCharset() );
+        final String folder = "/home/stefano/SIMULATOR RESULTS/DISTRIBUTED/PESOS_NO_CONTROLLER/";
+        plotter.addPlot( folder + "PESOS_TC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (" + tau + " = 500 ms)" );
+        plotter.addPlot( folder + "PESOS_EC_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS EC (" + tau + " = 500 ms)" );
+        plotter.addPlot( folder + "PESOS_TC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS TC (" + tau + " = 1000 ms)" );
+        plotter.addPlot( folder + "PESOS_EC_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PESOS EC (" + tau + " = 1000 ms)" );
+        plotter.addPlot( folder + "PEGASUS_500ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PEGASUS (" + tau + " = 500 ms)" );
+        plotter.addPlot( folder + "PEGASUS_1000ms_Tail_Latency_95th_Percentile.txt", Line.UNIFORM, "PEGASUS (" + tau + " = 1000 ms)" );
+        
+        List<Pair<Double, Double>> tl_500ms  = new ArrayList<>( 2 );
+        List<Pair<Double, Double>> tl_1000ms = new ArrayList<>( 2 );
         for(int i = 0; i <= 1; i++) {
-            points.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), time_budget * 1000d ) );
+            tl_500ms.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), 500000d ) );
+            tl_1000ms.add( new Pair<>( (double) (TimeUnit.HOURS.toMicros( i * 24 )), 1000000d ) );
         }
-        plotter.addPlot( points, Color.YELLOW, Line.DASHED, "Tail latency (" + time_budget + "ms)" );
+        plotter.addPlot( tl_500ms, Color.BLACK, Line.DASHED, "Tail latency (" + 500 + "ms)" );
+        plotter.addPlot( tl_1000ms, Color.BLACK, Line.DASHED, "Tail latency (" + 1000 + "ms)" );
         
-        List<Pair<Double,Double>> percentiles = getPercentiles( "Results/Distributed_Tail_Latency.txt",
-                                                                "Results/Distributed_Tail_Latency_" + PERCENTILE + "th_Percentile.txt" );
-        plotter.addPlot( percentiles, "PESOS (" + mode + ", t=" + time_budget + "ms)" );
+        double yRange = 1600000d;
+        plotter.setRange( Axis.Y, 0, yRange );
+        plotter.setTicks( Axis.Y, 15, 2 );
         
         plotter.setVisible( true );
     }
@@ -224,9 +237,9 @@ public class ResultPlotting
         
         //plotEnergy( time_budget, mode.toString() );
         //plotTailLatency( time_budget, mode.toString() );
-        //plotDistributedTailLatency( time_budget, mode.toString(), 5 );
+        plotDistributedTailLatency( time_budget, mode.toString() );
         
-        plotDistributedReplicaTailLatency( time_budget, mode.toString(), 0.75, "LongTerm", 2 );
+        //plotDistributedReplicaTailLatency( time_budget, mode.toString(), 0.75, "LongTerm", 2 );
         
         //plotMeanCompletionTime();
         //plotMeanArrivalTime();

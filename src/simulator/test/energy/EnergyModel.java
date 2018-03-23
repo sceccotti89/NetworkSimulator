@@ -1,9 +1,13 @@
 
 package simulator.test.energy;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import simulator.test.energy.CPU.Core;
 import simulator.utils.Time;
 import simulator.utils.Utils;
 
@@ -12,7 +16,7 @@ public abstract class EnergyModel
     protected static double cores;
     
     /** Static power of all power consuming components (except the cores). */
-    private static final double Ps = 0.9d;
+    private static final double Ps = 0.9d; // Terrier usa 0.8
     /** Static power of a core. */
     private static final double Pind = 0.1d;
     
@@ -107,7 +111,9 @@ public abstract class EnergyModel
      * @param idle         {@code true} if the energy is computed for an idle period,
      *                     {@code false} otherwise.
     */
-    public abstract double computeEnergy( double energy, long frequency, Time interval, boolean idle );
+    public double computeEnergy( double energy, long frequency, Time interval, boolean idle ) {
+        return computeEnergy( energy, frequency, interval.getTimeMicros(), idle );
+    }
     
     /**
      * Computes the energy consumed in working phase.
@@ -126,7 +132,9 @@ public abstract class EnergyModel
      * @param frequency    current frequency.
      * @param interval     interval of time to compute.
     */
-    public abstract double getIdleEnergy( long frequency, Time interval );
+    public double getIdleEnergy( long frequency, Time interval ) {
+        return getIdleEnergy( frequency, interval.getTimeMicros() );
+    }
     
     /**
      * Computes the energy consumed in the idle period.
@@ -144,18 +152,8 @@ class QueryEnergyModel extends EnergyModel
     }
     
     @Override
-    public double computeEnergy( double energy, long frequency, Time interval, boolean idle) {
-        return computeEnergy( energy, frequency, interval.getTimeMicros(), idle );
-    }
-    
-    @Override
     public double computeEnergy( double energy, long frequency, double interval, boolean idle ) {
         return energy;
-    }
-    
-    @Override
-    public double getIdleEnergy( long frequency, Time interval ) {
-        return getIdleEnergy( 0L, interval.getTimeMicros() );
     }
     
     @Override
@@ -175,11 +173,6 @@ class QueryEnergyModel extends EnergyModel
     }
     
     @Override
-    public double computeEnergy( double energy, long frequency, Time interval, boolean idle ) {
-        return computeEnergy( 0d, frequency, interval.getTimeMicros(), idle );
-    }
-    
-    @Override
     public double computeEnergy( double energy, long frequency, double interval, boolean idle )
     {
         double freq = frequency / Utils.MILLION;
@@ -188,11 +181,6 @@ class QueryEnergyModel extends EnergyModel
             power += COEFF[0] * (freq * freq);
         }
         return power * (interval / Utils.MILLION);
-    }
-    
-    @Override
-    public double getIdleEnergy( long frequency, Time interval ) {
-        return getIdleEnergy( frequency, interval.getTimeMicros() );
     }
     
     @Override
@@ -263,20 +251,10 @@ class CoefficientEnergyModel extends EnergyModel
     }
     
     @Override
-    public double computeEnergy( double energy, long frequency, Time interval, boolean idle ) {
-        return computeEnergy( energy, frequency, interval.getTimeMicros(), idle );
-    }
-    
-    @Override
     public double computeEnergy( double energy, long frequency, double interval, boolean idle )
     {
         double power = coefficients.get( frequency );
         return power * (interval / Utils.MILLION);
-    }
-    
-    @Override
-    public double getIdleEnergy( long frequency, Time interval ) {
-        return getIdleEnergy( frequency, interval.getTimeMicros() );
     }
     
     @Override
@@ -297,11 +275,6 @@ class ParameterEnergyModel extends EnergyModel
     }
     
     @Override
-    public double computeEnergy( double energy, long frequency, Time interval, boolean idle ) {
-        return computeEnergy( energy, frequency, interval.getTimeMicros(), idle );
-    }
-    
-    @Override
     public double computeEnergy( double energy, long frequency, double interval, boolean idle )
     {
         double _frequency = frequency / Utils.MILLION; 
@@ -310,13 +283,78 @@ class ParameterEnergyModel extends EnergyModel
     }
     
     @Override
-    public double getIdleEnergy( long frequency, Time interval ) {
-        return getIdleEnergy( frequency, interval.getTimeMicros() );
+    public double getIdleEnergy( long frequency, long interval ) {
+        //return computeEnergy( getStaticPower( interval ), frequency, 0d, true );
+        return getStaticPower( interval );
+    }
+}
+
+class TerrierEnergyModel extends EnergyModel
+{
+    private CPU cpu;
+    private Map<Long,Map<Integer,Double>> power;
+    
+    public TerrierEnergyModel( CPU cpu, int nCores )
+    {
+        super( nCores );
+        this.cpu = cpu;
+        
+        power = new HashMap<>();
+        try {
+            BufferedReader reader = new BufferedReader( new FileReader( "Models/terrier_power_model.txt" ) );
+            String line = null;
+            while((line = reader.readLine()) != null) {
+                Map<Integer,Double> freqPower = new HashMap<>();
+                String[] values = line.split( " " );
+                long frequency = Long.parseLong( values[0] );
+                freqPower.put( 1, Double.parseDouble( values[1] ) );
+                for (int i = 2; i <= 4; i++) {
+                    values = reader.readLine().split( " " );
+                    freqPower.put( i, Double.parseDouble( values[i] ) );
+                }
+                power.put( frequency, freqPower );
+            }
+            reader.close();
+        } catch ( IOException e ) {
+            e.printStackTrace();
+        }
+    }
+    
+    @Override
+    public double computeEnergy( double energy, long frequency, double interval, boolean idle )
+    {
+        long maxFrequency = 0;
+        double count = 0;
+        for (Core core : cpu.getCores()) {
+            if (idle) {
+                // Count the idle cores.
+                if (core.getQueue().isEmpty()) {
+                    count++;
+                }
+            } else {
+                if (core.getFrequency() == maxFrequency) {
+                    count++;
+                } else if (core.getFrequency() > maxFrequency) {
+                    maxFrequency = core.getFrequency();
+                    count = 1;
+                }
+            }
+        }
+        
+        if (idle) {
+            if ((int) count == cpu.getCPUcores()) {
+                return getStaticPower( interval );
+            } else {
+                return 0;
+            }
+        }
+        
+        double power = this.power.get( maxFrequency ).get( (int) count );
+        return (power / count) * (interval / Utils.MILLION);
     }
     
     @Override
     public double getIdleEnergy( long frequency, long interval ) {
-        //return computeEnergy( getStaticPower( interval ), frequency, 0d, true );
-        return getStaticPower( interval );
+        return computeEnergy( 0, 0, interval, true );
     }
 }

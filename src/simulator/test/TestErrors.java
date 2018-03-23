@@ -9,8 +9,8 @@ import java.util.concurrent.TimeUnit;
 import simulator.core.Agent;
 import simulator.core.Simulator;
 import simulator.events.Event;
+import simulator.events.EventGenerator;
 import simulator.events.Packet;
-import simulator.events.generator.EventGenerator;
 import simulator.network.NetworkAgent;
 import simulator.network.NetworkLayer;
 import simulator.topology.NetworkTopology;
@@ -30,10 +30,7 @@ public class TestErrors
         
         public ClientGenerator() throws IOException
         {
-            super( Time.INFINITE,
-                   new Packet( 20, SizeUnit.BYTE ),
-                   new Packet( 20, SizeUnit.BYTE ) );
-            startAt( Time.ZERO );
+            super( Time.INFINITE, Time.ZERO );
             
             reader = new BufferedReader( new FileReader( TRACE ) );
         }
@@ -70,6 +67,14 @@ public class TestErrors
             super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( generator );
         }
+        
+        @Override
+        public void notifyEvent( Event e )
+        {
+            // Send the packet to the server.
+            Agent dest = getConnectedAgent( 1 );
+            sendMessage( dest, new Packet( 20, SizeUnit.BYTE ), true );
+        }
     }
     
     private static class ServerAgent extends Agent
@@ -81,6 +86,11 @@ public class TestErrors
         @Override
         public void addEventOnQueue( Event e ) {
             System.out.println( e.getArrivalTime() + ": RICEVUTO EVENTO!" );
+        }
+        
+        @Override
+        public void notifyEvent( Event e ) {
+            // Empty body.
         }
     }
     
@@ -96,7 +106,7 @@ public class TestErrors
         System.out.println( net.toString() );
         
         // FIXME Nel test arrival gli eventi vengono generati al tempo 1,2,3,4,5
-        // FIXME pero' vengono ricevuti dal server al tempo 0,1,2,3,4 (non ci soo ritardi di rete)
+        // FIXME pero' vengono ricevuti dal server al tempo 0,1,2,3,4 (non ci sono ritardi di rete)
         // FIXME il metodo "computeDepartureTime" del client ritorna il tempo trascorso tra 2 differenti eventi e va bene.
         // FIXME il problema e' nel metodo "generate" della classe "EventGenerator" (infatti ho messo un FIXME pure li').
         
@@ -109,7 +119,7 @@ public class TestErrors
         Agent server = new ServerAgent( 1 );
         net.addAgent( server );
         
-        generator.connect( server );
+        client.connect( server );
         
         sim.start( new Time( 1, TimeUnit.SECONDS ), false );
         sim.close();

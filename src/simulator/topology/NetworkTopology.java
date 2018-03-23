@@ -157,9 +157,11 @@ public class NetworkTopology
     
     public void addAgent( Agent agent )
     {
-        if (!containsNode( agent.getId() ))
+        if (!containsNode( agent.getId() )) {
             throw new SimulatorException( "No node found for ID: " + agent.getId() );
+        }
         
+        agent.setNetworkTopology( this );
         agent.setNode( getNode( agent.getId() ) );
         agent.setEventScheduler( evtScheduler );
         agents.put( agent.getId(), agent );
@@ -170,6 +172,10 @@ public class NetworkTopology
         for (Agent agent : agents) {
             addAgent( agent );
         }
+    }
+    
+    public Agent getAgent( long id ) {
+        return agents.get( id );
     }
     
     public Collection<Agent> getAgents() {

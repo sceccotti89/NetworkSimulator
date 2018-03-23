@@ -7,10 +7,9 @@ import java.util.concurrent.TimeUnit;
 import simulator.core.Agent;
 import simulator.core.Simulator;
 import simulator.events.Event;
+import simulator.events.EventGenerator;
+import simulator.events.EventHandler;
 import simulator.events.Packet;
-import simulator.events.generator.CBRGenerator;
-import simulator.events.generator.EventGenerator;
-import simulator.events.impl.RequestEvent;
 import simulator.exception.SimulatorException;
 import simulator.graphics.AnimationNetwork;
 import simulator.network.NetworkAgent;
@@ -26,23 +25,16 @@ public class NetworkTest
     
     private static class ClientGenerator extends EventGenerator
     {
-        public ClientGenerator( Time duration,
-                                Packet reqPacket,
-                                Packet resPacket )
-        {
-            super( duration, Time.ZERO, reqPacket, resPacket );
-            startAt( Time.ZERO );
+        public ClientGenerator( Time duration ) {
+            super( duration, Time.ZERO );
         }
     }
     
     private static class MulticastGenerator extends EventGenerator
     {
-        public MulticastGenerator( Time duration,
-                                   Packet reqPacket,
-                                   Packet resPacket )
+        public MulticastGenerator( Time duration )
         {
-            super( duration, Time.ZERO, reqPacket, resPacket );
-            setDelayedResponse( true );
+            super( duration, Time.ZERO );
         }
     }
     
@@ -58,30 +50,16 @@ public class NetworkTest
         public double getNodeUtilization( Time time )
         {
             double utilization = 0;
-            for (Agent agent : getEventGenerator( 0 ).getDestinations()) {
+            for (Agent agent : getConnectedAgents()) {
                 utilization += agent.getNodeUtilization( time );
             }
             return utilization;
         }
-    }
-    
-    private static class SinkGenerator extends EventGenerator
-    {
-        public SinkGenerator( Time duration,
-                              Packet reqPacket,
-                              Packet resPacket )
-        {
-            super( duration, Time.ZERO, reqPacket, resPacket );
-        }
         
         @Override
-        public Packet makePacket( Event e, long destination )
-        {
-            if (e instanceof RequestEvent) {
-                return new Packet( 20, SizeUnit.KILOBYTE );
-            } else {
-                return new Packet( 40, SizeUnit.KILOBYTE );
-            }
+        public void notifyEvent( Event e ) {
+            // TODO Auto-generated method stub
+            
         }
     }
     
@@ -92,13 +70,24 @@ public class NetworkTest
             super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( evGenerator );
         }
+        
+        @Override
+        public void notifyEvent( Event e ) {
+            // TODO Auto-generated method stub
+            
+        }
     }
     
     private static class ServerAgent extends Agent
     {
-        public ServerAgent( long id )
-        {
+        public ServerAgent( long id ) {
             super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
+        }
+        
+        @Override
+        public void notifyEvent( Event e ) {
+            // TODO Auto-generated method stub
+            
         }
     }
     
@@ -108,6 +97,12 @@ public class NetworkTest
         {
             super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( generator );
+        }
+        
+        @Override
+        public void notifyEvent( Event e ) {
+            // TODO Auto-generated method stub
+            
         }
     }
     
@@ -119,8 +114,9 @@ public class NetworkTest
     	//example3();
         //example4();
         //example5();
-        example6();
+        //example6();
         //example7();
+        example8();
         //testNetworkAnimation();
     	
     	System.out.println( "End of simulation." );
@@ -139,18 +135,15 @@ public class NetworkTest
         
         Simulator sim = new Simulator( net );
         
-        CBRGenerator generator = new CBRGenerator( Time.ZERO,
-                                                   new Time( 20, TimeUnit.SECONDS ),
-                                                   new Time( 5,  TimeUnit.SECONDS ),
-                                                   new Packet( 40, SizeUnit.KILOBYTE ),
-                                                   new Packet( 40, SizeUnit.KILOBYTE ) );
+        EventGenerator generator = new EventGenerator( new Time( 20, TimeUnit.SECONDS ),
+                                                       new Time( 5,  TimeUnit.SECONDS ) );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
         Agent server = new ServerAgent( 1 );
         net.addAgent( server );
         
-        client.getEventGenerator( 0 ).connect( server );
+        client.connect( server );
         
         sim.start( new Time( 1, TimeUnit.HOURS ), false );
         sim.close();
@@ -169,18 +162,15 @@ public class NetworkTest
         
         Simulator sim = new Simulator( net );
         
-        CBRGenerator generator = new CBRGenerator( Time.ZERO,
-                                                   new Time( 10, TimeUnit.SECONDS ),
-                                                   new Time( 5,  TimeUnit.SECONDS ),
-                                                   new Packet( 40, SizeUnit.KILOBYTE ),
-                                                   new Packet( 40, SizeUnit.KILOBYTE ) );
+        EventGenerator generator = new EventGenerator( new Time( 10, TimeUnit.SECONDS ),
+                                                       new Time( 5,  TimeUnit.SECONDS ) );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
         Agent server = new ServerAgent( 2 );
         net.addAgent( server );
         
-        client.getEventGenerator( 0 ).connect( server );
+        client.connect( server );
         
         sim.start( new Time( 1, TimeUnit.HOURS ), false );
         sim.close();
@@ -200,24 +190,18 @@ public class NetworkTest
         
         Simulator sim = new Simulator( net );
         
-        CBRGenerator generator = new CBRGenerator( Time.ZERO,
-                                                   new Time( 10, TimeUnit.SECONDS ),
-                                                   new Time( 5,  TimeUnit.SECONDS ),
-                                                   new Packet( 40, SizeUnit.KILOBYTE ),
-                                                   new Packet( 40, SizeUnit.KILOBYTE ) );
+        EventGenerator generator = new EventGenerator( new Time( 10, TimeUnit.SECONDS ),
+                                                       new Time( 5,  TimeUnit.SECONDS ) );
         Agent client1 = new ClientAgent( 0, generator );
         net.addAgent( client1 );
         
-        CBRGenerator generator2 = new CBRGenerator( Time.ZERO,
-                                                    new Time( 5, TimeUnit.SECONDS ),
-                                                    new Time( 1, TimeUnit.SECONDS ),
-                                                    new Packet( 20, SizeUnit.KILOBYTE ),
-                                                    new Packet( 40, SizeUnit.KILOBYTE ) );
+        EventGenerator generator2 = new EventGenerator( new Time( 5, TimeUnit.SECONDS ),
+                                                        new Time( 1, TimeUnit.SECONDS ) );
         Agent client2 = new ClientAgent( 2, generator2 );
         net.addAgent( client2 );
         
-        client1.getEventGenerator( 0 ).connect( client2 );
-        client2.getEventGenerator( 0 ).connect( client1 );
+        client1.connect( client2 );
+        client2.connect( client1 );
         
         sim.start( new Time( 1, TimeUnit.HOURS ), false );
         sim.close();
@@ -241,19 +225,13 @@ public class NetworkTest
         
         Simulator sim = new Simulator( net );
         
-        CBRGenerator generator1 = new CBRGenerator( Time.ZERO,
-                                                    new Time( 10, TimeUnit.SECONDS ),
-                                                    new Time( 5,  TimeUnit.SECONDS ),
-                                                    new Packet( 40, SizeUnit.KILOBYTE ),
-                                                    new Packet( 40, SizeUnit.KILOBYTE ) );
+        EventGenerator generator1 = new EventGenerator( new Time( 10, TimeUnit.SECONDS ),
+                                                        new Time( 5,  TimeUnit.SECONDS ) );
         Agent client1 = new ClientAgent( 0, generator1 );
         net.addAgent( client1 );
         
-        CBRGenerator generator2 = new CBRGenerator( Time.ZERO,
-                                                    new Time( 5, TimeUnit.SECONDS ),
-                                                    new Time( 1, TimeUnit.SECONDS ),
-                                                    new Packet( 20, SizeUnit.KILOBYTE ),
-                                                    new Packet( 40, SizeUnit.KILOBYTE ) );
+        EventGenerator generator2 = new EventGenerator( new Time( 5, TimeUnit.SECONDS ),
+                                                        new Time( 1, TimeUnit.SECONDS ) );
         Agent client2 = new ClientAgent( 1, generator2 );
         net.addAgent( client2 );
         
@@ -263,8 +241,8 @@ public class NetworkTest
         Agent server2 = new ServerAgent( 5 );
         net.addAgent( server2 );
         
-        client1.getEventGenerator( 0 ).connect( server1 );
-        client2.getEventGenerator( 0 ).connect( server2 );
+        client1.connect( server1 );
+        client2.connect( server2 );
         
         sim.start( new Time( 1, TimeUnit.HOURS ), false );
         sim.close();
@@ -283,21 +261,17 @@ public class NetworkTest
         
         Simulator sim = new Simulator( net );
         
-        CBRGenerator generator = new CBRGenerator( Time.ZERO,
-                                                   new Time( 10, TimeUnit.SECONDS ),
-                                                   new Time( 5,  TimeUnit.SECONDS ),
-                                                   new Packet( 40, SizeUnit.KILOBYTE ),
-                                                   new Packet( 20, SizeUnit.KILOBYTE ) );
+        EventGenerator generator = new EventGenerator( new Time( 10, TimeUnit.SECONDS ),
+                                                       new Time( 5,  TimeUnit.SECONDS ) );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
-                                                      Packet.DYNAMIC,
-                                                      Packet.DYNAMIC );
+        EventGenerator generator2 = new EventGenerator( new Time( 15, TimeUnit.SECONDS ),
+                                                        Time.ZERO );
         Agent server = new ResponseServerAgent( 2, generator2 );
         net.addAgent( server );
         
-        client.getEventGenerator( 0 ).connect( server );
+        client.connect( server );
         
         sim.start( new Time( 1, TimeUnit.HOURS ), false );
         sim.close();
@@ -316,20 +290,17 @@ public class NetworkTest
         
         Simulator sim = new Simulator( net );
         
-        ClientGenerator generator = new ClientGenerator( new Time( 2, TimeUnit.SECONDS ),
-                                                         new Packet( 40, SizeUnit.KILOBYTE ),
-                                                         new Packet( 20, SizeUnit.KILOBYTE ) );
-        generator.setMaximumFlyingPackets( 2 );
+        ClientGenerator generator = new ClientGenerator( new Time( 2, TimeUnit.SECONDS ) );
+        //generator.setMaximumFlyingPackets( 2 );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
-                                                      Packet.DYNAMIC,
-                                                      Packet.DYNAMIC );
+        EventGenerator generator2 = new EventGenerator( new Time( 15, TimeUnit.SECONDS ),
+                                                        Time.ZERO );
         Agent server = new ResponseServerAgent( 2, generator2 );
         net.addAgent( server );
         
-        client.getEventGenerator( 0 ).connect( server );
+        client.connect( server );
         
         sim.start( new Time( 1, TimeUnit.HOURS ), false );
         sim.close();
@@ -356,31 +327,160 @@ public class NetworkTest
         
         Simulator sim = new Simulator( net );
         
-        ClientGenerator generator = new ClientGenerator( new Time( 2, TimeUnit.SECONDS ),
-                                                         new Packet( 40, SizeUnit.KILOBYTE ),
-                                                         new Packet( 20, SizeUnit.KILOBYTE ) );
-        generator.setWaitForResponse( true );
+        ClientGenerator generator = new ClientGenerator( new Time( 2, TimeUnit.SECONDS ) );
+        //generator.setWaitForResponse( true );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        SinkGenerator generator2 = new SinkGenerator( new Time( 15, TimeUnit.SECONDS ),
-                                                      Packet.DYNAMIC,
-                                                      Packet.DYNAMIC );
+        EventGenerator generator2 = new EventGenerator( new Time( 15, TimeUnit.SECONDS ),
+                                                        Time.ZERO );
         Agent server1 = new ResponseServerAgent( 2, generator2 );
         net.addAgent( server1 );
         
         Agent server2 = new ResponseServerAgent( 3, generator2 );
         net.addAgent( server2 );
         
-        MulticastGenerator switchGenerator = new MulticastGenerator( new Time( 3, TimeUnit.SECONDS ),
-                                                                     new Packet( 40, SizeUnit.KILOBYTE ),
-                                                                     new Packet( 20, SizeUnit.KILOBYTE ) );
+        MulticastGenerator switchGenerator = new MulticastGenerator( new Time( 3, TimeUnit.SECONDS ) );
         Agent Switch = new ClientAgent( 1, switchGenerator );
         net.addAgent( Switch );
-        Switch.getEventGenerator( 0 ).connect( server1 );
-        Switch.getEventGenerator( 0 ).connect( server2 );
+        Switch.connect( server1 );
+        Switch.connect( server2 );
         
-        client.getEventGenerator( 0 ).connect( Switch );
+        client.connect( Switch );
+        
+        sim.start( new Time( 1, TimeUnit.HOURS ), false );
+        sim.close();
+    }
+    
+    
+    
+    
+    
+    private static class ClientAgent2 extends Agent implements EventHandler
+    {
+        public ClientAgent2( long id, EventGenerator evGenerator )
+        {
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
+            addEventGenerator( evGenerator );
+            addEventHandler( this );
+        }
+        
+        @Override
+        public void notifyEvent( Event e )
+        {
+            System.out.println( "\n\nEVENT: " + e );
+            Agent dest = getConnectedAgent( 1 );
+            Packet message = new Packet( 20, SizeUnit.BYTE );
+            sendMessage( dest, message, true );
+        }
+        
+        @Override
+        public void addEventOnQueue( Event e ) {
+            System.out.println( "[CLIENT] Ricevuto: " + e );
+        }
+        
+        @Override
+        public Time handle( Event e, EventType type )
+        {
+            System.out.println( "HANDLING:" + e + ", TYPE: " + type );
+            return getNode().getTcalc();
+        }
+    }
+    
+    private static class SwitchAgent2 extends Agent
+    {
+        private int received = 0;
+        
+        public SwitchAgent2( long id ) {
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
+        }
+
+        @Override
+        public void notifyEvent( Event e ) {}
+        
+        @Override
+        public void addEventOnQueue( Event e )
+        {
+            System.out.println( "[SWITCH] RICEVUTO: " + e );
+            if (e.getSource().getId() == 0) {
+                // From client.
+                System.out.println( "DAL CLIENT.." );
+                for (Agent agent : getConnectedAgents()) {
+                    if (agent.getId() != 0) {
+                        sendMessage( agent, e.getPacket(), true );
+                    }
+                }
+            } else {
+                // From server.
+                System.out.println( "DAL SERVER.." );
+                received = (received + 1) % 2;
+                if (received == 0) {
+                    // Send back a message to the client.
+                    Agent dest = getConnectedAgent( 0 );
+                    Packet message = new Packet( 40, SizeUnit.BYTE );
+                    sendMessage( dest, message, false );
+                }
+            }
+        }
+    }
+    
+    private static class ServerAgent2 extends Agent
+    {
+        public ServerAgent2( long id ) {
+            super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
+        }
+        
+        @Override
+        public void notifyEvent( Event e ) {}
+        
+        @Override
+        public void addEventOnQueue( Event e )
+        {
+            System.out.println( "[SERVER] RICEVUTO: " + e );
+            Agent dest = getConnectedAgent( 1 );
+            Packet message = new Packet( 40, SizeUnit.BYTE );
+            sendMessage( dest, message, false );
+        }
+    }
+    
+    public static void example8() throws IOException, SimulatorException
+    {
+        /*
+        In case of multicast node it sends the request to all the possible destinations,
+        waits for all the answers and replay with just one message to the input node.
+        
+                                   / server1
+                        100Mb,2ms /  dynamic
+                70Mb,5ms         /
+        client ---------- switch
+         10ms               7ms  \
+                         80Mb,3ms \
+                                   \ server2
+                                       6ms
+        */
+        
+        NetworkTopology net = new NetworkTopology( "Topology/Topology_ex7.json" );
+        System.out.println( net.toString() );
+        
+        Simulator sim = new Simulator( net );
+        
+        EventGenerator generator = new EventGenerator( new Time( 2, TimeUnit.SECONDS ), new Time( 1, TimeUnit.SECONDS ) );
+        Agent client = new ClientAgent2( 0, generator );
+        net.addAgent( client );
+        
+        Agent switchAgent = new SwitchAgent2( 1 );
+        net.addAgent( switchAgent );
+        
+        Agent server1 = new ServerAgent2( 2 );
+        net.addAgent( server1 );
+        
+        Agent server2 = new ServerAgent2( 3 );
+        net.addAgent( server2 );
+        
+        // Connect the agents.
+        client.connect( switchAgent );
+        switchAgent.connect( server1 );
+        switchAgent.connect( server2 );
         
         sim.start( new Time( 1, TimeUnit.HOURS ), false );
         sim.close();
@@ -394,26 +494,22 @@ public class NetworkTest
         
         Simulator sim = new Simulator( net );
         
-        EventGenerator generator = new ClientGenerator( Time.INFINITE,
-                                                        new Packet( 20, SizeUnit.MEGABYTE ),
-                                                        new Packet( 20, SizeUnit.MEGABYTE ) );
-        generator.setWaitForResponse( true );
+        EventGenerator generator = new ClientGenerator( Time.INFINITE );
+        //generator.setWaitForResponse( true );
         Agent client = new ClientAgent( 0, generator );
         net.addAgent( client );
         
-        EventGenerator multiGen = new MulticastGenerator( Time.INFINITE,
-                                                          new Packet( 20, SizeUnit.MEGABYTE ),
-                                                          new Packet( 20, SizeUnit.MEGABYTE ) );
-        multiGen.setWaitForResponse( true );
+        EventGenerator multiGen = new MulticastGenerator( Time.INFINITE );
+        //multiGen.setWaitForResponse( true );
         Agent switchAgent = new SwitchAgent( 1, multiGen );
         net.addAgent( switchAgent );
         
-        client.getEventGenerator( 0 ).connect( switchAgent );
+        client.connect( switchAgent );
         for (int i = 0; i < CPU_CORES; i++) {
             Agent agentCore = new ServerAgent( 2 + i );
             net.addAgent( agentCore );
             
-            switchAgent.getEventGenerator( 0 ).connect( agentCore );
+            switchAgent.connect( agentCore );
         }
         
         sim.start( new Time( 1, TimeUnit.HOURS ), false );

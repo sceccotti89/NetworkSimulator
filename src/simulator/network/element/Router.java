@@ -5,6 +5,7 @@
 package simulator.network.element;
 
 import simulator.core.Agent;
+import simulator.events.Event;
 import simulator.network.NetworkAgent;
 import simulator.network.NetworkLayer;
 import simulator.network.protocols.impl.RIP;
@@ -32,12 +33,12 @@ public class Router extends Agent
     {
         // TODO preso l'header dovrebbe semplicemente instradarlo verso il prossimo link
         return 0;
-    }
-
-    @Override
-    public long notifyEvent( Event event ) {
-        return 0;
     }*/
+    
+    @Override
+    public void notifyEvent( Event event ) {
+        
+    }
 
     @Override
     public String toString() {

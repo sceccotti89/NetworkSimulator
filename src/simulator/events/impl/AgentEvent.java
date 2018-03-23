@@ -20,8 +20,7 @@ public class AgentEvent extends Event
     
     public AgentEvent( Time time, Agent source )
     {
-        super( time );
-        setSource( source );
+        super( time, source );
         setDestination( source );
     }
     

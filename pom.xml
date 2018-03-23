@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
     
     <groupId>network_simulator</groupId>
-    <artifactId>Main</artifactId>
+    <artifactId>Launcher</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
     
-    <name>Main</name>
+    <name>Launcher</name>
     <url>http://maven.apache.org</url>
     
     <properties>

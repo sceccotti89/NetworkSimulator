@@ -68,7 +68,8 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         CONS( "CONS" ),
         LOAD_SENSITIVE( "LOAD_SENSITIVE" ),
         PEGASUS( "PEGASUS" ),
-        MY_MODEL( "MY_MODEL" );
+        MY_MODEL( "MY_MODEL" ),
+        TERRIER( "TERRIER" );
         
         private Mode mode;
         private String name;
@@ -95,7 +96,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
      * Model modality:
      * <p><lu>
      * <li>TIME_CONSERVATIVE:   consumes more energy, reducing the tail latency.
-     * <li>ENERGY_CONSERVATIVE: consumes less energy at a higher tail latency.
+     * <li>ENERGY_CONSERVATIVE: consumes less energy at a cost of higher tail latency.
      * </lu>
     */
     public enum Mode
@@ -992,6 +993,176 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         public void close() {}
     }
     
+    public static class TERRIERmodel extends CPUModel
+    {
+        private static final String REGRESSORS_TIME_CONSERVATIVE   = "regressors.txt";
+        private static final String REGRESSORS_ENERGY_CONSERVATIVE = "regressors_normse.txt";
+        
+        
+        /**
+         * Creates a new PESOS model.
+         * 
+         * @param time_budget    time limit to complete a query (in ms).
+         * @param mode           PESOS modality (see {@linkplain CPUModel.Mode Mode}).
+         * @param directory      directory used to load the files.
+         * 
+         * @throws IOException if a file doesn't exist or is malformed.
+        */
+        public TERRIERmodel( long time_budget, Mode mode, String directory )
+        {
+            this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory,
+                  POSTINGS_PREDICTORS, EFFECTIVE_TIME_ENERGY,
+                  (mode == Mode.ENERGY_CONSERVATIVE) ? REGRESSORS_ENERGY_CONSERVATIVE : REGRESSORS_TIME_CONSERVATIVE );
+        }
+        
+        /**
+         * Creates a new PESOS model.
+         * 
+         * @param time_budget    time limit to complete a query (in ms).
+         * @param mode           PESOS modality (see {@linkplain CPUModel.Mode Mode}).
+         * @param directory      directory used to load the files.
+         * @param files          list of file used to load the model.
+         * 
+         * @throws IOException if a file doesn't exist or is malformed.
+        */
+        public TERRIERmodel( long time_budget, Mode mode, String directory, String... files ) {
+            this( new Time( time_budget, TimeUnit.MILLISECONDS ), mode, directory, files );
+        }
+        
+        public TERRIERmodel( Time time_budget, Mode mode, String directory, String... files ) {
+            super( getType( mode ), directory, files );
+            timeBudget = time_budget;
+        }
+        
+        private static Type getType( Mode mode )
+        {
+            Type type = Type.TERRIER;
+            type.setMode( mode );
+            return type;
+        }
+        
+        @Override
+        public Long eval( Time now, QueryInfo... queries )
+        {
+            QueryInfo currentQuery = queries[0];
+            Time currentDeadline = currentQuery.getArrivalTime().addTime( timeBudget );
+            if (currentDeadline.compareTo( now ) <= 0) {
+                // Time to complete the query is already over.
+                return _device.getMaxFrequency();
+            }
+            
+            long lateness = getLateness( now, queries );
+            currentDeadline.subTime( lateness, TimeUnit.MICROSECONDS );
+            if (currentDeadline.compareTo( now ) <= 0) {
+                return _device.getMaxFrequency();
+            }
+            
+            int ppcRMSE = regressors.get( "class." + currentQuery.getTerms() + ".rmse" ).intValue();
+            long pcost = currentQuery.getPostings() + ppcRMSE;
+            long volume = pcost;
+            double maxDensity = volume / currentDeadline.subTime( now ).getTimeMicros();
+            
+            for (int i = 1; i < queries.length; i++) {
+                QueryInfo q = queries[i];
+                
+                ppcRMSE = regressors.get( "class." + q.getTerms() + ".rmse" ).intValue();
+                volume += q.getPostings() + ppcRMSE;
+                
+                Time qArrivalTime = q.getArrivalTime();
+                Time deadline = qArrivalTime.addTime( timeBudget.clone().subTime( lateness, TimeUnit.MICROSECONDS ) );
+                if (deadline.compareTo( now ) <= 0) {
+                    return _device.getMaxFrequency();
+                } else {
+                    double density = volume / (deadline.subTime( now ).getTimeMicros());
+                    if (density > maxDensity) {
+                        maxDensity = density;
+                    }
+                }
+            }
+            
+            double targetTime = pcost/maxDensity;
+            return identifyTargetFrequency( currentQuery.getTerms(), pcost, targetTime );
+        }
+        
+        private long getLateness( Time now, QueryInfo[] queries )
+        {
+            double lateness = 0;
+            int cnt = 0;
+            
+            for (int i = 0; i < queries.length; i++) {
+                QueryInfo q = queries[i];
+                int ppcRMSE = regressors.get( "class." + q.getTerms() + ".rmse" ).intValue();
+                long pcost = q.getPostings() + ppcRMSE;
+                long predictedTimeMaxFreq = predictServiceTimeAtMaxFrequency( q.getTerms(), pcost );
+                Time qArrivalTime = q.getArrivalTime();
+                long budget = timeBudget.clone().subTime( now.clone().subTime( qArrivalTime ) ).getTimeMicros();
+                
+                if (predictedTimeMaxFreq > budget) {
+                    lateness += predictedTimeMaxFreq - budget;
+                } else {
+                    cnt++;
+                }
+            }
+            
+            double result = lateness / cnt;
+            return Utils.getTimeInMicroseconds( result, TimeUnit.MICROSECONDS );
+        }
+        
+        public long predictServiceTimeAtMaxFrequency( int terms, long postings )
+        {
+            String base  = _device.getMaxFrequency() + "." + terms;
+            double alpha = regressors.get( base + ".alpha" );
+            double beta  = regressors.get( base + ".beta" );
+            double rmse  = regressors.get( base + ".rmse" );
+            return Utils.getTimeInMicroseconds( alpha * postings + beta + rmse, TimeUnit.MILLISECONDS );
+        }
+        
+        private long identifyTargetFrequency( int terms, long postings, double targetTime )
+        {
+            for (Long frequency : _device.getFrequencies()) {
+                final String base = frequency + "." + terms;
+                double alpha = regressors.get( base + ".alpha" );
+                double beta  = regressors.get( base + ".beta" );
+                double rmse  = regressors.get( base + ".rmse" );
+                
+                long extimatedTime = Utils.getTimeInMicroseconds( alpha * postings + beta + rmse, TimeUnit.MILLISECONDS );
+                if (extimatedTime <= targetTime) {
+                    return frequency;
+                }
+            }
+            
+            return _device.getMaxFrequency(); 
+        }
+        
+        public int getRMSE( int terms ) {
+            return regressors.get( "class." + terms + ".rmse" ).intValue();
+        }
+        
+        @Override
+        public String getModelType( boolean delimeters ) throws UnsupportedEncodingException
+        {
+            if (delimeters) {
+                return "TERRIER_" + getMode() + "_" + getTimeBudget().getTimeMillis() + "ms";
+            } else {
+                final String tau = new String( ("\u03C4").getBytes(), Charset.defaultCharset() );
+                //final String tau = "t";
+                return "TERRIER (" + getMode() + "," + tau + "=" + getTimeBudget().getTimeMillis() + "ms)";
+            }
+        }
+    
+        @Override
+        protected CPUModel cloneModel()
+        {
+            PESOSmodel model = new PESOSmodel( timeBudget.clone(), getMode(), "", _postings, _effective_time_energy, _regressors );
+            try { model.loadModel(); }
+            catch ( IOException e ) { e.printStackTrace(); }
+            return model;
+        }
+    
+        @Override
+        public void close() {}
+    }
+
     public static class QueryInfo
     {
         private long _id;
@@ -1119,7 +1290,7 @@ public abstract class CPUModel extends Model<QueryInfo,Long> implements Cloneabl
         }
         
         /**
-         * Updates the time to complete and the energy consumption of the
+         * Updates the completion time and the energy consumption of the
          * current query.
          * 
          * @param time            the current time.
