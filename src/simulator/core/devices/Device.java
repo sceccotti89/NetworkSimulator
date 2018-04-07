@@ -2,7 +2,7 @@
  * @author Stefano Ceccotti
 */
 
-package simulator.core;
+package simulator.core.devices;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,6 +16,9 @@ import java.util.regex.Pattern;
 
 import org.newdawn.slick.util.ResourceLoader;
 
+import simulator.core.Agent;
+import simulator.core.Model;
+import simulator.core.Task;
 import simulator.events.EventScheduler;
 import simulator.utils.Sampler;
 import simulator.utils.Time;

@@ -148,20 +148,23 @@ public abstract class Event implements Comparable<Event>
     
     private void executeDestination( EventScheduler evtScheduler, NetworkTopology net, NetworkNode node )
     {
+        //System.out.println( "[" + _time + "] Reached destination node: " + node );
+        setArrivalTime( _time.clone() );
+        
+        if (!checkEventExecution( _dest, evtScheduler )) {
+            return;
+        }
+        
         // Compute the delay given by the time to process the incoming message.
         long delay = (_source.getId() == _dest.getId()) ?
                      0 : getTcalc( node, node.getAgent() ).getTimeMicros();
-        
-        //System.out.println( "[" + _time + "] Reached destination node: " + node );
-        setArrivalTime( _time.clone().addTime( delay, TimeUnit.MICROSECONDS ) );
-        _dest.setTime( _arrivalTime );
+        _dest.setTime( _arrivalTime.clone().addTime( delay, TimeUnit.MICROSECONDS ) );
         
         if (this instanceof AgentEvent) {
             _dest.notifyEvent( this );
         } else {
             _dest.receivedMessage( this );
             _time.addTime( getTcalc( node, _dest ) );
-            _dest.removeEventFromQueue( 0 );
         }
         
         evtScheduler.schedule( _dest.fireEvent() );
@@ -185,6 +188,10 @@ public abstract class Event implements Comparable<Event>
                 Agent agent = node.getAgent();
                 if (nodeId != _source.getId()) {
                     //System.out.println( "[" + _time + "] Reached intermediate node: " + node );
+                    if (!checkEventExecution( agent, evtScheduler )) {
+                        return;
+                    }
+                    
                     delay = getTcalc( node, node.getAgent() ).getTimeMicros();
                     // Add event on queue only for nodes different from source.
                     agent.receivedMessage( this );
@@ -206,9 +213,6 @@ public abstract class Event implements Comparable<Event>
                 agent.setTime( agent.getTime().addTime( delay, TimeUnit.MICROSECONDS ) );
                 if (agent.getEventHandler() != null) {
                     agent.getEventHandler().handle( this, EventType.SENT );
-                }
-                if (nodeId != _source.getId()) {
-                    agent.removeEventFromQueue( 0 );
                 }
                 
                 // The link propagation time is added here.
@@ -238,6 +242,27 @@ public abstract class Event implements Comparable<Event>
         }
         
         return new Time( delay, TimeUnit.MICROSECONDS );
+    }
+    
+    /**
+     * Checks whether the event can be executed.
+    */
+    private boolean checkEventExecution( Agent node, EventScheduler scheduler )
+    {
+        if (!node.addEvent( this )) {
+            // No available space: the event will be discarded.
+            // TODO notificarlo nel track event??
+            return false;
+        } else {
+            if (!node.canExecute( _time )) {
+                // Agent cannot handle the message in this moment.
+                scheduler.schedule( this );
+                return false;
+            }
+            node.removeEvent( this );
+        }
+        
+        return true;
     }
     
     @Override

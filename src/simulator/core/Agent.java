@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import simulator.core.devices.Device;
+import simulator.core.devices.Memory;
 import simulator.events.Event;
 import simulator.events.EventGenerator;
 import simulator.events.EventHandler;
@@ -58,7 +60,6 @@ public abstract class Agent extends NetworkAgent
         samplings = new HashMap<>();
         
         _evtGenerators = new ArrayList<>();
-        _eventQueue = new ArrayList<>();
         _destinations = new ArrayList<>();
     }
     
@@ -217,10 +218,7 @@ public abstract class Agent extends NetworkAgent
      * 
      * @param e    the input event
     */
-    public void receivedMessage( Event e ) {
-        // TODO Renderlo astratto?
-        _eventQueue.add( e );
-    }
+    public abstract void receivedMessage( Event e );
     
     /**
      * Removes an event from the queue.
@@ -229,11 +227,11 @@ public abstract class Agent extends NetworkAgent
      * 
      * @return e    the removed event
     */
-    public Event removeEventFromQueue( Event event )
+    /*public Event removeEventFromQueue( Event event )
     {
         _eventQueue.remove( event );
         return event;
-    }
+    }*/
     
     /**
      * Removes an event from the queue.
@@ -242,13 +240,13 @@ public abstract class Agent extends NetworkAgent
      * 
      * @return the removed event
     */
-    public Event removeEventFromQueue( int index )
+    /*public Event removeEventFromQueue( int index )
     {
         if (!_eventQueue.isEmpty()) {
             return _eventQueue.remove( index );
         }
         return null;
-    }
+    }*/
     
     /**
      * Checks if the current event can be executed.</br>
@@ -262,10 +260,11 @@ public abstract class Agent extends NetworkAgent
     */
     public boolean canExecute( Time eventTime )
     {
-        boolean execute = eventTime.compareTo( _time ) >= 0;
+        Time time = getTime();
+        boolean execute = eventTime.compareTo( time ) >= 0;
         if (!execute) {
             // Set the time of the agent.
-            eventTime.setTime( _time );
+            eventTime.setTime( time );
         }
         return execute;
     }
@@ -278,19 +277,19 @@ public abstract class Agent extends NetworkAgent
         return _evtHandler;
     }
     
-    public List<Event> getQueue() {
+    /*public List<Event> getQueue() {
         return _eventQueue;
-    }
+    }*/
 
     /**
      * Returns the percentage of node utilization.</br>
-     * By default it returns the size of the associated event queue.</br>
-     * In case of any attached device an override of this method is suggested.
+     * By default it returns the utilization of the memory.</br>
+     * In case of any custom attached device an override of this method is suggested.
      * 
      * @param time    time when the queue is checked.
     */
     public double getNodeUtilization( Time time ) {
-        return _eventQueue.size();
+        return _devices.get( Memory.class ).getUtilization( time );
     }
     
     /**

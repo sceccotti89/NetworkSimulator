@@ -12,13 +12,13 @@ import simulator.utils.Time;
 
 public class EventGenerator
 {
-    protected Time _time;
+    private Time  _time = new Time( 0, TimeUnit.MICROSECONDS );
     
-    private Time   _duration;
-    private Agent  _agent;
-    private Time   _departureTime;
+    private Time  _duration;
+    private Agent _agent;
+    private Time  _departureTime;
     
-    private int    _departureAssignment;
+    private int   _departureAssignment;
     
     /** Adds the departure time to the generator before the generation of the event. */
     public static final int BEFORE_CREATION = 0;
@@ -42,7 +42,6 @@ public class EventGenerator
     public EventGenerator( Time duration, Time departureTime, int departureType )
     {
         _duration = duration;
-        startAt( new Time( 0, TimeUnit.MICROSECONDS ) );
         setDepartureTime( departureTime, departureType );
     }
     

@@ -17,7 +17,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import simulator.core.Agent;
-import simulator.core.Device;
+import simulator.core.devices.Device;
 import simulator.events.Event;
 import simulator.test.energy.CPU.Core.State;
 import simulator.test.energy.CPUModel.PESOSmodel;
@@ -85,8 +85,9 @@ public abstract class CPU extends Device<QueryInfo,Long>
         BufferedReader br = new BufferedReader( new InputStreamReader( fReader ) );
         StringBuilder content = new StringBuilder( 64 );
         String nextLine = null;
-        while((nextLine = br.readLine()) != null)
+        while((nextLine = br.readLine()) != null) {
             content.append( nextLine.trim() );
+        }
         br.close();
         
         JSONObject settings = new JSONObject( content.toString() );

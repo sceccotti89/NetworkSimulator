@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import simulator.core.Agent;
-import simulator.core.Device;
 import simulator.core.Task;
+import simulator.core.devices.Device;
 import simulator.events.Packet;
 import simulator.test.energy.CPUModel.Mode;
 import simulator.test.energy.CPUModel.PESOSmodel;

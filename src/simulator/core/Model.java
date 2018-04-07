@@ -6,6 +6,7 @@ package simulator.core;
 
 import java.io.IOException;
 
+import simulator.core.devices.Device;
 import simulator.utils.Time;
 
 /**

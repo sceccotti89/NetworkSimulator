@@ -26,17 +26,16 @@ public class Switch extends Agent
     public long start() {
         
         return 0;
-    }
+    }*/
     
     @Override
-    public long receivedMessage( Packet message, Connection conn )
+    public void receivedMessage( Event e )
     {
         // TODO capire come funziona uno switch.
         //Header msg = (Header) message;
         // TODO inoltrare il messaggio verso la direzione corretta
         //conn.send( (Header) message );
-        return 0;
-    }*/
+    }
     
     @Override
     public void notifyEvent( Event event ) {

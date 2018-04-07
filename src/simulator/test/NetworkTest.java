@@ -47,6 +47,11 @@ public class NetworkTest
         }
         
         @Override
+        public void receivedMessage( Event e ) {
+            // Empty body.
+        }
+        
+        @Override
         public double getNodeUtilization( Time time )
         {
             double utilization = 0;
@@ -72,6 +77,11 @@ public class NetworkTest
         }
         
         @Override
+        public void receivedMessage( Event e ) {
+            // Empty body.
+        }
+        
+        @Override
         public void notifyEvent( Event e ) {
             // TODO Auto-generated method stub
             
@@ -82,6 +92,11 @@ public class NetworkTest
     {
         public ServerAgent( long id ) {
             super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
+        }
+        
+        @Override
+        public void receivedMessage( Event e ) {
+            // Empty body.
         }
         
         @Override
@@ -97,6 +112,11 @@ public class NetworkTest
         {
             super( NetworkAgent.FULL_DUPLEX, NetworkLayer.APPLICATION, id );
             addEventGenerator( generator );
+        }
+        
+        @Override
+        public void receivedMessage( Event e ) {
+            // Empty body.
         }
         
         @Override

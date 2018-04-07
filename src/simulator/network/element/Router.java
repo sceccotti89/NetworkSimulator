@@ -26,14 +26,13 @@ public class Router extends Agent
     public long start() {
         
         return 0;
-    }
+    }*/
     
     @Override
-    public long receivedMessage( Packet message, Connection conn )
+    public void receivedMessage( Event e )
     {
         // TODO preso l'header dovrebbe semplicemente instradarlo verso il prossimo link
-        return 0;
-    }*/
+    }
     
     @Override
     public void notifyEvent( Event event ) {

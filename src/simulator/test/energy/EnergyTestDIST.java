@@ -142,6 +142,11 @@ public class EnergyTestDIST
         }
         
         @Override
+        public void receivedMessage( Event e ) {
+            // Empty body.
+        }
+        
+        @Override
         public void notifyEvent( Event e )
         {
             // Send the packet to the server.

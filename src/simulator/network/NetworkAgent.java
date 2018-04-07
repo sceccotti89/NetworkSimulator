@@ -11,8 +11,11 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.collect.Lists;
+
 import simulator.core.Agent;
-import simulator.core.Device;
+import simulator.core.devices.Device;
+import simulator.core.devices.Memory;
 import simulator.events.Event;
 import simulator.events.impl.AgentEvent;
 import simulator.network.protocols.EventProtocol;
@@ -39,7 +42,7 @@ public abstract class NetworkAgent
     protected NetworkNode _node;
     protected NetworkTopology _net;
     
-    protected List<Event> _eventQueue;
+    //protected List<Event> _eventQueue;
     
     protected Map<Class<?>,Device<?,?>> _devices;
     
@@ -70,7 +73,7 @@ public abstract class NetworkAgent
     {
         _time = new Time( 0, TimeUnit.MICROSECONDS );
         
-        _eventQueue = new ArrayList<>();
+        //_eventQueue = new ArrayList<>();
         
         this.layer = layer;
         connections = new HashMap<>();
@@ -81,6 +84,8 @@ public abstract class NetworkAgent
         }
         
         _devices = new HashMap<>();
+        // By default add the memory device.
+        _devices.put( Memory.class, new Memory( "RAM", Lists.newArrayList( 800000L ) ) );
         
         this.channelType = channelType;
         
@@ -220,6 +225,42 @@ public abstract class NetworkAgent
         return bufferSize;
     }
     
+    
+    
+    /**
+     * Assigns the incoming event to this agent.
+     * By default the event is checked against the memory device
+     * to verify whether there is available space.
+     * 
+     * @param e    the event to add
+     * 
+     * @return {@code true} if the agent can handle the incoming event,
+     *         {@code false} otherwise.
+    */
+    public boolean addEvent( Event e )
+    {
+        Memory memory = (Memory) _devices.get( Memory.class );
+        //TODO Header message = (Header) e;
+        simulator.events.Packet message = e.getPacket();
+        if (message != null && !memory.getMemory( message.getSizeInBytes() )) {
+            return false;
+        }
+        return true;
+    }
+    
+    /**
+     * Removes the incoming message to this agent.
+    */
+    public void removeEvent( Event e )
+    {
+        Memory memory = (Memory) _devices.get( Memory.class );
+        //TODO Header message = (Header) e;
+        simulator.events.Packet message = e.getPacket();
+        if (message != null) {
+            memory.freeMemory( message.getSizeInBytes() );
+        }
+    }
+    
     public void receivedMessage( Event event )
     {
         if (event instanceof TimeoutEvent) {
@@ -232,9 +273,6 @@ public abstract class NetworkAgent
         }
         
         //_net.trackEvent( "" );
-        
-        // TODO capire come utilizzarlo: se non mi serve lo elimino!!!!!
-        //_eventQueue.add( event );
         
         Header message = (Header) event;
         ProtocolReference ref = null;
@@ -267,6 +305,7 @@ public abstract class NetworkAgent
                 //conn.addReceivedMessage( message );
                 //receivedMessage( new Message( message.getBytes() ), conn );
                 
+                // TODO questa parte qui non serve
                 AgentEvent e = new AgentEvent( getTime(), (Agent) this );
                 e.setMessage( message, conn );
                 ((Agent) this).getEventScheduler().schedule( e );

@@ -19,13 +19,12 @@ public class Hub extends Agent
         super( NetworkAgent.HALF_DUPLEX, NetworkLayer.PHYSICAL, node );
     }
     
-    /*@Override
-    public long receivedMessage( Packet message, Connection conn )
+    @Override
+    public void receivedMessage( Event e )
     {
         // TODO Ricevuto un pacchetto in ingresso, lo invia in broadcast su tutte le altre porte.
         // TODO Per questo e' half-duplex.
-        return 0;
-    }*/
+    }
     
     @Override
     public void notifyEvent( Event event ) {

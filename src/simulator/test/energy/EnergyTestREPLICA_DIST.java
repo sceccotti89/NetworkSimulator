@@ -166,6 +166,11 @@ public class EnergyTestREPLICA_DIST
         }
         
         @Override
+        public void receivedMessage( Event e ) {
+            // Empty body.
+        }
+        
+        @Override
         public void notifyEvent( Event e )
         {
             // Send the packet to the broker.
