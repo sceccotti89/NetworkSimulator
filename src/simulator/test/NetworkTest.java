@@ -14,6 +14,7 @@ import simulator.exception.SimulatorException;
 import simulator.graphics.AnimationNetwork;
 import simulator.network.NetworkAgent;
 import simulator.network.NetworkLayer;
+import simulator.topology.NetworkLink;
 import simulator.topology.NetworkTopology;
 import simulator.utils.SizeUnit;
 import simulator.utils.Time;
@@ -386,6 +387,8 @@ public class NetworkTest
     
     
     
+    private static final long N = 200;
+    
     private static class ClientAgent2 extends Agent implements EventHandler
     {
         public ClientAgent2( long id, EventGenerator evGenerator )
@@ -398,21 +401,21 @@ public class NetworkTest
         @Override
         public void notifyEvent( Event e )
         {
-            System.out.println( "\n\nEVENT: " + e );
-            Agent dest = getConnectedAgent( 1 );
+            //System.out.println( "\n\nEVENT: " + e );
+            Agent dest = getConnectedAgent( N );
             Packet message = new Packet( 20, SizeUnit.BYTE );
             sendMessage( dest, message, true );
         }
         
         @Override
         public void receivedMessage( Event e ) {
-            System.out.println( "[CLIENT] Ricevuto: " + e );
+            //System.out.println( "[CLIENT] Ricevuto: " + e );
         }
         
         @Override
         public Time handle( Event e, EventType type )
         {
-            System.out.println( "HANDLING:" + e + ", TYPE: " + type );
+            //System.out.println( "HANDLING:" + e + ", TYPE: " + type );
             return getNode().getTcalc();
         }
     }
@@ -431,10 +434,10 @@ public class NetworkTest
         @Override
         public void receivedMessage( Event e )
         {
-            System.out.println( "[SWITCH] RICEVUTO: " + e );
+            //System.out.println( "[SWITCH] RICEVUTO: " + e );
             if (e.getSource().getId() == 0) {
                 // From client.
-                System.out.println( "DAL CLIENT.." );
+               // System.out.println( "DAL CLIENT.." );
                 for (Agent agent : getConnectedAgents()) {
                     if (agent.getId() != 0) {
                         sendMessage( agent, e.getPacket(), true );
@@ -442,7 +445,7 @@ public class NetworkTest
                 }
             } else {
                 // From server.
-                System.out.println( "DAL SERVER.." );
+                //System.out.println( "DAL SERVER.." );
                 received = (received + 1) % 2;
                 if (received == 0) {
                     // Send back a message to the client.
@@ -466,7 +469,7 @@ public class NetworkTest
         @Override
         public void receivedMessage( Event e )
         {
-            System.out.println( "[SERVER] RICEVUTO: " + e );
+            //System.out.println( "[SERVER] RICEVUTO: " + e );
             Agent dest = getConnectedAgent( 1 );
             Packet message = new Packet( 40, SizeUnit.BYTE );
             sendMessage( dest, message, false );
@@ -489,32 +492,48 @@ public class NetworkTest
                                        6ms
         */
         
-        NetworkTopology net = new NetworkTopology( "Topology/Topology_ex7.json" );
-        System.out.println( net.toString() );
-        
+        NetworkTopology net = new NetworkTopology();
         Simulator sim = new Simulator( net );
         
-        EventGenerator generator = new EventGenerator( new Time( 1, TimeUnit.SECONDS ),
-                                                       new Time( 1, TimeUnit.SECONDS ),
+        EventGenerator generator = new EventGenerator( new Time( 1, TimeUnit.MINUTES ),
+                                                       new Time( 100, TimeUnit.MILLISECONDS ),
                                                        EventGenerator.BEFORE_CREATION );
-        Agent client = new ClientAgent2( 0, generator );
-        net.addAgent( client );
         
-        Agent switchAgent = new SwitchAgent2( 1 );
+        // Create the nodes and agents.
+        for (long i = 0; i < N; i++) {
+            net.addNode( i, "Client", 10 );
+            Agent client = new ClientAgent2( i, generator );
+            net.addAgent( client );
+        }
+        
+        net.addNode( N, "Switch", 7 );
+        Agent switchAgent = new SwitchAgent2( N );
         net.addAgent( switchAgent );
         
-        Agent server1 = new ServerAgent2( 2 );
+        net.addNode( N+1, "Server1", 0 );
+        Agent server1 = new ServerAgent2( N+1 );
         net.addAgent( server1 );
         
-        Agent server2 = new ServerAgent2( 3 );
+        net.addNode( N+2, "Server2", 6 );
+        Agent server2 = new ServerAgent2( N+2 );
         net.addAgent( server2 );
         
         // Connect the agents.
-        client.connect( switchAgent );
+        for (long i = 0; i < N; i++) {
+            Agent client = net.getAgent( i );
+            net.addLink( i, N, 70, 5, NetworkLink.BIDIRECTIONAL );
+            client.connect( switchAgent );
+        }
+        
+        net.addLink( N, N+1, 100, 2, NetworkLink.BIDIRECTIONAL );
         switchAgent.connect( server1 );
+        
+        net.addLink( N, N+2,  80, 3, NetworkLink.BIDIRECTIONAL );
         switchAgent.connect( server2 );
         
-        sim.start( new Time( 1, TimeUnit.HOURS ), false );
+        System.out.println( net.toString() );
+        
+        sim.start( new Time( 1, TimeUnit.MINUTES ), false );
         sim.close();
     }
     

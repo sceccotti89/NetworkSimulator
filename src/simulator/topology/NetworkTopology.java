@@ -240,11 +240,11 @@ public class NetworkTopology
     	return null;
     }
     
-    public void addNode( long id, String name, long delay ) {
+    public void addNode( Long id, String name, long delay ) {
         addNode( id, name, delay, 0, 0 );
     }
     
-    public void addNode( long id, String name, long delay,
+    public void addNode( Long id, String name, long delay,
                          int xPos, int yPos ) {
         addNode( new NetworkNode( id, name, delay, xPos, yPos ) );
     }

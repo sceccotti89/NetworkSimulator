@@ -1033,11 +1033,11 @@ public class EnergyTestREPLICA_DIST
         // Create client.
         EventGenerator generator = new ClientGenerator();
         Agent client = new ClientAgent( 0, generator );
-        net.addNode( 0, "Client", 0 );
+        net.addNode( 0L, "Client", 0 );
         net.addAgent( client );
         
         // Create broker.
-        net.addNode( 1, "Broker", 0 );
+        net.addNode( 1L, "Broker", 0 );
         
         CPUModel model = getModel( type, mode, timeBudget, 1 );
         final String modelType = model.getModelType( true );

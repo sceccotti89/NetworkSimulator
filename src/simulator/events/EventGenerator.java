@@ -41,7 +41,7 @@ public class EventGenerator
     */
     public EventGenerator( Time duration, Time departureTime, int departureType )
     {
-        _duration = duration;
+        _duration = duration.clone();
         setDepartureTime( departureTime, departureType );
     }
     
@@ -65,7 +65,7 @@ public class EventGenerator
     public void setDepartureTime( Time time, int departureType )
     {
         _departureAssignment = departureType;
-        _departureTime = time;
+        _departureTime = time.clone();
     }
 
     /**
